@@ -47,7 +47,7 @@
         <h2 style="text-align: center; color: var(--primary); margin-bottom: 25px;">WMS FLOW PRO</h2>
         <input type="text" id="login-mat" placeholder="Matrícula" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #334155; background:#0a0f1e; color:white; box-sizing: border-box;">
         <input type="password" id="login-senha" placeholder="Senha" style="width:100%; padding:10px; margin-bottom:20px; border-radius:5px; border:1px solid #334155; background:#0a0f1e; color:white; box-sizing: border-box;">
-        <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%; border-radius: 5px; font-size: 16px;">ENTRAR</button>
+        <button id="btn-login" onclick="tentarLogin()" class="btn-retirar" style="width: 100%; border-radius: 5px; font-size: 16px;">ENTRAR</button>
     </div>
 </div>
 
@@ -101,20 +101,43 @@
     let usuarioLogado = null;
     let historicoBusca = JSON.parse(localStorage.getItem('wms_history_v2') || '[]');
 
-    function tentarLogin() {
+    async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
         const sen = document.getElementById('login-senha').value.trim();
+        const btn = document.getElementById('btn-login');
 
-        if (mat === "7857@admin" && sen === "7857") {
-            usuarioLogado = { nome: "Admin", role: "ADMIN" };
-        } else if (mat === "7857@op" && sen === "7857") {
-            usuarioLogado = { nome: "Operador", role: "OPERADOR" };
-        } else {
-            return alert("Dados incorretos!");
+        if (!mat || !sen) return alert("Preencha todos os campos!");
+
+        btn.innerText = "AUTENTICANDO...";
+        btn.disabled = true;
+
+        try {
+            // Busca o usuário na coleção 'usuarios_wms' onde o ID do documento é a matrícula
+            const userDoc = await db.collection("usuarios_wms").doc(mat).get();
+
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                if (userData.senha === sen) {
+                    usuarioLogado = { 
+                        nome: userData.nome, 
+                        role: userData.role,
+                        matricula: mat 
+                    };
+                    localStorage.setItem('wms_session_v2', JSON.stringify(usuarioLogado));
+                    iniciarApp();
+                } else {
+                    alert("Senha incorreta!");
+                }
+            } else {
+                alert("Usuário não encontrado!");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao conectar ao banco de dados.");
+        } finally {
+            btn.innerText = "ENTRAR";
+            btn.disabled = false;
         }
-
-        localStorage.setItem('wms_session_v2', JSON.stringify(usuarioLogado));
-        iniciarApp();
     }
 
     function iniciarApp() {
@@ -276,9 +299,13 @@
     }
 
     function logout() { localStorage.removeItem('wms_session_v2'); location.reload(); }
+    
     window.onload = () => {
         const s = localStorage.getItem('wms_session_v2');
-        if(s) { usuarioLogado = JSON.parse(s); iniciarApp(); }
+        if(s) { 
+            usuarioLogado = JSON.parse(s); 
+            iniciarApp(); 
+        }
     };
 </script>
 </body>
