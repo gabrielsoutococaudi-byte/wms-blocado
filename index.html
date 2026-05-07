@@ -3,283 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WMS FLOW PRO - Sistema de Gestão de Blocado</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>WMS FLOW PRO - ALB</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <style>
-        :root { --bg: #0a0f1e; --card: #161e31; --primary: #00d2ff; --critico: #fbbf24; --retido: #f87171; --verde: #4ade80; --text: #f8fafc; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 30px; }
-        
-        .admin-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.4); border-radius: 12px; }
-        .stat-box { background: var(--card); padding: 12px; border-radius: 8px; border-top: 3px solid var(--primary); text-align: center; }
-        .stat-box h5 { margin: 0; font-size: 10px; opacity: 0.6; text-transform: uppercase; }
-        .stat-box p { margin: 8px 0 0; font-size: 20px; font-weight: 900; }
-
-        .header { padding: 15px 20px; background: var(--card); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2d3748; }
-        .container { max-width: 900px; margin: auto; padding: 15px; }
-        
-        .search-area { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        #search-input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; font-size: 15px; outline: none; box-sizing: border-box; }
-        .recent-list { margin-top: 10px; display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; }
-        .tag { background: #2d3748; padding: 4px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; white-space: nowrap; border: 1px solid transparent; }
-        .tag:hover { border-color: var(--primary); }
-
-        .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid #444; }
-        .item-critico { border-left-color: var(--critico); }
-        .item-retido { border-left-color: var(--retido); }
-        .item-verde { border-left-color: var(--verde); }
-        
-        .ender-badge { background: var(--primary); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; }
-        
-        .btn { padding: 10px 15px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-retirar { background: var(--primary); color: #000; }
-        .admin-section { display: none; margin-top: 25px; border-top: 1px solid #334155; padding-top: 20px; }
-
-        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
-        .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 300px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+        :root { --primary: #2563eb; --dark: #1e293b; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { color: var(--dark); text-align: center; margin-bottom: 1.5rem; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
+        button { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #1d4ed8; }
+        .hidden { display: none; }
+        .card { border: 1px solid #eee; padding: 1rem; margin: 10px 0; border-radius: 8px; background: #fff; }
+        .admin-only { border: 2px dashed #fbbf24; padding: 10px; margin-top: 20px; border-radius: 8px; background: #fffbeb; }
+        #user-info { text-align: right; font-size: 12px; color: #64748b; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<div id="login-screen">
-    <div class="login-box">
-        <h2 style="text-align: center; color: var(--primary); margin-bottom: 25px;">WMS FLOW PRO</h2>
-        <input type="text" id="login-mat" placeholder="Matrícula" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #334155; background:#0a0f1e; color:white; box-sizing: border-box;">
-        <input type="password" id="login-senha" placeholder="Senha" style="width:100%; padding:10px; margin-bottom:20px; border-radius:5px; border:1px solid #334155; background:#0a0f1e; color:white; box-sizing: border-box;">
-        <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%; border-radius: 5px; font-size: 16px;">ENTRAR</button>
-    </div>
-</div>
-
-<div id="app-screen" style="display: none;">
-    <div class="header">
-        <div>
-            <div id="user-name" style="font-size: 16px; font-weight: 800;"></div>
-            <span id="role-label" style="font-size: 10px; opacity: 0.6; text-transform: uppercase;"></span>
-        </div>
-        <button onclick="logout()" style="background:transparent; border:1px solid #444; color:white; cursor:pointer; padding:5px 10px; border-radius:5px;">Sair</button>
+<div class="container">
+    <div id="tela-login">
+        <h2>WMS FLOW ALB <br><small style="font-size: 0.6em; color: #666;">Controle de Acesso</small></h2>
+        <input type="text" id="login-mat" placeholder="Matrícula (Ex: 7857)">
+        <input type="password" id="login-senha" placeholder="Senha">
+        <button onclick="tentarLogin()">ENTRAR NO SISTEMA</button>
     </div>
 
-    <div class="container">
-        <div id="dash-container" class="admin-dashboard" style="display: none;">
-            <div class="stat-box"><h5>Total Pallets</h5><p id="st-total">0</p></div>
-            <div class="stat-box" style="border-color: var(--critico);"><h5>Críticos (31-60)</h5><p id="st-critico">0</p></div>
-            <div class="stat-box" style="border-color: var(--retido);"><h5>Retidos (<30)</h5><p id="st-retido">0</p></div>
-        </div>
+    <div id="app-content" class="hidden">
+        <div id="user-info"></div>
+        <h2>Operação de Saída</h2>
+        
+        <input type="text" id="filtro-material" placeholder="Buscar Material..." onkeyup="filtrarEstoque()">
+        <div id="lista-estoque">Carregando estoque...</div>
 
-        <div class="search-area">
-            <input type="text" id="search-input" placeholder="Buscar Material ou Descrição..." oninput="processarBusca()">
-            <div id="history-tags" class="recent-list"></div>
+        <div id="area-admin" class="admin-only hidden">
+            <p style="margin: 0; font-weight: bold; color: #92400e;">PAINEL DO GESTOR</p>
+            <input type="file" id="csvFile" accept=".csv" style="font-size: 12px;">
+            <button onclick="importarCSV()" style="background: #92400e;">ATUALIZAR ESTOQUE (CSV)</button>
         </div>
-
-        <div id="lista-estoque"></div>
-
-        <div id="admin-only-section" class="admin-section">
-            <h3 style="font-size: 16px; color: var(--verde); margin-bottom: 15px;">Painel do Administrador</h3>
-            <div style="display: flex; gap: 10px;">
-                <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
-                <button onclick="document.getElementById('csv-file').click()" class="btn" style="background: var(--verde); color: #000;">Importar CSV (Alimentar)</button>
-                <button onclick="exportarRelatorio()" class="btn" style="background: #334155; color: white;">Baixar Movimentações</button>
-            </div>
-        </div>
+        
+        <button onclick="logout()" style="background: #ef4444; margin-top: 20px;">SAIR</button>
     </div>
 </div>
 
 <script>
+    // CONFIGURAÇÃO FORNECIDA PELO GABRIEL
     const firebaseConfig = {
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
         authDomain: "sistema-fefo.firebaseapp.com",
         projectId: "sistema-fefo",
         storageBucket: "sistema-fefo.firebasestorage.app",
         messagingSenderId: "755801777693",
-        appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
+        appId: "1:755801777693:web:a8a72a2fd483445a2d88f4",
+        measurementId: "G-5J50N5FC2Z"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    let estoqueCompleto = [];
-    let usuarioLogado = null;
-    let historicoBusca = JSON.parse(localStorage.getItem('wms_history_v2') || '[]');
+    const auth = firebase.auth();
+    let usuarioAtual = null;
 
-    function tentarLogin() {
-        const mat = document.getElementById('login-mat').value.trim();
-        const sen = document.getElementById('login-senha').value.trim();
+    async function tentarLogin() {
+        const login = document.getElementById('login-mat').value.trim();
+        const senha = document.getElementById('login-senha').value.trim();
+        const email = login.includes('@') ? login : `${login}@alb.com`;
 
-        if (mat === "7857@admin" && sen === "7857") {
-            usuarioLogado = { nome: "Admin", role: "ADMIN" };
-        } else if (mat === "7857@op" && sen === "7857") {
-            usuarioLogado = { nome: "Operador", role: "OPERADOR" };
-        } else {
-            return alert("Dados incorretos!");
+        try {
+            const userCredential = await auth.signInWithEmailAndPassword(email, senha);
+            const userDoc = await db.collection("usuarios").doc(email).get();
+
+            if (userDoc.exists) {
+                usuarioAtual = { email, ...userDoc.data() };
+                iniciarApp();
+            } else {
+                alert("Usuário sem permissões no banco de dados!");
+            }
+        } catch (error) {
+            alert("Erro: Matrícula ou senha inválidos.");
         }
-
-        localStorage.setItem('wms_session_v2', JSON.stringify(usuarioLogado));
-        iniciarApp();
     }
 
     function iniciarApp() {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-screen').style.display = 'block';
-        document.getElementById('user-name').innerText = usuarioLogado.nome;
-        document.getElementById('role-label').innerText = usuarioLogado.role;
+        document.getElementById('tela-login').classList.add('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+        document.getElementById('user-info').innerText = `Logado como: ${usuarioAtual.nome}`;
 
-        if (usuarioLogado.role === "ADMIN") {
-            document.getElementById('dash-container').style.display = 'grid';
-            document.getElementById('admin-only-section').style.display = 'block';
+        if (usuarioAtual.perfil === 'admin') {
+            document.getElementById('area-admin').classList.remove('hidden');
         }
-        
-        renderizarTags();
-        conectarFirebase();
+        carregarEstoque();
     }
 
-    function conectarFirebase() {
-        db.collection("estoque_blocado").onSnapshot(snap => {
-            estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            atualizarDashboard();
-            renderizarEstoque();
-        });
-    }
-
-    function atualizarDashboard() {
-        if(usuarioLogado.role !== "ADMIN") return;
-        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + b.qtd, 0);
-        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias >= 31 && i.dias <= 60).length;
-        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias < 30).length;
-    }
-
-    function processarBusca() {
-        const termo = document.getElementById('search-input').value.trim();
-        if(termo.length > 2) {
-            if(!historicoBusca.includes(termo)) {
-                historicoBusca.unshift(termo);
-                if(historicoBusca.length > 10) historicoBusca.pop();
-                localStorage.setItem('wms_history_v2', JSON.stringify(historicoBusca));
-                renderizarTags();
-            }
-        }
-        renderizarEstoque();
-    }
-
-    function renderizarEstoque() {
-        const termo = document.getElementById('search-input').value.toLowerCase();
+    async function carregarEstoque() {
+        const snapshot = await db.collection("estoque").get();
         const lista = document.getElementById('lista-estoque');
-        lista.innerHTML = '';
-
-        let filtrados = estoqueCompleto.filter(i => 
-            i.mat.toLowerCase().includes(termo) || i.desc.toLowerCase().includes(termo)
-        );
-
-        const materiaisMap = {};
-        filtrados.forEach(i => {
-            if(!materiaisMap[i.mat]) materiaisMap[i.mat] = [];
-            materiaisMap[i.mat].push(i);
-        });
-
-        const estoqueFinal = [];
-        Object.keys(materiaisMap).forEach(matId => {
-            const grupo = materiaisMap[matId];
-            const temCritico = grupo.some(i => i.dias >= 31 && i.dias <= 60);
-            
-            grupo.forEach(item => {
-                if (temCritico && item.dias > 60 && termo !== "") return; 
-                estoqueFinal.push(item);
-            });
-        });
-
-        estoqueFinal.sort((a, b) => a.dias - b.dias);
-
-        estoqueFinal.forEach(item => {
-            let cor = "item-verde";
-            if(item.dias < 30) cor = "item-retido";
-            else if(item.dias <= 60) cor = "item-critico";
-
-            const card = document.createElement('div');
-            card.className = `item-card ${cor}`;
-            card.innerHTML = `
-                <div>
-                    <span class="ender-badge">${item.ender}</span>
-                    <div style="margin-top:5px; font-weight:bold;">${item.mat} - ${item.desc}</div>
-                    <div style="font-size:11px; opacity:0.7;">Validade: ${item.val} | Dias: ${item.dias}</div>
-                </div>
-                <div style="text-align:right">
-                    <div style="font-size:18px; font-weight:900;">${item.qtd} PL</div>
-                    <button class="btn btn-retirar" onclick="retirar('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}')">RETIRAR</button>
+        lista.innerHTML = "";
+        
+        snapshot.forEach(doc => {
+            const item = doc.data();
+            lista.innerHTML += `
+                <div class="card" data-nome="${item.material}">
+                    <strong>Mat: ${item.material}</strong><br>
+                    End: ${item.endereco} | Qtd: ${item.quantidade}<br>
+                    <input type="number" id="ret-${doc.id}" placeholder="Qtd Retirada" style="width: 100px;">
+                    <button onclick="retirar('${doc.id}', '${item.material}', '${item.endereco}', ${item.quantidade})">OK</button>
                 </div>
             `;
-            lista.appendChild(card);
         });
     }
 
-    async function retirar(id, qtdAtual, mat, ender) {
-        const n = prompt(`Material: ${mat}\nQuantos pallets retirar? (Estoque: ${qtdAtual})`);
-        if(!n || isNaN(n) || n > qtdAtual) return;
+    async function retirar(id, mat, end, qtdAtual) {
+        const qtdRetirar = parseInt(document.getElementById(`ret-${id}`).value);
+        if (!qtdRetirar || qtdRetirar > qtdAtual) return alert("Quantidade inválida!");
 
-        const novaQtd = qtdAtual - parseInt(n);
+        const novaQtd = qtdAtual - qtdRetirar;
+        await db.collection("estoque").doc(id).update({ quantidade: novaQtd });
+        
+        await db.collection("movimentacoes_wms").add({
+            material: mat,
+            endereco: end,
+            quantidade: qtdRetirar,
+            operador: usuarioAtual.nome,
+            email: usuarioAtual.email,
+            data: new Date().toLocaleString(),
+            ts: firebase.firestore.FieldValue.serverTimestamp()
+        });
 
-        try {
-            if(novaQtd <= 0) {
-                await db.collection("estoque_blocado").doc(id).delete();
-            } else {
-                await db.collection("estoque_blocado").doc(id).update({ qtd: novaQtd });
-            }
-
-            await db.collection("movimentacoes_wms").add({
-                operador: usuarioLogado.nome,
-                material: mat,
-                quantidade: n,
-                endereco: ender,
-                data: new Date().toLocaleString(),
-                ts: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        } catch(e) { alert("Erro na operação."); }
+        alert("Retirada registrada!");
+        carregarEstoque();
     }
 
-    function renderizarTags() {
-        const div = document.getElementById('history-tags');
-        div.innerHTML = historicoBusca.map(t => `<span class="tag" onclick="usarTag('${t}')">${t}</span>`).join('');
+    function filtrarEstoque() {
+        const busca = document.getElementById('filtro-material').value.toLowerCase();
+        const itens = document.querySelectorAll('.card');
+        itens.forEach(i => {
+            i.style.display = i.getAttribute('data-nome').toLowerCase().includes(busca) ? 'block' : 'none';
+        });
     }
 
-    function usarTag(t) { document.getElementById('search-input').value = t; renderizarEstoque(); }
+    function logout() {
+        auth.signOut();
+        location.reload();
+    }
 
-    function importarCSV(event) {
+    async function importarCSV() {
+        const fileInput = document.getElementById('csvFile');
+        if (!fileInput.files[0]) return alert("Selecione o arquivo!");
+
         const reader = new FileReader();
         reader.onload = async (e) => {
-            const linhas = e.target.result.split("\n").slice(1);
+            const linhas = e.target.result.split('\n').slice(1);
             const batch = db.batch();
-            linhas.forEach(l => {
-                const c = l.split(";");
-                if(c.length >= 8) {
-                    const id = c[0].trim() + "_" + c[1].trim();
-                    batch.set(db.collection("estoque_blocado").doc(id), {
-                        ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(),
-                        val: c[3].trim(), qtd: parseInt(c[5]) || 0, dias: parseInt(c[7]) || 0
-                    });
+            
+            // Limpa estoque antigo antes (opcional)
+            linhas.forEach(linha => {
+                const [material, endereco, quantidade] = linha.split(',');
+                if (material) {
+                    const ref = db.collection("estoque").doc();
+                    batch.set(ref, { material, endereco, quantidade: parseInt(quantidade) });
                 }
             });
             await batch.commit();
             alert("Estoque atualizado com sucesso!");
+            carregarEstoque();
         };
-        reader.readAsText(event.target.files[0]);
+        reader.readAsText(fileInput.files[0]);
     }
-
-    async function exportarRelatorio() {
-        let csv = "\uFEFFSEP=;\nDATA;OPERADOR;MATERIAL;ENDEREÇO;QUANTIDADE\n";
-        const snap = await db.collection("movimentacoes_wms").orderBy("ts", "desc").get();
-        snap.forEach(d => {
-            const h = d.data();
-            csv += `${h.data};${h.operador};${h.material};${h.endereco};${h.quantidade}\n`;
-        });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
-        link.download = "relatorio_movimentacao.csv";
-        link.click();
-    }
-
-    function logout() { localStorage.removeItem('wms_session_v2'); location.reload(); }
-    window.onload = () => {
-        const s = localStorage.getItem('wms_session_v2');
-        if(s) { usuarioLogado = JSON.parse(s); iniciarApp(); }
-    };
 </script>
 </body>
 </html>
