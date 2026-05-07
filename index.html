@@ -6,8 +6,6 @@
     <title>WMS FLOW PRO - Sistema de Gestão de Blocado</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0a0f1e; --card: #161e31; --primary: #00d2ff; --critico: #fbbf24; --retido: #f87171; --verde: #4ade80; --text: #f8fafc; }
@@ -47,9 +45,9 @@
 <div id="login-screen">
     <div class="login-box">
         <h2 style="text-align: center; color: var(--primary); margin-bottom: 25px;">WMS FLOW PRO</h2>
-        <input type="text" id="login-mat" placeholder="Matrícula (Ex: 7857)" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #334155; background:#0a0f1e; color:white; box-sizing: border-box;">
+        <input type="text" id="login-mat" placeholder="Matrícula" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #334155; background:#0a0f1e; color:white; box-sizing: border-box;">
         <input type="password" id="login-senha" placeholder="Senha" style="width:100%; padding:10px; margin-bottom:20px; border-radius:5px; border:1px solid #334155; background:#0a0f1e; color:white; box-sizing: border-box;">
-        <button id="btn-login" onclick="tentarLogin()" class="btn-retirar" style="width: 100%; border-radius: 5px; font-size: 16px;">ENTRAR</button>
+        <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%; border-radius: 5px; font-size: 16px;">ENTRAR</button>
     </div>
 </div>
 
@@ -99,38 +97,24 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const auth = firebase.auth();
-    
     let estoqueCompleto = [];
     let usuarioLogado = null;
     let historicoBusca = JSON.parse(localStorage.getItem('wms_history_v2') || '[]');
 
-    async function tentarLogin() {
+    function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
         const sen = document.getElementById('login-senha').value.trim();
-        const email = mat.includes('@') ? mat : `${mat}@alb.com`;
 
-        try {
-            await auth.signInWithEmailAndPassword(email, sen);
-            
-            // Busca o documento na coleção 'usuarios' (MINÚSCULO)
-            const doc = await db.collection("usuarios").doc(email).get();
-
-            if (doc.exists) {
-                const dados = doc.data();
-                usuarioLogado = { 
-                    nome: dados.nome, 
-                    role: dados.perfil.toUpperCase(),
-                    email: email 
-                };
-                localStorage.setItem('wms_session_v2', JSON.stringify(usuarioLogado));
-                iniciarApp();
-            } else {
-                alert("ERRO: Perfil não encontrado! Verifique se a coleção no Firestore se chama 'usuarios' (minúsculo) e se o documento é '" + email + "'");
-            }
-        } catch (error) {
-            alert("ERRO DE SENHA: Verifique se o e-mail '" + email + "' está correto no Authentication.");
+        if (mat === "7857@admin" && sen === "7857") {
+            usuarioLogado = { nome: "Admin", role: "ADMIN" };
+        } else if (mat === "7857@op" && sen === "7857") {
+            usuarioLogado = { nome: "Operador", role: "OPERADOR" };
+        } else {
+            return alert("Dados incorretos!");
         }
+
+        localStorage.setItem('wms_session_v2', JSON.stringify(usuarioLogado));
+        iniciarApp();
     }
 
     function iniciarApp() {
@@ -157,8 +141,8 @@
     }
 
     function atualizarDashboard() {
-        if(!usuarioLogado || usuarioLogado.role !== "ADMIN") return;
-        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
+        if(usuarioLogado.role !== "ADMIN") return;
+        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + b.qtd, 0);
         document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias >= 31 && i.dias <= 60).length;
         document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias < 30).length;
     }
@@ -182,12 +166,29 @@
         lista.innerHTML = '';
 
         let filtrados = estoqueCompleto.filter(i => 
-            (i.mat && i.mat.toLowerCase().includes(termo)) || (i.desc && i.desc.toLowerCase().includes(termo))
+            i.mat.toLowerCase().includes(termo) || i.desc.toLowerCase().includes(termo)
         );
 
-        filtrados.sort((a, b) => a.dias - b.dias);
+        const materiaisMap = {};
+        filtrados.forEach(i => {
+            if(!materiaisMap[i.mat]) materiaisMap[i.mat] = [];
+            materiaisMap[i.mat].push(i);
+        });
 
-        filtrados.forEach(item => {
+        const estoqueFinal = [];
+        Object.keys(materiaisMap).forEach(matId => {
+            const grupo = materiaisMap[matId];
+            const temCritico = grupo.some(i => i.dias >= 31 && i.dias <= 60);
+            
+            grupo.forEach(item => {
+                if (temCritico && item.dias > 60 && termo !== "") return; 
+                estoqueFinal.push(item);
+            });
+        });
+
+        estoqueFinal.sort((a, b) => a.dias - b.dias);
+
+        estoqueFinal.forEach(item => {
             let cor = "item-verde";
             if(item.dias < 30) cor = "item-retido";
             else if(item.dias <= 60) cor = "item-critico";
@@ -230,7 +231,6 @@
                 data: new Date().toLocaleString(),
                 ts: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert("Sucesso!");
         } catch(e) { alert("Erro na operação."); }
     }
 
@@ -257,7 +257,7 @@
                 }
             });
             await batch.commit();
-            alert("Estoque atualizado!");
+            alert("Estoque atualizado com sucesso!");
         };
         reader.readAsText(event.target.files[0]);
     }
@@ -275,18 +275,10 @@
         link.click();
     }
 
-    function logout() { 
-        auth.signOut();
-        localStorage.removeItem('wms_session_v2'); 
-        location.reload(); 
-    }
-
+    function logout() { localStorage.removeItem('wms_session_v2'); location.reload(); }
     window.onload = () => {
         const s = localStorage.getItem('wms_session_v2');
-        if(s) { 
-            usuarioLogado = JSON.parse(s); 
-            iniciarApp(); 
-        }
+        if(s) { usuarioLogado = JSON.parse(s); iniciarApp(); }
     };
 </script>
 </body>
