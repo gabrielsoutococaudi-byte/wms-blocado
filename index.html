@@ -22,8 +22,7 @@
         .header { padding: 15px 20px; background: var(--card); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2d3748; }
         .container { max-width: 900px; margin: auto; padding: 15px; }
         
-        .search-area { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        #search-input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; font-size: 15px; outline: none; box-sizing: border-box; }
+        #search-input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; font-size: 15px; outline: none; box-sizing: border-box; margin-bottom: 15px; }
 
         .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid #444; }
         .item-critico { border-left-color: var(--critico); }
@@ -38,6 +37,10 @@
 
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
         .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+
+        table { width: 100%; border-collapse: collapse; font-size: 10px; color: #cbd5e1; margin-top: 10px; }
+        th, td { padding: 8px; border: 1px solid #2d3748; text-align: left; }
+        th { background: #0f172a; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -67,15 +70,15 @@
             <div class="stat-box" style="border-color: var(--retido);"><h5>Retidos</h5><p id="st-retido">0</p></div>
         </div>
 
-        <div class="search-area">
-            <input type="text" id="search-input" placeholder="Buscar Material ou Endereço..." oninput="renderizarEstoque()">
-        </div>
-
+        <input type="text" id="search-input" placeholder="Buscar Material ou Endereço..." oninput="renderizarEstoque()">
         <div id="lista-estoque"></div>
 
-        <div id="admin-only" style="display: none; margin-top: 20px; border-top: 1px solid #334155; padding-top: 20px;">
+        <div id="admin-only" style="display: none; margin-top: 30px; border-top: 1px solid #334155; padding-top: 20px;">
             <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
             <button onclick="document.getElementById('csv-file').click()" class="btn btn-import">ALIMENTAR ESTOQUE (CSV)</button>
+            
+            <h3 style="color: var(--primary); margin-top: 30px; font-size: 16px;">HISTÓRICO DE MOVIMENTAÇÕES</h3>
+            <div id="tabela-historico" style="overflow-x: auto;"></div>
         </div>
     </div>
 </div>
@@ -100,7 +103,6 @@
     async function tentarLogin() {
         const loginInput = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
-        
         const email = loginInput.includes('@') ? loginInput : `${loginInput}@alb.com`;
 
         try {
@@ -109,18 +111,14 @@
 
             if (doc.exists) {
                 const dados = doc.data();
-                usuarioLogado = { 
-                    nome: dados.nome, 
-                    role: dados.perfil.toUpperCase(),
-                    email: email 
-                };
+                usuarioLogado = { nome: dados.nome, role: dados.perfil.toUpperCase(), email: email };
                 localStorage.setItem('wms_session_v2', JSON.stringify(usuarioLogado));
                 iniciarApp();
             } else {
-                alert("Acesso Negado: Verifique se o perfil foi criado na coleção 'usuarios_wms'.");
+                alert("Erro: Perfil não encontrado no banco de dados.");
             }
         } catch (error) {
-            alert("Erro de Acesso: Verifique os dados digitados.");
+            alert("Acesso Negado!");
         }
     }
 
@@ -133,6 +131,7 @@
         if (usuarioLogado.role === "ADMIN") {
             document.getElementById('dash-container').style.display = 'grid';
             document.getElementById('admin-only').style.display = 'block';
+            carregarHistorico();
         }
         conectarFirebase();
     }
@@ -179,7 +178,10 @@
     }
 
     async function retirar(id, qtdAtual, mat, ender) {
-        const n = prompt(`Retirada: ${mat}\nQuantos pallets deseja retirar? (Disponível: ${qtdAtual})`);
+        const itemObj = estoqueCompleto.find(i => i.id === id);
+        const validadeItem = itemObj ? itemObj.valFrente : "N/A";
+
+        const n = prompt(`Retirada: ${mat}\nValidade: ${validadeItem}\nQuantos pallets deseja retirar? (Disponível: ${qtdAtual})`);
         if(!n || isNaN(n) || n > qtdAtual || n <= 0) return;
 
         const novaQtd = qtdAtual - parseInt(n);
@@ -189,13 +191,28 @@
 
             await db.collection("movimentacoes_wms").add({
                 operador: usuarioLogado.nome,
+                login: usuarioLogado.email.split('@')[0],
                 material: mat,
                 quantidade: n,
                 endereco: ender,
-                data: new Date().toLocaleString()
+                validade: validadeItem,
+                data: new Date().toLocaleDateString('pt-BR'),
+                hora: new Date().toLocaleTimeString('pt-BR')
             });
             alert("Sucesso!");
-        } catch(e) { alert("Erro ao processar."); }
+        } catch(e) { alert("Erro na operação."); }
+    }
+
+    function carregarHistorico() {
+        db.collection("movimentacoes_wms").orderBy("data", "desc").limit(50).onSnapshot(snap => {
+            let html = `<table><thead><tr><th>Data/Hora</th><th>Operador (Login)</th><th>Endereço</th><th>Material</th><th>Validade</th><th>Qtd</th></tr></thead><tbody>`;
+            snap.forEach(doc => {
+                const m = doc.data();
+                html += `<tr><td>${m.data} ${m.hora}</td><td>${m.operador} (${m.login})</td><td>${m.endereco}</td><td>${m.material}</td><td>${m.validade}</td><td style="color:var(--retido); font-weight:bold;">-${m.quantidade} PL</td></tr>`;
+            });
+            html += `</tbody></table>`;
+            document.getElementById('tabela-historico').innerHTML = html;
+        });
     }
 
     function importarCSV(event) {
@@ -203,8 +220,6 @@
         reader.onload = async (e) => {
             const linhas = e.target.result.split("\n").slice(1);
             const batch = db.batch();
-            let count = 0;
-
             linhas.forEach(l => {
                 const c = l.split(";");
                 if(c.length >= 8) {
@@ -215,21 +230,16 @@
                         qtd: parseInt(c[5]) || 0, dataContagem: c[6].trim(),
                         dias: parseInt(c[7]) || 0
                     });
-                    count++;
                 }
             });
             await batch.commit();
-            alert("Estoque Atualizado: " + count + " itens.");
+            alert("Estoque Atualizado!");
             location.reload();
         };
         reader.readAsText(event.target.files[0], 'ISO-8859-1');
     }
 
-    function logout() { 
-        auth.signOut();
-        localStorage.removeItem('wms_session_v2'); 
-        location.reload(); 
-    }
+    function logout() { auth.signOut(); localStorage.removeItem('wms_session_v2'); location.reload(); }
 
     window.onload = () => {
         const s = localStorage.getItem('wms_session_v2');
