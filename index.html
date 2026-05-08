@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WMS FLOW PRO - Bloqueio de Segurança FEFO</title>
+    <title>WMS FLOW PRO</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -41,7 +41,7 @@
 <div id="login-screen">
     <div class="login-box">
         <h2 style="text-align: center; color: var(--primary); margin-bottom: 25px;">WMS FLOW PRO</h2>
-        <input type="text" id="login-mat" placeholder="E-mail (ex: admin@alb.com)">
+        <input type="text" id="login-mat" placeholder="Matrícula ou E-mail">
         <input type="password" id="login-senha" placeholder="Senha">
         <button onclick="tentarLogin()" class="btn btn-retirar" style="width: 100%;">ENTRAR</button>
     </div>
@@ -59,28 +59,27 @@
     <div class="container">
         <div id="dash-container" class="admin-dashboard" style="display: none;">
             <div class="stat-box"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
-            <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS (31-60d)</h5><p id="st-critico">0</p></div>
-            <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS (<30d)</h5><p id="st-retido">0</p></div>
+            <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS</h5><p id="st-critico">0</p></div>
+            <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS</h5><p id="st-retido">0</p></div>
         </div>
 
-        <input type="text" id="search-input" placeholder="🔍 Digite para buscar material ou endereço..." oninput="renderizarEstoque()">
+        <input type="text" id="search-input" placeholder="🔍 Buscar Material ou Endereço..." oninput="renderizarEstoque()">
         <div id="lista-estoque"></div>
 
         <div id="admin-only" style="display: none; margin-top: 30px; border-top: 1px solid #2d3748; padding-top: 20px;">
             <button onclick="baixarHistorico()" class="btn btn-export">📊 SOLICITAR HISTÓRICO (EXCEL)</button>
             <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
-            <button onclick="document.getElementById('csv-file').click()" class="btn" style="background:transparent; border:1px dashed var(--verde); color:var(--verde); width:100%;">+ ATUALIZAR ESTOQUE (CSV)</button>
+            <button onclick="document.getElementById('csv-file').click()" class="btn" style="background:transparent; border:1px dashed var(--verde); color:var(--verde); width:100%;">+ ALIMENTAR NOVO ESTOQUE (CSV)</button>
         </div>
     </div>
 </div>
 
 <script>
-    // Configurações extraídas das suas capturas
     const firebaseConfig = {
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
         authDomain: "sistema-fefo.firebaseapp.com",
         projectId: "sistema-fefo",
-        storageBucket: "sistema-fefo.firebasestorage.app",
+        storage_bucket: "sistema-fefo.firebasestorage.app",
         messagingSenderId: "755801777693",
         appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
     };
@@ -92,15 +91,18 @@
     let estoqueCompleto = [];
     let usuarioLogado = null;
 
+    // LOGIN ORIGINAL (Matrícula ou E-mail)
     async function tentarLogin() {
-        const email = document.getElementById('login-mat').value.trim();
+        const input = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
+        const email = input.includes('@') ? input : `${input}@alb.com`;
+
         try {
             await auth.signInWithEmailAndPassword(email, senha);
             const doc = await db.collection("usuarios_wms").doc(email).get();
             if (doc.exists) {
                 usuarioLogado = { nome: doc.data().nome, role: doc.data().perfil.toUpperCase(), email: email };
-                localStorage.setItem('wms_session_v8', JSON.stringify(usuarioLogado));
+                localStorage.setItem('wms_session_v9', JSON.stringify(usuarioLogado));
                 iniciarApp();
             }
         } catch (e) { alert("Acesso Negado!"); }
@@ -134,41 +136,34 @@
         document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => parseInt(i.dias) <= 30).length;
     }
 
-    // LÓGICA DE EXIBIÇÃO SEQUENCIAL RIGOROSA
+    // LÓGICA DE BLOQUEIO DE DATA BOA
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
         
         if (termo === "") {
-            lista.innerHTML = '<p style="text-align:center; opacity:0.4; margin-top:20px;">Digite o código do material...</p>';
+            lista.innerHTML = '<p style="text-align:center; opacity:0.4; margin-top:20px;">Digite para buscar...</p>';
             return;
         }
 
-        // Filtra todos os itens que batem com a busca
-        let todosOsResultados = estoqueCompleto.filter(i => 
+        let filtrados = estoqueCompleto.filter(i => 
             i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
         );
 
-        // Separação por grupos de criticidade
-        const grupoCritico = todosOsResultados.filter(i => parseInt(i.dias) >= 31 && parseInt(i.dias) <= 60);
-        const grupoBoa = todosOsResultados.filter(i => parseInt(i.dias) > 60);
-        const grupoRetido = todosOsResultados.filter(i => parseInt(i.dias) <= 30);
+        // Verifica se existe qualquer saldo Crítico (31-60) para o material buscado
+        const temCritico = filtrados.some(i => parseInt(i.dias) >= 31 && parseInt(i.dias) <= 60);
 
         let final;
-        // REGRA: SE existir Data Crítica, mostra APENAS elas. Bloqueia as Boas.
-        if (grupoCritico.length > 0) {
-            final = grupoCritico;
-            final.sort((a, b) => parseInt(a.dias) - parseInt(b.dias)); // O que vence antes aparece primeiro
-        } 
-        // SE não houver Crítica, libera as Datas Boas
-        else if (grupoBoa.length > 0) {
-            final = grupoBoa;
-            final.sort((a, b) => parseInt(a.dias) - parseInt(b.dias));
-        } 
-        // SE não houver nada, sobra apenas os Retidos
-        else {
-            final = grupoRetido;
+        if (temCritico) {
+            // Se tem crítica, mostra SOMENTE as críticas (Bloqueia as boas)
+            final = filtrados.filter(i => parseInt(i.dias) >= 31 && parseInt(i.dias) <= 60);
+        } else {
+            // Se acabou a crítica, mostra Boas e Retidos
+            final = filtrados;
         }
+
+        // Ordenação por dias (menor para maior) dentro do que restou
+        final.sort((a, b) => parseInt(a.dias) - parseInt(b.dias));
 
         lista.innerHTML = final.map(item => {
             const dias = parseInt(item.dias);
@@ -192,14 +187,14 @@
     }
 
     async function retirar(id, qtdAtual, mat, ender, val) {
-        const n = prompt(`CONFIRMAR SAÍDA\nLocal: ${ender}\nMaterial: ${mat}\nQuantidade a retirar?`);
+        const n = prompt(`CONFIRMAR SAÍDA\n${ender}\nQtd: ${qtdAtual}\nQuanto retirar?`);
         if(!n || isNaN(n) || n <= 0) return;
         if(parseInt(n) > qtdAtual) { alert("Saldo insuficiente!"); return; }
 
         try {
             const novaQtd = qtdAtual - parseInt(n);
             if(novaQtd <= 0) {
-                await db.collection("estoque_blocado").doc(id).delete(); // SOME AUTOMATICAMENTE
+                await db.collection("estoque_blocado").doc(id).delete(); // POSIÇÃO SOME AO ZERAR
             } else {
                 await db.collection("estoque_blocado").doc(id).update({ qtd: novaQtd });
             }
@@ -212,16 +207,16 @@
                 hora: new Date().toLocaleTimeString('pt-BR'),
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
-        } catch(e) { alert("Erro ao processar baixa."); }
+        } catch(e) { alert("Erro ao processar."); }
     }
 
     async function baixarHistorico() {
-        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").limit(1000).get();
+        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").limit(500).get();
         const dados = snap.docs.map(doc => ({
-            "ENDEREÇO": doc.data().endereco || "---",
-            "MATERIAL": doc.data().material || "---",
-            "VALIDADE": doc.data().validade || "---",
-            "QTD": `-${doc.data().quantidade} PL`,
+            "ENDEREÇO": doc.data().endereco,
+            "MATERIAL": doc.data().material,
+            "VALIDADE": doc.data().validade,
+            "QTD": doc.data().quantidade,
             "OPERADOR (LOGIN)": `${doc.data().operador} (${doc.data().login})`,
             "DATA/HORA": `${doc.data().data} ${doc.data().hora}`
         }));
@@ -254,10 +249,10 @@
         reader.readAsText(event.target.files[0], 'ISO-8859-1');
     }
 
-    function logout() { auth.signOut(); localStorage.removeItem('wms_session_v8'); location.reload(); }
+    function logout() { auth.signOut(); localStorage.removeItem('wms_session_v9'); location.reload(); }
 
     window.onload = () => {
-        const s = localStorage.getItem('wms_session_v8');
+        const s = localStorage.getItem('wms_session_v9');
         if(s) { usuarioLogado = JSON.parse(s); iniciarApp(); }
     };
 </script>
