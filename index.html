@@ -81,7 +81,7 @@
 
         <div id="admin-only" style="display: none;">
             <div class="admin-section">
-                <h3>Gerenciamento de Dados (ADMIN)</h3>
+                <h3>Gerenciamento Administrativo</h3>
                 <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
                 <button onclick="document.getElementById('csv-file').click()" class="btn btn-import">ALIMENTAR NOVO ESTOQUE (CSV)</button>
                 <button onclick="exportarHistoricoExcel()" class="btn btn-excel">SOLICITAR HISTÓRICO (EXCEL)</button>
@@ -126,10 +126,10 @@
                 localStorage.setItem('wms_session_v2', JSON.stringify(usuarioLogado));
                 iniciarApp();
             } else {
-                alert("Acesso Negado.");
+                alert("Erro: Perfil não encontrado.");
             }
         } catch (error) {
-            alert("Erro de Acesso: Verifique os dados.");
+            alert("Falha no login.");
         }
     }
 
@@ -166,21 +166,22 @@
         const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
 
-        // BUSCA REATIVA: Se for Admin e não digitou nada, não mostra.
-        if (usuarioLogado.role === "ADMIN" && termo.length === 0) return;
+        // BUSCA REATIVA: Se não digitar nada, não aparece nada
+        if (termo.length === 0) return;
 
-        // Filtragem básica por termo
         let filtrados = estoqueCompleto.filter(i => 
             i.mat.toLowerCase().includes(termo) || i.desc.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
         );
 
-        // REGRA DE EXIBIÇÃO PARA OPERADOR (Prioridade Crítica)
+        // REGRA DE PRIORIDADE PARA OPERADOR
         if (usuarioLogado.role !== "ADMIN") {
-            const itensCriticos = filtrados.filter(i => i.dias >= 31 && i.dias <= 60);
-            if (itensCriticos.length > 0) {
-                filtrados = itensCriticos; // Só mostra críticos se existirem
+            const criticos = filtrados.filter(i => i.dias >= 31 && i.dias <= 60);
+            if (criticos.length > 0) {
+                // Se houver críticos, esconde todo o resto (Datas Boas)
+                filtrados = criticos;
             } else {
-                filtrados = filtrados.filter(i => i.dias > 60); // Se não houver críticos, mostra datas boas
+                // Se não houver críticos, libera as Datas Boas (>60)
+                filtrados = filtrados.filter(i => i.dias > 60);
             }
         }
 
@@ -188,14 +189,9 @@
             let status = "";
             let classe = "";
             
-            // Definição das Regras de Status
-            if (item.dias < 30) { 
-                status = "RETIDO"; classe = "item-retido"; 
-            } else if (item.dias >= 31 && item.dias <= 60) { 
-                status = "DATA CRÍTICA"; classe = "item-critico"; 
-            } else { 
-                status = "DATA BOA"; classe = "item-verde"; 
-            }
+            if (item.dias < 30) { status = "RETIDO"; classe = "item-retido"; }
+            else if (item.dias >= 31 && item.dias <= 60) { status = "DATA CRÍTICA"; classe = "item-critico"; }
+            else { status = "DATA BOA"; classe = "item-verde"; }
 
             const card = document.createElement('div');
             card.className = `item-card ${classe}`;
@@ -216,7 +212,7 @@
     }
 
     async function retirar(id, qtdAtual, mat, ender, validade) {
-        const n = prompt(`Retirada: ${mat}\nQuantos pallets deseja retirar? (Disponível: ${qtdAtual})`);
+        const n = prompt(`Retirada: ${mat}\nQuantidade? (Disponível: ${qtdAtual})`);
         if(!n || isNaN(n) || n > qtdAtual || n <= 0) return;
 
         const novaQtd = qtdAtual - parseInt(n);
@@ -226,7 +222,7 @@
             if(novaQtd <= 0) await db.collection("estoque_blocado").doc(id).delete();
             else await db.collection("estoque_blocado").doc(id).update({ qtd: novaQtd });
 
-            // HISTÓRICO NA SEQUÊNCIA: Endereço; Material; Validade; Qtd; Operador; Data/Hora
+            // Sequência solicitada: Endereço; Material; Validade; Qtd; Operador; Data/Hora
             await db.collection("movimentacoes_wms").add({
                 endereco: ender,
                 material: mat,
@@ -237,14 +233,14 @@
                 hora: agora.toLocaleTimeString('pt-BR'),
                 timestamp: agora
             });
-            alert("Sucesso!");
-        } catch(e) { alert("Erro ao processar."); }
+            alert("Movimentação registrada!");
+        } catch(e) { alert("Erro ao salvar."); }
     }
 
     async function exportarHistoricoExcel() {
         try {
             const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-            if (snap.empty) { alert("Histórico vazio."); return; }
+            if (snap.empty) { alert("Sem dados."); return; }
 
             const dados = snap.docs.map(doc => {
                 const d = doc.data();
@@ -260,9 +256,9 @@
 
             const ws = XLSX.utils.json_to_sheet(dados);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Histórico");
-            XLSX.writeFile(wb, `WMS_Historico_${new Date().getTime()}.xlsx`);
-        } catch (e) { alert("Erro ao exportar."); }
+            XLSX.utils.book_append_sheet(wb, ws, "Historico");
+            XLSX.writeFile(wb, `Relatorio_WMS_${new Date().getTime()}.xlsx`);
+        } catch (e) { alert("Erro ao gerar Excel."); }
     }
 
     function importarCSV(event) {
@@ -270,7 +266,6 @@
         reader.onload = async (e) => {
             const linhas = e.target.result.split("\n").slice(1);
             const batch = db.batch();
-            let count = 0;
             linhas.forEach(l => {
                 const c = l.split(";");
                 if(c.length >= 8) {
@@ -281,7 +276,6 @@
                         qtd: parseInt(c[5]) || 0, dataContagem: c[6].trim(),
                         dias: parseInt(c[7]) || 0
                     });
-                    count++;
                 }
             });
             await batch.commit();
