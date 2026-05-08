@@ -32,6 +32,7 @@
         .item-verde { border-left-color: var(--verde); }
         
         .ender-badge { background: var(--primary); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; }
+        .status-label { font-size: 10px; font-weight: 900; margin-left: 10px; text-transform: uppercase; }
         
         .btn { padding: 10px 15px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-retirar { background: var(--primary); color: #000; }
@@ -41,7 +42,6 @@
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
         .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
         
-        /* Estilo para a seção de histórico minimizada */
         .admin-section { background: var(--card); padding: 15px; border-radius: 12px; margin-top: 20px; border: 1px solid #2d3748; }
         .admin-section h3 { margin: 0 0 10px 0; font-size: 14px; color: var(--primary); text-transform: uppercase; }
     </style>
@@ -81,10 +81,9 @@
 
         <div id="admin-only" style="display: none;">
             <div class="admin-section">
-                <h3>Gerenciamento de Dados</h3>
+                <h3>Gerenciamento de Dados (ADMIN)</h3>
                 <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
                 <button onclick="document.getElementById('csv-file').click()" class="btn btn-import">ALIMENTAR NOVO ESTOQUE (CSV)</button>
-                
                 <button onclick="exportarHistoricoExcel()" class="btn btn-excel">SOLICITAR HISTÓRICO (EXCEL)</button>
             </div>
         </div>
@@ -127,7 +126,7 @@
                 localStorage.setItem('wms_session_v2', JSON.stringify(usuarioLogado));
                 iniciarApp();
             } else {
-                alert("Acesso Negado: Usuário não cadastrado.");
+                alert("Acesso Negado.");
             }
         } catch (error) {
             alert("Erro de Acesso: Verifique os dados.");
@@ -162,26 +161,48 @@
         document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias < 30).length;
     }
 
-    // ALTERAÇÃO: BUSCA REATIVA (Só aparece se digitar)
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase();
         const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
 
-        // Se o ADMIN não digitou nada, a lista fica vazia (Requisito solicitado)
-        if (usuarioLogado.role === "ADMIN" && termo.length === 0) {
-            return;
+        // BUSCA REATIVA: Se for Admin e não digitou nada, não mostra.
+        if (usuarioLogado.role === "ADMIN" && termo.length === 0) return;
+
+        // Filtragem básica por termo
+        let filtrados = estoqueCompleto.filter(i => 
+            i.mat.toLowerCase().includes(termo) || i.desc.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
+        );
+
+        // REGRA DE EXIBIÇÃO PARA OPERADOR (Prioridade Crítica)
+        if (usuarioLogado.role !== "ADMIN") {
+            const itensCriticos = filtrados.filter(i => i.dias >= 31 && i.dias <= 60);
+            if (itensCriticos.length > 0) {
+                filtrados = itensCriticos; // Só mostra críticos se existirem
+            } else {
+                filtrados = filtrados.filter(i => i.dias > 60); // Se não houver críticos, mostra datas boas
+            }
         }
 
-        estoqueCompleto.filter(i => 
-            i.mat.toLowerCase().includes(termo) || i.desc.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
-        ).sort((a, b) => a.dias - b.dias).forEach(item => {
-            let cor = item.dias < 30 ? "item-retido" : (item.dias <= 60 ? "item-critico" : "item-verde");
+        filtrados.sort((a, b) => a.dias - b.dias).forEach(item => {
+            let status = "";
+            let classe = "";
+            
+            // Definição das Regras de Status
+            if (item.dias < 30) { 
+                status = "RETIDO"; classe = "item-retido"; 
+            } else if (item.dias >= 31 && item.dias <= 60) { 
+                status = "DATA CRÍTICA"; classe = "item-critico"; 
+            } else { 
+                status = "DATA BOA"; classe = "item-verde"; 
+            }
+
             const card = document.createElement('div');
-            card.className = `item-card ${cor}`;
+            card.className = `item-card ${classe}`;
             card.innerHTML = `
                 <div>
                     <span class="ender-badge">${item.ender}</span>
+                    <span class="status-label" style="color:${status === 'DATA BOA' ? '#4ade80' : status === 'DATA CRÍTICA' ? '#fbbf24' : '#f87171'}">${status}</span>
                     <div style="font-weight:bold; margin-top:5px;">${item.mat} - ${item.desc}</div>
                     <div style="font-size:11px; opacity:0.8;">Vencimento em: ${item.dias} dias | Ref: ${item.valFrente}</div>
                 </div>
@@ -205,7 +226,7 @@
             if(novaQtd <= 0) await db.collection("estoque_blocado").doc(id).delete();
             else await db.collection("estoque_blocado").doc(id).update({ qtd: novaQtd });
 
-            // ALTERAÇÃO: Salvando conforme a nova sequência de campos
+            // HISTÓRICO NA SEQUÊNCIA: Endereço; Material; Validade; Qtd; Operador; Data/Hora
             await db.collection("movimentacoes_wms").add({
                 endereco: ender,
                 material: mat,
@@ -216,20 +237,16 @@
                 hora: agora.toLocaleTimeString('pt-BR'),
                 timestamp: agora
             });
-            alert("Retirada registrada com sucesso!");
+            alert("Sucesso!");
         } catch(e) { alert("Erro ao processar."); }
     }
 
-    // ALTERAÇÃO: Função para carregar e exportar o histórico apenas sob demanda (Excel)
     async function exportarHistoricoExcel() {
         try {
             const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-            if (snap.empty) {
-                alert("Nenhum histórico encontrado.");
-                return;
-            }
+            if (snap.empty) { alert("Histórico vazio."); return; }
 
-            const dadosExport = snap.docs.map(doc => {
+            const dados = snap.docs.map(doc => {
                 const d = doc.data();
                 return {
                     "Endereço": d.endereco,
@@ -241,14 +258,11 @@
                 };
             });
 
-            const worksheet = XLSX.utils.json_to_sheet(dadosExport);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Movimentações");
-            XLSX.writeFile(workbook, `Historico_WMS_${new Date().getTime()}.xlsx`);
-        } catch (e) {
-            alert("Erro ao gerar Excel.");
-            console.error(e);
-        }
+            const ws = XLSX.utils.json_to_sheet(dados);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Histórico");
+            XLSX.writeFile(wb, `WMS_Historico_${new Date().getTime()}.xlsx`);
+        } catch (e) { alert("Erro ao exportar."); }
     }
 
     function importarCSV(event) {
@@ -257,7 +271,6 @@
             const linhas = e.target.result.split("\n").slice(1);
             const batch = db.batch();
             let count = 0;
-
             linhas.forEach(l => {
                 const c = l.split(";");
                 if(c.length >= 8) {
@@ -272,7 +285,7 @@
                 }
             });
             await batch.commit();
-            alert("Estoque Atualizado: " + count + " itens.");
+            alert("Estoque Atualizado!");
             location.reload();
         };
         reader.readAsText(event.target.files[0], 'ISO-8859-1');
