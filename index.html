@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WMS FLOW PRO - Fluxo de Saída</title>
+    <title>WMS FLOW PRO - Bloqueio de Segurança FEFO</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -63,11 +63,11 @@
             <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS (<30d)</h5><p id="st-retido">0</p></div>
         </div>
 
-        <input type="text" id="search-input" placeholder="🔍 Digite o código ou endereço para retirar..." oninput="renderizarEstoque()">
+        <input type="text" id="search-input" placeholder="🔍 Digite para buscar material ou endereço..." oninput="renderizarEstoque()">
         <div id="lista-estoque"></div>
 
-        <div id="admin-only" style="display: none; margin-top: 30px;">
-            <button onclick="baixarHistorico()" class="btn btn-export">📊 EXPORTAR HISTÓRICO (EXCEL)</button>
+        <div id="admin-only" style="display: none; margin-top: 30px; border-top: 1px solid #2d3748; padding-top: 20px;">
+            <button onclick="baixarHistorico()" class="btn btn-export">📊 SOLICITAR HISTÓRICO (EXCEL)</button>
             <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
             <button onclick="document.getElementById('csv-file').click()" class="btn" style="background:transparent; border:1px dashed var(--verde); color:var(--verde); width:100%;">+ ATUALIZAR ESTOQUE (CSV)</button>
         </div>
@@ -75,6 +75,7 @@
 </div>
 
 <script>
+    // Configurações extraídas das suas capturas
     const firebaseConfig = {
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
         authDomain: "sistema-fefo.firebaseapp.com",
@@ -99,10 +100,10 @@
             const doc = await db.collection("usuarios_wms").doc(email).get();
             if (doc.exists) {
                 usuarioLogado = { nome: doc.data().nome, role: doc.data().perfil.toUpperCase(), email: email };
-                localStorage.setItem('wms_session_v7', JSON.stringify(usuarioLogado));
+                localStorage.setItem('wms_session_v8', JSON.stringify(usuarioLogado));
                 iniciarApp();
             }
-        } catch (e) { alert("Usuário ou senha inválidos!"); }
+        } catch (e) { alert("Acesso Negado!"); }
     }
 
     function iniciarApp() {
@@ -122,44 +123,51 @@
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             atualizarDashboard();
-            renderizarEstoque(); // Re-renderiza para aplicar sumiço automático
+            renderizarEstoque(); 
         });
     }
 
     function atualizarDashboard() {
         if(usuarioLogado.role !== "ADMIN") return;
         document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
-        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias >= 31 && i.dias <= 60).length;
-        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
+        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => parseInt(i.dias) >= 31 && parseInt(i.dias) <= 60).length;
+        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => parseInt(i.dias) <= 30).length;
     }
 
-    // LÓGICA DE HIERARQUIA RESTRITA
+    // LÓGICA DE EXIBIÇÃO SEQUENCIAL RIGOROSA
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
         
         if (termo === "") {
-            lista.innerHTML = '<p style="text-align:center; opacity:0.4; margin-top:20px;">Aguardando busca...</p>';
+            lista.innerHTML = '<p style="text-align:center; opacity:0.4; margin-top:20px;">Digite o código do material...</p>';
             return;
         }
 
-        // 1. Filtra por material/endereço
-        let filtrados = estoqueCompleto.filter(i => 
+        // Filtra todos os itens que batem com a busca
+        let todosOsResultados = estoqueCompleto.filter(i => 
             i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
         );
 
-        // 2. Separação por criticidade do MATERIAL específico pesquisado
-        const temCritico = filtrados.some(i => parseInt(i.dias) >= 31 && parseInt(i.dias) <= 60);
+        // Separação por grupos de criticidade
+        const grupoCritico = todosOsResultados.filter(i => parseInt(i.dias) >= 31 && parseInt(i.dias) <= 60);
+        const grupoBoa = todosOsResultados.filter(i => parseInt(i.dias) > 60);
+        const grupoRetido = todosOsResultados.filter(i => parseInt(i.dias) <= 30);
 
         let final;
-        if (temCritico) {
-            // Se existir DATA CRÍTICA, mostra APENAS elas (Esconde as Boas)
-            final = filtrados.filter(i => parseInt(i.dias) >= 31 && parseInt(i.dias) <= 60);
-        } else {
-            // Se não houver mais críticas, mostra as DATAS BOAS (>60) e RETIDOS (<30)
-            final = filtrados.filter(i => parseInt(i.dias) > 60 || parseInt(i.dias) <= 30);
-            // Ordena para que as Boas venham antes dos Retidos nesta fase
-            final.sort((a, b) => parseInt(b.dias) - parseInt(a.dias)); 
+        // REGRA: SE existir Data Crítica, mostra APENAS elas. Bloqueia as Boas.
+        if (grupoCritico.length > 0) {
+            final = grupoCritico;
+            final.sort((a, b) => parseInt(a.dias) - parseInt(b.dias)); // O que vence antes aparece primeiro
+        } 
+        // SE não houver Crítica, libera as Datas Boas
+        else if (grupoBoa.length > 0) {
+            final = grupoBoa;
+            final.sort((a, b) => parseInt(a.dias) - parseInt(b.dias));
+        } 
+        // SE não houver nada, sobra apenas os Retidos
+        else {
+            final = grupoRetido;
         }
 
         lista.innerHTML = final.map(item => {
@@ -173,7 +181,7 @@
                         <span class="status-badge" style="border: 1px solid ${cor}; color: ${cor}">${label}</span>
                         <div style="font-weight:800; font-size:16px; color:var(--primary);">${item.ender}</div>
                         <div style="font-weight:600; margin-top:4px;">${item.mat} - ${item.desc}</div>
-                        <div style="font-size:11px; opacity:0.6;">Vencimento: ${item.dias} dias | Val: ${item.valFrente}</div>
+                        <div style="font-size:11px; opacity:0.6;">Vencimento: ${item.dias} dias | Val: ${item.valFrente || 'S/V'}</div>
                     </div>
                     <div style="text-align:right">
                         <div style="font-size:20px; font-weight:800;">${item.qtd} PL</div>
@@ -184,14 +192,14 @@
     }
 
     async function retirar(id, qtdAtual, mat, ender, val) {
-        const n = prompt(`CONFIRMAR RETIRADA\nLocal: ${ender}\nMaterial: ${mat}\nQuantidade a retirar?`);
+        const n = prompt(`CONFIRMAR SAÍDA\nLocal: ${ender}\nMaterial: ${mat}\nQuantidade a retirar?`);
         if(!n || isNaN(n) || n <= 0) return;
         if(parseInt(n) > qtdAtual) { alert("Saldo insuficiente!"); return; }
 
         try {
             const novaQtd = qtdAtual - parseInt(n);
             if(novaQtd <= 0) {
-                await db.collection("estoque_blocado").doc(id).delete(); // POSIÇÃO SOME AUTOMATICAMENTE
+                await db.collection("estoque_blocado").doc(id).delete(); // SOME AUTOMATICAMENTE
             } else {
                 await db.collection("estoque_blocado").doc(id).update({ qtd: novaQtd });
             }
@@ -208,12 +216,12 @@
     }
 
     async function baixarHistorico() {
-        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").limit(500).get();
+        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").limit(1000).get();
         const dados = snap.docs.map(doc => ({
-            "ENDEREÇO": doc.data().endereco,
-            "MATERIAL": doc.data().material,
-            "VALIDADE": doc.data().validade,
-            "QTD": doc.data().quantidade,
+            "ENDEREÇO": doc.data().endereco || "---",
+            "MATERIAL": doc.data().material || "---",
+            "VALIDADE": doc.data().validade || "---",
+            "QTD": `-${doc.data().quantidade} PL`,
             "OPERADOR (LOGIN)": `${doc.data().operador} (${doc.data().login})`,
             "DATA/HORA": `${doc.data().data} ${doc.data().hora}`
         }));
@@ -240,16 +248,16 @@
                 }
             });
             await batch.commit();
-            alert("Estoque Carregado!");
+            alert("Estoque Atualizado!");
             location.reload();
         };
         reader.readAsText(event.target.files[0], 'ISO-8859-1');
     }
 
-    function logout() { auth.signOut(); localStorage.removeItem('wms_session_v7'); location.reload(); }
+    function logout() { auth.signOut(); localStorage.removeItem('wms_session_v8'); location.reload(); }
 
     window.onload = () => {
-        const s = localStorage.getItem('wms_session_v7');
+        const s = localStorage.getItem('wms_session_v8');
         if(s) { usuarioLogado = JSON.parse(s); iniciarApp(); }
     };
 </script>
