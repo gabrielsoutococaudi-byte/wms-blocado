@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WMS FLOW PRO - Gestão de Blocado</title>
+    <title>WMS FLOW PRO - Fluxo de Saída</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -17,24 +17,19 @@
         .header { padding: 15px 20px; background: var(--card); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2d3748; }
         .container { max-width: 1000px; margin: auto; padding: 15px; }
         
-        /* Dashboard */
         .admin-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
         .stat-box { background: var(--card); padding: 12px; border-radius: 8px; border-top: 3px solid var(--primary); text-align: center; }
         .stat-box h5 { margin: 0; font-size: 10px; opacity: 0.7; }
         .stat-box p { margin: 8px 0 0; font-size: 22px; font-weight: 800; }
 
-        /* Botões */
         .btn { padding: 12px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 14px; }
         .btn-export { background: var(--verde); color: white; width: 100%; margin-bottom: 10px; }
         .btn-retirar { background: var(--primary); color: #000; padding: 8px 15px; }
-        .btn-csv { background: transparent; border: 1px dashed var(--verde); color: var(--verde); width: 100%; }
-
-        /* Input de Busca */
+        
         #search-input { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #2d3748; background: var(--card); color: white; font-size: 16px; margin-bottom: 20px; box-sizing: border-box; }
 
-        /* Cards */
-        .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #444; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #444; }
+        .status-badge { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-bottom: 5px; display: inline-block; }
 
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
         .login-box { background: var(--card); padding: 35px; border-radius: 15px; width: 340px; }
@@ -46,7 +41,7 @@
 <div id="login-screen">
     <div class="login-box">
         <h2 style="text-align: center; color: var(--primary); margin-bottom: 25px;">WMS FLOW PRO</h2>
-        <input type="text" id="login-mat" placeholder="Matrícula ou E-mail">
+        <input type="text" id="login-mat" placeholder="E-mail (ex: admin@alb.com)">
         <input type="password" id="login-senha" placeholder="Senha">
         <button onclick="tentarLogin()" class="btn btn-retirar" style="width: 100%;">ENTRAR</button>
     </div>
@@ -64,23 +59,17 @@
     <div class="container">
         <div id="dash-container" class="admin-dashboard" style="display: none;">
             <div class="stat-box"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
-            <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS</h5><p id="st-critico">0</p></div>
-            <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS</h5><p id="st-retido">0</p></div>
+            <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS (31-60d)</h5><p id="st-critico">0</p></div>
+            <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS (<30d)</h5><p id="st-retido">0</p></div>
         </div>
 
-        <input type="text" id="search-input" placeholder="🔍 Digite para buscar material ou endereço..." oninput="renderizarEstoque()">
+        <input type="text" id="search-input" placeholder="🔍 Digite o código ou endereço para retirar..." oninput="renderizarEstoque()">
         <div id="lista-estoque"></div>
 
-        <div id="admin-only" style="display: none; margin-top: 30px; border-top: 1px solid #2d3748; pt: 20px;">
-            <p style="font-size: 12px; opacity: 0.5; text-align: center; margin-bottom: 15px;">GESTÃO DE DADOS</p>
-            <button onclick="baixarHistoricoCompleto()" class="btn btn-export">
-                📊 SOLICITAR HISTÓRICO (EXCEL)
-            </button>
-            
+        <div id="admin-only" style="display: none; margin-top: 30px;">
+            <button onclick="baixarHistorico()" class="btn btn-export">📊 EXPORTAR HISTÓRICO (EXCEL)</button>
             <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
-            <button onclick="document.getElementById('csv-file').click()" class="btn btn-csv">
-                + ALIMENTAR NOVO ESTOQUE (CSV)
-            </button>
+            <button onclick="document.getElementById('csv-file').click()" class="btn" style="background:transparent; border:1px dashed var(--verde); color:var(--verde); width:100%;">+ ATUALIZAR ESTOQUE (CSV)</button>
         </div>
     </div>
 </div>
@@ -103,19 +92,17 @@
     let usuarioLogado = null;
 
     async function tentarLogin() {
-        const input = document.getElementById('login-mat').value.trim();
+        const email = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
-        const email = input.includes('@') ? input : `${input}@alb.com`;
-
         try {
             await auth.signInWithEmailAndPassword(email, senha);
             const doc = await db.collection("usuarios_wms").doc(email).get();
             if (doc.exists) {
                 usuarioLogado = { nome: doc.data().nome, role: doc.data().perfil.toUpperCase(), email: email };
-                localStorage.setItem('wms_session_v6', JSON.stringify(usuarioLogado));
+                localStorage.setItem('wms_session_v7', JSON.stringify(usuarioLogado));
                 iniciarApp();
             }
-        } catch (e) { alert("Acesso Negado!"); }
+        } catch (e) { alert("Usuário ou senha inválidos!"); }
     }
 
     function iniciarApp() {
@@ -135,6 +122,7 @@
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             atualizarDashboard();
+            renderizarEstoque(); // Re-renderiza para aplicar sumiço automático
         });
     }
 
@@ -142,34 +130,53 @@
         if(usuarioLogado.role !== "ADMIN") return;
         document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
         document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias >= 31 && i.dias <= 60).length;
-        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias < 30).length;
+        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
     }
 
-    // LISTA SÓ APARECE SE ESCREVER (image_2bb452.png)
+    // LÓGICA DE HIERARQUIA RESTRITA
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
         
         if (termo === "") {
-            lista.innerHTML = '<p style="text-align:center; opacity:0.4; margin-top:20px;">Digite algo para visualizar os materiais...</p>';
+            lista.innerHTML = '<p style="text-align:center; opacity:0.4; margin-top:20px;">Aguardando busca...</p>';
             return;
         }
 
-        const filtrados = estoqueCompleto.filter(i => 
-            i.mat.toLowerCase().includes(termo) || i.desc.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
+        // 1. Filtra por material/endereço
+        let filtrados = estoqueCompleto.filter(i => 
+            i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
         );
 
-        lista.innerHTML = filtrados.map(item => {
-            let cor = item.dias < 30 ? "#f87171" : (item.dias <= 60 ? "#fbbf24" : "#22c55e");
+        // 2. Separação por criticidade do MATERIAL específico pesquisado
+        const temCritico = filtrados.some(i => parseInt(i.dias) >= 31 && parseInt(i.dias) <= 60);
+
+        let final;
+        if (temCritico) {
+            // Se existir DATA CRÍTICA, mostra APENAS elas (Esconde as Boas)
+            final = filtrados.filter(i => parseInt(i.dias) >= 31 && parseInt(i.dias) <= 60);
+        } else {
+            // Se não houver mais críticas, mostra as DATAS BOAS (>60) e RETIDOS (<30)
+            final = filtrados.filter(i => parseInt(i.dias) > 60 || parseInt(i.dias) <= 30);
+            // Ordena para que as Boas venham antes dos Retidos nesta fase
+            final.sort((a, b) => parseInt(b.dias) - parseInt(a.dias)); 
+        }
+
+        lista.innerHTML = final.map(item => {
+            const dias = parseInt(item.dias);
+            let cor = dias <= 30 ? "#f87171" : (dias <= 60 ? "#fbbf24" : "#22c55e");
+            let label = dias <= 30 ? "RETIDO" : (dias <= 60 ? "DATA CRÍTICA" : "DATA BOA");
+
             return `
-                <div class="item-card" style="border-left-color: ${cor}">
+                <div class="item-card" style="border-left: 6px solid ${cor}">
                     <div>
-                        <span style="background:#2d3748; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800;">${item.ender}</span>
-                        <div style="font-weight:bold; margin-top:8px;">${item.mat} - ${item.desc}</div>
-                        <div style="font-size:11px; opacity:0.7;">Venc: ${item.dias} dias | Val: ${item.valFrente}</div>
+                        <span class="status-badge" style="border: 1px solid ${cor}; color: ${cor}">${label}</span>
+                        <div style="font-weight:800; font-size:16px; color:var(--primary);">${item.ender}</div>
+                        <div style="font-weight:600; margin-top:4px;">${item.mat} - ${item.desc}</div>
+                        <div style="font-size:11px; opacity:0.6;">Vencimento: ${item.dias} dias | Val: ${item.valFrente}</div>
                     </div>
                     <div style="text-align:right">
-                        <div style="font-size:18px; font-weight:800; color:var(--primary);">${item.qtd} PL</div>
+                        <div style="font-size:20px; font-weight:800;">${item.qtd} PL</div>
                         <button class="btn btn-retirar" onclick="retirar('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button>
                     </div>
                 </div>`;
@@ -177,57 +184,43 @@
     }
 
     async function retirar(id, qtdAtual, mat, ender, val) {
-        const n = prompt(`Material: ${mat}\nQuantos pallets retirar?`);
-        if(!n || isNaN(n) || n > qtdAtual || n <= 0) return;
+        const n = prompt(`CONFIRMAR RETIRADA\nLocal: ${ender}\nMaterial: ${mat}\nQuantidade a retirar?`);
+        if(!n || isNaN(n) || n <= 0) return;
+        if(parseInt(n) > qtdAtual) { alert("Saldo insuficiente!"); return; }
 
         try {
             const novaQtd = qtdAtual - parseInt(n);
-            if(novaQtd <= 0) await db.collection("estoque_blocado").doc(id).delete();
-            else await db.collection("estoque_blocado").doc(id).update({ qtd: novaQtd });
+            if(novaQtd <= 0) {
+                await db.collection("estoque_blocado").doc(id).delete(); // POSIÇÃO SOME AUTOMATICAMENTE
+            } else {
+                await db.collection("estoque_blocado").doc(id).update({ qtd: novaQtd });
+            }
 
             await db.collection("movimentacoes_wms").add({
-                endereco: ender,
-                material: mat,
-                validade: val || "S/V",
-                quantidade: parseInt(n),
-                operador: usuarioLogado.nome,
+                endereco: ender, material: mat, validade: val || "---",
+                quantidade: parseInt(n), operador: usuarioLogado.nome,
                 login: usuarioLogado.email.split('@')[0],
                 data: new Date().toLocaleDateString('pt-BR'),
                 hora: new Date().toLocaleTimeString('pt-BR'),
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert("Baixa realizada com sucesso!");
-        } catch(e) { alert("Erro ao processar."); }
+        } catch(e) { alert("Erro ao processar baixa."); }
     }
 
-    // EXPORTAÇÃO COMPLETA SOB DEMANDA (image_2bb474.png)
-    async function baixarHistoricoCompleto() {
-        const btn = document.querySelector('.btn-export');
-        btn.innerText = "⏳ PROCESSANDO DADOS...";
-        
-        try {
-            const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-            const dados = snap.docs.map(doc => doc.data());
-
-            const excelData = dados.map(m => ({
-                "ENDEREÇO": m.endereco || "---",
-                "MATERIAL": m.material || "---",
-                "VALIDADE": m.validade || "---",
-                "QTD": `-${m.quantidade} PL`,
-                "OPERADOR (LOGIN)": `${m.operador} (${m.login})`,
-                "DATA/HORA": `${m.data} ${m.hora}`
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(excelData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Historico");
-            XLSX.writeFile(wb, `HISTORICO_WMS_${new Date().toLocaleDateString()}.xlsx`);
-            
-            btn.innerText = "📊 SOLICITAR HISTÓRICO (EXCEL)";
-        } catch (e) {
-            alert("Erro ao carregar histórico.");
-            btn.innerText = "📊 SOLICITAR HISTÓRICO (EXCEL)";
-        }
+    async function baixarHistorico() {
+        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").limit(500).get();
+        const dados = snap.docs.map(doc => ({
+            "ENDEREÇO": doc.data().endereco,
+            "MATERIAL": doc.data().material,
+            "VALIDADE": doc.data().validade,
+            "QTD": doc.data().quantidade,
+            "OPERADOR (LOGIN)": `${doc.data().operador} (${doc.data().login})`,
+            "DATA/HORA": `${doc.data().data} ${doc.data().hora}`
+        }));
+        const ws = XLSX.utils.json_to_sheet(dados);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Log");
+        XLSX.writeFile(wb, `Historico_WMS_${new Date().toLocaleDateString()}.xlsx`);
     }
 
     function importarCSV(event) {
@@ -241,23 +234,22 @@
                     const id = c[0].trim() + "_" + c[1].trim();
                     batch.set(db.collection("estoque_blocado").doc(id), {
                         ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(),
-                        valFrente: c[3].trim(), valFundos: c[4].trim(),
-                        qtd: parseInt(c[5]) || 0, dataContagem: c[6].trim(),
+                        valFrente: c[3].trim(), qtd: parseInt(c[5]) || 0,
                         dias: parseInt(c[7]) || 0
                     });
                 }
             });
             await batch.commit();
-            alert("Estoque Atualizado!");
+            alert("Estoque Carregado!");
             location.reload();
         };
         reader.readAsText(event.target.files[0], 'ISO-8859-1');
     }
 
-    function logout() { auth.signOut(); localStorage.removeItem('wms_session_v6'); location.reload(); }
+    function logout() { auth.signOut(); localStorage.removeItem('wms_session_v7'); location.reload(); }
 
     window.onload = () => {
-        const s = localStorage.getItem('wms_session_v6');
+        const s = localStorage.getItem('wms_session_v7');
         if(s) { usuarioLogado = JSON.parse(s); iniciarApp(); }
     };
 </script>
