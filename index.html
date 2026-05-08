@@ -8,6 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -18,23 +19,19 @@
         .header { padding: 15px 20px; background: var(--card); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2d3748; }
         .container { max-width: 1100px; margin: auto; padding: 15px; }
         
-        /* Dashboard Stats */
         .admin-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
         .stat-box { background: var(--card); padding: 12px; border-radius: 8px; border-top: 3px solid var(--primary); text-align: center; }
         .stat-box p { margin: 8px 0 0; font-size: 20px; font-weight: 800; }
 
-        /* Estilo da Tabela de Histórico Moderno */
         .history-section { margin-top: 40px; background: rgba(22, 30, 49, 0.7); border-radius: 12px; padding: 20px; border: 1px solid #2d3748; }
         .table-container { overflow-x: auto; border-radius: 8px; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; color: #cbd5e1; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; color: #cbd5e1; min-width: 800px; }
         th { background: #0f172a; color: var(--primary); text-transform: uppercase; padding: 12px; text-align: left; border: 1px solid #2d3748; }
         td { padding: 10px; border: 1px solid #2d3748; }
         tr:hover { background: rgba(255,255,255,0.03); }
 
-        /* Botões */
         .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        .btn-export { background: var(--verde); color: white; display: flex; align-items: center; gap: 8px; font-size: 13px; }
-        .btn-export:hover { background: #16a34a; transform: translateY(-2px); }
+        .btn-export { background: var(--verde); color: white; display: flex; align-items: center; gap: 8px; }
         .btn-retirar { background: var(--primary); color: #000; }
         
         .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #444; }
@@ -106,6 +103,7 @@
 </div>
 
 <script>
+    // Configuração do seu Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
         authDomain: "sistema-fefo.firebaseapp.com",
@@ -120,7 +118,7 @@
     const auth = firebase.auth();
     
     let estoqueCompleto = [];
-    let historicoCompleto = [];
+    let historicoCompleto = []; // Esta variável alimentará o Excel
     let usuarioLogado = null;
 
     async function tentarLogin() {
@@ -133,7 +131,7 @@
             const doc = await db.collection("usuarios_wms").doc(email).get();
             if (doc.exists) {
                 usuarioLogado = { nome: doc.data().nome, role: doc.data().perfil.toUpperCase(), email: email };
-                localStorage.setItem('wms_session_v4', JSON.stringify(usuarioLogado));
+                localStorage.setItem('wms_session_v5', JSON.stringify(usuarioLogado));
                 iniciarApp();
             }
         } catch (e) { alert("Acesso Negado!"); }
@@ -196,7 +194,7 @@
         const item = estoqueCompleto.find(i => i.id === id);
         const val = item ? item.valFrente : "---";
         const n = prompt(`Material: ${mat}\nQuantos pallets retirar?`);
-        if(!n || n > qtdAtual || n <= 0) return;
+        if(!n || isNaN(n) || n > qtdAtual || n <= 0) return;
 
         try {
             const novaQtd = qtdAtual - parseInt(n);
@@ -204,23 +202,23 @@
             else await db.collection("estoque_blocado").doc(id).update({ qtd: novaQtd });
 
             await db.collection("movimentacoes_wms").add({
+                endereco: ender,
+                material: mat,
+                validade: val,
+                quantidade: parseInt(n),
                 operador: usuarioLogado.nome,
                 login: usuarioLogado.email.split('@')[0],
-                material: mat,
-                quantidade: n,
-                endereco: ender,
-                validade: val,
                 data: new Date().toLocaleDateString('pt-BR'),
                 hora: new Date().toLocaleTimeString('pt-BR'),
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert("Retirada registrada!");
+            alert("Sucesso!");
         } catch(e) { alert("Erro na operação."); }
     }
 
     function ouvirHistorico() {
-        db.collection("movimentacoes_wms").orderBy("timestamp", "desc").limit(100).onSnapshot(snap => {
-            historicoCompleto = snap.docs.map(doc => doc.data());
+        db.collection("movimentacoes_wms").orderBy("timestamp", "desc").limit(150).onSnapshot(snap => {
+            historicoCompleto = snap.docs.map(doc => doc.data()); // Preenche o array global
             const corpo = document.getElementById('corpo-historico');
             corpo.innerHTML = historicoCompleto.map(m => `
                 <tr>
@@ -229,26 +227,33 @@
                     <td style="color:var(--primary); font-weight:600;">${m.validade || '---'}</td>
                     <td style="color:var(--retido); font-weight:800;">-${m.quantidade || 0} PL</td>
                     <td>${m.operador || 'Sistema'} (${m.login || '---'})</td>
-                    <td>${m.data || ''} ${m.hora || ''}</td>
+                    <td>${m.data || ''} às ${m.hora || ''}</td>
                 </tr>
             `).join('');
         });
     }
 
     function exportarExcel() {
-        const worksheet = XLSX.utils.json_to_sheet(historicoCompleto.map(m => ({
-            "ENDEREÇO": m.endereco,
-            "MATERIAL": m.material,
-            "VALIDADE": m.validade,
-            "QTD RETIRADA": m.quantidade,
-            "OPERADOR": m.operador,
-            "LOGIN": m.login,
-            "DATA": m.data,
-            "HORA": m.hora
-        })));
+        if (!historicoCompleto || historicoCompleto.length === 0) {
+            alert("Aguarde o carregamento dos dados...");
+            return;
+        }
+
+        const dadosParaExcel = historicoCompleto.map(m => ({
+            "ENDEREÇO": m.endereco || "---",
+            "MATERIAL": m.material || "---",
+            "VALIDADE": m.validade || "---",
+            "QTD RETIRADA": m.quantidade || 0,
+            "OPERADOR": m.operador || "---",
+            "LOGIN": m.login || "---",
+            "DATA": m.data || "---",
+            "HORA": m.hora || "---"
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dadosParaExcel);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Log_Movimentacoes");
-        XLSX.writeFile(workbook, `WMS_Historico_${new Date().toLocaleDateString()}.xlsx`);
+        XLSX.writeFile(workbook, `WMS_Historico_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`);
     }
 
     function importarCSV(event) {
@@ -270,14 +275,15 @@
             });
             await batch.commit();
             alert("Estoque Atualizado!");
+            location.reload();
         };
         reader.readAsText(event.target.files[0], 'ISO-8859-1');
     }
 
-    function logout() { auth.signOut(); localStorage.removeItem('wms_session_v4'); location.reload(); }
+    function logout() { auth.signOut(); localStorage.removeItem('wms_session_v5'); location.reload(); }
 
     window.onload = () => {
-        const s = localStorage.getItem('wms_session_v4');
+        const s = localStorage.getItem('wms_session_v5');
         if(s) { usuarioLogado = JSON.parse(s); iniciarApp(); }
     };
 </script>
