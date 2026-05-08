@@ -3,37 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WMS FLOW PRO</title>
+    <title>WMS FLOW PRO - Gestão de Blocado</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0a0f1e; --card: #161e31; --primary: #00d2ff; --critico: #fbbf24; --retido: #f87171; --verde: #22c55e; --text: #f8fafc; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
-        .header { padding: 15px 20px; background: var(--card); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2d3748; }
-        .container { max-width: 1000px; margin: auto; padding: 15px; }
+        :root { --bg: #0a0f1e; --card: #161e31; --primary: #00d2ff; --critico: #fbbf24; --retido: #f87171; --verde: #4ade80; --text: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 30px; }
         
-        .admin-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .admin-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.4); border-radius: 12px; }
         .stat-box { background: var(--card); padding: 12px; border-radius: 8px; border-top: 3px solid var(--primary); text-align: center; }
-        .stat-box h5 { margin: 0; font-size: 10px; opacity: 0.7; }
-        .stat-box p { margin: 8px 0 0; font-size: 22px; font-weight: 800; }
+        .stat-box h5 { margin: 0; font-size: 10px; opacity: 0.6; text-transform: uppercase; }
+        .stat-box p { margin: 8px 0 0; font-size: 20px; font-weight: 900; }
 
-        .btn { padding: 12px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 14px; }
-        .btn-export { background: var(--verde); color: white; width: 100%; margin-bottom: 10px; }
-        .btn-retirar { background: var(--primary); color: #000; padding: 8px 15px; }
+        .header { padding: 15px 20px; background: var(--card); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2d3748; }
+        .container { max-width: 900px; margin: auto; padding: 15px; }
         
-        #search-input { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #2d3748; background: var(--card); color: white; font-size: 16px; margin-bottom: 20px; box-sizing: border-box; }
+        .search-area { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        #search-input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; font-size: 15px; outline: none; box-sizing: border-box; }
 
-        .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #444; }
-        .status-badge { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-bottom: 5px; display: inline-block; }
+        .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid #444; }
+        .item-critico { border-left-color: var(--critico); }
+        .item-retido { border-left-color: var(--retido); }
+        .item-verde { border-left-color: var(--verde); }
+        
+        .ender-badge { background: var(--primary); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; }
+        
+        .btn { padding: 10px 15px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-retirar { background: var(--primary); color: #000; }
+        .btn-import { background: var(--verde); color: #000; width: 100%; margin-top: 10px; }
 
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
-        .login-box { background: var(--card); padding: 35px; border-radius: 15px; width: 340px; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #334155; background: #0a0f1e; color: white; box-sizing: border-box; }
+        .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
     </style>
 </head>
 <body>
@@ -41,35 +45,37 @@
 <div id="login-screen">
     <div class="login-box">
         <h2 style="text-align: center; color: var(--primary); margin-bottom: 25px;">WMS FLOW PRO</h2>
-        <input type="text" id="login-mat" placeholder="Matrícula ou E-mail">
-        <input type="password" id="login-senha" placeholder="Senha">
-        <button onclick="tentarLogin()" class="btn btn-retirar" style="width: 100%;">ENTRAR</button>
+        <input type="text" id="login-mat" placeholder="Matrícula ou E-mail" style="width:100%; padding:12px; margin-bottom:10px; border-radius:5px; border:1px solid #334155; background:#0a0f1e; color:white; box-sizing: border-box;">
+        <input type="password" id="login-senha" placeholder="Senha" style="width:100%; padding:12px; margin-bottom:20px; border-radius:5px; border:1px solid #334155; background:#0a0f1e; color:white; box-sizing: border-box;">
+        <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%; font-size: 16px;">ENTRAR</button>
     </div>
 </div>
 
 <div id="app-screen" style="display: none;">
     <div class="header">
         <div>
-            <div id="user-name" style="font-weight: 800;"></div>
-            <span id="role-label" style="font-size: 11px; opacity: 0.6; text-transform: uppercase;"></span>
+            <div id="user-name" style="font-size: 16px; font-weight: 800;"></div>
+            <span id="role-label" style="font-size: 10px; opacity: 0.6;"></span>
         </div>
-        <button onclick="logout()" class="btn" style="background:transparent; border:1px solid #444; color:white;">Sair</button>
+        <button onclick="logout()" style="background:transparent; border:1px solid #444; color:white; padding:5px 10px; border-radius:5px; cursor:pointer;">Sair</button>
     </div>
 
     <div class="container">
         <div id="dash-container" class="admin-dashboard" style="display: none;">
-            <div class="stat-box"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
-            <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS</h5><p id="st-critico">0</p></div>
-            <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS</h5><p id="st-retido">0</p></div>
+            <div class="stat-box"><h5>Total Pallets</h5><p id="st-total">0</p></div>
+            <div class="stat-box" style="border-color: var(--critico);"><h5>Críticos</h5><p id="st-critico">0</p></div>
+            <div class="stat-box" style="border-color: var(--retido);"><h5>Retidos</h5><p id="st-retido">0</p></div>
         </div>
 
-        <input type="text" id="search-input" placeholder="🔍 Buscar Material ou Endereço..." oninput="renderizarEstoque()">
+        <div class="search-area">
+            <input type="text" id="search-input" placeholder="Buscar Material ou Endereço..." oninput="renderizarEstoque()">
+        </div>
+
         <div id="lista-estoque"></div>
 
-        <div id="admin-only" style="display: none; margin-top: 30px; border-top: 1px solid #2d3748; padding-top: 20px;">
-            <button onclick="baixarHistorico()" class="btn btn-export">📊 SOLICITAR HISTÓRICO (EXCEL)</button>
+        <div id="admin-only" style="display: none; margin-top: 20px; border-top: 1px solid #334155; padding-top: 20px;">
             <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
-            <button onclick="document.getElementById('csv-file').click()" class="btn" style="background:transparent; border:1px dashed var(--verde); color:var(--verde); width:100%;">+ ALIMENTAR NOVO ESTOQUE (CSV)</button>
+            <button onclick="document.getElementById('csv-file').click()" class="btn btn-import">ALIMENTAR ESTOQUE (CSV)</button>
         </div>
     </div>
 </div>
@@ -79,7 +85,7 @@
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
         authDomain: "sistema-fefo.firebaseapp.com",
         projectId: "sistema-fefo",
-        storage_bucket: "sistema-fefo.firebasestorage.app",
+        storageBucket: "sistema-fefo.firebasestorage.app",
         messagingSenderId: "755801777693",
         appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
     };
@@ -91,21 +97,31 @@
     let estoqueCompleto = [];
     let usuarioLogado = null;
 
-    // LOGIN ORIGINAL (Matrícula ou E-mail)
     async function tentarLogin() {
-        const input = document.getElementById('login-mat').value.trim();
+        const loginInput = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
-        const email = input.includes('@') ? input : `${input}@alb.com`;
+        
+        const email = loginInput.includes('@') ? loginInput : `${loginInput}@alb.com`;
 
         try {
             await auth.signInWithEmailAndPassword(email, senha);
             const doc = await db.collection("usuarios_wms").doc(email).get();
+
             if (doc.exists) {
-                usuarioLogado = { nome: doc.data().nome, role: doc.data().perfil.toUpperCase(), email: email };
-                localStorage.setItem('wms_session_v9', JSON.stringify(usuarioLogado));
+                const dados = doc.data();
+                usuarioLogado = { 
+                    nome: dados.nome, 
+                    role: dados.perfil.toUpperCase(),
+                    email: email 
+                };
+                localStorage.setItem('wms_session_v2', JSON.stringify(usuarioLogado));
                 iniciarApp();
+            } else {
+                alert("Acesso Negado: Verifique se o perfil foi criado na coleção 'usuarios_wms'.");
             }
-        } catch (e) { alert("Acesso Negado!"); }
+        } catch (error) {
+            alert("Erro de Acesso: Verifique os dados digitados.");
+        }
     }
 
     function iniciarApp() {
@@ -118,112 +134,68 @@
             document.getElementById('dash-container').style.display = 'grid';
             document.getElementById('admin-only').style.display = 'block';
         }
-        conectarEstoque();
+        conectarFirebase();
     }
 
-    function conectarEstoque() {
+    function conectarFirebase() {
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             atualizarDashboard();
-            renderizarEstoque(); 
+            renderizarEstoque();
         });
     }
 
     function atualizarDashboard() {
-        if(usuarioLogado.role !== "ADMIN") return;
+        if(!usuarioLogado || usuarioLogado.role !== "ADMIN") return;
         document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
-        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => parseInt(i.dias) >= 31 && parseInt(i.dias) <= 60).length;
-        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => parseInt(i.dias) <= 30).length;
+        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias >= 31 && i.dias <= 60).length;
+        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias < 30).length;
     }
 
-    // LÓGICA DE BLOQUEIO DE DATA BOA
     function renderizarEstoque() {
-        const termo = document.getElementById('search-input').value.toLowerCase().trim();
+        const termo = document.getElementById('search-input').value.toLowerCase();
         const lista = document.getElementById('lista-estoque');
-        
-        if (termo === "") {
-            lista.innerHTML = '<p style="text-align:center; opacity:0.4; margin-top:20px;">Digite para buscar...</p>';
-            return;
-        }
+        lista.innerHTML = '';
 
-        let filtrados = estoqueCompleto.filter(i => 
-            i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
-        );
-
-        // Verifica se existe qualquer saldo Crítico (31-60) para o material buscado
-        const temCritico = filtrados.some(i => parseInt(i.dias) >= 31 && parseInt(i.dias) <= 60);
-
-        let final;
-        if (temCritico) {
-            // Se tem crítica, mostra SOMENTE as críticas (Bloqueia as boas)
-            final = filtrados.filter(i => parseInt(i.dias) >= 31 && parseInt(i.dias) <= 60);
-        } else {
-            // Se acabou a crítica, mostra Boas e Retidos
-            final = filtrados;
-        }
-
-        // Ordenação por dias (menor para maior) dentro do que restou
-        final.sort((a, b) => parseInt(a.dias) - parseInt(b.dias));
-
-        lista.innerHTML = final.map(item => {
-            const dias = parseInt(item.dias);
-            let cor = dias <= 30 ? "#f87171" : (dias <= 60 ? "#fbbf24" : "#22c55e");
-            let label = dias <= 30 ? "RETIDO" : (dias <= 60 ? "DATA CRÍTICA" : "DATA BOA");
-
-            return `
-                <div class="item-card" style="border-left: 6px solid ${cor}">
-                    <div>
-                        <span class="status-badge" style="border: 1px solid ${cor}; color: ${cor}">${label}</span>
-                        <div style="font-weight:800; font-size:16px; color:var(--primary);">${item.ender}</div>
-                        <div style="font-weight:600; margin-top:4px;">${item.mat} - ${item.desc}</div>
-                        <div style="font-size:11px; opacity:0.6;">Vencimento: ${item.dias} dias | Val: ${item.valFrente || 'S/V'}</div>
-                    </div>
-                    <div style="text-align:right">
-                        <div style="font-size:20px; font-weight:800;">${item.qtd} PL</div>
-                        <button class="btn btn-retirar" onclick="retirar('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button>
-                    </div>
-                </div>`;
-        }).join('');
+        estoqueCompleto.filter(i => 
+            i.mat.toLowerCase().includes(termo) || i.desc.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
+        ).sort((a, b) => a.dias - b.dias).forEach(item => {
+            let cor = item.dias < 30 ? "item-retido" : (item.dias <= 60 ? "item-critico" : "item-verde");
+            const card = document.createElement('div');
+            card.className = `item-card ${cor}`;
+            card.innerHTML = `
+                <div>
+                    <span class="ender-badge">${item.ender}</span>
+                    <div style="font-weight:bold; margin-top:5px;">${item.mat} - ${item.desc}</div>
+                    <div style="font-size:11px; opacity:0.8;">Vencimento em: ${item.dias} dias | Ref: ${item.valFrente}</div>
+                </div>
+                <div style="text-align:right">
+                    <div style="font-size:18px; font-weight:900;">${item.qtd} PL</div>
+                    <button class="btn btn-retirar" onclick="retirar('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}')">RETIRAR</button>
+                </div>
+            `;
+            lista.appendChild(card);
+        });
     }
 
-    async function retirar(id, qtdAtual, mat, ender, val) {
-        const n = prompt(`CONFIRMAR SAÍDA\n${ender}\nQtd: ${qtdAtual}\nQuanto retirar?`);
-        if(!n || isNaN(n) || n <= 0) return;
-        if(parseInt(n) > qtdAtual) { alert("Saldo insuficiente!"); return; }
+    async function retirar(id, qtdAtual, mat, ender) {
+        const n = prompt(`Retirada: ${mat}\nQuantos pallets deseja retirar? (Disponível: ${qtdAtual})`);
+        if(!n || isNaN(n) || n > qtdAtual || n <= 0) return;
 
+        const novaQtd = qtdAtual - parseInt(n);
         try {
-            const novaQtd = qtdAtual - parseInt(n);
-            if(novaQtd <= 0) {
-                await db.collection("estoque_blocado").doc(id).delete(); // POSIÇÃO SOME AO ZERAR
-            } else {
-                await db.collection("estoque_blocado").doc(id).update({ qtd: novaQtd });
-            }
+            if(novaQtd <= 0) await db.collection("estoque_blocado").doc(id).delete();
+            else await db.collection("estoque_blocado").doc(id).update({ qtd: novaQtd });
 
             await db.collection("movimentacoes_wms").add({
-                endereco: ender, material: mat, validade: val || "---",
-                quantidade: parseInt(n), operador: usuarioLogado.nome,
-                login: usuarioLogado.email.split('@')[0],
-                data: new Date().toLocaleDateString('pt-BR'),
-                hora: new Date().toLocaleTimeString('pt-BR'),
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                operador: usuarioLogado.nome,
+                material: mat,
+                quantidade: n,
+                endereco: ender,
+                data: new Date().toLocaleString()
             });
+            alert("Sucesso!");
         } catch(e) { alert("Erro ao processar."); }
-    }
-
-    async function baixarHistorico() {
-        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").limit(500).get();
-        const dados = snap.docs.map(doc => ({
-            "ENDEREÇO": doc.data().endereco,
-            "MATERIAL": doc.data().material,
-            "VALIDADE": doc.data().validade,
-            "QTD": doc.data().quantidade,
-            "OPERADOR (LOGIN)": `${doc.data().operador} (${doc.data().login})`,
-            "DATA/HORA": `${doc.data().data} ${doc.data().hora}`
-        }));
-        const ws = XLSX.utils.json_to_sheet(dados);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Log");
-        XLSX.writeFile(wb, `Historico_WMS_${new Date().toLocaleDateString()}.xlsx`);
     }
 
     function importarCSV(event) {
@@ -231,28 +203,36 @@
         reader.onload = async (e) => {
             const linhas = e.target.result.split("\n").slice(1);
             const batch = db.batch();
+            let count = 0;
+
             linhas.forEach(l => {
                 const c = l.split(";");
                 if(c.length >= 8) {
                     const id = c[0].trim() + "_" + c[1].trim();
                     batch.set(db.collection("estoque_blocado").doc(id), {
                         ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(),
-                        valFrente: c[3].trim(), qtd: parseInt(c[5]) || 0,
+                        valFrente: c[3].trim(), valFundos: c[4].trim(),
+                        qtd: parseInt(c[5]) || 0, dataContagem: c[6].trim(),
                         dias: parseInt(c[7]) || 0
                     });
+                    count++;
                 }
             });
             await batch.commit();
-            alert("Estoque Atualizado!");
+            alert("Estoque Atualizado: " + count + " itens.");
             location.reload();
         };
         reader.readAsText(event.target.files[0], 'ISO-8859-1');
     }
 
-    function logout() { auth.signOut(); localStorage.removeItem('wms_session_v9'); location.reload(); }
+    function logout() { 
+        auth.signOut();
+        localStorage.removeItem('wms_session_v2'); 
+        location.reload(); 
+    }
 
     window.onload = () => {
-        const s = localStorage.getItem('wms_session_v9');
+        const s = localStorage.getItem('wms_session_v2');
         if(s) { usuarioLogado = JSON.parse(s); iniciarApp(); }
     };
 </script>
