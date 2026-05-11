@@ -24,13 +24,12 @@
 
         .container { max-width: 900px; margin: auto; padding: 15px; }
         
-        /* Layout Input de Busca - Estilo Imagem */
         .search-container { background: var(--card); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .search-container input { width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #2d3748; background: #0a0f1e; color: white; font-size: 16px; box-sizing: border-box; }
 
-        /* Card Estilo WMS - Igual à Imagem */
         .item-card { background: #161e31; border-radius: 8px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-start; border-left: 5px solid var(--verde); }
         .item-critico { border-left-color: var(--critico); }
+        .item-retido { border-left-color: var(--retido); }
         
         .badge-ender { background: #00d2ff; color: #000; padding: 3px 10px; border-radius: 4px; font-size: 12px; font-weight: 900; text-transform: uppercase; }
         .badge-status { background: var(--critico); color: #000; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 900; margin-left: 10px; }
@@ -43,7 +42,7 @@
         .qty-val { font-size: 24px; font-weight: 900; color: #f8fafc; }
         .btn-retirar { background: #00d2ff; color: #000; border: none; padding: 8px 20px; border-radius: 5px; font-weight: 900; cursor: pointer; margin-top: 12px; font-size: 12px; }
 
-        /* Formulário de Abastecimento */
+        /* Estilo Formulário */
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 12px; margin-bottom: 5px; color: #94a3b8; }
         .form-group input { width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; }
@@ -55,7 +54,7 @@
 <div id="sidebar" class="sidebar">
     <button onclick="mudarTela('retirar')">📦 RETIRAR</button>
     <button onclick="mudarTela('abastecer')">📥 ABASTECER</button>
-    <button onclick="logout()" style="color: var(--retido);">🚪 SAIR</button>
+    <button onclick="logout()">🚪 SAIR</button>
 </div>
 
 <div id="app-screen">
@@ -63,14 +62,14 @@
         <button class="menu-btn" onclick="toggleMenu()"><div></div><div></div><div></div></button>
         <div style="flex-grow: 1;">
             <div style="font-size: 14px; font-weight: 800;">Gabriel Ferreira Souto</div>
-            <div id="page-title" style="font-size: 10px; color: var(--primary); font-weight: bold; text-transform: uppercase;">ESTOQUE</div>
+            <div id="page-title" style="font-size: 10px; color: var(--primary); font-weight: bold;">ESTOQUE</div>
         </div>
     </div>
 
     <div class="container">
         <div id="tela-retirar">
             <div class="search-container">
-                <input type="text" id="search-input" placeholder="Digite o código ou endereço..." oninput="renderizarEstoque()">
+                <input type="text" id="search-input" placeholder="Pesquisar material ou posição..." oninput="renderizarEstoque()">
             </div>
             <div id="lista-estoque"></div>
         </div>
@@ -79,7 +78,7 @@
             <h3 style="color: var(--primary);">Abastecer Blocado</h3>
             <div class="form-group">
                 <label>Endereço (Ex: A-01-01)</label>
-                <input type="text" id="in-ender" placeholder="Digite a posição">
+                <input type="text" id="in-ender">
             </div>
             <div class="form-group">
                 <label>Código Material</label>
@@ -87,25 +86,24 @@
             </div>
             <div class="form-group">
                 <label>Descrição do Produto</label>
-                <input type="text" id="in-desc" readonly style="background: #0f172a; opacity: 0.7;">
+                <input type="text" id="in-desc" readonly style="opacity: 0.6;">
             </div>
             <div class="form-group">
                 <label>Quantidade de Pallets</label>
                 <input type="number" id="in-qtd">
             </div>
             <div class="form-group">
-                <label>Data de Vencimento</label>
+                <label>Vencimento</label>
                 <input type="date" id="in-venc" onchange="calcularDias(this.value)">
-                <p id="label-dias" style="color: var(--critico); font-size: 11px; margin-top: 5px;"></p>
+                <p id="label-dias" style="font-size: 11px; color: var(--critico);"></p>
             </div>
             <button class="btn-save" onclick="salvarAbastecimento()">SALVAR ENTRADA</button>
-            <button onclick="mudarTela('retirar')" style="width: 100%; background: transparent; border: none; color: #94a3b8; padding: 15px; cursor: pointer; font-weight: 700;">CANCELAR</button>
         </div>
     </div>
 </div>
 
 <script>
-    // --- FIREBASE (MANTENHA SUA CONFIG) ---
+    // --- FIREBASE ---
     const firebaseConfig = {
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
         authDomain: "sistema-fefo.firebaseapp.com",
@@ -120,52 +118,49 @@
     let estoqueCompleto = [];
     let diasCalculados = 0;
 
-    // Monitoramento em Tempo Real
     db.collection("estoque_blocado").onSnapshot(snap => {
         estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderizarEstoque();
     });
 
-    // LÓGICA DE FILTRO PRIORITÁRIO (REGRA PEDIDA)
+    // --- LÓGICA DE FILTRO E MINIMIZAÇÃO ---
     function renderizarEstoque() {
-        const termo = document.getElementById('search-input').value.toLowerCase();
+        const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
 
-        if (!termo) {
-            lista.innerHTML = '<p style="text-align:center; opacity:0.5;">Aguardando pesquisa...</p>';
-            return;
-        }
+        // REQUISITO: Minimizado por padrão (só aparece se pesquisar)
+        if (termo.length === 0) return;
 
-        // 1. Filtra todos que batem com a busca
-        let todosEncontrados = estoqueCompleto.filter(i => 
+        // 1. Filtrar o que combina com a busca
+        let resultadosBusca = estoqueCompleto.filter(i => 
             i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
         );
 
-        // 2. Separa Críticos (<= 60 dias) e Bons (> 60 dias)
-        let criticos = todosEncontrados.filter(i => i.dias <= 60);
-        let bons = todosEncontrados.filter(i => i.dias > 60);
+        // 2. Identificar se existe algum material CRÍTICO (<= 60 dias) no que foi filtrado
+        let temCritico = resultadosBusca.some(i => i.dias <= 60);
 
-        // REGRA DE OURO: Se houver críticos, mostra SOMENTE eles. 
-        // Bloqueia os bons até que os críticos acabem.
-        let itensParaExibir = [];
-        if (criticos.length > 0) {
-            itensParaExibir = criticos;
+        // 3. Regra de Bloqueio: Se tem crítico, esconde os bons. Se não tem, mostra os bons.
+        let exibir;
+        if (temCritico) {
+            exibir = resultadosBusca.filter(i => i.dias <= 60);
         } else {
-            itensParaExibir = bons;
+            exibir = resultadosBusca;
         }
 
-        // Ordena por menor data dentro da exibição
-        itensParaExibir.sort((a, b) => a.dias - b.dias);
+        // Ordenar por menor data (FEFO)
+        exibir.sort((a, b) => a.dias - b.dias);
 
-        itensParaExibir.forEach(item => {
-            const isCritico = item.dias <= 60;
+        exibir.forEach(item => {
+            const critico = item.dias <= 60;
+            const retido = item.dias <= 30;
             const card = document.createElement('div');
-            card.className = `item-card ${isCritico ? 'item-critico' : ''}`;
+            card.className = `item-card ${retido ? 'item-retido' : (critico ? 'item-critico' : '')}`;
+            
             card.innerHTML = `
                 <div>
                     <span class="badge-ender">${item.ender}</span>
-                    ${isCritico ? '<span class="badge-status">DATA CRÍTICA</span>' : ''}
+                    ${critico ? '<span class="badge-status">DATA CRÍTICA</span>' : ''}
                     <span class="mat-code">${item.mat}</span>
                     <div class="mat-desc">${item.desc}</div>
                     <div class="mat-venc">Vence em: ${item.dias} dias (${item.valFrente})</div>
@@ -179,36 +174,35 @@
         });
     }
 
-    // --- RESTANTE DAS FUNÇÕES ---
+    // --- ABASTECIMENTO ---
     async function salvarAbastecimento() {
         const ender = document.getElementById('in-ender').value.toUpperCase().trim();
         const mat = document.getElementById('in-mat').value.trim();
         const qtd = parseInt(document.getElementById('in-qtd').value);
-        const dataVenc = document.getElementById('in-venc').value.split('-').reverse().join('/');
+        const dataV = document.getElementById('in-venc').value.split('-').reverse().join('/');
 
-        if(!ender || !mat || isNaN(qtd)) return alert("Preencha tudo!");
+        if(!ender || !mat || isNaN(qtd)) return alert("Preencha os campos!");
 
         const existente = estoqueCompleto.find(i => i.ender === ender);
         if(existente) {
             if(existente.mat === mat) {
-                const update = confirm(`Somar ${qtd} PL ao material ${mat} em ${ender}?`);
-                if(update) {
+                if(confirm("Mesmo material. Somar saldo e atualizar data?")) {
                     await db.collection("estoque_blocado").doc(existente.id).update({
                         qtd: existente.qtd + qtd,
-                        valFrente: dataVenc,
+                        valFrente: dataV,
                         dias: diasCalculados
                     });
-                    finalizarAcao();
+                    limparForm();
                 }
                 return;
-            } else return alert("Endereço ocupado por outro material!");
+            } else return alert("Endereço ocupado!");
         }
 
         await db.collection("estoque_blocado").add({
-            ender, mat, qtd, dias: diasCalculados, valFrente: dataVenc,
-            desc: document.getElementById('in-desc').value || "PRODUTO",
+            ender, mat, qtd, dias: diasCalculados, valFrente: dataV,
+            desc: document.getElementById('in-desc').value || "PRODUTO"
         });
-        finalizarAcao();
+        limparForm();
     }
 
     async function executarRetirada(id, qtd, mat) {
@@ -221,24 +215,32 @@
         }
     }
 
+    // --- AUXILIARES ---
     function buscarDescricao(cod) {
         const item = estoqueCompleto.find(i => i.mat === cod);
         document.getElementById('in-desc').value = item ? item.desc : "";
     }
 
     function calcularDias(data) {
-        const diff = Math.ceil((new Date(data) - new Date()) / (8000 * 60 * 60 * 24)); // Correção simplificada para milisegundos dia
-        diasCalculados = Math.max(0, Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24)));
-        document.getElementById('label-dias').innerText = `Vencimento em ${diasCalculados} dias`;
+        const d = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
+        diasCalculados = d;
+        document.getElementById('label-dias').innerText = `Vencimento em ${d} dias`;
     }
 
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
+    
     function mudarTela(tela) {
         document.getElementById('tela-retirar').style.display = tela === 'retirar' ? 'block' : 'none';
         document.getElementById('tela-abastecer').style.display = tela === 'abastecer' ? 'block' : 'none';
         toggleMenu();
     }
-    function finalizarAcao() { alert("Operação realizada!"); mudarTela('retirar'); }
+
+    function limparForm() {
+        alert("Salvo!");
+        document.querySelectorAll('input').forEach(i => i.value = "");
+        mudarTela('retirar');
+    }
+
     function logout() { location.reload(); }
 </script>
 </body>
