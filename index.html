@@ -14,11 +14,9 @@
         :root { --bg: #0a0f1e; --card: #161e31; --primary: #00d2ff; --critico: #fbbf24; --retido: #f87171; --verde: #4ade80; --text: #f8fafc; --accent: #7c3aed; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 30px; }
         
-        /* Menu Lateral */
         .sidebar { position: fixed; left: -250px; top: 0; width: 250px; height: 100%; background: var(--card); transition: 0.3s; z-index: 1000; padding-top: 60px; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
         .sidebar.active { left: 0; }
         .sidebar button { width: 100%; padding: 15px; background: transparent; border: none; color: white; text-align: left; font-size: 16px; cursor: pointer; border-bottom: 1px solid #2d3748; }
-        .sidebar button:hover { background: #1e293b; }
 
         .header { padding: 15px 20px; background: var(--card); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #2d3748; position: sticky; top: 0; z-index: 900; }
         .menu-btn { background: #eee; border: none; padding: 10px; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
@@ -26,14 +24,12 @@
 
         .container { max-width: 900px; margin: auto; padding: 15px; }
         
-        /* Forms */
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 12px; margin-bottom: 5px; opacity: 0.8; }
         .form-group input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; outline: none; }
         
         .btn-save { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; }
 
-        /* Cards de Estoque */
         .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid var(--verde); position: relative; }
         .item-critico { border-left-color: var(--critico); }
         .item-retido { border-left-color: var(--retido); }
@@ -109,7 +105,6 @@
 </div>
 
 <script>
-    // --- CONFIGURAÇÃO FIREBASE ---
     const firebaseConfig = {
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
         authDomain: "sistema-fefo.firebaseapp.com",
@@ -126,12 +121,10 @@
     let usuarioLogado = null;
     let diasCalculados = 0;
 
-    // --- AUTENTICAÇÃO ---
     async function tentarLogin() {
         const loginInput = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
         const email = loginInput.includes('@') ? loginInput : `${loginInput}@alb.com`;
-
         try {
             await auth.signInWithEmailAndPassword(email, senha);
             const doc = await db.collection("usuarios_wms").doc(email).get();
@@ -140,7 +133,7 @@
                 localStorage.setItem('wms_session_v2', JSON.stringify(usuarioLogado));
                 iniciarApp();
             }
-        } catch (error) { alert("Falha no login. Verifique os dados."); }
+        } catch (error) { alert("Erro no login."); }
     }
 
     function iniciarApp() {
@@ -157,7 +150,6 @@
         });
     }
 
-    // --- NAVEGAÇÃO ---
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
     function mudarTela(tela) {
         if(document.getElementById('sidebar').classList.contains('active')) toggleMenu();
@@ -166,21 +158,16 @@
         document.getElementById('page-title').innerText = tela === 'retirar' ? 'ESTOQUE' : 'ABASTECER';
     }
 
-    // --- LÓGICA DE LISTAGEM COM PRIORIDADE ---
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase();
         const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
-
-        let itens = estoqueCompleto.filter(i => 
-            i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo) || i.desc.toLowerCase().includes(termo)
-        );
-
-        // ORDENAÇÃO: 1º Críticos e Retidos (<=60 dias), 2º Datas boas
+        let itens = estoqueCompleto.filter(i => i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo) || i.desc.toLowerCase().includes(termo));
+        
         itens.sort((a, b) => {
-            const aPrioridade = a.dias <= 60 ? 0 : 1;
-            const bPrioridade = b.dias <= 60 ? 0 : 1;
-            if (aPrioridade !== bPrioridade) return aPrioridade - bPrioridade;
+            const aPrior = a.dias <= 60 ? 0 : 1;
+            const bPrior = b.dias <= 60 ? 0 : 1;
+            if (aPrior !== bPrior) return aPrior - bPrior;
             return a.dias - b.dias;
         });
 
@@ -194,75 +181,67 @@
                     ${item.dias <= 60 ? '<span class="badge-critico">DATA CRÍTICA</span>' : ''}
                     <div style="font-weight:900; margin-top:8px; font-size:15px;">${item.mat}</div>
                     <div style="font-size:12px; opacity:0.8;">${item.desc}</div>
-                    <div style="font-size:11px; margin-top:5px; color: ${item.dias <= 60 ? 'var(--critico)' : '#aaa'}">
-                        Vence em: ${item.dias} dias (${item.valFrente})
-                    </div>
+                    <div style="font-size:11px; margin-top:5px;">Vence em: ${item.dias} dias (${item.valFrente})</div>
                 </div>
-                <div style="text-align:right; min-width: 90px;">
+                <div style="text-align:right;">
                     <div style="font-size:20px; font-weight:900; color:var(--primary);">${item.qtd} PL</div>
                     <button class="btn-retirar" onclick="executarRetirada('${item.id}', ${item.qtd}, '${item.mat}')">RETIRAR</button>
-                </div>
-            `;
+                </div>`;
             lista.appendChild(card);
         });
     }
 
-    // --- LÓGICA DE RETIRADA ---
     async function executarRetirada(id, qtdAtual, mat) {
-        const n = prompt(`Retirada: ${mat}\nQuantos pallets deseja retirar? (Saldo atual: ${qtdAtual})`);
-        if (n === null) return;
-        const valor = parseInt(n);
-        if (isNaN(valor) || valor <= 0 || valor > qtdAtual) return alert("Quantidade inválida.");
-
-        try {
-            const novaQtd = qtdAtual - valor;
-            if (novaQtd === 0) await db.collection("estoque_blocado").doc(id).delete();
-            else await db.collection("estoque_blocado").doc(id).update({ qtd: novaQtd });
-            alert("Retirada concluída.");
-        } catch (e) { alert("Erro ao processar."); }
+        const n = prompt(`Retirada: ${mat}\nQuantos pallets? (Saldo: ${qtdAtual})`);
+        if (!n) return;
+        const v = parseInt(n);
+        if (isNaN(v) || v <= 0 || v > qtdAtual) return alert("Inválido.");
+        if (v === qtdAtual) await db.collection("estoque_blocado").doc(id).delete();
+        else await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v });
     }
 
-    // --- ABASTECIMENTO COM SEGURANÇA ---
+    // --- ABASTECIMENTO COM ALTERAÇÃO DE DATA ---
     async function salvarAbastecimento() {
         const ender = document.getElementById('in-ender').value.toUpperCase().trim();
         const mat = document.getElementById('in-mat').value.trim();
         const qtd = parseInt(document.getElementById('in-qtd').value);
+        const novaDataStr = document.getElementById('in-venc').value.split('-').reverse().join('/');
 
-        if(!ender || !mat || isNaN(qtd)) return alert("Preencha todos os campos!");
+        if(!ender || !mat || isNaN(qtd)) return alert("Preencha os campos!");
 
         const itemExistente = estoqueCompleto.find(i => i.ender === ender);
         
         if(itemExistente) {
-            // Se for o mesmo material, permite somar
             if(itemExistente.mat === mat) {
-                if(confirm(`Posição ${ender} já tem o material ${mat}. Deseja SOMAR ${qtd} PL ao saldo atual?`)) {
-                    await db.collection("estoque_blocado").doc(itemExistente.id).update({ qtd: itemExistente.qtd + qtd });
-                    alert("Saldo atualizado!");
-                    finalizarAcao();
+                const atualizarData = confirm(`A posição ${ender} já tem este material.\nDeseja ATUALIZAR A DATA DE VALIDADE para ${novaDataStr}?\n(Clique em Cancelar para manter a data atual: ${itemExistente.valFrente})`);
+                
+                let camposUpdate = { qtd: itemExistente.qtd + qtd };
+                if(atualizarData) {
+                    camposUpdate.valFrente = novaDataStr;
+                    camposUpdate.dias = diasCalculados;
                 }
+
+                await db.collection("estoque_blocado").doc(itemExistente.id).update(camposUpdate);
+                alert("Saldo " + (atualizarData ? "e Data atualizados!" : "atualizado!"));
+                finalizarAcao();
                 return;
-            } 
-            // Se for material diferente, bloqueia
-            else {
-                alert(`BLOQUEADO: A posição ${ender} está ocupada pelo material ${itemExistente.mat}.`);
-                return;
+            } else {
+                return alert(`BLOQUEADO: Endereço ocupado por ${itemExistente.mat}`);
             }
         }
 
-        // Se posição livre, cadastra novo
         try {
             await db.collection("estoque_blocado").add({
                 ender, mat, qtd, dias: diasCalculados,
                 desc: document.getElementById('in-desc').value || "PRODUTO",
-                valFrente: document.getElementById('in-venc').value.split('-').reverse().join('/'),
+                valFrente: novaDataStr,
                 dataContagem: new Date().toLocaleDateString()
             });
-            alert("Abastecido com sucesso!");
+            alert("Sucesso!");
             finalizarAcao();
-        } catch(e) { alert("Erro ao salvar."); }
+        } catch(e) { alert("Erro."); }
     }
 
-    // Auxiliares
     function buscarDescricao(cod) {
         const item = estoqueCompleto.find(i => i.mat === cod);
         document.getElementById('in-desc').value = item ? item.desc : "";
@@ -271,7 +250,7 @@
     function calcularDias(data) {
         const diff = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
         diasCalculados = diff;
-        document.getElementById('label-dias').innerText = `Sistema calculou: ${diff} dias p/ vencer`;
+        document.getElementById('label-dias').innerText = `Vencimento em ${diff} dias`;
     }
 
     function finalizarAcao() {
