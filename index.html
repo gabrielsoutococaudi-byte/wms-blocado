@@ -162,6 +162,7 @@
             const doc = await db.collection("usuarios_wms").doc(mat + "@alb.com").get();
             if (doc.exists) {
                 usuarioLogado = doc.data();
+                usuarioLogado.email = mat + "@alb.com"; // Armazena o login/email
                 localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
                 iniciarApp();
             }
@@ -250,7 +251,7 @@
             if (ocupante.mat === mat) {
                 if (confirm(`Endereço ocupado pelo mesmo material. Somar +${qtd} PL e atualizar validade para ${dataV}?`)) {
                     await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd, valFrente: dataV, dias: diasCalculados });
-                    registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma/Update Data)`);
+                    registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma)`);
                     alert("Atualizado!");
                     navegar('retirar');
                 }
@@ -286,18 +287,48 @@
         }
     }
 
-    async function registrarMovimentacao(e, m, v, a) {
+    // --- TÓPICO ALTERADO: REGISTRO DE MOVIMENTAÇÃO ---
+    async function registrarMovimentacao(e, m, v, q) {
         const agora = new Date();
-        await db.collection("movimentacoes_wms").add({ endereco: e, material: m, validade: v, quantidade: a, operador: usuarioLogado.nome, data: agora.toLocaleDateString('pt-BR'), timestamp: agora });
+        await db.collection("movimentacoes_wms").add({ 
+            endereco: e, 
+            material: m, 
+            validade: v, 
+            quantidade: q, 
+            login: usuarioLogado.email, // Matrícula/Login
+            data: agora.toLocaleDateString('pt-BR'), 
+            hora: agora.toLocaleTimeString('pt-BR'),
+            timestamp: agora 
+        });
     }
 
+    // --- TÓPICO ALTERADO: SOLICITAR HISTÓRICO ---
     async function exportarHistoricoExcel() {
-        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-        const dados = snap.docs.map(doc => doc.data());
-        const ws = XLSX.utils.json_to_sheet(dados);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Historico");
-        XLSX.writeFile(wb, "Log_WMS.xlsx");
+        try {
+            const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
+            if (snap.empty) return alert("Nenhuma movimentação encontrada.");
+
+            const dados = snap.docs.map(doc => {
+                const d = doc.data();
+                // Ordem das colunas conforme solicitado
+                return { 
+                    "Endereço": d.endereco, 
+                    "Material": d.material, 
+                    "Data de Validade": d.validade, 
+                    "Hora da Movimentação": d.hora, 
+                    "Login": d.login, 
+                    "Data": d.data, 
+                    "Quantidade": d.quantidade 
+                };
+            });
+
+            const ws = XLSX.utils.json_to_sheet(dados);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Historico_Movimentacoes");
+            XLSX.writeFile(wb, `Historico_WMS_${new Date().getTime()}.xlsx`);
+        } catch (error) {
+            alert("Erro ao exportar Excel.");
+        }
     }
 
     function importarCSV(event) {
