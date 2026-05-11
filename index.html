@@ -9,6 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -39,11 +40,17 @@
         .btn-import { background: var(--verde); color: #000; width: 100%; margin-top: 10px; }
         .btn-excel { background: #107c41; color: white; width: 100%; margin-top: 10px; }
 
-        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
-        .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
-        
         .admin-section { background: var(--card); padding: 15px; border-radius: 12px; margin-top: 20px; border: 1px solid #2d3748; }
         .admin-section h3 { margin: 0 0 10px 0; font-size: 14px; color: var(--primary); text-transform: uppercase; }
+
+        /* Estilos do Gráfico */
+        .chart-container { background: var(--card); padding: 15px; border-radius: 12px; margin-top: 20px; border: 1px solid #2d3748; }
+        .chart-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        .btn-filter { background: #2d3748; color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-filter.active { background: var(--primary); color: #000; }
+
+        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
+        .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
     </style>
 </head>
 <body>
@@ -71,6 +78,15 @@
             <div class="stat-box"><h5>Total Pallets</h5><p id="st-total">0</p></div>
             <div class="stat-box" style="border-color: var(--critico);"><h5>Críticos</h5><p id="st-critico">0</p></div>
             <div class="stat-box" style="border-color: var(--retido);"><h5>Retidos</h5><p id="st-retido">0</p></div>
+        </div>
+
+        <div id="admin-charts" class="chart-container" style="display: none;">
+            <div class="chart-controls">
+                <h3 style="margin:0; font-size:14px; color:var(--primary); flex-grow:1;">TOP 10 MOVIMENTAÇÕES</h3>
+                <button id="btn-semanal" class="btn-filter active" onclick="carregarGrafico('semanal')">Semanal</button>
+                <button id="btn-mensal" class="btn-filter" onclick="carregarGrafico('mensal')">Mensal</button>
+            </div>
+            <canvas id="movimentacaoChart" height="150"></canvas>
         </div>
 
         <div class="search-area">
@@ -106,6 +122,7 @@
     
     let estoqueCompleto = [];
     let usuarioLogado = null;
+    let meuGrafico = null;
 
     async function tentarLogin() {
         const loginInput = document.getElementById('login-mat').value.trim();
@@ -141,7 +158,9 @@
 
         if (usuarioLogado.role === "ADMIN") {
             document.getElementById('dash-container').style.display = 'grid';
+            document.getElementById('admin-charts').style.display = 'block';
             document.getElementById('admin-only').style.display = 'block';
+            carregarGrafico('semanal');
         }
         conectarFirebase();
     }
@@ -161,34 +180,87 @@
         document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias < 30).length;
     }
 
+    // --- LÓGICA DO GRÁFICO TOP 10 ---
+    async function carregarGrafico(periodo) {
+        // Estilo dos botões
+        document.getElementById('btn-semanal').classList.toggle('active', periodo === 'semanal');
+        document.getElementById('btn-mensal').classList.toggle('active', periodo === 'mensal');
+
+        const agora = new Date();
+        let dataLimite = new Date();
+        
+        if (periodo === 'semanal') dataLimite.setDate(agora.getDate() - 7);
+        else dataLimite.setMonth(agora.getMonth() - 1);
+
+        const snap = await db.collection("movimentacoes_wms")
+            .where("timestamp", ">=", dataLimite)
+            .get();
+
+        const contagem = {};
+        snap.forEach(doc => {
+            const mov = doc.data();
+            const mat = mov.material;
+            const qtd = Math.abs(parseInt(mov.quantidade)) || 0;
+            contagem[mat] = (contagem[mat] || 0) + qtd;
+        });
+
+        const top10 = Object.entries(contagem)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10);
+
+        const labels = top10.map(item => item[0]);
+        const valores = top10.map(item => item[1]);
+
+        renderizarGraficoCanvas(labels, valores);
+    }
+
+    function renderizarGraficoCanvas(labels, valores) {
+        const ctx = document.getElementById('movimentacaoChart').getContext('2d');
+        
+        if (meuGrafico) meuGrafico.destroy();
+
+        meuGrafico = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Pallets Movimentados',
+                    data: valores,
+                    backgroundColor: '#00d2ff',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: '#2d3748' }, ticks: { color: '#fff' } },
+                    y: { grid: { display: false }, ticks: { color: '#fff', font: { size: 10 } } }
+                }
+            }
+        });
+    }
+    // --- FIM LÓGICA GRÁFICO ---
+
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase();
         const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
-
-        // BUSCA REATIVA: Se não digitar nada, não aparece nada
         if (termo.length === 0) return;
 
         let filtrados = estoqueCompleto.filter(i => 
             i.mat.toLowerCase().includes(termo) || i.desc.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
         );
 
-        // REGRA DE PRIORIDADE PARA OPERADOR
         if (usuarioLogado.role !== "ADMIN") {
             const criticos = filtrados.filter(i => i.dias >= 31 && i.dias <= 60);
-            if (criticos.length > 0) {
-                // Se houver críticos, esconde todo o resto (Datas Boas)
-                filtrados = criticos;
-            } else {
-                // Se não houver críticos, libera as Datas Boas (>60)
-                filtrados = filtrados.filter(i => i.dias > 60);
-            }
+            if (criticos.length > 0) filtrados = criticos;
+            else filtrados = filtrados.filter(i => i.dias > 60);
         }
 
         filtrados.sort((a, b) => a.dias - b.dias).forEach(item => {
-            let status = "";
-            let classe = "";
-            
+            let status = ""; let classe = "";
             if (item.dias < 30) { status = "RETIDO"; classe = "item-retido"; }
             else if (item.dias >= 31 && item.dias <= 60) { status = "DATA CRÍTICA"; classe = "item-critico"; }
             else { status = "DATA BOA"; classe = "item-verde"; }
@@ -222,7 +294,6 @@
             if(novaQtd <= 0) await db.collection("estoque_blocado").doc(id).delete();
             else await db.collection("estoque_blocado").doc(id).update({ qtd: novaQtd });
 
-            // Sequência solicitada: Endereço; Material; Validade; Qtd; Operador; Data/Hora
             await db.collection("movimentacoes_wms").add({
                 endereco: ender,
                 material: mat,
@@ -234,6 +305,7 @@
                 timestamp: agora
             });
             alert("Movimentação registrada!");
+            if(usuarioLogado.role === "ADMIN") carregarGrafico(document.getElementById('btn-semanal').classList.contains('active') ? 'semanal' : 'mensal');
         } catch(e) { alert("Erro ao salvar."); }
     }
 
@@ -241,19 +313,13 @@
         try {
             const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
             if (snap.empty) { alert("Sem dados."); return; }
-
             const dados = snap.docs.map(doc => {
                 const d = doc.data();
                 return {
-                    "Endereço": d.endereco,
-                    "Material": d.material,
-                    "Validade": d.validade,
-                    "Qtd": d.quantidade,
-                    "Operador (Login)": d.operador,
-                    "Data/Hora": `${d.data} às ${d.hora}`
+                    "Endereço": d.endereco, "Material": d.material, "Validade": d.validade,
+                    "Qtd": d.quantidade, "Operador (Login)": d.operador, "Data/Hora": `${d.data} às ${d.hora}`
                 };
             });
-
             const ws = XLSX.utils.json_to_sheet(dados);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Historico");
