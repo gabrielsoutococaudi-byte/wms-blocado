@@ -11,15 +11,15 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0a0f1e; --card: #161e31; --primary: #00d2ff; --critico: #fbbf24; --retido: #f87171; --verde: #4ade80; --text: #f8fafc; --accent: #8b5cf6; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 30px; overflow-x: hidden; }
+        :root { --bg: #0a0f1e; --card: #161e31; --primary: #00d2ff; --critico: #fbbf24; --retido: #f87171; --verde: #4ade80; --text: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 30px; }
         
         .admin-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.4); border-radius: 12px; }
         .stat-box { background: var(--card); padding: 12px; border-radius: 8px; border-top: 3px solid var(--primary); text-align: center; }
         .stat-box h5 { margin: 0; font-size: 10px; opacity: 0.6; text-transform: uppercase; }
         .stat-box p { margin: 8px 0 0; font-size: 20px; font-weight: 900; }
 
-        .header { padding: 15px 20px; background: var(--card); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2d3748; position: sticky; top: 0; z-index: 900; }
+        .header { padding: 15px 20px; background: var(--card); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2d3748; }
         .container { max-width: 900px; margin: auto; padding: 15px; }
         
         .search-area { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
@@ -32,24 +32,9 @@
         
         .ender-badge { background: var(--primary); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; }
         
-        .btn { padding: 10px 15px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn:active { transform: scale(0.95); }
+        .btn { padding: 10px 15px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
         .btn-retirar { background: var(--primary); color: #000; }
         .btn-import { background: var(--verde); color: #000; width: 100%; margin-top: 10px; }
-
-        /* Menu Lateral */
-        .side-menu { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: var(--card); transition: 0.3s; z-index: 1100; box-shadow: 5px 0 15px rgba(0,0,0,0.5); padding: 20px; box-sizing: border-box; }
-        .side-menu.active { left: 0; }
-        .menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
-        .menu-item { padding: 15px; border-bottom: 1px solid #2d3748; cursor: pointer; font-weight: bold; }
-        .menu-item:hover { color: var(--primary); background: rgba(255,255,255,0.05); }
-
-        /* Modal Abastecer */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-content { background: var(--card); padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .modal-content input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; font-family: inherit; }
-        .btn-save { background: var(--accent); color: white; width: 100%; margin-top: 15px; font-size: 16px; }
-        .btn-cancel { background: #444; color: white; width: 100%; margin-top: 8px; }
 
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
         .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
@@ -67,20 +52,12 @@
 </div>
 
 <div id="app-screen" style="display: none;">
-    <div id="menu-overlay" class="menu-overlay" onclick="toggleMenu()"></div>
-    
     <div class="header">
-        <div onclick="toggleMenu()" style="cursor:pointer; font-size: 24px; padding: 5px;">☰</div>
-        <div style="text-align: center;">
+        <div>
             <div id="user-name" style="font-size: 16px; font-weight: 800;"></div>
             <span id="role-label" style="font-size: 10px; opacity: 0.6;"></span>
         </div>
-        <div style="width: 30px;"></div> </div>
-
-    <div id="side-menu" class="side-menu">
-        <h3 style="color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px;">WMS MENU</h3>
-        <div class="menu-item" onclick="abrirModalAbastecer()">📦 ABASTECER</div>
-        <div class="menu-item" onclick="logout()" style="color: var(--retido); margin-top: 20px;">🚪 SAIR</div>
+        <button onclick="logout()" style="background:transparent; border:1px solid #444; color:white; padding:5px 10px; border-radius:5px; cursor:pointer;">Sair</button>
     </div>
 
     <div class="container">
@@ -103,29 +80,6 @@
     </div>
 </div>
 
-<div id="modal-abastecer" class="modal">
-    <div class="modal-content">
-        <h3 style="color: var(--primary); margin-top:0;">Abastecer Blocado</h3>
-        <label style="font-size: 12px; opacity: 0.7;">Endereço</label>
-        <input type="text" id="add-ender" placeholder="Ex: A-01-01">
-        
-        <label style="font-size: 12px; opacity: 0.7;">Código Material</label>
-        <input type="text" id="add-mat" placeholder="Código" onblur="buscarDescricao(this.value)">
-        
-        <label style="font-size: 12px; opacity: 0.7;">Descrição</label>
-        <input type="text" id="add-desc" placeholder="Descrição do Produto" readonly style="opacity: 0.5;">
-        
-        <label style="font-size: 12px; opacity: 0.7;">Quantidade de Pallets</label>
-        <input type="number" id="add-qtd" placeholder="Qtd">
-        
-        <label style="font-size: 12px; opacity: 0.7;">Data de Vencimento</label>
-        <input type="date" id="add-validade">
-        
-        <button class="btn btn-save" onclick="salvarAbastecimento()">SALVAR ENTRADA</button>
-        <button class="btn btn-cancel" onclick="fecharModal()">CANCELAR</button>
-    </div>
-</div>
-
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
@@ -143,10 +97,10 @@
     let estoqueCompleto = [];
     let usuarioLogado = null;
 
-    // --- AUTENTICAÇÃO ---
     async function tentarLogin() {
         const loginInput = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
+        
         const email = loginInput.includes('@') ? loginInput : `${loginInput}@alb.com`;
 
         try {
@@ -163,10 +117,10 @@
                 localStorage.setItem('wms_session_v2', JSON.stringify(usuarioLogado));
                 iniciarApp();
             } else {
-                alert("Acesso Negado: Perfil não encontrado.");
+                alert("Acesso Negado: Verifique se o perfil foi criado na coleção 'usuarios_wms'.");
             }
         } catch (error) {
-            alert("Erro de Acesso: Verifique os dados.");
+            alert("Erro de Acesso: Verifique os dados digitados.");
         }
     }
 
@@ -183,7 +137,6 @@
         conectarFirebase();
     }
 
-    // --- CORE SISTEMA ---
     function conectarFirebase() {
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -225,7 +178,6 @@
         });
     }
 
-    // --- FUNCIONALIDADES (RETIRAR / ABASTECER) ---
     async function retirar(id, qtdAtual, mat, ender) {
         const n = prompt(`Retirada: ${mat}\nQuantos pallets deseja retirar? (Disponível: ${qtdAtual})`);
         if(!n || isNaN(n) || n > qtdAtual || n <= 0) return;
@@ -239,7 +191,6 @@
                 operador: usuarioLogado.nome,
                 material: mat,
                 quantidade: n,
-                tipo: "RETIRADA",
                 endereco: ender,
                 data: new Date().toLocaleString()
             });
@@ -247,70 +198,6 @@
         } catch(e) { alert("Erro ao processar."); }
     }
 
-    function toggleMenu() {
-        document.getElementById('side-menu').classList.toggle('active');
-        const overlay = document.getElementById('menu-overlay');
-        overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function abrirModalAbastecer() {
-        toggleMenu();
-        document.getElementById('modal-abastecer').style.display = 'flex';
-    }
-
-    function fecharModal() {
-        document.getElementById('modal-abastecer').style.display = 'none';
-        // Limpar campos
-        ['add-ender', 'add-mat', 'add-desc', 'add-qtd', 'add-validade'].forEach(id => document.getElementById(id).value = "");
-    }
-
-    function buscarDescricao(codigo) {
-        const item = estoqueCompleto.find(i => i.mat === codigo.trim());
-        if (item) document.getElementById('add-desc').value = item.desc;
-        else document.getElementById('add-desc').value = "";
-    }
-
-    async function salvarAbastecimento() {
-        const ender = document.getElementById('add-ender').value.toUpperCase();
-        const mat = document.getElementById('add-mat').value;
-        const desc = document.getElementById('add-desc').value;
-        const qtd = parseInt(document.getElementById('add-qtd').value);
-        const validadeStr = document.getElementById('add-validade').value;
-
-        if (!ender || !mat || !qtd || !validadeStr) {
-            alert("Preencha todos os campos corretamente.");
-            return;
-        }
-
-        const hoje = new Date();
-        const validadeData = new Date(validadeStr);
-        const diffTime = validadeData - hoje;
-        const diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        try {
-            const id = ender + "_" + mat + "_" + Date.now();
-            await db.collection("estoque_blocado").doc(id).set({
-                ender, mat, desc, qtd, 
-                dias: diasRestantes,
-                valFrente: validadeData.toLocaleDateString('pt-BR'),
-                dataContagem: hoje.toLocaleDateString('pt-BR')
-            });
-
-            await db.collection("movimentacoes_wms").add({
-                operador: usuarioLogado.nome,
-                material: mat,
-                quantidade: qtd,
-                tipo: "ABASTECIMENTO",
-                endereco: ender,
-                data: new Date().toLocaleString()
-            });
-
-            alert("Estoque abastecido com sucesso!");
-            fecharModal();
-        } catch (e) { alert("Erro ao salvar."); }
-    }
-
-    // --- ADMIN / CSV ---
     function importarCSV(event) {
         const reader = new FileReader();
         reader.onload = async (e) => {
