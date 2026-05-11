@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WMS FLOW PRO - Admin Expert</title>
+    <title>WMS FLOW PRO - Advanced Analytics</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0a0f1e; --card: #161e31; --primary: #00d2ff; --critico: #fbbf24; --retido: #f87171; --verde: #4ade80; --text: #f8fafc; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; }
@@ -19,113 +19,94 @@
         /* Sidebar */
         .sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: var(--card); transition: 0.3s; z-index: 1000; border-right: 1px solid #2d3748; padding: 20px; box-sizing: border-box; }
         .sidebar.active { left: 0; }
-        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; z-index: 999; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 999; }
         .sidebar-overlay.active { display: block; }
 
         .header { padding: 15px 20px; background: var(--card); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2d3748; sticky; top: 0; z-index: 100; }
         .menu-icon { font-size: 24px; cursor: pointer; color: var(--primary); }
         
-        .container { max-width: 1100px; margin: auto; padding: 15px; }
+        .container { max-width: 1200px; margin: auto; padding: 15px; }
         
-        /* Admin Dashboard Enhanced */
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: var(--card); padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary); position: relative; overflow: hidden; }
-        .stat-card h5 { margin: 0; font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-card p { margin: 10px 0 0; font-size: 28px; font-weight: 900; }
-        .stat-card .trend { font-size: 10px; margin-top: 5px; font-weight: bold; }
+        /* Dashboard Admin Robusto */
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-box { background: var(--card); padding: 15px; border-radius: 8px; border-top: 3px solid var(--primary); text-align: center; }
+        .stat-box h5 { margin: 0; font-size: 10px; opacity: 0.6; text-transform: uppercase; }
+        .stat-box p { margin: 8px 0 0; font-size: 22px; font-weight: 900; }
 
-        .charts-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .chart-box { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #2d3748; min-height: 300px; }
-        .chart-box h4 { margin: 0 0 15px 0; font-size: 13px; color: var(--primary); text-transform: uppercase; text-align: center; }
+        .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .chart-card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid #2d3748; }
+        .chart-card h4 { font-size: 12px; margin: 0 0 15px 0; text-transform: uppercase; color: var(--primary); text-align: center; }
 
-        /* Search & List */
-        .search-area { margin-bottom: 20px; }
-        #search-input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #2d3748; background: var(--card); color: white; font-size: 16px; outline: none; }
+        /* Estilo Clássico dos Cards (Operador) */
+        .search-area { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        #search-input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; font-size: 15px; outline: none; box-sizing: border-box; }
 
-        .item-card { background: var(--card); border-radius: 12px; padding: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #444; transition: 0.2s; }
-        .item-card:hover { transform: translateX(5px); }
+        .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 10px solid #444; }
+        .item-critico { border-left-color: var(--critico); }
+        .item-retido { border-left-color: var(--retido); }
+        .item-verde { border-left-color: var(--verde); }
         
-        .btn { padding: 12px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; margin-bottom: 10px; width: 100%; text-transform: uppercase; font-size: 11px; }
-        .btn-retirar { background: var(--primary); color: #000; width: auto; padding: 8px 20px; }
+        .ender-badge { background: var(--primary); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 900; }
+        .status-label { font-size: 10px; font-weight: 900; margin-left: 10px; text-transform: uppercase; }
+        
+        .btn { padding: 10px 15px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; margin-bottom: 8px; }
+        .btn-retirar { background: var(--primary); color: #000; width: auto; font-size: 14px; padding: 12px 25px; }
         .btn-import { background: var(--verde); color: #000; }
         .btn-excel { background: #107c41; color: white; }
 
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
-        .login-box { background: var(--card); padding: 40px; border-radius: 20px; width: 340px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="sidebar-overlay" id="overlay" onclick="toggleMenu()"></div>
 <div class="sidebar" id="sidebar">
-    <h2 style="color: var(--primary); font-size: 18px; font-weight: 900; margin-bottom: 5px;">WMS FLOW</h2>
-    <p style="font-size: 10px; opacity: 0.5; margin-bottom: 30px;">ADMIN CONTROL PANEL</p>
-    
+    <h3 style="color: var(--primary); margin-bottom: 25px;">GESTÃO ADMINISTRATIVA</h3>
     <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
-    <button onclick="document.getElementById('csv-file').click()" class="btn btn-import">Alimentar Novo Estoque</button>
-    <button onclick="exportarHistoricoExcel()" class="btn btn-excel">Gerar Relatório Excel</button>
-    
-    <div style="position: absolute; bottom: 20px; width: 85%;">
-        <button onclick="logout()" class="btn" style="background: #ef4444; color: white;">Finalizar Sessão</button>
-    </div>
+    <button onclick="document.getElementById('csv-file').click()" class="btn btn-import">ALIMENTAR ESTOQUE (CSV)</button>
+    <button onclick="exportarHistoricoExcel()" class="btn btn-excel">BAIXAR HISTÓRICO (EXCEL)</button>
+    <button onclick="logout()" class="btn" style="background: #444; color: white; margin-top: 50px;">SAIR</button>
 </div>
 
 <div id="login-screen">
-    <div class="login-box">
-        <h1 style="color: var(--primary); font-weight: 900; margin: 0;">WMS FLOW PRO</h1>
-        <p style="opacity: 0.5; font-size: 12px; margin-bottom: 30px;">Identifique-se para continuar</p>
-        <input type="text" id="login-mat" placeholder="Matrícula ou E-mail" style="width:100%; padding:14px; margin-bottom:12px; border-radius:8px; border:1px solid #334155; background:#0a0f1e; color:white; box-sizing: border-box;">
-        <input type="password" id="login-senha" placeholder="Senha" style="width:100%; padding:14px; margin-bottom:25px; border-radius:8px; border:1px solid #334155; background:#0a0f1e; color:white; box-sizing: border-box;">
-        <button onclick="tentarLogin()" class="btn" style="background: var(--primary); color: #000; font-size: 16px;">ENTRAR NO SISTEMA</button>
+    <div style="background: var(--card); padding: 35px; border-radius: 15px; width: 320px; box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+        <h2 style="text-align: center; color: var(--primary); margin-bottom: 25px;">WMS FLOW PRO</h2>
+        <input type="text" id="login-mat" placeholder="Matrícula" style="width:100%; padding:12px; margin-bottom:10px; border-radius:5px; border:1px solid #334155; background:#0a0f1e; color:white; box-sizing: border-box;">
+        <input type="password" id="login-senha" placeholder="Senha" style="width:100%; padding:12px; margin-bottom:20px; border-radius:5px; border:1px solid #334155; background:#0a0f1e; color:white; box-sizing: border-box;">
+        <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%;">ENTRAR</button>
     </div>
 </div>
 
 <div id="app-screen" style="display: none;">
     <div class="header">
-        <div style="display: flex; align-items: center; gap: 18px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
             <div id="menu-btn" class="menu-icon" onclick="toggleMenu()" style="display:none;">☰</div>
             <div>
-                <div id="user-name" style="font-size: 16px; font-weight: 900;"></div>
-                <div id="role-label" style="font-size: 9px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;"></div>
+                <div id="user-name" style="font-size: 16px; font-weight: 800;"></div>
+                <span id="role-label" style="font-size: 10px; opacity: 0.6;"></span>
             </div>
         </div>
-        <img src="https://cdn-icons-png.flaticon.com/512/1177/1177568.png" width="35" style="filter: invert(1); opacity: 0.8;">
+        <div style="font-weight: 900; color: var(--primary);">WMS FLOW PRO</div>
     </div>
 
     <div class="container">
-        <div id="admin-analytics" style="display: none; margin-top: 20px;">
-            <div class="kpi-grid">
-                <div class="stat-card">
-                    <h5>Total em Estoque</h5>
-                    <p id="kpi-total">0</p>
-                    <div class="trend" style="color: var(--verde);">Pallets Ativos</div>
-                </div>
-                <div class="stat-card" style="border-color: var(--retido);">
-                    <h5>Taxa de Retenção</h5>
-                    <p id="kpi-retido">0</p>
-                    <div class="trend" style="color: var(--retido);">Lotes < 30 dias</div>
-                </div>
-                <div class="stat-card" style="border-color: var(--critico);">
-                    <h5>Risco de Validade</h5>
-                    <p id="kpi-critico">0</p>
-                    <div class="trend" style="color: var(--critico);">Foco de Saída</div>
-                </div>
+        <div id="admin-only" style="display: none;">
+            <div class="admin-grid">
+                <div class="stat-box"><h5>Total Pallets</h5><p id="st-total">0</p></div>
+                <div class="stat-box" style="border-color: var(--critico);"><h5>Críticos</h5><p id="st-critico">0</p></div>
+                <div class="stat-box" style="border-color: var(--retido);"><h5>Retidos</h5><p id="st-retido">0</p></div>
+                <div class="stat-box" style="border-color: var(--verde);"><h5>Média Dias</h5><p id="st-media">0</p></div>
             </div>
 
-            <div class="charts-section">
-                <div class="chart-box">
-                    <h4>Qualidade do Estoque</h4>
-                    <canvas id="statusChart"></canvas>
-                </div>
-                <div class="chart-box">
-                    <h4>Top 5 Endereços Ocupados</h4>
-                    <canvas id="addressChart"></canvas>
-                </div>
+            <div class="charts-container">
+                <div class="chart-card"><canvas id="chartStatus"></canvas></div>
+                <div class="chart-card"><canvas id="chartEnder"></canvas></div>
+                <div class="chart-card"><canvas id="chartMaterial"></canvas></div>
             </div>
         </div>
 
         <div class="search-area">
-            <input type="text" id="search-input" placeholder="Digite material ou endereço para filtrar..." oninput="renderizarEstoque()">
+            <input type="text" id="search-input" placeholder="Buscar Material ou Endereço..." oninput="renderizarEstoque()">
         </div>
 
         <div id="lista-estoque"></div>
@@ -148,8 +129,7 @@
     
     let estoqueCompleto = [];
     let usuarioLogado = null;
-    let chartStatus = null;
-    let chartAddress = null;
+    let charts = {};
 
     function toggleMenu() {
         document.getElementById('sidebar').classList.toggle('active');
@@ -160,17 +140,15 @@
         const loginInput = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
         const email = loginInput.includes('@') ? loginInput : `${loginInput}@alb.com`;
-
         try {
             await auth.signInWithEmailAndPassword(email, senha);
             const doc = await db.collection("usuarios_wms").doc(email).get();
             if (doc.exists) {
-                const dados = doc.data();
-                usuarioLogado = { nome: dados.nome, role: dados.perfil.toUpperCase(), email: email };
+                usuarioLogado = { nome: doc.data().nome, role: doc.data().perfil.toUpperCase(), email: email };
                 localStorage.setItem('wms_session_v2', JSON.stringify(usuarioLogado));
                 iniciarApp();
             }
-        } catch (error) { alert("Credenciais Inválidas."); }
+        } catch (error) { alert("Login Inválido."); }
     }
 
     function iniciarApp() {
@@ -181,7 +159,7 @@
 
         if (usuarioLogado.role === "ADMIN") {
             document.getElementById('menu-btn').style.display = 'block';
-            document.getElementById('admin-analytics').style.display = 'block';
+            document.getElementById('admin-only').style.display = 'block';
         }
         conectarFirebase();
     }
@@ -189,66 +167,56 @@
     function conectarFirebase() {
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            atualizarDashboardExpert();
+            atualizarAdminDashboard();
             renderizarEstoque();
         });
     }
 
-    function atualizarDashboardExpert() {
+    function atualizarAdminDashboard() {
         if(!usuarioLogado || usuarioLogado.role !== "ADMIN") return;
-        
+
         const totalPallets = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
         const criticos = estoqueCompleto.filter(i => i.dias >= 31 && i.dias <= 60).length;
         const retidos = estoqueCompleto.filter(i => i.dias < 30).length;
         const saudaveis = estoqueCompleto.filter(i => i.dias > 60).length;
+        const mediaDias = Math.round(estoqueCompleto.reduce((a, b) => a + (b.dias || 0), 0) / (estoqueCompleto.length || 1));
 
-        document.getElementById('kpi-total').innerText = totalPallets;
-        document.getElementById('kpi-critico').innerText = criticos;
-        document.getElementById('kpi-retido').innerText = retidos;
+        document.getElementById('st-total').innerText = totalPallets;
+        document.getElementById('st-critico').innerText = criticos;
+        document.getElementById('st-retido').innerText = retidos;
+        document.getElementById('st-media').innerText = mediaDias + "d";
 
-        // Gráfico de Status (Rosca)
-        const ctx1 = document.getElementById('statusChart').getContext('2d');
-        if (chartStatus) chartStatus.destroy();
-        chartStatus = new Chart(ctx1, {
-            type: 'doughnut',
+        // Chart 1: Status Distribution
+        renderChart('chartStatus', 'doughnut', ['Retido', 'Crítico', 'Bom'], [retidos, criticos, saudaveis], ['#f87171', '#fbbf24', '#4ade80']);
+
+        // Chart 2: Top 5 Endereços Ocupados
+        const enderMap = {};
+        estoqueCompleto.forEach(i => enderMap[i.ender] = (enderMap[i.ender] || 0) + (parseInt(i.qtd) || 0));
+        const topEnder = Object.entries(enderMap).sort((a,b) => b[1]-a[1]).slice(0,5);
+        renderChart('chartEnder', 'bar', topEnder.map(e => e[0]), topEnder.map(e => e[1]), '#00d2ff', 'Pallets por Endereço');
+
+        // Chart 3: Top 5 Materiais
+        const matMap = {};
+        estoqueCompleto.forEach(i => matMap[i.mat] = (matMap[i.mat] || 0) + (parseInt(i.qtd) || 0));
+        const topMat = Object.entries(matMap).sort((a,b) => b[1]-a[1]).slice(0,5);
+        renderChart('chartMaterial', 'pie', topMat.map(e => e[0]), topMat.map(e => e[1]), ['#60a5fa','#a78bfa','#f472b6','#fb923c','#2dd4bf']);
+    }
+
+    function renderChart(id, type, labels, data, colors, title = '') {
+        const ctx = document.getElementById(id).getContext('2d');
+        if(charts[id]) charts[id].destroy();
+        charts[id] = new Chart(ctx, {
+            type: type,
             data: {
-                labels: ['Retido', 'Crítico', 'Saudável'],
-                datasets: [{
-                    data: [retidos, criticos, saudaveis],
-                    backgroundColor: ['#f87171', '#fbbf24', '#4ade80'],
-                    borderWidth: 0,
-                    hoverOffset: 10
-                }]
+                labels: labels,
+                datasets: [{ data: data, backgroundColor: colors, borderWidth: 0 }]
             },
-            options: { plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } } }
-        });
-
-        // Gráfico de Ocupação por Endereço (Barras)
-        const enderecos = {};
-        estoqueCompleto.forEach(i => {
-            enderecos[i.ender] = (enderecos[i.ender] || 0) + (parseInt(i.qtd) || 0);
-        });
-        const topEnderecos = Object.entries(enderecos).sort((a,b) => b[1] - a[1]).slice(0, 5);
-
-        const ctx2 = document.getElementById('addressChart').getContext('2d');
-        if (chartAddress) chartAddress.destroy();
-        chartAddress = new Chart(ctx2, {
-            type: 'bar',
-            data: {
-                labels: topEnderecos.map(e => e[0]),
-                datasets: [{
-                    label: 'Pallets',
-                    data: topEnderecos.map(e => e[1]),
-                    backgroundColor: '#00d2ff',
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                scales: { 
-                    y: { grid: { color: '#2d3748' }, ticks: { color: '#fff' } },
-                    x: { ticks: { color: '#fff' } }
-                },
-                plugins: { legend: { display: false } }
+            options: { 
+                responsive: true, 
+                plugins: { 
+                    legend: { position: 'bottom', labels: { color: '#fff', font: { size: 9 } } },
+                    title: { display: !!title, text: title, color: '#fff' }
+                } 
             }
         });
     }
@@ -259,9 +227,7 @@
         lista.innerHTML = '';
         if (termo.length === 0) return;
 
-        let filtrados = estoqueCompleto.filter(i => 
-            i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
-        );
+        let filtrados = estoqueCompleto.filter(i => i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
 
         if (usuarioLogado.role !== "ADMIN") {
             const criticos = filtrados.filter(i => i.dias >= 31 && i.dias <= 60);
@@ -269,29 +235,30 @@
         }
 
         filtrados.sort((a, b) => a.dias - b.dias).forEach(item => {
-            const status = item.dias < 30 ? "RETIDO" : item.dias <= 60 ? "CRÍTICO" : "NORMAL";
-            const cor = status === 'NORMAL' ? '#4ade80' : status === 'CRÍTICO' ? '#fbbf24' : '#f87171';
-            
+            let status = item.dias < 30 ? "RETIDO" : item.dias <= 60 ? "DATA CRÍTICA" : "DATA BOA";
+            let classe = item.dias < 30 ? "item-retido" : item.dias <= 60 ? "item-critico" : "item-verde";
+            let corLabel = status === 'DATA BOA' ? '#4ade80' : status === 'DATA CRÍTICA' ? '#fbbf24' : '#f87171';
+
             const card = document.createElement('div');
-            card.className = `item-card`;
-            card.style.borderLeftColor = cor;
+            card.className = `item-card ${classe}`;
             card.innerHTML = `
                 <div>
-                    <span style="font-size:10px; font-weight:800; color:${cor}">${status}</span>
-                    <div style="font-weight:800; font-size:15px; margin: 4px 0;">${item.mat}</div>
-                    <div style="font-size:11px; opacity:0.7;">📍 ${item.ender} | 📅 Vence em ${item.dias} dias</div>
+                    <span class="ender-badge">${item.ender}</span>
+                    <span class="status-label" style="color:${corLabel}">${status}</span>
+                    <div style="font-weight:bold; font-size:16px; margin-top:8px;">${item.mat}</div>
+                    <div style="font-size:11px; opacity:0.8; margin-top:4px;">${item.desc}</div>
+                    <div style="font-size:12px; margin-top:5px; font-weight:700;">Vencimento: ${item.dias} dias | Ref: ${item.valFrente}</div>
                 </div>
                 <div style="text-align:right">
-                    <div style="font-size:20px; font-weight:900; color:var(--primary)">${item.qtd} PL</div>
-                    <button class="btn btn-retirar" onclick="retirar('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">Baixar</button>
+                    <div style="font-size:22px; font-weight:900;">${item.qtd} PL</div>
+                    <button class="btn btn-retirar" onclick="retirar('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button>
                 </div>`;
             lista.appendChild(card);
         });
     }
 
-    // [Funções de Retirar, Exportar e Importar mantidas conforme original para garantir funcionamento]
     async function retirar(id, qtdAtual, mat, ender, validade) {
-        const n = prompt(`Retirada: ${mat}\nQuantidade? (Max: ${qtdAtual})`);
+        const n = prompt(`Retirar ${mat}:\nQuantidade? (Disponível: ${qtdAtual})`);
         if(!n || isNaN(n) || n > qtdAtual || n <= 0) return;
         const novaQtd = qtdAtual - parseInt(n);
         const agora = new Date();
@@ -302,22 +269,20 @@
                 endereco: ender, material: mat, validade: validade, quantidade: "-" + n,
                 operador: usuarioLogado.nome, data: agora.toLocaleDateString('pt-BR'), hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora
             });
-            alert("Sucesso!");
-        } catch(e) { alert("Erro."); }
+            alert("Retirada confirmada!");
+        } catch(e) { alert("Erro ao salvar."); }
     }
 
     async function exportarHistoricoExcel() {
-        try {
-            const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-            const dados = snap.docs.map(doc => {
-                const d = doc.data();
-                return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Operador": d.operador, "Data/Hora": `${d.data} ${d.hora}` };
-            });
-            const ws = XLSX.utils.json_to_sheet(dados);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Log");
-            XLSX.writeFile(wb, `WMS_Relatorio.xlsx`);
-        } catch (e) { alert("Erro Excel."); }
+        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").limit(500).get();
+        const dados = snap.docs.map(doc => {
+            const d = doc.data();
+            return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Operador": d.operador, "Data": d.data, "Hora": d.hora };
+        });
+        const ws = XLSX.utils.json_to_sheet(dados);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Histórico");
+        XLSX.writeFile(wb, "Historico_WMS.xlsx");
     }
 
     function importarCSV(event) {
@@ -337,17 +302,12 @@
                 }
             });
             await batch.commit();
-            alert("Sistema Atualizado!");
-            location.reload();
+            alert("Estoque Atualizado!"); location.reload();
         };
         reader.readAsText(event.target.files[0], 'ISO-8859-1');
     }
 
-    function logout() { 
-        auth.signOut();
-        localStorage.removeItem('wms_session_v2'); 
-        location.reload(); 
-    }
+    function logout() { auth.signOut(); localStorage.removeItem('wms_session_v2'); location.reload(); }
 
     window.onload = () => {
         const s = localStorage.getItem('wms_session_v2');
