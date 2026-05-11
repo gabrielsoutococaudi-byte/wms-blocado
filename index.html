@@ -8,6 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -31,13 +32,18 @@
         .item-verde { border-left-color: var(--verde); }
         
         .ender-badge { background: var(--primary); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; }
+        .status-label { font-size: 10px; font-weight: 900; margin-left: 10px; text-transform: uppercase; }
         
-        .btn { padding: 10px 15px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
+        .btn { padding: 10px 15px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-retirar { background: var(--primary); color: #000; }
         .btn-import { background: var(--verde); color: #000; width: 100%; margin-top: 10px; }
+        .btn-excel { background: #107c41; color: white; width: 100%; margin-top: 10px; }
 
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
         .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+        
+        .admin-section { background: var(--card); padding: 15px; border-radius: 12px; margin-top: 20px; border: 1px solid #2d3748; }
+        .admin-section h3 { margin: 0 0 10px 0; font-size: 14px; color: var(--primary); text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -73,9 +79,13 @@
 
         <div id="lista-estoque"></div>
 
-        <div id="admin-only" style="display: none; margin-top: 20px; border-top: 1px solid #334155; padding-top: 20px;">
-            <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
-            <button onclick="document.getElementById('csv-file').click()" class="btn btn-import">ALIMENTAR ESTOQUE (CSV)</button>
+        <div id="admin-only" style="display: none;">
+            <div class="admin-section">
+                <h3>Gerenciamento Administrativo</h3>
+                <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
+                <button onclick="document.getElementById('csv-file').click()" class="btn btn-import">ALIMENTAR NOVO ESTOQUE (CSV)</button>
+                <button onclick="exportarHistoricoExcel()" class="btn btn-excel">SOLICITAR HISTÓRICO (EXCEL)</button>
+            </div>
         </div>
     </div>
 </div>
@@ -100,7 +110,6 @@
     async function tentarLogin() {
         const loginInput = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
-        
         const email = loginInput.includes('@') ? loginInput : `${loginInput}@alb.com`;
 
         try {
@@ -117,10 +126,10 @@
                 localStorage.setItem('wms_session_v2', JSON.stringify(usuarioLogado));
                 iniciarApp();
             } else {
-                alert("Acesso Negado: Verifique se o perfil foi criado na coleção 'usuarios_wms'.");
+                alert("Erro: Perfil não encontrado.");
             }
         } catch (error) {
-            alert("Erro de Acesso: Verifique os dados digitados.");
+            alert("Falha no login.");
         }
     }
 
@@ -157,45 +166,99 @@
         const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
 
-        estoqueCompleto.filter(i => 
+        // BUSCA REATIVA: Se não digitar nada, não aparece nada
+        if (termo.length === 0) return;
+
+        let filtrados = estoqueCompleto.filter(i => 
             i.mat.toLowerCase().includes(termo) || i.desc.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
-        ).sort((a, b) => a.dias - b.dias).forEach(item => {
-            let cor = item.dias < 30 ? "item-retido" : (item.dias <= 60 ? "item-critico" : "item-verde");
+        );
+
+        // REGRA DE PRIORIDADE PARA OPERADOR
+        if (usuarioLogado.role !== "ADMIN") {
+            const criticos = filtrados.filter(i => i.dias >= 31 && i.dias <= 60);
+            if (criticos.length > 0) {
+                // Se houver críticos, esconde todo o resto (Datas Boas)
+                filtrados = criticos;
+            } else {
+                // Se não houver críticos, libera as Datas Boas (>60)
+                filtrados = filtrados.filter(i => i.dias > 60);
+            }
+        }
+
+        filtrados.sort((a, b) => a.dias - b.dias).forEach(item => {
+            let status = "";
+            let classe = "";
+            
+            if (item.dias < 30) { status = "RETIDO"; classe = "item-retido"; }
+            else if (item.dias >= 31 && item.dias <= 60) { status = "DATA CRÍTICA"; classe = "item-critico"; }
+            else { status = "DATA BOA"; classe = "item-verde"; }
+
             const card = document.createElement('div');
-            card.className = `item-card ${cor}`;
+            card.className = `item-card ${classe}`;
             card.innerHTML = `
                 <div>
                     <span class="ender-badge">${item.ender}</span>
+                    <span class="status-label" style="color:${status === 'DATA BOA' ? '#4ade80' : status === 'DATA CRÍTICA' ? '#fbbf24' : '#f87171'}">${status}</span>
                     <div style="font-weight:bold; margin-top:5px;">${item.mat} - ${item.desc}</div>
                     <div style="font-size:11px; opacity:0.8;">Vencimento em: ${item.dias} dias | Ref: ${item.valFrente}</div>
                 </div>
                 <div style="text-align:right">
                     <div style="font-size:18px; font-weight:900;">${item.qtd} PL</div>
-                    <button class="btn btn-retirar" onclick="retirar('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}')">RETIRAR</button>
+                    <button class="btn btn-retirar" onclick="retirar('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button>
                 </div>
             `;
             lista.appendChild(card);
         });
     }
 
-    async function retirar(id, qtdAtual, mat, ender) {
-        const n = prompt(`Retirada: ${mat}\nQuantos pallets deseja retirar? (Disponível: ${qtdAtual})`);
+    async function retirar(id, qtdAtual, mat, ender, validade) {
+        const n = prompt(`Retirada: ${mat}\nQuantidade? (Disponível: ${qtdAtual})`);
         if(!n || isNaN(n) || n > qtdAtual || n <= 0) return;
 
         const novaQtd = qtdAtual - parseInt(n);
+        const agora = new Date();
+        
         try {
             if(novaQtd <= 0) await db.collection("estoque_blocado").doc(id).delete();
             else await db.collection("estoque_blocado").doc(id).update({ qtd: novaQtd });
 
+            // Sequência solicitada: Endereço; Material; Validade; Qtd; Operador; Data/Hora
             await db.collection("movimentacoes_wms").add({
-                operador: usuarioLogado.nome,
-                material: mat,
-                quantidade: n,
                 endereco: ender,
-                data: new Date().toLocaleString()
+                material: mat,
+                validade: validade,
+                quantidade: "-" + n + " PL",
+                operador: usuarioLogado.nome,
+                data: agora.toLocaleDateString('pt-BR'),
+                hora: agora.toLocaleTimeString('pt-BR'),
+                timestamp: agora
             });
-            alert("Sucesso!");
-        } catch(e) { alert("Erro ao processar."); }
+            alert("Movimentação registrada!");
+        } catch(e) { alert("Erro ao salvar."); }
+    }
+
+    async function exportarHistoricoExcel() {
+        try {
+            const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
+            if (snap.empty) { alert("Sem dados."); return; }
+
+            const dados = snap.docs.map(doc => {
+                const d = doc.data();
+                return {
+                    "Endereço": d.endereco,
+                    "Material": d.material,
+                    "Validade": d.validade,
+                    "Qtd": d.quantidade,
+                    "Operador (Login)": d.operador,
+                    "Data/Hora": `${d.data} às ${d.hora}`
+                };
+            });
+
+            const ws = XLSX.utils.json_to_sheet(dados);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Historico");
+            XLSX.writeFile(wb, `Relatorio_WMS_${new Date().getTime()}.xlsx`);
+        } catch (e) { alert("Erro ao gerar Excel."); }
     }
 
     function importarCSV(event) {
@@ -203,8 +266,6 @@
         reader.onload = async (e) => {
             const linhas = e.target.result.split("\n").slice(1);
             const batch = db.batch();
-            let count = 0;
-
             linhas.forEach(l => {
                 const c = l.split(";");
                 if(c.length >= 8) {
@@ -215,11 +276,10 @@
                         qtd: parseInt(c[5]) || 0, dataContagem: c[6].trim(),
                         dias: parseInt(c[7]) || 0
                     });
-                    count++;
                 }
             });
             await batch.commit();
-            alert("Estoque Atualizado: " + count + " itens.");
+            alert("Estoque Atualizado!");
             location.reload();
         };
         reader.readAsText(event.target.files[0], 'ISO-8859-1');
