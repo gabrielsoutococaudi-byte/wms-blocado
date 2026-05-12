@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WMS FLOW PRO - Sistema Integrado</title>
+
+    <!-- ✅ ADIÇÕES PWA (únicas mudanças em relação ao original) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WMS PRO">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="theme-color" content="#00d2ff">
+    <!-- FIM DAS ADIÇÕES PWA -->
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -162,7 +171,7 @@
             const doc = await db.collection("usuarios_wms").doc(mat + "@alb.com").get();
             if (doc.exists) {
                 usuarioLogado = doc.data();
-                usuarioLogado.email = mat + "@alb.com"; // Armazena o login/email
+                usuarioLogado.email = mat + "@alb.com";
                 localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
                 iniciarApp();
             }
@@ -287,7 +296,6 @@
         }
     }
 
-    // --- TÓPICO ALTERADO: REGISTRO DE MOVIMENTAÇÃO ---
     async function registrarMovimentacao(e, m, v, q) {
         const agora = new Date();
         await db.collection("movimentacoes_wms").add({ 
@@ -295,14 +303,13 @@
             material: m, 
             validade: v, 
             quantidade: q, 
-            login: usuarioLogado.email, // Matrícula/Login
+            login: usuarioLogado.email,
             data: agora.toLocaleDateString('pt-BR'), 
             hora: agora.toLocaleTimeString('pt-BR'),
             timestamp: agora 
         });
     }
 
-    // --- TÓPICO ALTERADO: SOLICITAR HISTÓRICO ---
     async function exportarHistoricoExcel() {
         try {
             const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
@@ -310,7 +317,6 @@
 
             const dados = snap.docs.map(doc => {
                 const d = doc.data();
-                // Ordem das colunas conforme solicitado
                 return { 
                     "Endereço": d.endereco, 
                     "Material": d.material, 
@@ -350,6 +356,13 @@
 
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
     function logout() { if(wakeLock) wakeLock.release(); auth.signOut(); localStorage.removeItem('wms_session'); location.reload(); }
+
+    // ✅ Registro do Service Worker (única adição no JS)
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').catch(() => {});
+        });
+    }
 
     window.onload = () => {
         const s = localStorage.getItem('wms_session');
