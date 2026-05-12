@@ -32,7 +32,7 @@
 
         .search-area { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; outline: none; }
-        .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid var(--critico); }
+        .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid #444; }
         
         .badge-ender { background: var(--primary); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 900; }
         .badge-status { background: var(--critico); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; margin-left: 8px; }
@@ -45,7 +45,7 @@
 </head>
 <body>
 
-<div id="offline-badge">MODO OFFLINE ATIVO - DADOS SERÃO SINCRONIZADOS AO RECONECTAR</div>
+<div id="offline-badge">MODO OFFLINE</div>
 
 <div id="sidebar" class="sidebar">
     <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ADMIN</button>
@@ -76,21 +76,18 @@
         <div id="view-admin" style="display: none;">
             <div id="dash-container" class="admin-dashboard">
                 <div class="stat-box"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
-                <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS (≤60d)</h5><p id="st-critico">0</p></div>
-                <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS (≤30d)</h5><p id="st-retido">0</p></div>
+                <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS</h5><p id="st-critico">0</p></div>
+                <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS</h5><p id="st-retido">0</p></div>
             </div>
-
-            <div id="admin-tools-section" style="background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #2d3748;">
-                <h3 style="font-size: 12px; color: var(--primary); margin-top: 0;">GERENCIAMENTO ADMINISTRATIVO</h3>
+            <div style="background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #2d3748;">
                 <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
-                <button class="btn-admin" onclick="document.getElementById('csv-file').click()">ALIMENTAR NOVO ESTOQUE (CSV)</button>
-                <button class="btn-admin" style="background: #107c41; color: white;" onclick="exportarHistoricoExcel()">SOLICITAR HISTÓRICO (EXCEL)</button>
+                <button class="btn-admin" onclick="document.getElementById('csv-file').click()">ATUALIZAR ESTOQUE (CSV)</button>
+                <button class="btn-admin" style="background: #107c41; color: white;" onclick="exportarHistoricoExcel()">HISTÓRICO (EXCEL)</button>
             </div>
         </div>
 
         <div id="view-retirar">
             <div class="search-area">
-                <h4 style="margin: 0 0 10px 0; font-size: 12px; color: var(--critico);">FILTRO DE SEGURANÇA: APENAS LOTES CRÍTICOS</h4>
                 <input type="text" id="search-input" placeholder="Pesquisar material ou endereço..." oninput="renderizarEstoque()">
             </div>
             <div id="lista-estoque"></div>
@@ -99,35 +96,20 @@
         <div id="view-abastecer" style="display: none;">
             <div style="background: var(--card); padding: 25px; border-radius: 12px;">
                 <h3 style="color: var(--primary); margin-top: 0;">ABASTECER BLOCO</h3>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">Endereço (Ex: A-01-01)</label>
-                    <input type="text" id="in-ender" placeholder="Endereço...">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">Código Material</label>
-                    <input type="text" id="in-mat" placeholder="Código..." oninput="puxarDescricao(this.value)">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">Descrição do Produto</label>
-                    <input type="text" id="in-desc" readonly style="opacity: 0.5;">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">Quantidade de Pallets para ADICIONAR</label>
-                    <input type="number" id="in-qtd">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">Nova Data de Vencimento</label>
-                    <input type="date" id="in-venc" onchange="calcularDias(this.value)">
-                    <p id="label-dias" style="color: var(--critico); font-size: 12px; margin-top: 5px; font-weight: bold;"></p>
-                </div>
-                <button class="btn-admin" style="background: #7c3aed; color: white;" onclick="salvarAbastecimentoManual()">SALVAR ABASTECIMENTO</button>
+                <input type="text" id="in-ender" placeholder="Endereço (Ex: A-01-01)" style="margin-bottom:10px;">
+                <input type="text" id="in-mat" placeholder="Código Material" style="margin-bottom:10px;" oninput="puxarDescricao(this.value)">
+                <input type="text" id="in-desc" readonly placeholder="Descrição..." style="margin-bottom:10px; opacity:0.6;">
+                <input type="number" id="in-qtd" placeholder="Qtd Pallets" style="margin-bottom:10px;">
+                <input type="date" id="in-venc" style="margin-bottom:10px;" onchange="calcularDias(this.value)">
+                <p id="label-dias" style="color: var(--critico); font-size: 12px; font-weight: bold;"></p>
+                <button class="btn-admin" style="background: #7c3aed; color: white;" onclick="salvarAbastecimentoManual()">SALVAR ENTRADA</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // --- CONFIGURAÇÃO FIREBASE ---
+    // Configurações do Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
         authDomain: "sistema-fefo.firebaseapp.com",
@@ -141,33 +123,23 @@
     const auth = firebase.auth();
 
     db.enablePersistence().catch(() => {});
-    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
     let estoqueCompleto = [];
     let usuarioLogado = null;
     let diasCalculados = 0;
 
-    // Monitor Online/Offline
-    window.addEventListener('online', () => document.getElementById('offline-badge').style.display = 'none');
-    window.addEventListener('offline', () => document.getElementById('offline-badge').style.display = 'block');
-
+    // Login e Inicialização
     async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
         try {
             await auth.signInWithEmailAndPassword(mat + "@alb.com", senha);
             const doc = await db.collection("usuarios_wms").doc(mat + "@alb.com").get();
-            if (doc.exists) {
-                usuarioLogado = doc.data();
-                usuarioLogado.email = mat + "@alb.com";
-                localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
-                iniciarApp();
-            }
-        } catch (e) { 
-            const session = localStorage.getItem('wms_session');
-            if(session) { usuarioLogado = JSON.parse(session); iniciarApp(); }
-            else alert("Erro de Login."); 
-        }
+            usuarioLogado = doc.data();
+            usuarioLogado.email = mat + "@alb.com";
+            localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
+            iniciarApp();
+        } catch (e) { alert("Erro de acesso."); }
     }
 
     function iniciarApp() {
@@ -176,9 +148,7 @@
         document.getElementById('user-name').innerText = usuarioLogado.nome;
         const isAdmin = usuarioLogado.perfil.toUpperCase() === "ADMIN";
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
-        document.getElementById('admin-tools-section').style.display = isAdmin ? 'block' : 'none';
         conectarFirebase();
-        navegar(isAdmin ? 'admin' : 'retirar');
     }
 
     function conectarFirebase() {
@@ -189,39 +159,38 @@
         });
     }
 
-    function atualizarEstatisticas() {
-        if(!usuarioLogado || usuarioLogado.perfil.toUpperCase() !== "ADMIN") return;
-        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
-        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias <= 60).length;
-        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
-    }
-
+    // --- LÓGICA DE BUSCA COM FILTRO INTELIGENTE ---
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
         if (termo.length === 0) return;
 
-        let filtrados = estoqueCompleto.filter(i => {
-            const match = i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo);
-            const critico = i.dias <= 60; 
-            return match && critico;
-        });
-        
-        filtrados.sort((a, b) => a.dias - b.dias);
+        // 1. Pega tudo que combina com o nome
+        let todosEncontrados = estoqueCompleto.filter(i => 
+            i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
+        );
 
-        if (filtrados.length === 0) {
-            lista.innerHTML = '<p style="text-align:center; color: var(--verde); padding: 20px;">Nenhum lote crítico (≤60 dias) encontrado.</p>';
-            return;
-        }
+        // 2. Separa Críticos (<=60) de Normais (>60)
+        let criticos = todosEncontrados.filter(i => i.dias <= 60);
+        let normais = todosEncontrados.filter(i => i.dias > 60);
 
-        filtrados.forEach(item => {
+        // REGRA: Se houver críticos, mostra APENAS os críticos. 
+        // Se NÃO houver críticos, mostra os normais (data boa).
+        let exibir = criticos.length > 0 ? criticos : normais;
+
+        exibir.sort((a, b) => a.dias - b.dias);
+
+        exibir.forEach(item => {
+            const isCritico = item.dias <= 60;
             const card = document.createElement('div');
             card.className = `item-card`;
+            card.style.borderLeftColor = isCritico ? 'var(--critico)' : 'var(--verde)';
+            
             card.innerHTML = `
                 <div>
                     <span class="badge-ender">${item.ender}</span>
-                    <span class="badge-status">CRÍTICO</span>
+                    <span class="badge-status" style="background:${isCritico?'var(--critico)':'var(--verde)'}">${isCritico?'CRÍTICO':'DATA BOA'}</span>
                     <div style="font-weight:900; font-size:18px; margin-top:5px;">${item.mat}</div>
                     <div style="font-size:11px; opacity:0.7;">${item.desc}</div>
                     <div style="font-size:12px; margin-top:5px;">Vence em: <b>${item.dias} dias</b></div>
@@ -234,137 +203,95 @@
         });
     }
 
-    // --- ABASTECIMENTO COM REGRAS DE BLOQUEIO DE MIX E DATA ---
+    // --- ABASTECIMENTO COM REGRAS DE BLOQUEIO ---
     async function salvarAbastecimentoManual() {
         const ender = document.getElementById('in-ender').value.toUpperCase().trim();
         const mat = document.getElementById('in-mat').value.trim();
         const qtdAdd = parseInt(document.getElementById('in-qtd').value);
         const inputData = document.getElementById('in-venc').value;
-        const novaDataFormatada = inputData ? inputData.split('-').reverse().join('/') : "";
+        const novaData = inputData ? inputData.split('-').reverse().join('/') : "";
 
-        if(!ender || !mat || isNaN(qtdAdd) || !inputData) return alert("Por favor, preencha todos os campos corretamente.");
+        if(!ender || !mat || isNaN(qtdAdd) || !inputData) return alert("Preencha tudo!");
 
-        // 1. Verificar se o endereço já está ocupado
         const ocupante = estoqueCompleto.find(i => i.ender === ender);
 
         if (ocupante) {
-            // BLOQUEIO DE MIX: Se for material diferente, proíbe
-            if (ocupante.mat !== mat) {
-                return alert(`BLOQUEIO: O endereço ${ender} já está ocupado pelo material ${ocupante.mat}. Não é permitido misturar materiais no mesmo bloco!`);
-            }
+            if (ocupante.mat !== mat) return alert("BLOQUEIO: Este endereço já tem outro material!");
 
-            // MESMO MATERIAL: Pergunta sobre a data
-            const manterAntiga = confirm(`O material ${mat} já está no endereço ${ender} com validade ${ocupante.valFrente}.\n\nClique em OK para MANTER a validade antiga (${ocupante.valFrente}).\nClique em CANCELAR para usar a NOVA validade (${novaDataFormatada}).`);
+            const manter = confirm(`Material já existe! OK para manter data antiga (${ocupante.valFrente}) ou CANCELAR para atualizar para ${novaData}?`);
+            const dataF = manter ? ocupante.valFrente : novaData;
+            const diasF = manter ? ocupante.dias : diasCalculados;
 
-            const dataFinal = manterAntiga ? ocupante.valFrente : novaDataFormatada;
-            const diasFinal = manterAntiga ? ocupante.dias : diasCalculados;
-
-            try {
-                await db.collection("estoque_blocado").doc(ocupante.id).update({ 
-                    qtd: ocupante.qtd + qtdAdd, 
-                    valFrente: dataFinal, 
-                    dias: diasFinal 
-                });
-                registrarMovimentacao(ender, mat, dataFinal, `+${qtdAdd} PL (Abastecimento)`);
-                alert("Abastecimento concluído com sucesso!");
-                navegar('retirar');
-            } catch(e) { alert("Erro ao atualizar estoque."); }
-
+            await db.collection("estoque_blocado").doc(ocupante.id).update({ 
+                qtd: ocupante.qtd + qtdAdd, valFrente: dataF, dias: diasF 
+            });
+            alert("Estoque somado!");
         } else {
-            // ENDEREÇO VAZIO: Cria novo registro
-            try {
-                const id = ender + "_" + mat;
-                await db.collection("estoque_blocado").doc(id).set({ 
-                    ender, mat, qtd: qtdAdd, dias: diasCalculados, valFrente: novaDataFormatada, 
-                    desc: document.getElementById('in-desc').value 
-                });
-                registrarMovimentacao(ender, mat, novaDataFormatada, `+${qtdAdd} PL (Entrada Nova)`);
-                alert("Novo estoque criado com sucesso!");
-                navegar('retirar');
-            } catch(e) { alert("Erro ao salvar."); }
+            await db.collection("estoque_blocado").doc(ender+"_"+mat).set({ 
+                ender, mat, qtd: qtdAdd, dias: diasCalculados, valFrente: novaData, 
+                desc: document.getElementById('in-desc').value 
+            });
+            alert("Novo endereço ocupado!");
         }
+        navegar('retirar');
     }
 
-    async function retirarMaterial(id, qtdAtual, mat, ender, validade) {
-        const n = prompt(`Quantos pallets retirar de ${mat}? (Saldo: ${qtdAtual})`);
-        if(!n || isNaN(n) || n > qtdAtual) return alert("Valor inválido!");
-        const v = parseInt(n);
-        try {
-            if(v === qtdAtual) await db.collection("estoque_blocado").doc(id).delete();
-            else await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v });
-            
-            registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`);
-            alert("Baixa concluída!");
-        } catch(e) { alert("Erro na retirada."); }
+    // Funções de Admin (CSV/Estatísticas)
+    async function importarCSV(event) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
+            if(!confirm("Limpar estoque antigo e subir este arquivo?")) return;
+            const snap = await db.collection("estoque_blocado").get();
+            const bDel = db.batch(); snap.forEach(d => bDel.delete(d.ref)); await bDel.commit();
+            const bAdd = db.batch();
+            linhas.forEach(l => {
+                const c = l.split(";");
+                if(c.length >= 6) {
+                    bAdd.set(db.collection("estoque_blocado").doc(c[0].trim()+"_"+c[1].trim()), { 
+                        ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(), valFrente: c[3].trim(), qtd: parseInt(c[5])||0, dias: parseInt(c[7])||0 
+                    });
+                }
+            });
+            await bAdd.commit(); alert("Estoque Sincronizado!"); location.reload();
+        };
+        reader.readAsText(event.target.files[0], 'ISO-8859-1');
     }
 
-    async function registrarMovimentacao(e, m, v, q) {
-        const agora = new Date();
-        await db.collection("movimentacoes_wms").add({ 
-            endereco: e, material: m, validade: v, quantidade: q, 
-            login: usuarioLogado.email, data: agora.toLocaleDateString('pt-BR'), 
-            hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora 
-        });
+    function atualizarEstatisticas() {
+        if(!usuarioLogado || usuarioLogado.perfil.toUpperCase() !== "ADMIN") return;
+        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
+        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias <= 60).length;
+        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
+    }
+
+    async function retirarMaterial(id, qtdAtual, mat, ender, val) {
+        const n = prompt(`Retirar de ${mat}? (Saldo: ${qtdAtual})`);
+        if(!n || n > qtdAtual) return alert("Erro!");
+        if(parseInt(n) === qtdAtual) await db.collection("estoque_blocado").doc(id).delete();
+        else await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - parseInt(n) });
+        registrarMov(ender, mat, val, `-${n} PL`); alert("Retirado!");
+    }
+
+    async function registrarMov(e, m, v, q) {
+        const ag = new Date();
+        await db.collection("movimentacoes_wms").add({ endereco:e, material:m, validade:v, quantidade:q, login:usuarioLogado.email, data:ag.toLocaleDateString('pt-BR'), timestamp:ag });
+    }
+
+    function navegar(t) { 
+        ['admin','retirar','abastecer'].forEach(x => document.getElementById('view-'+x).style.display='none');
+        document.getElementById('view-'+t).style.display='block';
+        document.getElementById('sidebar').classList.remove('active');
+    }
+
+    function calcularDias(d) {
+        diasCalculados = Math.ceil((new Date(d) - new Date()) / (1000*60*60*24));
+        document.getElementById('label-dias').innerText = `Vencimento em ${diasCalculados} dias`;
     }
 
     function puxarDescricao(cod) {
         const p = estoqueCompleto.find(i => i.mat === cod);
         document.getElementById('in-desc').value = p ? p.desc : "NOVO MATERIAL";
-    }
-
-    function calcularDias(data) {
-        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
-        document.getElementById('label-dias').innerText = `Vencimento em ${diasCalculados} dias`;
-    }
-
-    function navegar(tela) {
-        ['admin', 'retirar', 'abastecer'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
-        document.getElementById('view-' + tela).style.display = 'block';
-        document.getElementById('sidebar').classList.remove('active');
-    }
-
-    // --- FUNÇÕES DE ADMIN ---
-    async function importarCSV(event) {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
-            if(!confirm(`ATENÇÃO: Isso apagará o estoque antigo para carregar ${linhas.length} novos registros. Confirma?`)) return;
-
-            try {
-                const snap = await db.collection("estoque_blocado").get();
-                const batchDel = db.batch();
-                snap.forEach(doc => batchDel.delete(doc.ref));
-                await batchDel.commit();
-
-                const batchAdd = db.batch();
-                linhas.forEach(l => {
-                    const c = l.split(";");
-                    if(c.length >= 6) {
-                        const id = c[0].trim() + "_" + c[1].trim();
-                        batchAdd.set(db.collection("estoque_blocado").doc(id), { 
-                            ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(), 
-                            valFrente: c[3].trim(), qtd: parseInt(c[5]) || 0, dias: parseInt(c[7]) || 0 
-                        });
-                    }
-                });
-                await batchAdd.commit();
-                alert("Sincronização Concluída!");
-                location.reload();
-            } catch (err) { alert("Erro ao sincronizar."); }
-        };
-        reader.readAsText(event.target.files[0], 'ISO-8859-1');
-    }
-
-    async function exportarHistoricoExcel() {
-        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-        const dados = snap.docs.map(doc => {
-            const d = doc.data();
-            return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Usuário": d.login, "Data": d.data, "Hora": d.hora };
-        });
-        const ws = XLSX.utils.json_to_sheet(dados);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Movimentacoes");
-        XLSX.writeFile(wb, `Historico_WMS_${Date.now()}.xlsx`);
     }
 
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
