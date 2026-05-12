@@ -25,13 +25,14 @@
         .menu-btn { background: none; border: 1px solid #444; padding: 8px; border-radius: 5px; cursor: pointer; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
         .container { max-width: 900px; margin: auto; padding: 15px; }
 
+        .login-box { max-width: 400px; margin: 100px auto; background: var(--card); padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .admin-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
         .stat-box { background: var(--card); padding: 15px; border-radius: 8px; border-top: 3px solid var(--primary); text-align: center; }
         .stat-box h5 { margin: 0; font-size: 10px; opacity: 0.6; text-transform: uppercase; }
         .stat-box p { margin: 8px 0 0; font-size: 24px; font-weight: 900; }
 
         .search-area { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; outline: none; }
+        input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; outline: none; margin-bottom: 10px; }
         .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid #444; }
         
         .badge-ender { background: var(--primary); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 900; }
@@ -57,8 +58,8 @@
 <div id="login-screen">
     <div class="login-box">
         <h2 style="text-align: center; color: var(--primary); margin-bottom: 25px;">WMS FLOW PRO</h2>
-        <input type="text" id="login-mat" placeholder="Matrícula" style="margin-bottom:10px;">
-        <input type="password" id="login-senha" placeholder="Senha" style="margin-bottom:20px;">
+        <input type="text" id="login-mat" placeholder="Matrícula">
+        <input type="password" id="login-senha" placeholder="Senha">
         <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%; font-size: 16px;">ENTRAR</button>
     </div>
 </div>
@@ -82,7 +83,7 @@
             <div style="background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #2d3748;">
                 <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
                 <button class="btn-admin" onclick="document.getElementById('csv-file').click()">ATUALIZAR ESTOQUE (CSV)</button>
-                <button class="btn-admin" style="background: #107c41; color: white;" onclick="exportarHistoricoExcel()">HISTÓRICO (EXCEL)</button>
+                <button id="btn-export-excel" class="btn-admin" style="background: #107c41; color: white;" onclick="exportarHistoricoExcel()">HISTÓRICO (EXCEL)</button>
             </div>
         </div>
 
@@ -96,11 +97,11 @@
         <div id="view-abastecer" style="display: none;">
             <div style="background: var(--card); padding: 25px; border-radius: 12px;">
                 <h3 style="color: var(--primary); margin-top: 0;">ABASTECER BLOCO</h3>
-                <input type="text" id="in-ender" placeholder="Endereço (Ex: A-01-01)" style="margin-bottom:10px;">
-                <input type="text" id="in-mat" placeholder="Código Material" style="margin-bottom:10px;" oninput="puxarDescricao(this.value)">
-                <input type="text" id="in-desc" readonly placeholder="Descrição..." style="margin-bottom:10px; opacity:0.6;">
-                <input type="number" id="in-qtd" placeholder="Qtd Pallets" style="margin-bottom:10px;">
-                <input type="date" id="in-venc" style="margin-bottom:10px;" onchange="calcularDias(this.value)">
+                <input type="text" id="in-ender" placeholder="Endereço (Ex: A-01-01)">
+                <input type="text" id="in-mat" placeholder="Código Material" oninput="puxarDescricao(this.value)">
+                <input type="text" id="in-desc" readonly placeholder="Descrição..." style="opacity:0.6;">
+                <input type="number" id="in-qtd" placeholder="Qtd Pallets">
+                <input type="date" id="in-venc" onchange="calcularDias(this.value)">
                 <p id="label-dias" style="color: var(--critico); font-size: 12px; font-weight: bold;"></p>
                 <button class="btn-admin" style="background: #7c3aed; color: white;" onclick="salvarAbastecimentoManual()">SALVAR ENTRADA</button>
             </div>
@@ -137,17 +138,21 @@
             const doc = await db.collection("usuarios_wms").doc(mat + "@alb.com").get();
             usuarioLogado = doc.data();
             usuarioLogado.email = mat + "@alb.com";
+            // Garante que o nome exista para o histórico
+            if(!usuarioLogado.nome) usuarioLogado.nome = mat; 
+            
             localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
             iniciarApp();
-        } catch (e) { alert("Erro de acesso."); }
+        } catch (e) { alert("Erro de acesso: Verifique matrícula e senha."); }
     }
 
     function iniciarApp() {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-screen').style.display = 'block';
         document.getElementById('user-name').innerText = usuarioLogado.nome;
-        const isAdmin = usuarioLogado.perfil.toUpperCase() === "ADMIN";
+        const isAdmin = usuarioLogado.perfil && usuarioLogado.perfil.toUpperCase() === "ADMIN";
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('role-label').innerText = usuarioLogado.perfil ? usuarioLogado.perfil.toUpperCase() : "OPERADOR";
         conectarFirebase();
     }
 
@@ -159,24 +164,18 @@
         });
     }
 
-    // --- LÓGICA DE BUSCA COM FILTRO INTELIGENTE ---
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
         if (termo.length === 0) return;
 
-        // 1. Pega tudo que combina com o nome
         let todosEncontrados = estoqueCompleto.filter(i => 
-            i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
+            (i.mat && i.mat.toLowerCase().includes(termo)) || (i.ender && i.ender.toLowerCase().includes(termo))
         );
 
-        // 2. Separa Críticos (<=60) de Normais (>60)
         let criticos = todosEncontrados.filter(i => i.dias <= 60);
         let normais = todosEncontrados.filter(i => i.dias > 60);
-
-        // REGRA: Se houver críticos, mostra APENAS os críticos. 
-        // Se NÃO houver críticos, mostra os normais (data boa).
         let exibir = criticos.length > 0 ? criticos : normais;
 
         exibir.sort((a, b) => a.dias - b.dias);
@@ -192,7 +191,7 @@
                     <span class="badge-ender">${item.ender}</span>
                     <span class="badge-status" style="background:${isCritico?'var(--critico)':'var(--verde)'}">${isCritico?'CRÍTICO':'DATA BOA'}</span>
                     <div style="font-weight:900; font-size:18px; margin-top:5px;">${item.mat}</div>
-                    <div style="font-size:11px; opacity:0.7;">${item.desc}</div>
+                    <div style="font-size:11px; opacity:0.7;">${item.desc || ""}</div>
                     <div style="font-size:12px; margin-top:5px;">Vence em: <b>${item.dias} dias</b></div>
                 </div>
                 <div style="text-align:right">
@@ -203,7 +202,6 @@
         });
     }
 
-    // --- ABASTECIMENTO COM REGRAS DE BLOQUEIO ---
     async function salvarAbastecimentoManual() {
         const ender = document.getElementById('in-ender').value.toUpperCase().trim();
         const mat = document.getElementById('in-mat').value.trim();
@@ -211,12 +209,13 @@
         const inputData = document.getElementById('in-venc').value;
         const novaData = inputData ? inputData.split('-').reverse().join('/') : "";
 
-        if(!ender || !mat || isNaN(qtdAdd) || !inputData) return alert("Preencha tudo!");
+        if(!ender || !mat || isNaN(qtdAdd) || !inputData) return alert("Preencha todos os campos!");
 
         const ocupante = estoqueCompleto.find(i => i.ender === ender);
+        const desc = document.getElementById('in-desc').value;
 
         if (ocupante) {
-            if (ocupante.mat !== mat) return alert("BLOQUEIO: Este endereço já tem outro material!");
+            if (ocupante.mat !== mat) return alert("BLOQUEIO: Este endereço já tem outro material ("+ocupante.mat+")!");
 
             const manter = confirm(`Material já existe! OK para manter data antiga (${ocupante.valFrente}) ou CANCELAR para atualizar para ${novaData}?`);
             const dataF = manter ? ocupante.valFrente : novaData;
@@ -225,25 +224,104 @@
             await db.collection("estoque_blocado").doc(ocupante.id).update({ 
                 qtd: ocupante.qtd + qtdAdd, valFrente: dataF, dias: diasF 
             });
+            registrarMov(ender, mat, dataF, `+${qtdAdd} PL (Abastecimento)`);
             alert("Estoque somado!");
         } else {
             await db.collection("estoque_blocado").doc(ender+"_"+mat).set({ 
-                ender, mat, qtd: qtdAdd, dias: diasCalculados, valFrente: novaData, 
-                desc: document.getElementById('in-desc').value 
+                ender, mat, qtd: qtdAdd, dias: diasCalculados, valFrente: novaData, desc 
             });
+            registrarMov(ender, mat, novaData, `+${qtdAdd} PL (Entrada Nova)`);
             alert("Novo endereço ocupado!");
         }
         navegar('retirar');
     }
 
-    // Funções de Admin (CSV/Estatísticas)
+    async function retirarMaterial(id, qtdAtual, mat, ender, val) {
+        const n = prompt(`Retirar de ${mat}? (Saldo: ${qtdAtual})`);
+        if(!n || isNaN(n) || n <= 0) return;
+        const qtdRetirar = parseInt(n);
+        if(qtdRetirar > qtdAtual) return alert("Quantidade maior que o saldo!");
+
+        if(qtdRetirar === qtdAtual) await db.collection("estoque_blocado").doc(id).delete();
+        else await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - qtdRetirar });
+        
+        registrarMov(ender, mat, val, `-${qtdRetirar} PL`); 
+        alert("Retirado com sucesso!");
+    }
+
+    // REGISTRO DE MOVIMENTAÇÃO ATUALIZADO (CONFORME SOLICITADO)
+    async function registrarMov(e, m, v, q) {
+        const agora = new Date();
+        await db.collection("movimentacoes_wms").add({
+            endereco: e,
+            material: m,
+            validade: v,
+            quantidade: q,
+            usuario: usuarioLogado.nome,
+            data: agora.toLocaleDateString('pt-BR'),
+            hora: agora.toLocaleTimeString('pt-BR'),
+            timestamp: agora
+        });
+    }
+
+    // EXPORTAÇÃO EXCEL ATUALIZADA (CONFORME SOLICITADO)
+    async function exportarHistoricoExcel() {
+        try {
+            const btn = document.getElementById('btn-export-excel');
+            const originalText = btn.innerText;
+            btn.innerText = "GERANDO...";
+            btn.disabled = true;
+
+            const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").limit(1000).get();
+            
+            if (snap.empty) {
+                alert("Nenhum histórico encontrado!");
+                btn.innerText = originalText;
+                btn.disabled = false;
+                return;
+            }
+
+            const dadosExcel = snap.docs.map(doc => {
+                const d = doc.data();
+                return {
+                    "Endereço": d.endereco || "",
+                    "Material": d.material || "",
+                    "Validade": d.validade || "",
+                    "Qtd MOVIMENTADA": d.quantidade || "",
+                    "Usuário": d.usuario || "",
+                    "Data": d.data || "",
+                    "Hora DA MOVIMENTAÇÃO": d.hora || ""
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(dadosExcel);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Histórico");
+
+            XLSX.writeFile(workbook, `Historico_WMS_${new Date().getTime()}.xlsx`);
+            
+            btn.innerText = originalText;
+            btn.disabled = false;
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao gerar Excel: " + error.message);
+            document.getElementById('btn-export-excel').disabled = false;
+        }
+    }
+
     async function importarCSV(event) {
+        const file = event.target.files[0];
+        if(!file) return;
         const reader = new FileReader();
         reader.onload = async (e) => {
             const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
             if(!confirm("Limpar estoque antigo e subir este arquivo?")) return;
+            
             const snap = await db.collection("estoque_blocado").get();
-            const bDel = db.batch(); snap.forEach(d => bDel.delete(d.ref)); await bDel.commit();
+            const bDel = db.batch(); 
+            snap.forEach(d => bDel.delete(d.ref)); 
+            await bDel.commit();
+            
             const bAdd = db.batch();
             linhas.forEach(l => {
                 const c = l.split(";");
@@ -253,29 +331,19 @@
                     });
                 }
             });
-            await bAdd.commit(); alert("Estoque Sincronizado!"); location.reload();
+            await bAdd.commit(); 
+            alert("Estoque Sincronizado!"); 
+            location.reload();
         };
-        reader.readAsText(event.target.files[0], 'ISO-8859-1');
+        reader.readAsText(file, 'ISO-8859-1');
     }
 
     function atualizarEstatisticas() {
-        if(!usuarioLogado || usuarioLogado.perfil.toUpperCase() !== "ADMIN") return;
+        const isAdmin = usuarioLogado && usuarioLogado.perfil && usuarioLogado.perfil.toUpperCase() === "ADMIN";
+        if(!isAdmin) return;
         document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
         document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias <= 60).length;
         document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
-    }
-
-    async function retirarMaterial(id, qtdAtual, mat, ender, val) {
-        const n = prompt(`Retirar de ${mat}? (Saldo: ${qtdAtual})`);
-        if(!n || n > qtdAtual) return alert("Erro!");
-        if(parseInt(n) === qtdAtual) await db.collection("estoque_blocado").doc(id).delete();
-        else await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - parseInt(n) });
-        registrarMov(ender, mat, val, `-${n} PL`); alert("Retirado!");
-    }
-
-    async function registrarMov(e, m, v, q) {
-        const ag = new Date();
-        await db.collection("movimentacoes_wms").add({ endereco:e, material:m, validade:v, quantidade:q, login:usuarioLogado.email, data:ag.toLocaleDateString('pt-BR'), timestamp:ag });
     }
 
     function navegar(t) { 
