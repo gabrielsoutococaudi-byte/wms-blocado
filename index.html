@@ -2,8 +2,12 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WMS FLOW PRO - Sistema Integrado</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WMS FLOW PRO</title>
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0f1e">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -14,102 +18,93 @@
     
     <style>
         :root { --bg: #0a0f1e; --card: #161e31; --primary: #00d2ff; --critico: #fbbf24; --retido: #f87171; --verde: #4ade80; --text: #f8fafc; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 30px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 30px; overflow-x: hidden; }
         
-        .sidebar { position: fixed; left: -250px; top: 0; width: 250px; height: 100%; background: var(--card); transition: 0.3s; z-index: 1000; padding-top: 60px; border-right: 1px solid #2d3748; box-shadow: 10px 0 20px rgba(0,0,0,0.5); }
+        /* Botão de Instalar */
+        #install-banner { display: none; background: var(--primary); color: #000; padding: 10px; text-align: center; font-weight: bold; cursor: pointer; position: sticky; top: 0; z-index: 9999; }
+
+        .sidebar { position: fixed; left: -250px; top: 0; width: 250px; height: 100%; background: var(--card); transition: 0.3s; z-index: 1000; padding-top: 60px; border-right: 1px solid #2d3748; }
         .sidebar.active { left: 0; }
-        .sidebar button { width: 100%; padding: 15px; background: transparent; border: none; color: white; text-align: left; cursor: pointer; border-bottom: 1px solid #2d3748; font-weight: bold; font-size: 14px; }
-        .sidebar button:hover { background: rgba(255,255,255,0.05); }
+        .sidebar button { width: 100%; padding: 15px; background: transparent; border: none; color: white; text-align: left; cursor: pointer; border-bottom: 1px solid #2d3748; font-weight: bold; }
 
-        .header { padding: 15px 20px; background: var(--card); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #2d3748; position: sticky; top: 0; z-index: 900; }
-        .menu-btn { background: none; border: 1px solid #444; padding: 8px; border-radius: 5px; cursor: pointer; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
-        .container { max-width: 900px; margin: auto; padding: 15px; }
+        .header { padding: 15px; background: var(--card); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #2d3748; }
+        .menu-btn { background: none; border: 1px solid #444; padding: 8px; border-radius: 5px; color: white; font-size: 20px; width: 40px; height: 40px; }
+        .container { padding: 15px; max-width: 900px; margin: auto; }
 
-        .admin-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
-        .stat-box { background: var(--card); padding: 15px; border-radius: 8px; border-top: 3px solid var(--primary); text-align: center; }
-        .stat-box h5 { margin: 0; font-size: 10px; opacity: 0.6; text-transform: uppercase; }
-        .stat-box p { margin: 8px 0 0; font-size: 24px; font-weight: 900; }
+        .stat-box { background: var(--card); padding: 15px; border-radius: 8px; border-top: 3px solid var(--primary); text-align: center; margin-bottom: 10px; }
+        .stat-box p { margin: 5px 0 0; font-size: 22px; font-weight: 900; }
 
         .search-area { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; outline: none; }
+        input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; margin-bottom: 10px; font-size: 16px; }
+        
         .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid #444; }
-        
-        .badge-ender { background: var(--primary); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 900; }
-        .badge-status { background: var(--critico); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; margin-left: 8px; }
+        .badge-status { color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; margin-left: 8px; }
 
-        .btn-retirar { background: var(--primary); color: #000; border: none; padding: 10px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; }
-        .btn-admin { background: var(--verde); color: #000; padding: 15px; width: 100%; border-radius: 8px; font-weight: 900; margin-top: 10px; border: none; cursor: pointer; text-transform: uppercase; }
-        
-        #offline-badge { display: none; background: var(--retido); color: white; text-align: center; font-size: 11px; padding: 5px; font-weight: bold; position: fixed; bottom: 0; width: 100%; z-index: 2000; }
+        .btn-retirar { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 5px; font-weight: 900; cursor: pointer; }
+        .btn-admin { background: var(--verde); color: #000; padding: 15px; width: 100%; border-radius: 8px; font-weight: 900; border: none; margin-top: 10px; }
+
+        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 90%; max-width: 320px; }
     </style>
 </head>
 <body>
 
-<div id="offline-badge">MODO OFFLINE</div>
+<div id="install-banner" onclick="instalarApp()">📲 CLIQUE PARA INSTALAR O APP NO CELULAR</div>
 
 <div id="sidebar" class="sidebar">
     <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ADMIN</button>
     <button onclick="navegar('retirar')">📦 RETIRAR / PESQUISAR</button>
     <button onclick="navegar('abastecer')">📥 ABASTECER BLOCO</button>
-    <button onclick="logout()" style="color: var(--retido); margin-top: 20px;">🚪 DESLOGAR</button>
+    <button onclick="logout()" style="color: var(--retido); margin-top: 20px;">🚪 SAIR</button>
 </div>
 
 <div id="login-screen">
     <div class="login-box">
-        <h2 style="text-align: center; color: var(--primary); margin-bottom: 25px;">WMS FLOW PRO</h2>
-        <input type="text" id="login-mat" placeholder="Matrícula" style="margin-bottom:10px;">
-        <input type="password" id="login-senha" placeholder="Senha" style="margin-bottom:20px;">
-        <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%; font-size: 16px;">ENTRAR</button>
+        <h2 style="text-align: center; color: var(--primary);">WMS FLOW</h2>
+        <input type="text" id="login-mat" placeholder="Matrícula">
+        <input type="password" id="login-senha" placeholder="Senha">
+        <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%;">ENTRAR</button>
     </div>
 </div>
 
 <div id="app-screen" style="display: none;">
     <div class="header">
         <button class="menu-btn" onclick="toggleMenu()">☰</button>
-        <div style="flex-grow: 1;">
-            <div id="user-name" style="font-weight: 800; font-size: 16px;"></div>
-            <div id="role-label" style="font-size: 10px; color: var(--primary); font-weight: bold; letter-spacing: 1px;"></div>
-        </div>
+        <div id="user-name" style="font-weight: 800; font-size: 14px;"></div>
     </div>
 
     <div class="container">
         <div id="view-admin" style="display: none;">
-            <div id="dash-container" class="admin-dashboard">
-                <div class="stat-box"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
-                <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS</h5><p id="st-critico">0</p></div>
-                <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS</h5><p id="st-retido">0</p></div>
-            </div>
-            <div style="background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #2d3748;">
-                <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
-                <button class="btn-admin" onclick="document.getElementById('csv-file').click()">ATUALIZAR ESTOQUE (CSV)</button>
-                <button class="btn-admin" style="background: #107c41; color: white;" onclick="exportarHistoricoExcel()">HISTÓRICO (EXCEL)</button>
-            </div>
+            <div class="stat-box"><h5>TOTAL NO ESTOQUE</h5><p id="st-total">0</p></div>
+            <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS (≤60d)</h5><p id="st-critico">0</p></div>
+            <button class="btn-admin" onclick="document.getElementById('csv-file').click()">SUBIR CSV (ATUALIZAR TUDO)</button>
+            <input type="file" id="csv-file" style="display:none" onchange="importarCSV(event)">
         </div>
 
         <div id="view-retirar">
             <div class="search-area">
-                <input type="text" id="search-input" placeholder="Pesquisar material ou endereço..." oninput="renderizarEstoque()">
+                <input type="text" id="search-input" placeholder="Pesquisar Material ou Endereço..." oninput="renderizarEstoque()">
             </div>
             <div id="lista-estoque"></div>
         </div>
 
         <div id="view-abastecer" style="display: none;">
-            <div style="background: var(--card); padding: 25px; border-radius: 12px;">
-                <h3 style="color: var(--primary); margin-top: 0;">ABASTECER BLOCO</h3>
-                <input type="text" id="in-ender" placeholder="Endereço (Ex: A-01-01)" style="margin-bottom:10px;">
-                <input type="text" id="in-mat" placeholder="Código Material" style="margin-bottom:10px;" oninput="puxarDescricao(this.value)">
-                <input type="text" id="in-desc" readonly placeholder="Descrição..." style="margin-bottom:10px; opacity:0.6;">
-                <input type="number" id="in-qtd" placeholder="Qtd Pallets" style="margin-bottom:10px;">
-                <input type="date" id="in-venc" style="margin-bottom:10px;" onchange="calcularDias(this.value)">
-                <p id="label-dias" style="color: var(--critico); font-size: 12px; font-weight: bold;"></p>
-                <button class="btn-admin" style="background: #7c3aed; color: white;" onclick="salvarAbastecimentoManual()">SALVAR ENTRADA</button>
+            <div style="background: var(--card); padding: 20px; border-radius: 10px;">
+                <h3 style="color: var(--primary); margin: 0 0 15px 0;">ABASTECER</h3>
+                <input type="text" id="in-ender" placeholder="Endereço (Ex: A-01-01)">
+                <input type="text" id="in-mat" placeholder="Cód. Material" oninput="puxarDescricao(this.value)">
+                <input type="text" id="in-desc" readonly placeholder="Descrição..." style="opacity:0.5">
+                <input type="number" id="in-qtd" placeholder="Qtd Pallets">
+                <input type="date" id="in-venc" onchange="calcularDias(this.value)">
+                <p id="label-dias" style="font-size:12px; color:var(--critico); font-weight:bold;"></p>
+                <button class="btn-admin" style="background:var(--primary)" onclick="salvarAbastecimentoManual()">CONFIRMAR ENTRADA</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // Configurações do Firebase
+    // FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
         authDomain: "sistema-fefo.firebaseapp.com",
@@ -122,13 +117,27 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    db.enablePersistence().catch(() => {});
-
     let estoqueCompleto = [];
     let usuarioLogado = null;
     let diasCalculados = 0;
+    let deferredPrompt;
 
-    // Login e Inicialização
+    // Detecção de Instalação
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('install-banner').style.display = 'block';
+    });
+
+    async function instalarApp() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') document.getElementById('install-banner').style.display = 'none';
+        }
+    }
+
+    // LOGIN
     async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
@@ -139,159 +148,143 @@
             usuarioLogado.email = mat + "@alb.com";
             localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
             iniciarApp();
-        } catch (e) { alert("Erro de acesso."); }
+        } catch (e) { alert("Acesso negado."); }
     }
 
     function iniciarApp() {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-screen').style.display = 'block';
-        document.getElementById('user-name').innerText = usuarioLogado.nome;
-        const isAdmin = usuarioLogado.perfil.toUpperCase() === "ADMIN";
-        document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('user-name').innerText = "Olá, " + usuarioLogado.nome;
+        if(usuarioLogado.perfil.toUpperCase() === "ADMIN") document.getElementById('btn-nav-admin').style.display = 'block';
         conectarFirebase();
     }
 
     function conectarFirebase() {
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            atualizarEstatisticas();
+            atualizarStats();
             renderizarEstoque();
         });
     }
 
-    // --- LÓGICA DE BUSCA COM FILTRO INTELIGENTE ---
+    // BUSCA INTELIGENTE
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
-        if (termo.length === 0) return;
+        if (!termo) return;
 
-        // 1. Pega tudo que combina com o nome
-        let todosEncontrados = estoqueCompleto.filter(i => 
-            i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo)
-        );
+        let busca = estoqueCompleto.filter(i => i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
+        
+        // Separa Crítico de Data Boa
+        let criticos = busca.filter(i => i.dias <= 60);
+        let normais = busca.filter(i => i.dias > 60);
 
-        // 2. Separa Críticos (<=60) de Normais (>60)
-        let criticos = todosEncontrados.filter(i => i.dias <= 60);
-        let normais = todosEncontrados.filter(i => i.dias > 60);
-
-        // REGRA: Se houver críticos, mostra APENAS os críticos. 
-        // Se NÃO houver críticos, mostra os normais (data boa).
+        // SE tiver crítico, mostra só crítico. SENÃO, mostra data boa.
         let exibir = criticos.length > 0 ? criticos : normais;
-
-        exibir.sort((a, b) => a.dias - b.dias);
+        exibir.sort((a,b) => a.dias - b.dias);
 
         exibir.forEach(item => {
-            const isCritico = item.dias <= 60;
+            const isC = item.dias <= 60;
             const card = document.createElement('div');
-            card.className = `item-card`;
-            card.style.borderLeftColor = isCritico ? 'var(--critico)' : 'var(--verde)';
-            
+            card.className = 'item-card';
+            card.style.borderLeftColor = isC ? 'var(--critico)' : 'var(--verde)';
             card.innerHTML = `
                 <div>
-                    <span class="badge-ender">${item.ender}</span>
-                    <span class="badge-status" style="background:${isCritico?'var(--critico)':'var(--verde)'}">${isCritico?'CRÍTICO':'DATA BOA'}</span>
-                    <div style="font-weight:900; font-size:18px; margin-top:5px;">${item.mat}</div>
+                    <span class="badge-ender" style="background:var(--primary); color:#000; padding:2px 5px; border-radius:4px; font-size:11px; font-weight:900;">${item.ender}</span>
+                    <span class="badge-status" style="background:${isC?'var(--critico)':'var(--verde)'}">${isC?'CRÍTICO':'DATA BOA'}</span>
+                    <div style="font-weight:900; font-size:16px; margin-top:5px;">${item.mat}</div>
                     <div style="font-size:11px; opacity:0.7;">${item.desc}</div>
-                    <div style="font-size:12px; margin-top:5px;">Vence em: <b>${item.dias} dias</b></div>
+                    <div style="font-size:12px; margin-top:3px;">Vence em: <b>${item.dias} dias</b></div>
                 </div>
                 <div style="text-align:right">
-                    <div style="font-size:22px; font-weight:900;">${item.qtd} PL</div>
-                    <button class="btn-retirar" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button>
+                    <div style="font-size:20px; font-weight:900;">${item.qtd}</div>
+                    <button class="btn-retirar" onclick="retirar('${item.id}',${item.qtd},'${item.mat}','${item.ender}','${item.valFrente}')">BAIXA</button>
                 </div>`;
             lista.appendChild(card);
         });
     }
 
-    // --- ABASTECIMENTO COM REGRAS DE BLOQUEIO ---
+    // ABASTECIMENTO
     async function salvarAbastecimentoManual() {
         const ender = document.getElementById('in-ender').value.toUpperCase().trim();
         const mat = document.getElementById('in-mat').value.trim();
-        const qtdAdd = parseInt(document.getElementById('in-qtd').value);
+        const qtd = parseInt(document.getElementById('in-qtd').value);
         const inputData = document.getElementById('in-venc').value;
-        const novaData = inputData ? inputData.split('-').reverse().join('/') : "";
+        const dataF = inputData.split('-').reverse().join('/');
 
-        if(!ender || !mat || isNaN(qtdAdd) || !inputData) return alert("Preencha tudo!");
+        if(!ender || !mat || !qtd || !inputData) return alert("Preencha tudo!");
 
         const ocupante = estoqueCompleto.find(i => i.ender === ender);
 
-        if (ocupante) {
-            if (ocupante.mat !== mat) return alert("BLOQUEIO: Este endereço já tem outro material!");
-
-            const manter = confirm(`Material já existe! OK para manter data antiga (${ocupante.valFrente}) ou CANCELAR para atualizar para ${novaData}?`);
-            const dataF = manter ? ocupante.valFrente : novaData;
-            const diasF = manter ? ocupante.dias : diasCalculados;
-
-            await db.collection("estoque_blocado").doc(ocupante.id).update({ 
-                qtd: ocupante.qtd + qtdAdd, valFrente: dataF, dias: diasF 
+        if(ocupante) {
+            if(ocupante.mat !== mat) return alert("BLOQUEIO: Endereço já ocupado por outro material!");
+            
+            const manter = confirm(`Material já existe no local. Manter data antiga (${ocupante.valFrente})?`);
+            await db.collection("estoque_blocado").doc(ocupante.id).update({
+                qtd: ocupante.qtd + qtd,
+                valFrente: manter ? ocupante.valFrente : dataF,
+                dias: manter ? ocupante.dias : diasCalculados
             });
-            alert("Estoque somado!");
         } else {
-            await db.collection("estoque_blocado").doc(ender+"_"+mat).set({ 
-                ender, mat, qtd: qtdAdd, dias: diasCalculados, valFrente: novaData, 
-                desc: document.getElementById('in-desc').value 
+            await db.collection("estoque_blocado").doc(ender+"_"+mat).set({
+                ender, mat, qtd, valFrente: dataF, dias: diasCalculados, desc: document.getElementById('in-desc').value
             });
-            alert("Novo endereço ocupado!");
         }
-        navegar('retirar');
+        alert("Salvo!"); navegar('retirar');
     }
 
-    // Funções de Admin (CSV/Estatísticas)
+    // CSV ADMIN
     async function importarCSV(event) {
         const reader = new FileReader();
         reader.onload = async (e) => {
             const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
-            if(!confirm("Limpar estoque antigo e subir este arquivo?")) return;
+            if(!confirm("Deseja apagar o estoque antigo e subir este novo?")) return;
             const snap = await db.collection("estoque_blocado").get();
             const bDel = db.batch(); snap.forEach(d => bDel.delete(d.ref)); await bDel.commit();
             const bAdd = db.batch();
             linhas.forEach(l => {
                 const c = l.split(";");
                 if(c.length >= 6) {
-                    bAdd.set(db.collection("estoque_blocado").doc(c[0].trim()+"_"+c[1].trim()), { 
-                        ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(), valFrente: c[3].trim(), qtd: parseInt(c[5])||0, dias: parseInt(c[7])||0 
+                    bAdd.set(db.collection("estoque_blocado").doc(c[0].trim()+"_"+c[1].trim()), {
+                        ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(), valFrente: c[3].trim(), qtd: parseInt(c[5])||0, dias: parseInt(c[7])||0
                     });
                 }
             });
-            await bAdd.commit(); alert("Estoque Sincronizado!"); location.reload();
+            await bAdd.commit(); alert("Sincronizado!"); location.reload();
         };
         reader.readAsText(event.target.files[0], 'ISO-8859-1');
     }
 
-    function atualizarEstatisticas() {
-        if(!usuarioLogado || usuarioLogado.perfil.toUpperCase() !== "ADMIN") return;
-        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
+    async function retirar(id, atual, mat, ender, val) {
+        const n = prompt(`Retirar de ${mat}? (Saldo: ${atual})`);
+        if(!n || n > atual) return;
+        if(parseInt(n) === atual) await db.collection("estoque_blocado").doc(id).delete();
+        else await db.collection("estoque_blocado").doc(id).update({ qtd: atual - parseInt(n) });
+        await db.collection("movimentacoes_wms").add({ endereco:ender, material:mat, validade:val, quantidade: "-"+n, login:usuarioLogado.email, data:new Date().toLocaleDateString('pt-BR'), timestamp: new Date() });
+        alert("Baixa realizada!");
+    }
+
+    function atualizarStats() {
+        if(!usuarioLogado || usuarioLogado.perfil !== "ADMIN") return;
+        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a,b) => a + (parseInt(b.qtd)||0), 0);
         document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias <= 60).length;
-        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
     }
 
-    async function retirarMaterial(id, qtdAtual, mat, ender, val) {
-        const n = prompt(`Retirar de ${mat}? (Saldo: ${qtdAtual})`);
-        if(!n || n > qtdAtual) return alert("Erro!");
-        if(parseInt(n) === qtdAtual) await db.collection("estoque_blocado").doc(id).delete();
-        else await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - parseInt(n) });
-        registrarMov(ender, mat, val, `-${n} PL`); alert("Retirado!");
-    }
-
-    async function registrarMov(e, m, v, q) {
-        const ag = new Date();
-        await db.collection("movimentacoes_wms").add({ endereco:e, material:m, validade:v, quantidade:q, login:usuarioLogado.email, data:ag.toLocaleDateString('pt-BR'), timestamp:ag });
-    }
-
-    function navegar(t) { 
+    function navegar(t) {
         ['admin','retirar','abastecer'].forEach(x => document.getElementById('view-'+x).style.display='none');
         document.getElementById('view-'+t).style.display='block';
-        document.getElementById('sidebar').classList.remove('active');
+        toggleMenu();
+    }
+
+    function puxarDescricao(c) {
+        const p = estoqueCompleto.find(i => i.mat === c);
+        document.getElementById('in-desc').value = p ? p.desc : "NOVO MATERIAL";
     }
 
     function calcularDias(d) {
         diasCalculados = Math.ceil((new Date(d) - new Date()) / (1000*60*60*24));
-        document.getElementById('label-dias').innerText = `Vencimento em ${diasCalculados} dias`;
-    }
-
-    function puxarDescricao(cod) {
-        const p = estoqueCompleto.find(i => i.mat === cod);
-        document.getElementById('in-desc').value = p ? p.desc : "NOVO MATERIAL";
+        document.getElementById('label-dias').innerText = `Vence em ${diasCalculados} dias`;
     }
 
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
