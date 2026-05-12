@@ -43,13 +43,12 @@
 
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
         .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        
-        #offline-notice { display: none; background: var(--retido); color: white; text-align: center; padding: 5px; font-size: 12px; font-weight: bold; }
+        #offline-badge { display: none; background: var(--retido); color: white; text-align: center; font-size: 11px; padding: 5px; font-weight: bold; position: fixed; bottom: 0; width: 100%; z-index: 2000; }
     </style>
 </head>
 <body>
 
-<div id="offline-notice">MODO OFFLINE ATIVO - AS ALTERAÇÕES SERÃO SINCRONIZADAS AO VOLTAR A INTERNET</div>
+<div id="offline-badge">MODO OFFLINE ATIVO - DADOS SERÃO SINCRONIZADOS AO RECONECTAR</div>
 
 <div id="sidebar" class="sidebar">
     <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ADMIN</button>
@@ -142,18 +141,16 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // HABILITA PERSISTÊNCIA OFFLINE
-    db.enablePersistence().catch(err => console.error("Falha na persistência", err));
+    // Persistência Offline
+    db.enablePersistence().catch(() => {});
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
     let estoqueCompleto = [];
     let usuarioLogado = null;
     let diasCalculados = 0;
-    let wakeLock = null;
 
-    // Monitor de Conexão
-    window.addEventListener('online', () => document.getElementById('offline-notice').style.display = 'none');
-    window.addEventListener('offline', () => document.getElementById('offline-notice').style.display = 'block');
+    window.addEventListener('online', () => document.getElementById('offline-badge').style.display = 'none');
+    window.addEventListener('offline', () => document.getElementById('offline-badge').style.display = 'block');
 
     async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
@@ -169,10 +166,8 @@
             }
         } catch (e) { 
             const session = localStorage.getItem('wms_session');
-            if(session) {
-                usuarioLogado = JSON.parse(session);
-                iniciarApp();
-            } else { alert("Erro de Login. Verifique a conexão."); }
+            if(session) { usuarioLogado = JSON.parse(session); iniciarApp(); }
+            else alert("Erro de Login."); 
         }
     }
 
@@ -181,11 +176,16 @@
         document.getElementById('app-screen').style.display = 'block';
         document.getElementById('user-name').innerText = usuarioLogado.nome;
         const isAdmin = usuarioLogado.perfil.toUpperCase() === "ADMIN";
-        document.getElementById('role-label').innerText = isAdmin ? "PERFIL: ADMINISTRADOR" : "PERFIL: OPERADOR";
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
         document.getElementById('admin-tools-section').style.display = isAdmin ? 'block' : 'none';
         conectarFirebase();
         navegar(isAdmin ? 'admin' : 'retirar');
+    }
+
+    function navegar(tela) {
+        ['admin', 'retirar', 'abastecer'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
+        document.getElementById('view-' + tela).style.display = 'block';
+        document.getElementById('sidebar').classList.remove('active');
     }
 
     function conectarFirebase() {
@@ -207,7 +207,10 @@
         const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
         if (termo.length === 0) return;
+
+        // REGRA DE OURO: Filtra e depois Ordena por Dias (FEFO)
         let filtrados = estoqueCompleto.filter(i => i.mat.toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
+        
         filtrados.sort((a, b) => a.dias - b.dias).forEach(item => {
             const isCritico = item.dias <= 60;
             const card = document.createElement('div');
@@ -229,51 +232,70 @@
         });
     }
 
-    // --- FUNÇÃO DE IMPORTAÇÃO CORRIGIDA PARA LIMPAR O BANCO ---
     async function importarCSV(event) {
-        const file = event.target.files[0];
         const reader = new FileReader();
         reader.onload = async (e) => {
             const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
-            
-            if(!confirm(`Isso irá apagar o estoque atual e carregar ${linhas.length} novas linhas. Confirmar?`)) return;
+            if(!confirm(`Deseja limpar o estoque atual e carregar ${linhas.length} itens?`)) return;
 
             try {
-                // 1. Limpa o estoque atual
+                // Limpa banco antes
                 const snap = await db.collection("estoque_blocado").get();
                 const batchDel = db.batch();
                 snap.forEach(doc => batchDel.delete(doc.ref));
                 await batchDel.commit();
 
-                // 2. Carrega o novo estoque
+                // Carrega novo
                 const batchAdd = db.batch();
                 linhas.forEach(l => {
                     const c = l.split(";");
                     if(c.length >= 6) {
                         const id = c[0].trim() + "_" + c[1].trim();
                         batchAdd.set(db.collection("estoque_blocado").doc(id), { 
-                            ender: c[0].trim(), 
-                            mat: c[1].trim(), 
-                            desc: c[2].trim(), 
-                            valFrente: c[3].trim(), 
-                            qtd: parseInt(c[5]) || 0, 
-                            dias: parseInt(c[7]) || 0 
+                            ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(), 
+                            valFrente: c[3].trim(), qtd: parseInt(c[5]) || 0, dias: parseInt(c[7]) || 0 
                         });
                     }
                 });
                 await batchAdd.commit();
-                alert("Estoque Resetado e Atualizado com Sucesso!");
+                alert("Estoque Atualizado!");
                 location.reload();
-            } catch (err) { alert("Erro ao importar dados."); }
+            } catch (err) { alert("Erro na importação."); }
         };
-        reader.readAsText(file, 'ISO-8859-1');
+        reader.readAsText(event.target.files[0], 'ISO-8859-1');
     }
 
-    // Funções de Navegação e Auxiliares
-    function navegar(tela) {
-        ['admin', 'retirar', 'abastecer'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
-        document.getElementById('view-' + tela).style.display = 'block';
-        document.getElementById('sidebar').classList.remove('active');
+    async function salvarAbastecimentoManual() {
+        const ender = document.getElementById('in-ender').value.toUpperCase().trim();
+        const mat = document.getElementById('in-mat').value.trim();
+        const qtd = parseInt(document.getElementById('in-qtd').value);
+        const dataV = document.getElementById('in-venc').value.split('-').reverse().join('/');
+        if(!ender || !mat || isNaN(qtd) || !document.getElementById('in-venc').value) return alert("Preencha tudo!");
+
+        const ocupante = estoqueCompleto.find(i => i.ender === ender);
+        if (ocupante && ocupante.mat !== mat) return alert("Endereço ocupado por outro material!");
+
+        try {
+            if(ocupante) {
+                await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd, valFrente: dataV, dias: diasCalculados });
+            } else {
+                await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc: document.getElementById('in-desc').value });
+            }
+            registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Abastecimento)`);
+            alert("Salvo!"); navegar('retirar');
+        } catch(e) { alert("Registrado offline!"); navegar('retirar'); }
+    }
+
+    async function retirarMaterial(id, qtdAtual, mat, ender, validade) {
+        const n = prompt(`Quantos pallets retirar de ${mat}? (Saldo: ${qtdAtual})`);
+        if(!n || isNaN(n) || n > qtdAtual) return alert("Quantidade inválida!");
+        const v = parseInt(n);
+        try {
+            if(v === qtdAtual) await db.collection("estoque_blocado").doc(id).delete();
+            else await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v });
+            registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`);
+            alert("Sucesso!");
+        } catch(e) { alert("Agendado para sincronizar!"); }
     }
 
     async function registrarMovimentacao(e, m, v, q) {
@@ -285,24 +307,30 @@
         });
     }
 
-    async function retirarMaterial(id, qtdAtual, mat, ender, validade) {
-        const n = prompt(`Retirar de ${mat}. Quantos pallets? (Saldo: ${qtdAtual})`);
-        if(!n || isNaN(n)) return;
-        const v = parseInt(n);
-        if(v > 0 && v <= qtdAtual) {
-            if(v === qtdAtual) await db.collection("estoque_blocado").doc(id).delete();
-            else await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v });
-            registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`);
-            alert("Concluído!");
-        }
+    function puxarDescricao(cod) {
+        const p = estoqueCompleto.find(i => i.mat === cod);
+        document.getElementById('in-desc').value = p ? p.desc : "NOVO MATERIAL";
     }
 
-    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
-    function logout() { auth.signOut(); localStorage.removeItem('wms_session'); location.reload(); }
     function calcularDias(data) {
         diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
         document.getElementById('label-dias').innerText = `Vencimento em ${diasCalculados} dias`;
     }
+
+    async function exportarHistoricoExcel() {
+        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
+        const dados = snap.docs.map(doc => {
+            const d = doc.data();
+            return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Usuário": d.login, "Data": d.data, "Hora": d.hora };
+        });
+        const ws = XLSX.utils.json_to_sheet(dados);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Movimentacoes");
+        XLSX.writeFile(wb, `Historico_WMS_${Date.now()}.xlsx`);
+    }
+
+    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
+    function logout() { auth.signOut(); localStorage.removeItem('wms_session'); location.reload(); }
 
     window.onload = () => {
         const s = localStorage.getItem('wms_session');
