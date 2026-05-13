@@ -43,6 +43,10 @@
 
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
         .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+
+        /* Estilo do Modal de Retirada */
+        #modal-retirada { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(5px); }
+        .modal-content { background:var(--card); padding:25px; border-radius:15px; width:90%; max-width:400px; border:1px solid #2d3748; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
@@ -125,6 +129,21 @@
     </div>
 </div>
 
+<div id="modal-retirada">
+    <div class="modal-content">
+        <h3 id="modal-titulo" style="margin-top:0; color:var(--primary);">Retirar Material</h3>
+        <p id="modal-info" style="font-size:13px; opacity:0.8; margin-bottom: 15px; line-height: 1.4;"></p>
+        
+        <label style="font-size:11px; color:#94a3b8; text-transform: uppercase;">Quantidade de Pallets:</label>
+        <input type="number" id="modal-input-qtd" inputmode="numeric" pattern="[0-9]*" placeholder="0" style="font-size:28px; text-align:center; margin:10px 0; border: 2px solid var(--primary); height: 60px;">
+        
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button onclick="fecharModal()" style="flex:1; padding:15px; background:#334155; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">CANCELAR</button>
+            <button id="btn-confirmar-modal" style="flex:1; padding:15px; background:var(--primary); color:black; border:none; border-radius:8px; font-weight:900; cursor:pointer;">CONFIRMAR</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
@@ -143,6 +162,7 @@
     let usuarioLogado = null;
     let diasCalculados = 0;
     let wakeLock = null;
+    let itemParaRetirar = null; // Variável global para o modal
 
     async function ativarWakeLock() {
         try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); } } catch (e) {}
@@ -209,7 +229,6 @@
 
         let filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
         
-        // Priorizar os itens com menor validade (FEFO)
         filtrados.sort((a, b) => a.dias - b.dias).forEach(item => {
             const isCritico = item.dias <= 60;
             const card = document.createElement('div');
@@ -231,6 +250,58 @@
         });
     }
 
+    // --- FUNÇÕES DE RETIRADA COM MODAL ---
+    function retirarMaterial(id, qtdAtual, mat, ender, validade) {
+        itemParaRetirar = { id, qtdAtual, mat, ender, validade };
+        
+        document.getElementById('modal-titulo').innerText = `Retirar de: ${mat}`;
+        document.getElementById('modal-info').innerHTML = `Endereço: <b>${ender}</b><br>Saldo Atual: <b>${qtdAtual} PL</b>`;
+        document.getElementById('modal-input-qtd').value = '';
+        document.getElementById('modal-retirada').style.display = 'flex';
+        
+        // Focar no input após abrir
+        setTimeout(() => document.getElementById('modal-input-qtd').focus(), 150);
+        
+        document.getElementById('btn-confirmar-modal').onclick = processarRetirada;
+    }
+
+    function fecharModal() {
+        document.getElementById('modal-retirada').style.display = 'none';
+        itemParaRetirar = null;
+    }
+
+    async function processarRetirada() {
+        const inputQtd = document.getElementById('modal-input-qtd').value;
+        const v = parseInt(inputQtd);
+
+        if (isNaN(v) || v <= 0) {
+            alert("Digite uma quantidade válida!");
+            return;
+        }
+
+        if (v > itemParaRetirar.qtdAtual) {
+            alert("Quantidade solicitada maior que o saldo!");
+            return;
+        }
+
+        const { id, qtdAtual, mat, ender, validade } = itemParaRetirar;
+
+        try {
+            if (v === qtdAtual) {
+                await db.collection("estoque_blocado").doc(id).delete();
+            } else {
+                await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v });
+            }
+            
+            registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`);
+            fecharModal();
+            alert("Retirada concluída!");
+        } catch (e) {
+            alert("Erro ao salvar no banco de dados.");
+        }
+    }
+
+    // --- OUTRAS FUNÇÕES ---
     async function salvarAbastecimentoManual() {
         const ender = document.getElementById('in-ender').value.toUpperCase().trim();
         const mat = document.getElementById('in-mat').value.trim();
@@ -268,18 +339,6 @@
         document.getElementById('label-dias').innerText = `Vencimento em ${diasCalculados} dias`;
     }
 
-    async function retirarMaterial(id, qtdAtual, mat, ender, validade) {
-        const n = prompt(`Retirar de ${mat}. Quantos pallets? (Saldo: ${qtdAtual})`);
-        if(!n || isNaN(n)) return;
-        const v = parseInt(n);
-        if(v > 0 && v <= qtdAtual) {
-            if(v === qtdAtual) await db.collection("estoque_blocado").doc(id).delete();
-            else await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v });
-            registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`);
-            alert("Concluído!");
-        }
-    }
-
     async function registrarMovimentacao(e, m, v, q) {
         const agora = new Date();
         await db.collection("movimentacoes_wms").add({ 
@@ -309,7 +368,6 @@
         } catch (error) { alert("Erro ao exportar Excel."); }
     }
 
-    // --- FUNÇÃO DE IMPORTAÇÃO CORRIGIDA ---
     async function importarCSV(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -325,7 +383,6 @@
                 
                 if (!confirm(`Atenção: Isso apagará o estoque atual e carregará ${dados.length} itens. Continuar?`)) return;
 
-                // 1. Limpar estoque atual (Batch delete)
                 const snapshot = await db.collection("estoque_blocado").get();
                 if (!snapshot.empty) {
                     let deleteBatch = db.batch();
@@ -338,7 +395,6 @@
                     await deleteBatch.commit();
                 }
 
-                // 2. Importar novos dados
                 let batch = db.batch();
                 let count = 0;
 
