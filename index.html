@@ -29,41 +29,41 @@
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 30px; }
         
-        /* Menu Lateral */
-        .sidebar { position: fixed; left: -250px; top: 0; width: 250px; height: 100%; background: var(--card); transition: 0.3s; z-index: 1000; padding-top: 60px; border-right: 1px solid #2d3748; }
+        .sidebar { position: fixed; left: -250px; top: 0; width: 250px; height: 100%; background: var(--card); transition: 0.3s; z-index: 1000; padding-top: 60px; border-right: 1px solid #2d3748; box-shadow: 10px 0 20px rgba(0,0,0,0.5); }
         .sidebar.active { left: 0; }
-        .sidebar button { width: 100%; padding: 15px; background: transparent; border: none; color: white; text-align: left; cursor: pointer; border-bottom: 1px solid #2d3748; font-weight: bold; }
+        .sidebar button { width: 100%; padding: 15px; background: transparent; border: none; color: white; text-align: left; cursor: pointer; border-bottom: 1px solid #2d3748; font-weight: bold; font-size: 14px; }
 
         .header { padding: 15px 20px; background: var(--card); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #2d3748; position: sticky; top: 0; z-index: 900; }
-        .menu-btn { background: none; border: 1px solid #444; padding: 8px; border-radius: 5px; cursor: pointer; color: white; font-size: 20px; }
+        .menu-btn { background: none; border: 1px solid #444; padding: 8px; border-radius: 5px; cursor: pointer; color: white; font-size: 20px; width: 40px; height: 40px; }
         .container { max-width: 900px; margin: auto; padding: 15px; }
 
-        /* Estilos de Busca e Cards */
+        .admin-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-box { background: var(--card); padding: 15px; border-radius: 8px; border-top: 3px solid var(--primary); text-align: center; }
+        .stat-box h5 { margin: 0; font-size: 10px; opacity: 0.6; text-transform: uppercase; }
+        .stat-box p { margin: 8px 0 0; font-size: 24px; font-weight: 900; }
+
         .search-area { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; outline: none; }
         .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid #444; }
         
         .badge-ender { background: var(--primary); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 900; }
+        .badge-status { color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; margin-left: 8px; text-transform: uppercase; }
+
         .btn-retirar { background: var(--primary); color: #000; border: none; padding: 10px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; }
+        .btn-admin { background: var(--verde); color: #000; padding: 15px; width: 100%; border-radius: 8px; font-weight: 900; margin-top: 10px; border: none; cursor: pointer; text-transform: uppercase; }
 
-        /* MODAL E REGRA PARA TECLADO */
-        #modal-retirada { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(5px); overflow-y: auto; }
-        .modal-content { background:var(--card); padding:25px; border-radius:15px; width:90%; max-width:400px; border:1px solid #2d3748; transition: all 0.3s ease; }
+        /* MODAL COM REGRA PARA TECLADO */
+        #modal-retirada { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(5px); }
+        .modal-content { background:var(--card); padding:25px; border-radius:15px; width:90%; max-width:400px; border:1px solid #2d3748; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-        /* QUANDO O TECLADO ABRIR (Tela menor que 450px de altura) */
-        @media (max-height: 450px) {
+        @media (max-height: 500px) {
             #modal-retirada { align-items: flex-start; padding-top: 10px; }
             .modal-content { padding: 15px; }
-            .modal-content h3 { margin-bottom: 5px; font-size: 16px; }
-            #modal-info { margin-bottom: 5px; font-size: 12px; }
-            #modal-input-qtd { height: 45px !important; font-size: 22px !important; margin: 5px 0 !important; }
+            #modal-input-qtd { height: 45px !important; font-size: 24px !important; margin: 5px 0 !important; }
         }
 
-        /* Botões Administrativos */
-        .btn-admin { background: var(--verde); color: #000; padding: 15px; width: 100%; border-radius: 8px; font-weight: 900; margin-top: 10px; border: none; cursor: pointer; }
-        
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
-        .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; }
+        .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
@@ -89,14 +89,22 @@
         <button class="menu-btn" onclick="toggleMenu()">☰</button>
         <div style="flex-grow: 1;">
             <div id="user-name" style="font-weight: 800; font-size: 16px;"></div>
-            <div id="role-label" style="font-size: 10px; color: var(--primary); font-weight: bold;"></div>
+            <div id="role-label" style="font-size: 10px; color: var(--primary); font-weight: bold; letter-spacing: 1px;"></div>
         </div>
     </div>
 
     <div class="container">
         <div id="view-admin" style="display: none;">
-             <div class="search-area">ADMINISTRAÇÃO</div>
-             <button class="btn-admin" onclick="exportarHistoricoExcel()">GERAR EXCEL HISTÓRICO</button>
+            <div id="dash-container" class="admin-dashboard">
+                <div class="stat-box"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
+                <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS</h5><p id="st-critico">0</p></div>
+                <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS</h5><p id="st-retido">0</p></div>
+            </div>
+            <div style="background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #2d3748;">
+                <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
+                <button class="btn-admin" onclick="document.getElementById('csv-file').click()">ALIMENTAR NOVO ESTOQUE (CSV)</button>
+                <button class="btn-admin" style="background: #107c41; color: white;" onclick="exportarHistoricoExcel()">SOLICITAR HISTÓRICO (EXCEL)</button>
+            </div>
         </div>
 
         <div id="view-retirar">
@@ -107,13 +115,15 @@
         </div>
 
         <div id="view-abastecer" style="display: none;">
-            <div class="search-area">
-                <h3>ABASTECER BLOCO</h3>
-                <input type="text" id="in-ender" placeholder="Endereço (Ex: A-01-01)" style="margin-bottom:10px;">
-                <input type="text" id="in-mat" placeholder="Material" style="margin-bottom:10px;">
-                <input type="number" id="in-qtd" placeholder="Qtd Pallets" style="margin-bottom:10px;">
-                <input type="date" id="in-venc" style="margin-bottom:10px;">
-                <button class="btn-admin" onclick="salvarAbastecimentoManual()">SALVAR ENTRADA</button>
+            <div style="background: var(--card); padding: 25px; border-radius: 12px;">
+                <h3 style="color: var(--primary); margin-top: 0;">ABASTECER BLOCO</h3>
+                <input type="text" id="in-ender" placeholder="Endereço (Ex: A-01-01)" style="margin-bottom:15px;">
+                <input type="text" id="in-mat" placeholder="Código Material" oninput="puxarDescricao(this.value)" style="margin-bottom:15px;">
+                <input type="text" id="in-desc" readonly placeholder="Descrição..." style="opacity: 0.5; margin-bottom:15px;">
+                <input type="number" id="in-qtd" placeholder="Qtd de Pallets" style="margin-bottom:15px;">
+                <input type="date" id="in-venc" onchange="calcularDias(this.value)" style="margin-bottom:15px;">
+                <p id="label-dias" style="color: var(--critico); font-size: 12px; font-weight: bold;"></p>
+                <button class="btn-admin" style="background: #7c3aed; color: white;" onclick="salvarAbastecimentoManual()">SALVAR ENTRADA</button>
             </div>
         </div>
     </div>
@@ -122,13 +132,11 @@
 <div id="modal-retirada">
     <div class="modal-content">
         <h3 id="modal-titulo" style="margin-top:0; color:var(--primary);">Retirar Material</h3>
-        <p id="modal-info" style="line-height: 1.4;"></p>
-        
+        <p id="modal-info" style="font-size:13px; opacity:0.8; margin-bottom: 15px;"></p>
         <label style="font-size:11px; color:#94a3b8;">QUANTIDADE DE PALLETS:</label>
         <input type="number" id="modal-input-qtd" inputmode="numeric" placeholder="0" 
                style="font-size:28px; text-align:center; margin:10px 0; border: 2px solid var(--primary); height: 60px;"
                onfocus="focarInput()">
-
         <div style="display:flex; gap:10px; margin-top:10px;">
             <button onclick="fecharModal()" style="flex:1; padding:15px; background:#334155; color:white; border:none; border-radius:8px; font-weight:bold;">CANCELAR</button>
             <button id="btn-confirmar-modal" style="flex:1; padding:15px; background:var(--primary); color:black; border:none; border-radius:8px; font-weight:900;">CONFIRMAR</button>
@@ -137,7 +145,6 @@
 </div>
 
 <script>
-    // Configurações do Firebase (Mantenha as suas originais)
     const firebaseConfig = {
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
         authDomain: "sistema-fefo.firebaseapp.com",
@@ -152,9 +159,9 @@
 
     let estoqueCompleto = [];
     let usuarioLogado = null;
+    let diasCalculados = 0;
     let itemParaRetirar = null;
 
-    // Login e Navegação
     async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
@@ -164,6 +171,7 @@
             if (doc.exists) {
                 usuarioLogado = doc.data();
                 usuarioLogado.email = mat + "@alb.com";
+                localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
                 iniciarApp();
             }
         } catch (e) { alert("Erro de Login."); }
@@ -174,9 +182,10 @@
         document.getElementById('app-screen').style.display = 'block';
         document.getElementById('user-name').innerText = usuarioLogado.nome;
         const isAdmin = usuarioLogado.perfil.toUpperCase() === "ADMIN";
+        document.getElementById('role-label').innerText = isAdmin ? "PERFIL: ADMINISTRADOR" : "PERFIL: OPERADOR";
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
         conectarFirebase();
-        navegar('retirar');
+        navegar(isAdmin ? 'admin' : 'retirar');
     }
 
     function navegar(tela) {
@@ -185,13 +194,18 @@
         document.getElementById('sidebar').classList.remove('active');
     }
 
-    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
-
     function conectarFirebase() {
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if(usuarioLogado && usuarioLogado.perfil.toUpperCase() === "ADMIN") atualizarEstatisticas();
             renderizarEstoque();
         });
+    }
+
+    function atualizarEstatisticas() {
+        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
+        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length;
+        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
     }
 
     function renderizarEstoque() {
@@ -200,64 +214,115 @@
         lista.innerHTML = '';
         if (!termo) return;
 
-        let filtrados = estoqueCompleto.filter(i => i.mat.toString().includes(termo) || i.ender.toLowerCase().includes(termo));
-        
-        filtrados.forEach(item => {
+        let filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
+        if (filtrados.length === 0) return;
+
+        const menorDia = Math.min(...filtrados.map(i => i.dias));
+        const apenasPrioritarios = filtrados.filter(i => i.dias === menorDia);
+
+        apenasPrioritarios.forEach(item => {
+            let cor = item.dias <= 30 ? "var(--retido)" : item.dias <= 60 ? "var(--critico)" : "var(--verde)";
             const card = document.createElement('div');
             card.className = 'item-card';
+            card.style.borderLeftColor = cor;
             card.innerHTML = `
                 <div>
                     <span class="badge-ender">${item.ender}</span>
                     <div style="font-weight:900; font-size:18px; margin-top:5px;">${item.mat}</div>
-                    <div style="font-size:11px; opacity:0.7;">${item.desc || ''}</div>
+                    <div style="font-size:11px; opacity:0.7;">${item.desc}</div>
+                    <div style="font-size:12px; margin-top:5px;">Venc: <b>${item.dias} dias</b></div>
                 </div>
                 <div style="text-align:right">
-                    <div style="font-size:20px; font-weight:900;">${item.qtd} PL</div>
-                    <button class="btn-retirar" onclick="abrirModalRetirada('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}')">RETIRAR</button>
+                    <div style="font-size:22px; font-weight:900;">${item.qtd} PL</div>
+                    <button class="btn-retirar" onclick="abrirModalRetirada('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button>
                 </div>`;
             lista.appendChild(card);
         });
     }
 
-    // MODAL E LÓGICA DE TECLADO
-    function abrirModalRetirada(id, qtdAtual, mat, ender) {
-        itemParaRetirar = { id, qtdAtual, mat, ender };
+    function abrirModalRetirada(id, qtdAtual, mat, ender, validade) {
+        itemParaRetirar = { id, qtdAtual, mat, ender, validade };
         document.getElementById('modal-titulo').innerText = `Retirar de: ${mat}`;
-        document.getElementById('modal-info').innerHTML = `Endereço: <b>${ender}</b> | Saldo: <b>${qtdAtual} PL</b>`;
+        document.getElementById('modal-info').innerHTML = `Endereço: <b>${ender}</b><br>Saldo: <b>${qtdAtual} PL</b>`;
         document.getElementById('modal-input-qtd').value = '';
         document.getElementById('modal-retirada').style.display = 'flex';
-        
         document.getElementById('btn-confirmar-modal').onclick = processarRetirada;
     }
 
     function focarInput() {
-        // Pequeno atraso para o teclado subir e a regra de CSS agir antes do ajuste de scroll
-        setTimeout(() => {
-            document.getElementById('btn-confirmar-modal').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 300);
+        setTimeout(() => { document.getElementById('btn-confirmar-modal').scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
     }
 
-    function fecharModal() {
-        document.getElementById('modal-retirada').style.display = 'none';
-        itemParaRetirar = null;
-    }
+    function fecharModal() { document.getElementById('modal-retirada').style.display = 'none'; }
 
     async function processarRetirada() {
         const v = parseInt(document.getElementById('modal-input-qtd').value);
-        if (isNaN(v) || v <= 0 || v > itemParaRetirar.qtdAtual) return alert("Quantidade inválida!");
-
+        if (isNaN(v) || v <= 0 || v > itemParaRetirar.qtdAtual) return alert("Qtd Inválida!");
         try {
-            if (v === itemParaRetirar.qtdAtual) {
-                await db.collection("estoque_blocado").doc(itemParaRetirar.id).delete();
-            } else {
-                await db.collection("estoque_blocado").doc(itemParaRetirar.id).update({ qtd: itemParaRetirar.qtdAtual - v });
-            }
-            alert("Retirada realizada!");
+            if (v === itemParaRetirar.qtdAtual) await db.collection("estoque_blocado").doc(itemParaRetirar.id).delete();
+            else await db.collection("estoque_blocado").doc(itemParaRetirar.id).update({ qtd: itemParaRetirar.qtdAtual - v });
+            registrarMovimentacao(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.validade, `-${v} PL`);
             fecharModal();
-        } catch (e) { alert("Erro ao salvar."); }
+            alert("Sucesso!");
+        } catch (e) { alert("Erro!"); }
     }
 
-    function logout() { auth.signOut(); location.reload(); }
+    async function salvarAbastecimentoManual() {
+        const ender = document.getElementById('in-ender').value.toUpperCase().trim();
+        const mat = document.getElementById('in-mat').value.trim();
+        const qtd = parseInt(document.getElementById('in-qtd').value);
+        const dataV = document.getElementById('in-venc').value.split('-').reverse().join('/');
+        if(!ender || !mat || isNaN(qtd)) return alert("Preencha tudo!");
+        await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc: document.getElementById('in-desc').value });
+        registrarMovimentacao(ender, mat, dataV, `+${qtd} PL`);
+        alert("Salvo!");
+        navegar('retirar');
+    }
+
+    function calcularDias(data) {
+        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
+        document.getElementById('label-dias').innerText = `Vencimento em ${diasCalculados} dias`;
+    }
+
+    function puxarDescricao(cod) {
+        const p = estoqueCompleto.find(i => i.mat.toString() === cod);
+        document.getElementById('in-desc').value = p ? p.desc : "NOVO MATERIAL";
+    }
+
+    async function registrarMovimentacao(e, m, v, q) {
+        const agora = new Date();
+        await db.collection("movimentacoes_wms").add({ 
+            endereco: e, material: m, validade: v, quantidade: q, 
+            login: usuarioLogado.email, data: agora.toLocaleDateString('pt-BR'), 
+            timestamp: agora 
+        });
+    }
+
+    async function importarCSV(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
+            let batch = db.batch();
+            linhas.forEach(linha => {
+                const c = linha.split(";");
+                const docRef = db.collection("estoque_blocado").doc();
+                batch.set(docRef, { ender: c[0], mat: c[1], desc: c[2], valFrente: c[3], qtd: parseInt(c[5]) || 0, dias: parseInt(c[7]) || 0 });
+            });
+            await batch.commit();
+            alert("Estoque Carregado!");
+            location.reload();
+        };
+        reader.readAsText(file, 'ISO-8859-1');
+    }
+
+    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
+    function logout() { auth.signOut(); localStorage.removeItem('wms_session'); location.reload(); }
+
+    window.onload = () => {
+        const s = localStorage.getItem('wms_session');
+        if(s) { usuarioLogado = JSON.parse(s); iniciarApp(); }
+    };
 </script>
 </body>
 </html>
