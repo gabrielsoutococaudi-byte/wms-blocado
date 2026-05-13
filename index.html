@@ -107,7 +107,7 @@
 
         <div id="view-retirar">
             <div class="search-area">
-                <input type="text" id="search-input" placeholder="Pesquisar material ou endereço..." oninput="renderizarEstoque()">
+                <input type="text" id="search-input" inputmode="numeric" placeholder="Pesquisar material ou endereço..." oninput="renderizarEstoque()">
             </div>
             <div id="lista-estoque"></div>
         </div>
@@ -216,6 +216,14 @@
         });
         document.getElementById('view-' + tela).style.display = 'block';
         document.getElementById('sidebar').classList.remove('active');
+
+        // FOCO AUTOMÁTICO PARA ABRIR O TECLADO NA TELA DE RETIRAR
+        if (tela === 'retirar') {
+            setTimeout(() => {
+                const searchInput = document.getElementById('search-input');
+                searchInput.focus();
+            }, 350);
+        }
     }
 
     function conectarFirebase() {
