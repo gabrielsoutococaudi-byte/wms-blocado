@@ -2,14 +2,9 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WMS FLOW PRO - Sistema Integrado</title>
     
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#161e31">
-
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -32,9 +27,10 @@
         .sidebar { position: fixed; left: -250px; top: 0; width: 250px; height: 100%; background: var(--card); transition: 0.3s; z-index: 1000; padding-top: 60px; border-right: 1px solid #2d3748; box-shadow: 10px 0 20px rgba(0,0,0,0.5); }
         .sidebar.active { left: 0; }
         .sidebar button { width: 100%; padding: 15px; background: transparent; border: none; color: white; text-align: left; cursor: pointer; border-bottom: 1px solid #2d3748; font-weight: bold; font-size: 14px; }
+        .sidebar button:hover { background: rgba(255,255,255,0.05); }
 
         .header { padding: 15px 20px; background: var(--card); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #2d3748; position: sticky; top: 0; z-index: 900; }
-        .menu-btn { background: none; border: 1px solid #444; padding: 8px; border-radius: 5px; cursor: pointer; color: white; font-size: 20px; width: 40px; height: 40px; }
+        .menu-btn { background: none; border: 1px solid #444; padding: 8px; border-radius: 5px; cursor: pointer; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
         .container { max-width: 900px; margin: auto; padding: 15px; }
 
         .admin-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
@@ -51,19 +47,13 @@
 
         .btn-retirar { background: var(--primary); color: #000; border: none; padding: 10px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; }
         .btn-admin { background: var(--verde); color: #000; padding: 15px; width: 100%; border-radius: 8px; font-weight: 900; margin-top: 10px; border: none; cursor: pointer; text-transform: uppercase; }
-
-        /* MODAL COM REGRA PARA TECLADO */
-        #modal-retirada { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(5px); }
-        .modal-content { background:var(--card); padding:25px; border-radius:15px; width:90%; max-width:400px; border:1px solid #2d3748; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-
-        @media (max-height: 500px) {
-            #modal-retirada { align-items: flex-start; padding-top: 10px; }
-            .modal-content { padding: 15px; }
-            #modal-input-qtd { height: 45px !important; font-size: 24px !important; margin: 5px 0 !important; }
-        }
+        .btn-excel { background: #107c41; color: white; }
 
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
         .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+
+        #modal-retirada { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(5px); }
+        .modal-content { background:var(--card); padding:25px; border-radius:15px; width:90%; max-width:400px; border:1px solid #2d3748; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
@@ -100,10 +90,12 @@
                 <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS</h5><p id="st-critico">0</p></div>
                 <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS</h5><p id="st-retido">0</p></div>
             </div>
-            <div style="background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #2d3748;">
+
+            <div id="admin-tools-section" style="background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #2d3748;">
+                <h3 style="font-size: 12px; color: var(--primary); margin-top: 0;">GERENCIAMENTO ADMINISTRATIVO</h3>
                 <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
                 <button class="btn-admin" onclick="document.getElementById('csv-file').click()">ALIMENTAR NOVO ESTOQUE (CSV)</button>
-                <button class="btn-admin" style="background: #107c41; color: white;" onclick="exportarHistoricoExcel()">SOLICITAR HISTÓRICO (EXCEL)</button>
+                <button class="btn-admin btn-excel" onclick="exportarHistoricoExcel()">SOLICITAR HISTÓRICO (EXCEL)</button>
             </div>
         </div>
 
@@ -117,12 +109,27 @@
         <div id="view-abastecer" style="display: none;">
             <div style="background: var(--card); padding: 25px; border-radius: 12px;">
                 <h3 style="color: var(--primary); margin-top: 0;">ABASTECER BLOCO</h3>
-                <input type="text" id="in-ender" placeholder="Endereço (Ex: A-01-01)" style="margin-bottom:15px;">
-                <input type="text" id="in-mat" placeholder="Código Material" oninput="puxarDescricao(this.value)" style="margin-bottom:15px;">
-                <input type="text" id="in-desc" readonly placeholder="Descrição..." style="opacity: 0.5; margin-bottom:15px;">
-                <input type="number" id="in-qtd" placeholder="Qtd de Pallets" style="margin-bottom:15px;">
-                <input type="date" id="in-venc" onchange="calcularDias(this.value)" style="margin-bottom:15px;">
-                <p id="label-dias" style="color: var(--critico); font-size: 12px; font-weight: bold;"></p>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; color: #94a3b8;">Endereço (Ex: A-01-01)</label>
+                    <input type="text" id="in-ender" placeholder="Endereço...">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; color: #94a3b8;">Código Material</label>
+                    <input type="text" id="in-mat" placeholder="Código..." oninput="puxarDescricao(this.value)">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; color: #94a3b8;">Descrição do Produto</label>
+                    <input type="text" id="in-desc" readonly style="opacity: 0.5;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; color: #94a3b8;">Quantidade de Pallets</label>
+                    <input type="number" id="in-qtd">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; color: #94a3b8;">Data de Vencimento</label>
+                    <input type="date" id="in-venc" onchange="calcularDias(this.value)">
+                    <p id="label-dias" style="color: var(--critico); font-size: 12px; margin-top: 5px; font-weight: bold;"></p>
+                </div>
                 <button class="btn-admin" style="background: #7c3aed; color: white;" onclick="salvarAbastecimentoManual()">SALVAR ENTRADA</button>
             </div>
         </div>
@@ -132,14 +139,12 @@
 <div id="modal-retirada">
     <div class="modal-content">
         <h3 id="modal-titulo" style="margin-top:0; color:var(--primary);">Retirar Material</h3>
-        <p id="modal-info" style="font-size:13px; opacity:0.8; margin-bottom: 15px;"></p>
-        <label style="font-size:11px; color:#94a3b8;">QUANTIDADE DE PALLETS:</label>
-        <input type="number" id="modal-input-qtd" inputmode="numeric" placeholder="0" 
-               style="font-size:28px; text-align:center; margin:10px 0; border: 2px solid var(--primary); height: 60px;"
-               onfocus="focarInput()">
-        <div style="display:flex; gap:10px; margin-top:10px;">
-            <button onclick="fecharModal()" style="flex:1; padding:15px; background:#334155; color:white; border:none; border-radius:8px; font-weight:bold;">CANCELAR</button>
-            <button id="btn-confirmar-modal" style="flex:1; padding:15px; background:var(--primary); color:black; border:none; border-radius:8px; font-weight:900;">CONFIRMAR</button>
+        <p id="modal-info" style="font-size:13px; opacity:0.8; margin-bottom: 15px; line-height: 1.4;"></p>
+        <label style="font-size:11px; color:#94a3b8; text-transform: uppercase;">Quantidade de Pallets:</label>
+        <input type="number" id="modal-input-qtd" inputmode="numeric" pattern="[0-9]*" placeholder="0" style="font-size:28px; text-align:center; margin:10px 0; border: 2px solid var(--primary); height: 60px;">
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button onclick="fecharModal()" style="flex:1; padding:15px; background:#334155; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">CANCELAR</button>
+            <button id="btn-confirmar-modal" style="flex:1; padding:15px; background:var(--primary); color:black; border:none; border-radius:8px; font-weight:900; cursor:pointer;">CONFIRMAR</button>
         </div>
     </div>
 </div>
@@ -156,11 +161,17 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
     let estoqueCompleto = [];
     let usuarioLogado = null;
     let diasCalculados = 0;
+    let wakeLock = null;
     let itemParaRetirar = null;
+
+    async function ativarWakeLock() {
+        try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); } } catch (e) {}
+    }
 
     async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
@@ -181,15 +192,22 @@
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-screen').style.display = 'block';
         document.getElementById('user-name').innerText = usuarioLogado.nome;
+        
         const isAdmin = usuarioLogado.perfil.toUpperCase() === "ADMIN";
         document.getElementById('role-label').innerText = isAdmin ? "PERFIL: ADMINISTRADOR" : "PERFIL: OPERADOR";
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('admin-tools-section').style.display = isAdmin ? 'block' : 'none';
+
         conectarFirebase();
+        ativarWakeLock();
         navegar(isAdmin ? 'admin' : 'retirar');
     }
 
     function navegar(tela) {
-        ['admin', 'retirar', 'abastecer'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
+        ['admin', 'retirar', 'abastecer'].forEach(t => {
+            const el = document.getElementById('view-' + t);
+            if(el) el.style.display = 'none';
+        });
         document.getElementById('view-' + tela).style.display = 'block';
         document.getElementById('sidebar').classList.remove('active');
     }
@@ -212,7 +230,7 @@
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
-        if (!termo) return;
+        if (termo.length === 0) return;
 
         let filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
         if (filtrados.length === 0) return;
@@ -221,50 +239,68 @@
         const apenasPrioritarios = filtrados.filter(i => i.dias === menorDia);
 
         apenasPrioritarios.forEach(item => {
-            let cor = item.dias <= 30 ? "var(--retido)" : item.dias <= 60 ? "var(--critico)" : "var(--verde)";
+            let statusTexto = "";
+            let statusCor = "";
+
+            if (item.dias <= 30) {
+                statusTexto = "RETIDO";
+                statusCor = "var(--retido)";
+            } else if (item.dias <= 60) {
+                statusTexto = "CRÍTICO";
+                statusCor = "var(--critico)";
+            } else {
+                statusTexto = "DATA BOA";
+                statusCor = "var(--verde)";
+            }
+
             const card = document.createElement('div');
-            card.className = 'item-card';
-            card.style.borderLeftColor = cor;
+            card.className = `item-card`;
+            card.style.borderLeftColor = statusCor;
             card.innerHTML = `
                 <div>
                     <span class="badge-ender">${item.ender}</span>
+                    <span class="badge-status" style="background-color: ${statusCor}">${statusTexto}</span>
                     <div style="font-weight:900; font-size:18px; margin-top:5px;">${item.mat}</div>
                     <div style="font-size:11px; opacity:0.7;">${item.desc}</div>
-                    <div style="font-size:12px; margin-top:5px;">Venc: <b>${item.dias} dias</b></div>
+                    <div style="font-size:12px; margin-top:5px;">Vence em: <b>${item.dias} dias</b></div>
                 </div>
                 <div style="text-align:right">
                     <div style="font-size:22px; font-weight:900;">${item.qtd} PL</div>
-                    <button class="btn-retirar" onclick="abrirModalRetirada('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button>
+                    <button class="btn-retirar" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button>
                 </div>`;
             lista.appendChild(card);
         });
     }
 
-    function abrirModalRetirada(id, qtdAtual, mat, ender, validade) {
+    function retirarMaterial(id, qtdAtual, mat, ender, validade) {
         itemParaRetirar = { id, qtdAtual, mat, ender, validade };
         document.getElementById('modal-titulo').innerText = `Retirar de: ${mat}`;
-        document.getElementById('modal-info').innerHTML = `Endereço: <b>${ender}</b><br>Saldo: <b>${qtdAtual} PL</b>`;
+        document.getElementById('modal-info').innerHTML = `Endereço: <b>${ender}</b><br>Saldo Atual: <b>${qtdAtual} PL</b>`;
         document.getElementById('modal-input-qtd').value = '';
         document.getElementById('modal-retirada').style.display = 'flex';
+        setTimeout(() => document.getElementById('modal-input-qtd').focus(), 150);
         document.getElementById('btn-confirmar-modal').onclick = processarRetirada;
     }
 
-    function focarInput() {
-        setTimeout(() => { document.getElementById('btn-confirmar-modal').scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
+    function fecharModal() {
+        document.getElementById('modal-retirada').style.display = 'none';
+        itemParaRetirar = null;
     }
 
-    function fecharModal() { document.getElementById('modal-retirada').style.display = 'none'; }
-
     async function processarRetirada() {
-        const v = parseInt(document.getElementById('modal-input-qtd').value);
-        if (isNaN(v) || v <= 0 || v > itemParaRetirar.qtdAtual) return alert("Qtd Inválida!");
+        const inputQtd = document.getElementById('modal-input-qtd').value;
+        const v = parseInt(inputQtd);
+        if (isNaN(v) || v <= 0) return alert("Digite uma quantidade válida!");
+        if (v > itemParaRetirar.qtdAtual) return alert("Quantidade solicitada maior que o saldo!");
+
+        const { id, qtdAtual, mat, ender, validade } = itemParaRetirar;
         try {
-            if (v === itemParaRetirar.qtdAtual) await db.collection("estoque_blocado").doc(itemParaRetirar.id).delete();
-            else await db.collection("estoque_blocado").doc(itemParaRetirar.id).update({ qtd: itemParaRetirar.qtdAtual - v });
-            registrarMovimentacao(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.validade, `-${v} PL`);
+            if (v === qtdAtual) { await db.collection("estoque_blocado").doc(id).delete(); } 
+            else { await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v }); }
+            registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`);
             fecharModal();
-            alert("Sucesso!");
-        } catch (e) { alert("Erro!"); }
+            alert("Retirada concluída!");
+        } catch (e) { alert("Erro ao salvar no banco."); }
     }
 
     async function salvarAbastecimentoManual() {
@@ -272,16 +308,25 @@
         const mat = document.getElementById('in-mat').value.trim();
         const qtd = parseInt(document.getElementById('in-qtd').value);
         const dataV = document.getElementById('in-venc').value.split('-').reverse().join('/');
-        if(!ender || !mat || isNaN(qtd)) return alert("Preencha tudo!");
+        if(!ender || !mat || isNaN(qtd) || !document.getElementById('in-venc').value) return alert("Preencha todos os campos!");
+
+        const ocupante = estoqueCompleto.find(i => i.ender === ender);
+        if (ocupante) {
+            if (ocupante.mat === mat) {
+                if (confirm(`Endereço ocupado pelo mesmo material. Somar +${qtd} PL?`)) {
+                    await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd });
+                    registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma Manual)`);
+                    alert("Atualizado!");
+                    navegar('retirar');
+                }
+                return;
+            } else { return alert(`BLOQUEADO! Endereço ocupado por: ${ocupante.mat}`); }
+        }
+
         await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc: document.getElementById('in-desc').value });
-        registrarMovimentacao(ender, mat, dataV, `+${qtd} PL`);
+        registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada Manual)`);
         alert("Salvo!");
         navegar('retirar');
-    }
-
-    function calcularDias(data) {
-        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
-        document.getElementById('label-dias').innerText = `Vencimento em ${diasCalculados} dias`;
     }
 
     function puxarDescricao(cod) {
@@ -289,35 +334,88 @@
         document.getElementById('in-desc').value = p ? p.desc : "NOVO MATERIAL";
     }
 
+    function calcularDias(data) {
+        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
+        document.getElementById('label-dias').innerText = `Vencimento em ${diasCalculados} dias`;
+    }
+
     async function registrarMovimentacao(e, m, v, q) {
         const agora = new Date();
         await db.collection("movimentacoes_wms").add({ 
             endereco: e, material: m, validade: v, quantidade: q, 
             login: usuarioLogado.email, data: agora.toLocaleDateString('pt-BR'), 
-            timestamp: agora 
+            hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora 
         });
+    }
+
+    async function exportarHistoricoExcel() {
+        try {
+            const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
+            if (snap.empty) return alert("Nenhum histórico.");
+            const dados = snap.docs.map(doc => {
+                const d = doc.data();
+                return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Hora": d.hora, "Login": d.login, "Data": d.data, "Qtd": d.quantidade };
+            });
+            const ws = XLSX.utils.json_to_sheet(dados);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Histórico");
+            XLSX.writeFile(wb, `Historico_WMS_${new Date().getTime()}.xlsx`);
+        } catch (error) { alert("Erro na exportação."); }
     }
 
     async function importarCSV(event) {
         const file = event.target.files[0];
+        if (!file) return;
         const reader = new FileReader();
         reader.onload = async (e) => {
-            const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
-            let batch = db.batch();
-            linhas.forEach(linha => {
-                const c = linha.split(";");
-                const docRef = db.collection("estoque_blocado").doc();
-                batch.set(docRef, { ender: c[0], mat: c[1], desc: c[2], valFrente: c[3], qtd: parseInt(c[5]) || 0, dias: parseInt(c[7]) || 0 });
-            });
-            await batch.commit();
-            alert("Estoque Carregado!");
-            location.reload();
+            try {
+                const texto = e.target.result;
+                const linhas = texto.split(/\r?\n/).filter(l => l.trim() !== "");
+                if (linhas.length <= 1) return alert("Planilha vazia!");
+                const dados = linhas.slice(1);
+                if (!confirm(`Apagar estoque atual e carregar ${dados.length} itens?`)) return;
+
+                const snapshot = await db.collection("estoque_blocado").get();
+                if (!snapshot.empty) {
+                    let deleteBatch = db.batch();
+                    let delCount = 0;
+                    for (const doc of snapshot.docs) {
+                        deleteBatch.delete(doc.ref);
+                        delCount++;
+                        if (delCount % 400 === 0) { await deleteBatch.commit(); deleteBatch = db.batch(); }
+                    }
+                    await deleteBatch.commit();
+                }
+
+                let batch = db.batch();
+                let count = 0;
+                for (const linha of dados) {
+                    const c = linha.split(";");
+                    if (c.length >= 6) {
+                        const ender = c[0].trim();
+                        const mat = c[1].trim();
+                        const desc = c[2].trim();
+                        const valFrente = c[3].trim();
+                        const qtd = parseInt(c[5].replace(/\D/g, '')) || 0;
+                        const dias = parseInt(c[7].replace(/\D/g, '')) || 0;
+                        if (ender && mat) {
+                            const docRef = db.collection("estoque_blocado").doc();
+                            batch.set(docRef, { ender, mat, desc, valFrente, qtd, dias });
+                            count++;
+                            if (count % 400 === 0) { await batch.commit(); batch = db.batch(); }
+                        }
+                    }
+                }
+                await batch.commit();
+                alert("Sucesso! " + count + " carregados.");
+                location.reload();
+            } catch (err) { alert("Erro: " + err.message); }
         };
         reader.readAsText(file, 'ISO-8859-1');
     }
 
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
-    function logout() { auth.signOut(); localStorage.removeItem('wms_session'); location.reload(); }
+    function logout() { if(wakeLock) wakeLock.release(); auth.signOut(); localStorage.removeItem('wms_session'); location.reload(); }
 
     window.onload = () => {
         const s = localStorage.getItem('wms_session');
