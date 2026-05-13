@@ -101,7 +101,7 @@
 
         <div id="view-retirar">
             <div class="search-area">
-                <input type="text" id="search-input" placeholder="Pesquisar material ou endereço..." oninput="renderizarEstoque()">
+                <input type="text" id="search-input" inputmode="numeric" placeholder="Pesquisar material ou endereço..." oninput="renderizarEstoque()">
             </div>
             <div id="lista-estoque"></div>
         </div>
@@ -226,7 +226,6 @@
         document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
     }
 
-    // FUNÇÃO ATUALIZADA COM AS REGRAS SOLICITADAS
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
@@ -236,7 +235,6 @@
         let filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
         if (filtrados.length === 0) return;
 
-        // PRIORIZAÇÃO: Encontra o lote que vence primeiro (menor dia)
         const menorDia = Math.min(...filtrados.map(i => i.dias));
         const apenasPrioritarios = filtrados.filter(i => i.dias === menorDia);
 
@@ -244,7 +242,6 @@
             let statusTexto = "";
             let statusCor = "";
 
-            // REGRAS DE STATUS
             if (item.dias <= 30) {
                 statusTexto = "RETIDO";
                 statusCor = "var(--retido)";
