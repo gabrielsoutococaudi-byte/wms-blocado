@@ -94,9 +94,10 @@
         <div id="view-admin" style="display: none;">
             <div id="dash-container" class="admin-dashboard">
                 <div class="stat-box"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
-                <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS</h5><p id="st-critico">0</p></div>
-                <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS</h5><p id="st-retido">0</p></div>
+                <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS (31-60D)</h5><p id="st-critico">0</p></div>
+                <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS (<30D)</h5><p id="st-retido">0</p></div>
             </div>
+
             <div id="admin-tools-section" style="background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #2d3748;">
                 <h3 style="font-size: 12px; color: var(--primary); margin-top: 0;">GERENCIAMENTO ADMINISTRATIVO</h3>
                 <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
@@ -116,31 +117,30 @@
             <div style="background: var(--card); padding: 25px; border-radius: 12px;">
                 <h3 style="color: var(--primary); margin-top: 0;">ABASTECER BLOCO</h3>
                 <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">ORIGEM DA CARGA</label>
+                    <label style="font-size: 11px; color: #94a3b8;">ORIGEM</label>
                     <select id="in-origem">
                         <option value="RECEBIMENTO">RECEBIMENTO</option>
                         <option value="STAGE">STAGE</option>
-                        <option value="RETORNO DE SEPARAÇÃO">RETORNO DE SEPARAÇÃO</option>
                     </select>
                 </div>
                 <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">Endereço Destino (Ex: 205-14)</label>
-                    <input type="text" id="in-ender" placeholder="Endereço...">
+                    <label style="font-size: 11px; color: #94a3b8;">Endereço</label>
+                    <input type="text" id="in-ender" placeholder="Ex: 201-01">
                 </div>
                 <div style="margin-bottom: 15px;">
                     <label style="font-size: 11px; color: #94a3b8;">Código Material</label>
                     <input type="text" id="in-mat" placeholder="Código..." oninput="puxarDescricao(this.value, 'in-desc')">
                 </div>
                 <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">Descrição do Produto</label>
+                    <label style="font-size: 11px; color: #94a3b8;">Descrição</label>
                     <input type="text" id="in-desc" readonly style="opacity: 0.5;">
                 </div>
                 <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">Quantidade de Pallets</label>
+                    <label style="font-size: 11px; color: #94a3b8;">Qtd Pallets</label>
                     <input type="number" id="in-qtd">
                 </div>
                 <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">Data de Vencimento</label>
+                    <label style="font-size: 11px; color: #94a3b8;">Vencimento</label>
                     <input type="date" id="in-venc" onchange="calcularDias(this.value)">
                     <p id="label-dias" style="color: var(--critico); font-size: 12px; margin-top: 5px; font-weight: bold;"></p>
                 </div>
@@ -151,22 +151,13 @@
         <div id="view-transferir" style="display: none;">
             <div style="background: var(--card); padding: 25px; border-radius: 12px;">
                 <h3 style="color: var(--primary); margin-top: 0;">MOVER: BLOCO <-> BLOCO</h3>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">ENDEREÇO ORIGEM (Ex: 201-03)</label>
-                    <input type="text" id="trans-origem" placeholder="De onde sai..." onchange="carregarInfoTransferencia(this.value)">
-                </div>
+                <input type="text" id="trans-origem" placeholder="Endereço de Origem..." onchange="carregarInfoTransferencia(this.value)" style="margin-bottom:10px;">
                 <div id="info-transferencia" style="font-size: 12px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none;">
                     <span id="trans-mat-label" style="font-weight: bold; color: var(--primary);"></span><br>
-                    Saldo disponível: <span id="trans-saldo-label" style="font-weight: bold;"></span>
+                    Saldo: <span id="trans-saldo-label"></span>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">ENDEREÇO DESTINO (Ex: 205-14)</label>
-                    <input type="text" id="trans-destino" placeholder="Para onde vai...">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">QUANTIDADE DE PALLETS</label>
-                    <input type="number" id="trans-qtd" placeholder="Qtd...">
-                </div>
+                <input type="text" id="trans-destino" placeholder="Endereço de Destino..." style="margin-bottom:10px;">
+                <input type="number" id="trans-qtd" placeholder="Qtd a mover..." style="margin-bottom:15px;">
                 <button class="btn-admin" style="background: var(--primary); color: black;" onclick="processarTransferencia()">CONFIRMAR MOVIMENTAÇÃO</button>
             </div>
         </div>
@@ -177,15 +168,12 @@
     <div class="modal-content">
         <h3 id="modal-titulo" style="margin-top:0; color:var(--primary);">Retirar Material</h3>
         <p id="modal-info" style="font-size:13px; opacity:0.8; margin-bottom: 15px; line-height: 1.4;"></p>
-        <label style="font-size:11px; color:#94a3b8;">QUANTIDADE:</label>
-        <input type="number" id="modal-input-qtd" placeholder="0" style="font-size:28px; text-align:center; margin:10px 0; border: 2px solid var(--primary); height: 60px;">
-        <label style="font-size:11px; color:#94a3b8;">DESTINO:</label>
-        <select id="modal-destino" style="margin-top:5px;">
+        <input type="number" id="modal-input-qtd" placeholder="Qtd..." style="font-size:24px; text-align:center; height: 50px; margin-bottom: 10px;">
+        <select id="modal-destino" style="margin-bottom: 20px;">
             <option value="SEPARAÇÃO">SEPARAÇÃO</option>
             <option value="STAGE">STAGE</option>
-            <option value="DEVOLUÇÃO">DEVOLUÇÃO</option>
         </select>
-        <div style="display:flex; gap:10px; margin-top:20px;">
+        <div style="display:flex; gap:10px;">
             <button onclick="fecharModal()" style="flex:1; padding:15px; background:#334155; color:white; border:none; border-radius:8px;">CANCELAR</button>
             <button id="btn-confirmar-modal" style="flex:1; padding:15px; background:var(--primary); color:black; border:none; border-radius:8px; font-weight:900;">CONFIRMAR</button>
         </div>
@@ -210,7 +198,6 @@
     let diasCalculados = 0;
     let itemParaRetirar = null;
 
-    // LOGIN E APP
     async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
@@ -249,98 +236,44 @@
     function conectarFirebase() {
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if(usuarioLogado && usuarioLogado.perfil.toUpperCase() === "ADMIN") atualizarEstatisticas();
+            atualizarEstatisticas();
             renderizarEstoque();
         });
     }
 
-    // LÓGICA DE TRANSFERÊNCIA (BLOCO <-> BLOCO)
-    let itemOrigemTrans = null;
-
-    function carregarInfoTransferencia(ender) {
-        const item = estoqueCompleto.find(i => i.ender.toUpperCase() === ender.toUpperCase());
-        const infoDiv = document.getElementById('info-transferencia');
-        if (item) {
-            itemOrigemTrans = item;
-            document.getElementById('trans-mat-label').innerText = `Material: ${item.mat} - ${item.desc}`;
-            document.getElementById('trans-saldo-label').innerText = `${item.qtd} PL`;
-            infoDiv.style.display = 'block';
-        } else {
-            itemOrigemTrans = null;
-            infoDiv.style.display = 'none';
-            alert("Endereço de origem não encontrado no estoque!");
-        }
-    }
-
-    async function processarTransferencia() {
-        const destEnder = document.getElementById('trans-destino').value.toUpperCase().trim();
-        const qtdMover = parseInt(document.getElementById('trans-qtd').value);
-
-        if (!itemOrigemTrans) return alert("Selecione uma origem válida!");
-        if (isNaN(qtdMover) || qtdMover <= 0) return alert("Quantidade inválida!");
-        if (qtdMover > itemOrigemTrans.qtd) return alert("Saldo insuficiente na origem!");
-        if (!destEnder) return alert("Digite o endereço de destino!");
-
-        try {
-            // 1. Subtrair da Origem
-            if (qtdMover === itemOrigemTrans.qtd) {
-                await db.collection("estoque_blocado").doc(itemOrigemTrans.id).delete();
-            } else {
-                await db.collection("estoque_blocado").doc(itemOrigemTrans.id).update({ qtd: itemOrigemTrans.qtd - qtdMover });
-            }
-
-            // 2. Somar no Destino
-            const destinoDoc = estoqueCompleto.find(i => i.ender === destEnder);
-            if (destinoDoc) {
-                if (destinoDoc.mat !== itemOrigemTrans.mat) return alert("Destino ocupado por outro material!");
-                await db.collection("estoque_blocado").doc(destinoDoc.id).update({ qtd: destinoDoc.qtd + qtdMover });
-            } else {
-                await db.collection("estoque_blocado").add({
-                    ender: destEnder,
-                    mat: itemOrigemTrans.mat,
-                    desc: itemOrigemTrans.desc,
-                    qtd: qtdMover,
-                    dias: itemOrigemTrans.dias,
-                    valFrente: itemOrigemTrans.valFrente
-                });
-            }
-
-            // 3. Registrar Log
-            await registrarMovimentacao(itemOrigemTrans.ender, destEnder, itemOrigemTrans.mat, itemOrigemTrans.valFrente, `TRANSFERÊNCIA ${qtdMover} PL`);
-            
-            alert("Transferência realizada com sucesso!");
-            document.getElementById('trans-origem').value = '';
-            document.getElementById('trans-destino').value = '';
-            document.getElementById('trans-qtd').value = '';
-            document.getElementById('info-transferencia').style.display = 'none';
-            navegar('retirar');
-
-        } catch (e) { alert("Erro ao transferir: " + e.message); }
-    }
-
-    // ... (Mantém o restante das suas funções originais de renderização, abastecimento e log abaixo) ...
-
     function atualizarEstatisticas() {
+        if(!document.getElementById('st-total')) return;
         document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
         document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length;
         document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
     }
 
+    // CORREÇÃO DA RENDERIZAÇÃO: Agora mostra todos os itens filtrados, ordenados por FEFO
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
         if (termo.length === 0) return;
-        let filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
+
+        let filtrados = estoqueCompleto.filter(i => 
+            i.mat.toString().toLowerCase().includes(termo) || 
+            i.ender.toLowerCase().includes(termo)
+        );
+
+        // Ordenar por data de vencimento (FEFO)
         filtrados.sort((a,b) => a.dias - b.dias);
+
         filtrados.forEach(item => {
+            let statusTexto = item.dias <= 30 ? "RETIDO" : (item.dias <= 60 ? "CRÍTICO" : "DATA BOA");
             let statusCor = item.dias <= 30 ? "var(--retido)" : (item.dias <= 60 ? "var(--critico)" : "var(--verde)");
+
             const card = document.createElement('div');
             card.className = `item-card`;
             card.style.borderLeftColor = statusCor;
             card.innerHTML = `
                 <div>
                     <span class="badge-ender">${item.ender}</span>
+                    <span class="badge-status" style="background-color: ${statusCor}">${statusTexto}</span>
                     <div style="font-weight:900; font-size:18px; margin-top:5px;">${item.mat}</div>
                     <div style="font-size:11px; opacity:0.7;">${item.desc}</div>
                     <div style="font-size:12px; margin-top:5px;">Vence em: <b>${item.dias} dias</b></div>
@@ -353,6 +286,56 @@
         });
     }
 
+    // LÓGICA DE ALIMENTAÇÃO CSV (AJUSTADA)
+    async function importarCSV(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const texto = e.target.result;
+                const linhas = texto.split(/\r?\n/).filter(l => l.trim() !== "");
+                if (linhas.length <= 1) return alert("Planilha vazia!");
+                const dados = linhas.slice(1);
+                
+                if (!confirm(`Isso apagará o estoque atual e carregará ${dados.length} itens. Confirma?`)) return;
+
+                // Limpar estoque atual
+                const snapshot = await db.collection("estoque_blocado").get();
+                let batch = db.batch();
+                snapshot.docs.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+
+                // Inserir novos
+                batch = db.batch();
+                let count = 0;
+                for (const linha of dados) {
+                    const c = linha.split(";");
+                    if (c.length >= 6) {
+                        const ender = c[0].trim();
+                        const mat = c[1].trim();
+                        const desc = c[2].trim();
+                        const valFrente = c[3].trim();
+                        const qtd = parseInt(c[5].replace(/\D/g, '')) || 0;
+                        const dias = parseInt(c[7].replace(/\D/g, '')) || 0;
+                        
+                        if (ender && mat) {
+                            const docRef = db.collection("estoque_blocado").doc();
+                            batch.set(docRef, { ender, mat, desc, valFrente, qtd, dias });
+                            count++;
+                            if(count % 400 === 0) { await batch.commit(); batch = db.batch(); }
+                        }
+                    }
+                }
+                await batch.commit();
+                alert(`Sucesso! ${count} itens carregados.`);
+                location.reload();
+            } catch (err) { alert("Erro na importação: " + err.message); }
+        };
+        reader.readAsText(file, 'ISO-8859-1');
+    }
+
+    // --- FUNÇÕES DE APOIO ---
     function retirarMaterial(id, qtdAtual, mat, ender, validade) {
         itemParaRetirar = { id, qtdAtual, mat, ender, validade };
         document.getElementById('modal-titulo').innerText = `Retirar de: ${ender}`;
@@ -364,32 +347,58 @@
     async function processarRetirada() {
         const v = parseInt(document.getElementById('modal-input-qtd').value);
         const dest = document.getElementById('modal-destino').value;
-        if (isNaN(v) || v <= 0 || v > itemParaRetirar.qtdAtual) return alert("Quantidade inválida!");
+        if (isNaN(v) || v <= 0 || v > itemParaRetirar.qtdAtual) return alert("Qtd inválida!");
         try {
-            if (v === itemParaRetirar.qtdAtual) { await db.collection("estoque_blocado").doc(itemParaRetirar.id).delete(); } 
-            else { await db.collection("estoque_blocado").doc(itemParaRetirar.id).update({ qtd: itemParaRetirar.qtdAtual - v }); }
+            if (v === itemParaRetirar.qtdAtual) await db.collection("estoque_blocado").doc(itemParaRetirar.id).delete();
+            else await db.collection("estoque_blocado").doc(itemParaRetirar.id).update({ qtd: itemParaRetirar.qtdAtual - v });
+            
             await registrarMovimentacao(itemParaRetirar.ender, dest, itemParaRetirar.mat, itemParaRetirar.validade, `-${v} PL`);
             fecharModal();
-            alert("Concluído!");
-        } catch (e) { alert("Erro."); }
+            alert("Sucesso!");
+        } catch (e) { alert("Erro ao processar."); }
     }
 
-    async function salvarAbastecimentoManual() {
-        const origem = document.getElementById('in-origem').value;
-        const ender = document.getElementById('in-ender').value.toUpperCase().trim();
-        const mat = document.getElementById('in-mat').value.trim();
-        const qtd = parseInt(document.getElementById('in-qtd').value);
-        const dataV = document.getElementById('in-venc').value.split('-').reverse().join('/');
-        if(!ender || !mat || isNaN(qtd)) return alert("Preencha tudo!");
-        const ocupante = estoqueCompleto.find(i => i.ender === ender);
-        if (ocupante) {
-            await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd });
+    let itemOrigemTrans = null;
+    function carregarInfoTransferencia(ender) {
+        const item = estoqueCompleto.find(i => i.ender.toUpperCase() === ender.toUpperCase());
+        if (item) {
+            itemOrigemTrans = item;
+            document.getElementById('trans-mat-label').innerText = item.mat + " - " + item.desc;
+            document.getElementById('trans-saldo-label').innerText = item.qtd + " PL";
+            document.getElementById('info-transferencia').style.display = 'block';
         } else {
-            await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc: document.getElementById('in-desc').value });
+            alert("Endereço não encontrado!");
+            document.getElementById('info-transferencia').style.display = 'none';
         }
-        await registrarMovimentacao(origem, ender, mat, dataV, `+${qtd} PL`);
-        alert("Entrada registrada!");
-        navegar('retirar');
+    }
+
+    async function processarTransferencia() {
+        const destEnder = document.getElementById('trans-destino').value.toUpperCase().trim();
+        const qtdMover = parseInt(document.getElementById('trans-qtd').value);
+        if(!itemOrigemTrans || isNaN(qtdMover) || qtdMover > itemOrigemTrans.qtd) return alert("Dados inválidos!");
+
+        try {
+            // Subtrai origem
+            if(qtdMover === itemOrigemTrans.qtd) await db.collection("estoque_blocado").doc(itemOrigemTrans.id).delete();
+            else await db.collection("estoque_blocado").doc(itemOrigemTrans.id).update({ qtd: itemOrigemTrans.qtd - qtdMover });
+
+            // Soma destino
+            const destDoc = estoqueCompleto.find(i => i.ender === destEnder);
+            if(destDoc) await db.collection("estoque_blocado").doc(destDoc.id).update({ qtd: destDoc.qtd + qtdMover });
+            else await db.collection("estoque_blocado").add({ ...itemOrigemTrans, ender: destEnder, qtd: qtdMover, id: null });
+
+            await registrarMovimentacao(itemOrigemTrans.ender, destEnder, itemOrigemTrans.mat, itemOrigemTrans.valFrente, `MOV ${qtdMover} PL`);
+            alert("Movimentado!");
+            navegar('retirar');
+        } catch (e) { alert("Erro na movimentação."); }
+    }
+
+    async function registrarMovimentacao(ori, dest, mat, val, qtd) {
+        const agora = new Date();
+        await db.collection("movimentacoes_wms").add({ 
+            origem: ori, destino: dest, material: mat, validade: val, quantidade: qtd,
+            login: usuarioLogado.email, data: agora.toLocaleDateString('pt-BR'), hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora
+        });
     }
 
     function puxarDescricao(cod, fieldId) {
@@ -400,14 +409,6 @@
     function calcularDias(data) {
         diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
         document.getElementById('label-dias').innerText = `Vencimento em ${diasCalculados} dias`;
-    }
-
-    async function registrarMovimentacao(ori, dest, mat, val, qtdMsg) {
-        const agora = new Date();
-        await db.collection("movimentacoes_wms").add({ 
-            origem: ori, destino: dest, material: mat, validade: val, quantidade: qtdMsg,
-            login: usuarioLogado.email, data: agora.toLocaleDateString('pt-BR'), hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora
-        });
     }
 
     function fecharModal() { document.getElementById('modal-retirada').style.display = 'none'; }
