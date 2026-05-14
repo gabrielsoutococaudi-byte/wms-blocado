@@ -1,131 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="WMS FLOW PRO">
+    <title>WMS FLOW PRO - Sistema Integrado</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --bg: #0a0f1e; --card: #161e31; --primary: #00d2ff; 
+            --critico: #fbbf24; --retido: #f87171; --verde: #4ade80; 
+            --text: #f8fafc; --roxo: #7c3aed;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 30px; }
+        .sidebar { position: fixed; left: -250px; top: 0; width: 250px; height: 100%; background: var(--card); transition: 0.3s; z-index: 1000; padding-top: 60px; border-right: 1px solid #2d3748; }
+        .sidebar.active { left: 0; }
+        .sidebar button { width: 100%; padding: 15px; background: transparent; border: none; color: white; text-align: left; cursor: pointer; border-bottom: 1px solid #2d3748; font-weight: bold; }
+        .header { padding: 15px 20px; background: var(--card); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #2d3748; position: sticky; top: 0; z-index: 900; }
+        .menu-btn { background: none; border: 1px solid #444; padding: 8px; border-radius: 5px; cursor: pointer; color: white; }
+        .container { max-width: 900px; margin: auto; padding: 15px; }
+        .admin-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-box { background: var(--card); padding: 15px; border-radius: 8px; border-top: 3px solid var(--primary); text-align: center; }
+        input, select { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; margin-top: 5px; }
+        .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid #444; }
+        .btn-retirar { background: var(--primary); color: #000; border: none; padding: 10px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; }
+        .btn-admin { background: var(--verde); color: #000; padding: 15px; width: 100%; border-radius: 8px; font-weight: 900; margin-top: 10px; border: none; cursor: pointer; }
+        #modal-retirada { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; align-items:center; justify-content:center; }
+        .modal-content { background:var(--card); padding:25px; border-radius:15px; width:90%; max-width:400px; }
+    </style>
+</head>
+<body>
+
 <div id="sidebar" class="sidebar">
-    <button onclick="navegar('remanejar')" style="border-left: 4px solid var(--critico);">🔄 REMANEJAR PALLETS</button>
+    <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ADMIN</button>
+    <button onclick="navegar('retirar')">🔍 CONSULTAR / SEPARAÇÃO</button>
+    <button onclick="navegar('abastecer')">📥 ENTRADA NO BLOCADO</button>
+    <button onclick="navegar('remanejar')" style="border-left: 5px solid var(--critico);">🔄 REMANEJAR PALLETS</button>
     <button onclick="logout()" style="color: var(--retido); margin-top: 20px;">🚪 DESLOGAR</button>
 </div>
 
-<div id="view-remanejar" style="display: none;">
-    <div style="background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid var(--critico);">
-        <h3 style="color: var(--critico); margin-top: 0;">REMANEJAMENTO DE BLOCO</h3>
-        
-        <div style="margin-bottom: 15px;">
-            <label style="font-size: 11px; color: #94a3b8;">Endereço de Origem</label>
-            <input type="text" id="rem-origem" placeholder="Ex: 201-03" onchange="buscarDadosOrigem(this.value)">
+<div id="login-screen">
+    <div class="login-box" style="max-width:320px; margin: 100px auto; background: var(--card); padding: 30px; border-radius: 15px;">
+        <h2 style="text-align: center; color: var(--primary);">WMS FLOW PRO</h2>
+        <input type="text" id="login-mat" placeholder="Matrícula">
+        <input type="password" id="login-senha" placeholder="Senha">
+        <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%; margin-top: 20px;">ENTRAR</button>
+    </div>
+</div>
+
+<div id="app-screen" style="display: none;">
+    <div class="header">
+        <button class="menu-btn" onclick="toggleMenu()">☰ Menu</button>
+        <div id="user-name" style="font-weight: 800; margin-left: 10px;"></div>
+    </div>
+
+    <div class="container">
+        <div id="view-admin" style="display: none;">
+            <div class="admin-dashboard">
+                <div class="stat-box"><h5>TOTAL PL</h5><p id="st-total">0</p></div>
+                <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICO</h5><p id="st-critico">0</p></div>
+            </div>
+            <button class="btn-admin" onclick="exportarHistoricoExcel()">BAIXAR HISTÓRICO EXCEL</button>
         </div>
 
-        <div id="dados-origem-preview" style="display:none; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 13px;">
-            Material: <b id="txt-rem-mat">---</b> | Saldo: <b id="txt-rem-qtd">0</b> PL
+        <div id="view-retirar">
+            <input type="text" id="search-input" placeholder="Pesquisar material ou endereço..." oninput="renderizarEstoque()">
+            <div id="lista-estoque" style="margin-top: 20px;"></div>
         </div>
 
-        <div style="margin-bottom: 15px;">
-            <label style="font-size: 11px; color: #94a3b8;">Endereço de Destino</label>
-            <input type="text" id="rem-destino" placeholder="Ex: 205-14">
+        <div id="view-abastecer" style="display: none;">
+            <div style="background: var(--card); padding: 20px; border-radius: 10px;">
+                <h3>ENTRADA BLOCADO</h3>
+                <label>Fluxo:</label>
+                <select id="in-fluxo"><option>RECEBIMENTO -> BLOCADO</option><option>STAGE -> BLOCADO</option></select>
+                <input type="text" id="in-ender" placeholder="Endereço (Ex: 201-03)">
+                <input type="text" id="in-mat" placeholder="Material" oninput="puxarDescricao(this.value)">
+                <input type="text" id="in-desc" placeholder="Descrição" readonly style="opacity:0.5">
+                <input type="number" id="in-qtd" placeholder="Qtd Pallets">
+                <input type="date" id="in-venc" onchange="calcularDias(this.value)">
+                <button class="btn-admin" style="background:var(--roxo); color:white;" onclick="salvarAbastecimentoManual()">SALVAR ENTRADA</button>
+            </div>
         </div>
 
-        <div style="margin-bottom: 15px;">
-            <label style="font-size: 11px; color: #94a3b8;">Quantidade (PL)</label>
-            <input type="number" id="rem-qtd" placeholder="0">
+        <div id="view-remanejar" style="display: none;">
+            <div style="background: var(--card); padding: 20px; border-radius: 10px; border: 1px solid var(--critico);">
+                <h3>MOVER INTERNAMENTE</h3>
+                <input type="text" id="rem-origem" placeholder="Origem (Ex: 201-03)" onchange="buscarDadosOrigem(this.value)">
+                <div id="rem-preview" style="font-size:12px; color:var(--critico); margin: 5px 0; display:none;"></div>
+                <input type="text" id="rem-destino" placeholder="Destino (Ex: 205-14)">
+                <input type="number" id="rem-qtd" placeholder="Quantidade PL">
+                <label>Data da Movimentação:</label>
+                <input type="date" id="rem-data-mov">
+                <button class="btn-admin" style="background:var(--critico);" onclick="processarRemanejamentoDireto()">MOVER AGORA</button>
+            </div>
         </div>
+    </div>
+</div>
 
-        <div style="margin-bottom: 15px;">
-            <label style="font-size: 11px; color: #94a3b8;">Data da Movimentação</label>
-            <input type="date" id="rem-data-mov">
-        </div>
-
-        <button class="btn-admin" style="background: var(--critico); color: black;" onclick="processarRemanejamentoDireto()">CONFIRMAR MOVIMENTAÇÃO</button>
+<div id="modal-retirada">
+    <div class="modal-content">
+        <h3 id="modal-titulo">Separar</h3>
+        <p id="modal-info"></p>
+        <input type="number" id="modal-input-qtd" placeholder="Qtd Pallets">
+        <button class="btn-retirar" id="btn-confirmar-modal" style="width:100%; margin-top:10px;">CONFIRMAR</button>
+        <button onclick="fecharModal()" style="width:100%; margin-top:10px; background:none; color:white; border:none;">CANCELAR</button>
     </div>
 </div>
 
 <script>
-    // --- LÓGICA DE DATA AUTOMÁTICA ---
-    // Define a data de hoje como padrão ao carregar
-    function configurarDatas() {
-        const hoje = new Date().toISOString().split('T')[0];
-        if(document.getElementById('rem-data-mov')) document.getElementById('rem-data-mov').value = hoje;
-        if(document.getElementById('in-venc')) document.getElementById('in-venc').min = hoje;
+    // CONFIGURAÇÃO FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
+        authDomain: "sistema-fefo.firebaseapp.com",
+        projectId: "sistema-fefo",
+        storageBucket: "sistema-fefo.firebasestorage.app",
+        messagingSenderId: "755801777693",
+        appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    let estoqueCompleto = [];
+    let usuarioLogado = null;
+    let diasCalculados = 0;
+    let itemParaRetirar = null;
+
+    // LOGIN
+    async function tentarLogin() {
+        const mat = document.getElementById('login-mat').value.trim();
+        const senha = document.getElementById('login-senha').value.trim();
+        try {
+            await auth.signInWithEmailAndPassword(mat + "@alb.com", senha);
+            const doc = await db.collection("usuarios_wms").doc(mat + "@alb.com").get();
+            if (doc.exists) {
+                usuarioLogado = doc.data();
+                usuarioLogado.email = mat + "@alb.com";
+                iniciarApp();
+            }
+        } catch (e) { alert("Erro de Login."); }
     }
 
-    // --- BUSCA RÁPIDA PARA REMANEJAMENTO ---
+    function iniciarApp() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'block';
+        document.getElementById('user-name').innerText = usuarioLogado.nome;
+        if(usuarioLogado.perfil === "ADMIN") document.getElementById('btn-nav-admin').style.display = 'block';
+        
+        db.collection("estoque_blocado").onSnapshot(snap => {
+            estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            atualizarEstatisticas();
+            renderizarEstoque();
+        });
+        navegar('retirar');
+    }
+
+    function navegar(tela) {
+        ['admin', 'retirar', 'abastecer', 'remanejar'].forEach(t => document.getElementById('view-'+t).style.display = 'none');
+        document.getElementById('view-'+tela).style.display = 'block';
+        document.getElementById('sidebar').classList.remove('active');
+        if(tela === 'remanejar') document.getElementById('rem-data-mov').value = new Date().toISOString().split('T')[0];
+    }
+
+    function renderizarEstoque() {
+        const termo = document.getElementById('search-input').value.toLowerCase();
+        const lista = document.getElementById('lista-estoque');
+        lista.innerHTML = '';
+        if(!termo) return;
+
+        const filtrados = estoqueCompleto.filter(i => i.mat.includes(termo) || i.ender.includes(termo));
+        filtrados.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.innerHTML = `
+                <div>
+                    <b>${item.ender}</b><br>${item.mat}<br><small>${item.desc}</small>
+                </div>
+                <div style="text-align:right">
+                    <b>${item.qtd} PL</b><br>
+                    <button class="btn-retirar" onclick="abrirModalRetirar('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}')">SEPARAR</button>
+                </div>
+            `;
+            lista.appendChild(card);
+        });
+    }
+
+    // LÓGICA DE REMANEJAR
     function buscarDadosOrigem(ender) {
         const item = estoqueCompleto.find(i => i.ender.toUpperCase() === ender.toUpperCase());
-        const preview = document.getElementById('dados-origem-preview');
-        if (item) {
-            document.getElementById('txt-rem-mat').innerText = item.mat;
-            document.getElementById('txt-rem-qtd').innerText = item.qtd;
+        const preview = document.getElementById('rem-preview');
+        if(item) {
+            preview.innerText = `Material: ${item.mat} | Saldo: ${item.qtd} PL`;
             preview.style.display = 'block';
         } else {
             preview.style.display = 'none';
-            alert("Endereço de origem não encontrado no estoque!");
         }
     }
 
-    // --- PROCESSAR MOVIMENTAÇÃO PELO MENU ---
     async function processarRemanejamentoDireto() {
-        const origem = document.getElementById('rem-origem').value.toUpperCase().trim();
-        const destino = document.getElementById('rem-destino').value.toUpperCase().trim();
+        const ori = document.getElementById('rem-origem').value.toUpperCase();
+        const des = document.getElementById('rem-destino').value.toUpperCase();
         const qtd = parseInt(document.getElementById('rem-qtd').value);
-        const dataMov = document.getElementById('rem-data-mov').value;
+        const data = document.getElementById('rem-data-mov').value;
 
-        if (!origem || !destino || isNaN(qtd) || !dataMov) {
-            return alert("Preencha todos os campos, incluindo a data!");
-        }
-
-        const itemOrigem = estoqueCompleto.find(i => i.ender === origem);
-        if (!itemOrigem || qtd > itemOrigem.qtd) {
-            return alert("Saldo insuficiente ou origem inválida!");
-        }
+        const itemOri = estoqueCompleto.find(i => i.ender === ori);
+        if(!itemOri || qtd > itemOri.qtd) return alert("Erro no saldo de origem!");
 
         try {
-            // 1. Atualiza/Remove Origem
-            if (qtd === itemOrigem.qtd) {
-                await db.collection("estoque_blocado").doc(itemOrigem.id).delete();
+            // Baixa origem
+            if(qtd === itemOri.qtd) await db.collection("estoque_blocado").doc(itemOri.id).delete();
+            else await db.collection("estoque_blocado").doc(itemOri.id).update({qtd: itemOri.qtd - qtd});
+
+            // Sobe destino
+            const itemDes = estoqueCompleto.find(i => i.ender === des);
+            if(itemDes && itemDes.mat === itemOri.mat) {
+                await db.collection("estoque_blocado").doc(itemDes.id).update({qtd: itemDes.qtd + qtd});
             } else {
-                await db.collection("estoque_blocado").doc(itemOrigem.id).update({ qtd: itemOrigem.qtd - qtd });
+                await db.collection("estoque_blocado").add({...itemOri, ender: des, qtd: qtd, id: null});
             }
 
-            // 2. Adiciona ao Destino
-            const itemDestino = estoqueCompleto.find(i => i.ender === destino);
-            if (itemDestino && itemDestino.mat === itemOrigem.mat) {
-                await db.collection("estoque_blocado").doc(itemDestino.id).update({ qtd: itemDestino.qtd + qtd });
-            } else if (itemDestino) {
-                return alert("Destino ocupado por outro material!");
-            } else {
-                await db.collection("estoque_blocado").add({
-                    ender: destino,
-                    mat: itemOrigem.mat,
-                    qtd: qtd,
-                    desc: itemOrigem.desc,
-                    valFrente: itemOrigem.valFrente,
-                    dias: itemOrigem.dias
-                });
-            }
-
-            // 3. Registrar Log com a Data escolhida
-            await db.collection("movimentacoes_wms").add({
-                tipo: "REMANEJAMENTO",
-                origem: origem,
-                destino: destino,
-                material: itemOrigem.mat,
-                quantidade: qtd,
-                data_mov: dataMov, // Data informada pelo usuário
-                operador: usuarioLogado.email,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            alert("Movimentação concluída!");
-            location.reload(); 
-        } catch (e) {
-            alert("Erro: " + e.message);
-        }
+            registrarLog(ori + " -> " + des, itemOri.mat, qtd, "REMANEJAR", data);
+            alert("Sucesso!");
+            navegar('retirar');
+        } catch(e) { alert("Erro"); }
     }
 
-    // Atualize sua função navegar para incluir a nova tela
-    function navegar(tela) {
-        ['admin', 'retirar', 'abastecer', 'remanejar'].forEach(t => {
-            const el = document.getElementById('view-' + t);
-            if(el) el.style.display = 'none';
+    async function registrarLog(e, m, q, t, d) {
+        await db.collection("movimentacoes_wms").add({
+            ender: e, mat: m, qtd: q, tipo: t, data_mov: d, operador: usuarioLogado.email, timestamp: new Date()
         });
-        document.getElementById('view-' + tela).style.display = 'block';
-        document.getElementById('sidebar').classList.remove('active');
-        if(tela === 'remanejar') configurarDatas();
+    }
+
+    // UTILITÁRIOS
+    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
+    function fecharModal() { document.getElementById('modal-retirada').style.display = 'none'; }
+    function puxarDescricao(cod) { 
+        const p = estoqueCompleto.find(i => i.mat === cod);
+        document.getElementById('in-desc').value = p ? p.desc : "Novo SKU";
+    }
+    function calcularDias(v) { diasCalculados = Math.ceil((new Date(v) - new Date()) / 86400000); }
+    function logout() { auth.signOut(); location.reload(); }
+    function atualizarEstatisticas() {
+        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a,b) => a + b.qtd, 0);
     }
 </script>
+</body>
+</html>
