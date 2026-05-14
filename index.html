@@ -1,161 +1,3 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="WMS FLOW PRO">
-    
-    <title>WMS FLOW PRO - Sistema Integrado</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    
-    <style>
-        :root { 
-            --bg: #0a0f1e; 
-            --card: #161e31; 
-            --primary: #00d2ff; 
-            --critico: #fbbf24; 
-            --retido: #f87171; 
-            --verde: #4ade80; 
-            --text: #f8fafc; 
-        }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 30px; }
-        
-        .sidebar { position: fixed; left: -250px; top: 0; width: 250px; height: 100%; background: var(--card); transition: 0.3s; z-index: 1000; padding-top: 60px; border-right: 1px solid #2d3748; box-shadow: 10px 0 20px rgba(0,0,0,0.5); }
-        .sidebar.active { left: 0; }
-        .sidebar button { width: 100%; padding: 15px; background: transparent; border: none; color: white; text-align: left; cursor: pointer; border-bottom: 1px solid #2d3748; font-weight: bold; font-size: 14px; }
-        .sidebar button:hover { background: rgba(255,255,255,0.05); }
-
-        .header { padding: 15px 20px; background: var(--card); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #2d3748; position: sticky; top: 0; z-index: 900; }
-        .menu-btn { background: none; border: 1px solid #444; padding: 8px; border-radius: 5px; cursor: pointer; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
-        .container { max-width: 900px; margin: auto; padding: 15px; }
-
-        .admin-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
-        .stat-box { background: var(--card); padding: 15px; border-radius: 8px; border-top: 3px solid var(--primary); text-align: center; }
-        .stat-box h5 { margin: 0; font-size: 10px; opacity: 0.6; text-transform: uppercase; }
-        .stat-box p { margin: 8px 0 0; font-size: 24px; font-weight: 900; }
-
-        .search-area { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; outline: none; }
-        .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid #444; }
-        
-        .badge-ender { background: var(--primary); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 900; }
-        .badge-status { color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; margin-left: 8px; text-transform: uppercase; }
-
-        .btn-retirar { background: var(--primary); color: #000; border: none; padding: 10px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; }
-        .btn-admin { background: var(--verde); color: #000; padding: 15px; width: 100%; border-radius: 8px; font-weight: 900; margin-top: 10px; border: none; cursor: pointer; text-transform: uppercase; }
-        .btn-excel { background: #107c41; color: white; }
-
-        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
-        .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-
-        /* CORREÇÃO DO MODAL PARA FICAR ACIMA DO TECLADO */
-        #modal-retirada { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; align-items:flex-start; justify-content:center; backdrop-filter: blur(5px); padding-top: 50px; overflow-y: auto; }
-        .modal-content { background:var(--card); padding:25px; border-radius:15px; width:90%; max-width:400px; border:1px solid #2d3748; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px; }
-    </style>
-</head>
-<body>
-
-<div id="sidebar" class="sidebar">
-    <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ADMIN</button>
-    <button onclick="navegar('retirar')">📦 RETIRAR / PESQUISAR</button>
-    <button onclick="navegar('abastecer')">📥 ABASTECER BLOCO</button>
-    <button onclick="logout()" style="color: var(--retido); margin-top: 20px;">🚪 DESLOGAR</button>
-</div>
-
-<div id="login-screen">
-    <div class="login-box">
-        <h2 style="text-align: center; color: var(--primary); margin-bottom: 25px;">WMS FLOW PRO</h2>
-        <input type="text" id="login-mat" placeholder="Matrícula" style="margin-bottom:10px;">
-        <input type="password" id="login-senha" placeholder="Senha" style="margin-bottom:20px;">
-        <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%; font-size: 16px;">ENTRAR</button>
-    </div>
-</div>
-
-<div id="app-screen" style="display: none;">
-    <div class="header">
-        <button class="menu-btn" onclick="toggleMenu()">☰</button>
-        <div style="flex-grow: 1;">
-            <div id="user-name" style="font-weight: 800; font-size: 16px;"></div>
-            <div id="role-label" style="font-size: 10px; color: var(--primary); font-weight: bold; letter-spacing: 1px;"></div>
-        </div>
-    </div>
-
-    <div class="container">
-        <div id="view-admin" style="display: none;">
-            <div id="dash-container" class="admin-dashboard">
-                <div class="stat-box"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
-                <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS</h5><p id="st-critico">0</p></div>
-                <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS</h5><p id="st-retido">0</p></div>
-            </div>
-
-            <div id="admin-tools-section" style="background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #2d3748;">
-                <h3 style="font-size: 12px; color: var(--primary); margin-top: 0;">GERENCIAMENTO ADMINISTRATIVO</h3>
-                <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
-                <button class="btn-admin" onclick="document.getElementById('csv-file').click()">ALIMENTAR NOVO ESTOQUE (CSV)</button>
-                <button class="btn-admin btn-excel" onclick="exportarHistoricoExcel()">SOLICITAR HISTÓRICO (EXCEL)</button>
-            </div>
-        </div>
-
-        <div id="view-retirar">
-            <div class="search-area">
-                <input type="text" id="search-input" inputmode="numeric" placeholder="Pesquisar material ou endereço..." oninput="renderizarEstoque()">
-            </div>
-            <div id="lista-estoque"></div>
-        </div>
-
-        <div id="view-abastecer" style="display: none;">
-            <div style="background: var(--card); padding: 25px; border-radius: 12px;">
-                <h3 style="color: var(--primary); margin-top: 0;">ABASTECER BLOCO</h3>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">Endereço (Ex: A-01-01)</label>
-                    <input type="text" id="in-ender" placeholder="Endereço...">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">Código Material</label>
-                    <input type="text" id="in-mat" placeholder="Código..." oninput="puxarDescricao(this.value)">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">Descrição do Produto</label>
-                    <input type="text" id="in-desc" readonly style="opacity: 0.5;">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">Quantidade de Pallets</label>
-                    <input type="number" id="in-qtd">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 11px; color: #94a3b8;">Data de Vencimento</label>
-                    <input type="date" id="in-venc" onchange="calcularDias(this.value)">
-                    <p id="label-dias" style="color: var(--critico); font-size: 12px; margin-top: 5px; font-weight: bold;"></p>
-                </div>
-                <button class="btn-admin" style="background: #7c3aed; color: white;" onclick="salvarAbastecimentoManual()">SALVAR ENTRADA</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="modal-retirada">
-    <div class="modal-content">
-        <h3 id="modal-titulo" style="margin-top:0; color:var(--primary);">Retirar Material</h3>
-        <p id="modal-info" style="font-size:13px; opacity:0.8; margin-bottom: 15px; line-height: 1.4;"></p>
-        <label style="font-size:11px; color:#94a3b8; text-transform: uppercase;">Quantidade de Pallets:</label>
-        <input type="number" id="modal-input-qtd" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" placeholder="0" style="font-size:28px; text-align:center; margin:10px 0; border: 2px solid var(--primary); height: 60px;">
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <button onclick="fecharModal()" style="flex:1; padding:15px; background:#334155; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">CANCELAR</button>
-            <button id="btn-confirmar-modal" style="flex:1; padding:15px; background:var(--primary); color:black; border:none; border-radius:8px; font-weight:900; cursor:pointer;">CONFIRMAR</button>
-        </div>
-    </div>
-</div>
-
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
@@ -240,15 +82,30 @@
         document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
     }
 
+    // NOVA FUNÇÃO DE RENDERIZAÇÃO COM SUPORTE A CÓDIGOS DE 2 E 4 DÍGITOS
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
         if (termo.length === 0) return;
 
-        let filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
+        // Se o termo for puramente numérico, tentamos primeiro buscar pela igualdade exata do código do material
+        let filtrados = [];
+        const ehNumero = /^\d+$/.test(termo);
+
+        if (ehNumero) {
+            // Tenta buscar o código exato (seja ele de 2, 4 ou mais dígitos)
+            filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase() === termo);
+        }
+
+        // Se não encontrou por código exato, ou se não era apenas número (ex: endereço A-01), faz a busca por .includes() anterior
+        if (filtrados.length === 0) {
+            filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
+        }
+
         if (filtrados.length === 0) return;
 
+        // Aplica a sua regra de FEFO (priorizar menor dia de vencimento na tela)
         const menorDia = Math.min(...filtrados.map(i => i.dias));
         const apenasPrioritarios = filtrados.filter(i => i.dias === menorDia);
 
@@ -293,7 +150,6 @@
         document.getElementById('modal-input-qtd').value = '';
         document.getElementById('modal-retirada').style.display = 'flex';
         
-        // ESCUTA A TECLA 'ENTER' DO TECLADO PARA CONFIRMAR
         const inputModal = document.getElementById('modal-input-qtd');
         inputModal.onkeydown = (e) => { if(e.key === "Enter") processarRetirada(); };
         
@@ -441,5 +297,3 @@
         if(s) { usuarioLogado = JSON.parse(s); iniciarApp(); }
     };
 </script>
-</body>
-</html>
