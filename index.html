@@ -27,7 +27,6 @@
             --retido: #f87171; 
             --verde: #4ade80; 
             --text: #f8fafc; 
-            --purple-btn: #7c3aed;
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 30px; }
         
@@ -47,7 +46,7 @@
 
         .search-area { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         input, select { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; outline: none; font-family: 'Inter', sans-serif; }
-        select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>"); background-repeat: no-repeat; background-position: right 10px center; }
+        select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>"); background-repeat: no-repeat; background-position: right 10px fill 10px center; }
         
         .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid #444; }
         
@@ -57,14 +56,15 @@
         .btn-retirar { background: var(--primary); color: #000; border: none; padding: 10px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; }
         .btn-admin { background: var(--verde); color: #000; padding: 15px; width: 100%; border-radius: 8px; font-weight: 900; margin-top: 10px; border: none; cursor: pointer; text-transform: uppercase; }
         .btn-excel { background: #107c41; color: white; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
 
         #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
         .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
 
         #modal-retirada { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(5px); }
         .modal-content { background:var(--card); padding:25px; border-radius:15px; width:90%; max-width:400px; border:1px solid #2d3748; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -72,8 +72,8 @@
 <div id="sidebar" class="sidebar">
     <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ADMIN</button>
     <button onclick="navegar('retirar')">📦 PESQUISAR / RETIRAR</button>
-    <button onclick="navegar('entrada-bloco')">🕹️ ENTRADA NO BLOCO</button>
-    <button onclick="navegar('abertura-blocado')">🔄 ABERTURA DE BLOCADO</button>
+    <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
+    <button onclick="navegar('abertura_blocado')">🔄 ABERTURA DE BLOCADO</button>
     <button onclick="logout()" style="color: var(--retido); margin-top: 20px;">🚪 SAIR</button>
 </div>
 
@@ -111,76 +111,74 @@
             </div>
         </div>
 
-        <div id="view-retirar" style="display: none;">
+        <div id="view-retirar">
             <div class="search-area">
                 <input type="text" id="search-input" placeholder="Pesquisar material ou endereço..." oninput="renderizarEstoque()">
             </div>
             <div id="lista-estoque"></div>
         </div>
 
-        <div id="view-entrada-bloco" style="display: none;">
+        <div id="view-entrada_bloco" style="display: none;">
             <div style="background: var(--card); padding: 25px; border-radius: 12px;">
                 <h3 style="color: var(--primary); margin-top: 0; text-transform: uppercase;">Entrada no Bloco</h3>
                 
                 <div class="form-group">
                     <label>Origem da Carga</label>
-                    <select id="ent-origem">
+                    <select id="eb-origem">
                         <option value="STAGE">STAGE</option>
                         <option value="RECEBIMENTO">RECEBIMENTO</option>
-                        <option value="PRODUÇÃO">PRODUÇÃO</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Endereço Destino (Ex: 205-14)</label>
-                    <input type="text" id="ent-ender" placeholder="Endereço Destino (Ex: 205-14)">
+                    <input type="text" id="eb-ender" placeholder="Digite o endereço de destino...">
                 </div>
                 <div class="form-group">
                     <label>Código Material</label>
-                    <input type="text" id="ent-mat" placeholder="CÓDIGO MATERIAL" oninput="puxarDescricaoEntrada(this.value)">
+                    <input type="text" id="eb-mat" placeholder="Código..." oninput="puxarDescricao(this.value, 'eb-desc')">
                 </div>
                 <div class="form-group">
                     <label>Descrição</label>
-                    <input type="text" id="ent-desc" placeholder="DESCRIÇÃO" readonly style="opacity: 0.5;">
+                    <input type="text" id="eb-desc" readonly style="opacity: 0.5;" placeholder="Descrição do material...">
                 </div>
                 <div class="form-group">
                     <label>Quantidade (Pallets)</label>
-                    <input type="number" id="ent-qtd" placeholder="QUANTIDADE (PALLETS)">
+                    <input type="number" id="eb-qtd" placeholder="0">
                 </div>
                 <div class="form-group">
                     <label>Data de Vencimento</label>
-                    <input type="date" id="ent-venc" onchange="calcularDiasEntrada(this.value)">
-                    <p id="ent-label-dias" style="color: var(--critico); font-size: 12px; margin-top: 5px; font-weight: bold;"></p>
+                    <input type="date" id="eb-venc" onchange="calcularDias(this.value, 'eb-label-dias')">
+                    <p id="eb-label-dias" style="color: var(--critico); font-size: 12px; margin-top: 5px; font-weight: bold;"></p>
                 </div>
-                <button class="btn-admin" style="background: var(--purple-btn); color: white;" onclick="salvarEntradaBloco()">Salvar Entrada</button>
+                <button class="btn-admin" style="background: #7c3aed; color: white;" onclick="salvarEntradaBloco()">SALVAR ENTRADA</button>
             </div>
         </div>
 
-        <div id="view-abertura-blocado" style="display: none;">
+        <div id="view-abertura_blocado" style="display: none;">
             <div style="background: var(--card); padding: 25px; border-radius: 12px;">
                 <h3 style="color: var(--primary); margin-top: 0; text-transform: uppercase;">Abertura de Blocado</h3>
                 
                 <div class="form-group">
-                    <label>Endereço Atual do Blocado</label>
-                    <input type="text" id="ab-ender" placeholder="Ex: 205-14" oninput="buscarDadosBlocado(this.value)">
+                    <label>Endereço Origem (Ex: 201-14)</label>
+                    <input type="text" id="ab-origem" placeholder="Digite a posição de origem..." onchange="carregarDadosOrigemAbertura(this.value)">
                 </div>
                 <div class="form-group">
                     <label>Código Material</label>
-                    <input type="text" id="ab-mat" readonly style="opacity: 0.5;" placeholder="Preenchido automaticamente">
+                    <input type="text" id="ab-mat" readonly style="opacity: 0.5;" placeholder="Preenchido automaticamente...">
                 </div>
                 <div class="form-group">
                     <label>Descrição</label>
-                    <input type="text" id="ab-desc" readonly style="opacity: 0.5;" placeholder="Preenchido automaticamente">
+                    <input type="text" id="ab-desc" readonly style="opacity: 0.5;" placeholder="Preenchido automaticamente...">
                 </div>
                 <div class="form-group">
-                    <label>Saldo de Pallets Atual</label>
-                    <input type="text" id="ab-qtd-atual" readonly style="opacity: 0.5;" placeholder="0 PL">
+                    <label>Endereço Destino (Ex: 205-20)</label>
+                    <input type="text" id="ab-destino" placeholder="Digite a nova posição...">
                 </div>
                 <div class="form-group">
-                    <label>Quantidade de Pallets a Liberar/Abrir</label>
-                    <input type="number" id="ab-qtd-abrir" placeholder="Digite a quantidade">
+                    <label>Quantidade a Transferir (Pallets)</label>
+                    <input type="number" id="ab-qtd" placeholder="Saldo max disponível: 0">
                 </div>
-                
-                <button class="btn-admin" style="background: #0284c7; color: white;" onclick="salvarAberturaBlocado()">Confirmar Abertura</button>
+                <button class="btn-admin" style="background: #e11d48; color: white;" onclick="processarAberturaBlocado()">CONFIRMAR TRANSFERÊNCIA</button>
             </div>
         </div>
     </div>
@@ -190,8 +188,21 @@
     <div class="modal-content">
         <h3 id="modal-titulo" style="margin-top:0; color:var(--primary);">Retirar Material</h3>
         <p id="modal-info" style="font-size:13px; opacity:0.8; margin-bottom: 15px; line-height: 1.4;"></p>
-        <label style="font-size:11px; color:#94a3b8; text-transform: uppercase;">Quantidade de Pallets:</label>
-        <input type="number" id="modal-input-qtd" inputmode="numeric" pattern="[0-9]*" placeholder="0" style="font-size:28px; text-align:center; margin:10px 0; border: 2px solid var(--primary); height: 60px;">
+        
+        <div class="form-group">
+            <label>Quantidade de Pallets:</label>
+            <input type="number" id="modal-input-qtd" inputmode="numeric" pattern="[0-9]*" placeholder="0" style="font-size:28px; text-align:center; margin:10px 0; border: 2px solid var(--primary); height: 60px;">
+        </div>
+        
+        <div class="form-group">
+            <label>Tipo de Movimentação (Destino):</label>
+            <select id="modal-destino-mov">
+                <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                <option value="APANHA">APANHA</option>
+                <option value="SEPARAÇÃO">SEPARAÇÃO</option>
+            </select>
+        </div>
+
         <div style="display:flex; gap:10px; margin-top:20px;">
             <button onclick="fecharModal()" style="flex:1; padding:15px; background:#334155; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">CANCELAR</button>
             <button id="btn-confirmar-modal" style="flex:1; padding:15px; background:var(--primary); color:black; border:none; border-radius:8px; font-weight:900; cursor:pointer;">CONFIRMAR</button>
@@ -215,9 +226,10 @@
 
     let estoqueCompleto = [];
     let usuarioLogado = null;
-    let diasCalculadosEntrada = 0;
+    let diasCalculados = 0;
     let wakeLock = null;
     let itemParaRetirar = null;
+    let itemOrigemAbertura = null;
 
     async function ativarWakeLock() {
         try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); } } catch (e) {}
@@ -254,7 +266,7 @@
     }
 
     function navegar(tela) {
-        ['admin', 'retirar', 'entrada-bloco', 'abertura-blocado'].forEach(t => {
+        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado'].forEach(t => {
             const el = document.getElementById('view-' + t);
             if(el) el.style.display = 'none';
         });
@@ -285,6 +297,7 @@
         let filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
         if (filtrados.length === 0) return;
 
+        // Regra de Negócio: Mostrar prioritariamente os que estão vencendo primeiro (Críticos)
         const menorDia = Math.min(...filtrados.map(i => i.dias));
         const apenasPrioritarios = filtrados.filter(i => i.dias === menorDia);
 
@@ -339,7 +352,9 @@
 
     async function processarRetirada() {
         const inputQtd = document.getElementById('modal-input-qtd').value;
+        const destinoMov = document.getElementById('modal-destino-mov').value;
         const v = parseInt(inputQtd);
+        
         if (isNaN(v) || v <= 0) return alert("Digite uma quantidade válida!");
         if (v > itemParaRetirar.qtdAtual) return alert("Quantidade solicitada maior que o saldo!");
 
@@ -347,108 +362,150 @@
         try {
             if (v === qtdAtual) { await db.collection("estoque_blocado").doc(id).delete(); } 
             else { await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v }); }
-            registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`);
+            
+            // Grava histórico constando para onde foi movimentado (Exemplo: 201-14 -> SEPARAÇÃO)
+            registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`, destinoMov);
             fecharModal();
             alert("Retirada concluída!");
         } catch (e) { alert("Erro ao salvar no banco."); }
     }
 
-    /* LÓGICA DO MÓDULO: ENTRADA NO BLOCO */
-    function puxarDescricaoEntrada(cod) {
-        const p = estoqueCompleto.find(i => i.mat.toString() === cod);
-        document.getElementById('ent-desc').value = p ? p.desc : "NOVO MATERIAL";
-    }
-
-    function calcularDiasEntrada(data) {
-        diasCalculadosEntrada = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
-        document.getElementById('ent-label-dias').innerText = `Vencimento em ${diasCalculadosEntrada} dias`;
-    }
-
+    /* LOGICA DA NOVA TELA: ENTRADA NO BLOCO */
     async function salvarEntradaBloco() {
-        const origem = document.getElementById('ent-origem').value;
-        const ender = document.getElementById('ent-ender').value.toUpperCase().trim();
-        const mat = document.getElementById('ent-mat').value.trim();
-        const qtd = parseInt(document.getElementById('ent-qtd').value);
-        const dataVRaw = document.getElementById('ent-venc').value;
+        const origem = document.getElementById('eb-origem').value;
+        const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
+        const mat = document.getElementById('eb-mat').value.trim();
+        const qtd = parseInt(document.getElementById('eb-qtd').value);
+        const inputVenc = document.getElementById('eb-venc').value;
         
-        if(!ender || !mat || isNaN(qtd) || !dataVRaw) return alert("Preencha todos os campos!");
-        const dataV = dataVRaw.split('-').reverse().join('/');
-
+        if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos da Entrada!");
+        
+        const dataV = inputVenc.split('-').reverse().join('/');
         const ocupante = estoqueCompleto.find(i => i.ender === ender);
+
         if (ocupante) {
             if (ocupante.mat === mat) {
                 if (confirm(`Endereço ocupado pelo mesmo material. Somar +${qtd} PL?`)) {
                     await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd });
-                    registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada via ${origem})`);
+                    registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma Manual)`, `ENTRADA VIA ${origem}`);
                     alert("Atualizado com sucesso!");
+                    limparFormularioEntrada();
                     navegar('retirar');
                 }
                 return;
-            } else { return alert(`BLOQUEADO! Endereço ocupado por: ${ocupante.mat}`); }
+            } else { return alert(`BLOQUEADO! O endereço ${ender} já está ocupado por: ${ocupante.mat}`); }
         }
 
-        await db.collection("estoque_blocado").add({ 
-            ender, mat, qtd, dias: diasCalculadosEntrada, valFrente: dataV, desc: document.getElementById('ent-desc').value 
-        });
-        registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada via ${origem})`);
-        alert("Entrada Salva!");
+        const desc = document.getElementById('eb-desc').value;
+        await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc });
+        registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada)`, `ENTRADA VIA ${origem}`);
+        alert("Entrada registrada!");
+        limparFormularioEntrada();
         navegar('retirar');
     }
 
-    /* LÓGICA DO MÓDULO: ABERTURA DE BLOCADO */
-    let itemSelecionadoAbertura = null;
+    function limparFormularioEntrada() {
+        document.getElementById('eb-ender').value = '';
+        document.getElementById('eb-mat').value = '';
+        document.getElementById('eb-desc').value = '';
+        document.getElementById('eb-qtd').value = '';
+        document.getElementById('eb-venc').value = '';
+        document.getElementById('eb-label-dias').innerText = '';
+    }
 
-    function buscarDadosBlocado(endereco) {
-        const enderProc = endereco.toUpperCase().trim();
-        const item = estoqueCompleto.find(i => i.ender === enderProc);
-        
-        if(item) {
-            itemSelecionadoAbertura = item;
+    /* LOGICA DA NOVA TELA: ABERTURA DE BLOCADO */
+    function carregarDadosOrigemAbertura(enderOrigem) {
+        const item = estoqueCompleto.find(i => i.ender.toLowerCase() === enderOrigem.toLowerCase().trim());
+        if (item) {
+            itemOrigemAbertura = item;
             document.getElementById('ab-mat').value = item.mat;
             document.getElementById('ab-desc').value = item.desc;
-            document.getElementById('ab-qtd-atual').value = item.qtd + " PL";
+            document.getElementById('ab-qtd').placeholder = `Saldo max disponível: ${item.qtd}`;
         } else {
-            itemSelecionadoAbertura = null;
-            document.getElementById('ab-mat').value = "";
-            document.getElementById('ab-desc').value = "";
-            document.getElementById('ab-qtd-atual').value = "";
+            itemOrigemAbertura = null;
+            document.getElementById('ab-mat').value = '';
+            document.getElementById('ab-desc').value = '';
+            document.getElementById('ab-qtd').placeholder = 'Posição vazia ou não encontrada';
+            alert("Nenhum material ativo localizado nesta posição de origem.");
         }
     }
 
-    async function salvarAberturaBlocado() {
-        const qtdAbrir = parseInt(document.getElementById('ab-qtd-abrir').value);
-        if(!itemSelecionadoAbertura) return alert("Nenhum material encontrado neste endereço!");
-        if(isNaN(qtdAbrir) || qtdAbrir <= 0) return alert("Insira uma quantidade de pallets válida!");
-        if(qtdAbrir > itemSelecionadoAbertura.qtd) return alert("A quantidade para abrir não pode ser maior que o saldo atual!");
+    async function processarAberturaBlocado() {
+        const enderDestino = document.getElementById('ab-destino').value.toUpperCase().trim();
+        const qtdTransferir = parseInt(document.getElementById('ab-qtd').value);
+
+        if(!itemOrigemAbertura) return alert("Defina uma posição de origem válida primeiro!");
+        if(isNaN(qtdTransferir) || qtdTransferir <= 0) return alert("Insira uma quantidade de pallets válida!");
+        if(qtdTransferir > itemOrigemAbertura.qtd) return alert("Quantidade inserida maior do que o saldo atual da posição!");
+        if(!enderDestino) return alert("Especifique a posição de destino!");
 
         try {
-            const novoSaldo = itemSelecionadoAbertura.qtd - qtdAbrir;
-            if(novoSaldo === 0) {
-                await db.collection("estoque_blocado").doc(itemSelecionadoAbertura.id).delete();
-            } else {
-                await db.collection("estoque_blocado").doc(itemSelecionadoAbertura.id).update({ qtd: novoSaldo });
+            // Verifica o destino
+            const ocupanteDestino = estoqueCompleto.find(i => i.ender === enderDestino);
+            if (ocupanteDestino && ocupanteDestino.mat !== itemOrigemAbertura.mat) {
+                return alert(`BLOQUEADO! O destino ${enderDestino} está ocupado por outro material: ${ocupanteDestino.mat}`);
             }
-            
-            registrarMovimentacao(itemSelecionadoAbertura.ender, itemSelecionadoAbertura.mat, itemSelecionadoAbertura.valFrente, `-${qtdAbrir} PL (Abertura Blocado)`);
-            alert("Abertura confirmada e registrada com sucesso!");
-            
-            // Limpa o formulário
-            document.getElementById('ab-ender').value = "";
-            buscarDadosBlocado("");
-            document.getElementById('ab-qtd-abrir').value = "";
+
+            // 1. Deduz da Origem
+            if (qtdTransferir === itemOrigemAbertura.qtd) {
+                await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete();
+            } else {
+                await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtdTransferir });
+            }
+
+            // 2. Aloca no Destino
+            if (ocupanteDestino && ocupanteDestino.mat === itemOrigemAbertura.mat) {
+                await db.collection("estoque_blocado").doc(ocupanteDestino.id).update({ qtd: ocupanteDestino.qtd + qtdTransferir });
+            } else {
+                await db.collection("estoque_blocado").add({
+                    ender: enderDestino,
+                    mat: itemOrigemAbertura.mat,
+                    desc: itemOrigemAbertura.desc,
+                    qtd: qtdTransferir,
+                    dias: itemOrigemAbertura.dias,
+                    valFrente: itemOrigemAbertura.valFrente
+                });
+            }
+
+            // Registra a movimentação indicando a transferência
+            registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtdTransferir} PL`, `TRANSFERIDO PARA ${enderDestino}`);
+            registrarMovimentacao(enderDestino, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtdTransferir} PL`, `RECEBIDO DE ${itemOrigemAbertura.ender}`);
+
+            alert("Transferência de Blocado executada!");
+            document.getElementById('ab-origem').value = '';
+            document.getElementById('ab-destino').value = '';
+            document.getElementById('ab-mat').value = '';
+            document.getElementById('ab-desc').value = '';
+            document.getElementById('ab-qtd').value = '';
             navegar('retirar');
-        } catch(e) {
-            alert("Erro ao processar abertura no banco.");
-        }
+
+        } catch (error) { alert("Erro ao processar transferência."); }
     }
 
-    /* MOVIMENTAÇÕES E FUNÇÕES AUXILIARES */
-    async function registrarMovimentacao(e, m, v, q) {
+
+    /* FUNÇÕES AUXILIARES */
+    function puxarDescricao(cod, inputDestinoId) {
+        const p = estoqueCompleto.find(i => i.mat.toString() === cod.trim());
+        document.getElementById(inputDestinoId).value = p ? p.desc : "NOVO MATERIAL";
+    }
+
+    function calcularDias(data, labelId) {
+        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
+        document.getElementById(labelId).innerText = `Vencimento em ${diasCalculados} dias`;
+    }
+
+    async function registrarMovimentacao(ender, mat, val, qtd, fluxoInfo) {
         const agora = new Date();
         await db.collection("movimentacoes_wms").add({ 
-            endereco: e, material: m, validade: v, quantidade: q, 
-            login: usuarioLogado.email, data: agora.toLocaleDateString('pt-BR'), 
-            hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora 
+            endereco: ender, 
+            material: mat, 
+            validade: val, 
+            quantidade: qtd, 
+            fluxo: fluxoInfo || "N/A",
+            login: usuarioLogado.email, 
+            data: agora.toLocaleDateString('pt-BR'), 
+            hora: agora.toLocaleTimeString('pt-BR'), 
+            timestamp: agora 
         });
     }
 
@@ -458,7 +515,7 @@
             if (snap.empty) return alert("Nenhum histórico.");
             const dados = snap.docs.map(doc => {
                 const d = doc.data();
-                return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Hora": d.hora, "Login": d.login, "Data": d.data, "Qtd": d.quantidade };
+                return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação/Fluxo": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora };
             });
             const ws = XLSX.utils.json_to_sheet(dados);
             const wb = XLSX.utils.book_new();
