@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WMS FLOW PRO">
+    
     <title>WMS FLOW PRO - Sistema Integrado</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -21,88 +27,179 @@
             --retido: #f87171; 
             --verde: #4ade80; 
             --text: #f8fafc; 
-            --purple: #7c3aed;
+            --purple-btn: #7c3aed;
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 30px; }
         
-        .sidebar { position: fixed; left: -250px; top: 0; width: 250px; height: 100%; background: var(--card); transition: 0.3s; z-index: 1000; padding-top: 60px; border-right: 1px solid #2d3748; }
+        .sidebar { position: fixed; left: -250px; top: 0; width: 250px; height: 100%; background: var(--card); transition: 0.3s; z-index: 1000; padding-top: 60px; border-right: 1px solid #2d3748; box-shadow: 10px 0 20px rgba(0,0,0,0.5); }
         .sidebar.active { left: 0; }
-        .sidebar button { width: 100%; padding: 15px; background: transparent; border: none; color: white; text-align: left; cursor: pointer; border-bottom: 1px solid #2d3748; font-weight: bold; }
+        .sidebar button { width: 100%; padding: 15px; background: transparent; border: none; color: white; text-align: left; cursor: pointer; border-bottom: 1px solid #2d3748; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+        .sidebar button:hover { background: rgba(255,255,255,0.05); }
 
         .header { padding: 15px 20px; background: var(--card); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #2d3748; position: sticky; top: 0; z-index: 900; }
-        .menu-btn { background: none; border: 1px solid #444; padding: 8px; border-radius: 5px; cursor: pointer; color: white; }
+        .menu-btn { background: none; border: 1px solid #444; padding: 8px; border-radius: 5px; cursor: pointer; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
         .container { max-width: 900px; margin: auto; padding: 15px; }
 
+        .admin-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-box { background: var(--card); padding: 15px; border-radius: 8px; border-top: 3px solid var(--primary); text-align: center; }
+        .stat-box h5 { margin: 0; font-size: 10px; opacity: 0.6; text-transform: uppercase; }
+        .stat-box p { margin: 8px 0 0; font-size: 24px; font-weight: 900; }
+
         .search-area { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        input, select { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; margin-bottom: 10px; }
+        input, select { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; outline: none; font-family: 'Inter', sans-serif; }
+        select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>"); background-repeat: no-repeat; background-position: right 10px center; }
         
+        .item-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid #444; }
+        
+        .badge-ender { background: var(--primary); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 900; }
+        .badge-status { color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; margin-left: 8px; text-transform: uppercase; }
+
+        .btn-retirar { background: var(--primary); color: #000; border: none; padding: 10px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; }
         .btn-admin { background: var(--verde); color: #000; padding: 15px; width: 100%; border-radius: 8px; font-weight: 900; margin-top: 10px; border: none; cursor: pointer; text-transform: uppercase; }
         .btn-excel { background: #107c41; color: white; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
 
-        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; }
-        .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; }
+        #login-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
+        .login-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+
+        #modal-retirada { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(5px); }
+        .modal-content { background:var(--card); padding:25px; border-radius:15px; width:90%; max-width:400px; border:1px solid #2d3748; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
 <div id="sidebar" class="sidebar">
-    <button onclick="navegar('admin')">📊 DASHBOARD ADMIN</button>
+    <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ADMIN</button>
     <button onclick="navegar('retirar')">📦 PESQUISAR / RETIRAR</button>
-    <button onclick="navegar('abastecer')">📥 ENTRADA NO BLOCO</button>
-    <button onclick="navegar('transferir')">🔄 ABERTURA DE BLOCADO</button>
-    <button onclick="logout()" style="color: var(--retido);">🚪 SAIR</button>
+    <button onclick="navegar('entrada-bloco')">🕹️ ENTRADA NO BLOCO</button>
+    <button onclick="navegar('abertura-blocado')">🔄 ABERTURA DE BLOCADO</button>
+    <button onclick="logout()" style="color: var(--retido); margin-top: 20px;">🚪 SAIR</button>
 </div>
 
 <div id="login-screen">
     <div class="login-box">
-        <h2 style="text-align: center; color: var(--primary);">WMS FLOW PRO</h2>
-        <input type="text" id="login-mat" placeholder="Matrícula">
-        <input type="password" id="login-senha" placeholder="Senha">
-        <button onclick="tentarLogin()" class="btn-admin" style="background: var(--primary);">ENTRAR</button>
+        <h2 style="text-align: center; color: var(--primary); margin-bottom: 25px;">WMS FLOW PRO</h2>
+        <input type="text" id="login-mat" placeholder="Matrícula" style="margin-bottom:10px;">
+        <input type="password" id="login-senha" placeholder="Senha" style="margin-bottom:20px;">
+        <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%; font-size: 16px;">ENTRAR</button>
     </div>
 </div>
 
 <div id="app-screen" style="display: none;">
     <div class="header">
         <button class="menu-btn" onclick="toggleMenu()">☰</button>
-        <div>
-            <div id="user-name" style="font-weight: 800;"></div>
-            <div id="role-label" style="font-size: 10px; color: var(--primary);"></div>
+        <div style="flex-grow: 1;">
+            <div id="user-name" style="font-weight: 800; font-size: 16px;"></div>
+            <div id="role-label" style="font-size: 10px; color: var(--primary); font-weight: bold; letter-spacing: 1px;"></div>
         </div>
     </div>
 
     <div class="container">
-        <div id="view-abastecer" style="display: none;">
-            <div style="background: var(--card); padding: 25px; border-radius: 12px;">
-                <h3 style="color: var(--primary); margin-top: 0;">ENTRADA NO BLOCO</h3>
-                <label style="font-size: 11px;">ORIGEM DA CARGA</label>
-                <select id="in-origem">
-                    <option value="RECEBIMENTO">RECEBIMENTO</option>
-                    <option value="STAGE">STAGE</option>
-                </select>
-                <input type="text" id="in-ender" placeholder="ENDEREÇO DESTINO (Ex: 205-14)">
-                <input type="text" id="in-mat" placeholder="CÓDIGO MATERIAL">
-                <input type="text" id="in-desc" placeholder="DESCRIÇÃO">
-                <input type="number" id="in-qtd" placeholder="QUANTIDADE (PALLETS)">
-                <input type="date" id="in-venc">
-                <button class="btn-admin" style="background: var(--purple); color: white;" onclick="salvarEntrada()">SALVAR ENTRADA</button>
-            </div>
-        </div>
-
         <div id="view-admin" style="display: none;">
-            <div style="background: var(--card); padding: 20px; border-radius: 12px; text-align: center;">
-                <h3 style="color: var(--primary);">ADMINISTRAÇÃO</h3>
-                <button class="btn-admin btn-excel" onclick="exportarHistoricoExcel()">📄 BAIXAR HISTÓRICO (EXCEL)</button>
+            <div id="dash-container" class="admin-dashboard">
+                <div class="stat-box"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
+                <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS</h5><p id="st-critico">0</p></div>
+                <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS</h5><p id="st-retido">0</p></div>
+            </div>
+
+            <div id="admin-tools-section" style="background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #2d3748;">
+                <h3 style="font-size: 12px; color: var(--primary); margin-top: 0;">GERENCIAMENTO ADMINISTRATIVO</h3>
+                <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
+                <button class="btn-admin" onclick="document.getElementById('csv-file').click()">ALIMENTAR NOVO ESTOQUE (CSV)</button>
+                <button class="btn-admin btn-excel" onclick="exportarHistoricoExcel()">SOLICITAR HISTÓRICO (EXCEL)</button>
             </div>
         </div>
 
-        <div id="view-retirar"> <p>Tela de Pesquisa/Retirada ativa.</p> </div>
-        <div id="view-transferir" style="display: none;"> <p>Tela de Abertura de Blocado ativa.</p> </div>
+        <div id="view-retirar" style="display: none;">
+            <div class="search-area">
+                <input type="text" id="search-input" placeholder="Pesquisar material ou endereço..." oninput="renderizarEstoque()">
+            </div>
+            <div id="lista-estoque"></div>
+        </div>
+
+        <div id="view-entrada-bloco" style="display: none;">
+            <div style="background: var(--card); padding: 25px; border-radius: 12px;">
+                <h3 style="color: var(--primary); margin-top: 0; text-transform: uppercase;">Entrada no Bloco</h3>
+                
+                <div class="form-group">
+                    <label>Origem da Carga</label>
+                    <select id="ent-origem">
+                        <option value="STAGE">STAGE</option>
+                        <option value="RECEBIMENTO">RECEBIMENTO</option>
+                        <option value="PRODUÇÃO">PRODUÇÃO</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Endereço Destino (Ex: 205-14)</label>
+                    <input type="text" id="ent-ender" placeholder="Endereço Destino (Ex: 205-14)">
+                </div>
+                <div class="form-group">
+                    <label>Código Material</label>
+                    <input type="text" id="ent-mat" placeholder="CÓDIGO MATERIAL" oninput="puxarDescricaoEntrada(this.value)">
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="ent-desc" placeholder="DESCRIÇÃO" readonly style="opacity: 0.5;">
+                </div>
+                <div class="form-group">
+                    <label>Quantidade (Pallets)</label>
+                    <input type="number" id="ent-qtd" placeholder="QUANTIDADE (PALLETS)">
+                </div>
+                <div class="form-group">
+                    <label>Data de Vencimento</label>
+                    <input type="date" id="ent-venc" onchange="calcularDiasEntrada(this.value)">
+                    <p id="ent-label-dias" style="color: var(--critico); font-size: 12px; margin-top: 5px; font-weight: bold;"></p>
+                </div>
+                <button class="btn-admin" style="background: var(--purple-btn); color: white;" onclick="salvarEntradaBloco()">Salvar Entrada</button>
+            </div>
+        </div>
+
+        <div id="view-abertura-blocado" style="display: none;">
+            <div style="background: var(--card); padding: 25px; border-radius: 12px;">
+                <h3 style="color: var(--primary); margin-top: 0; text-transform: uppercase;">Abertura de Blocado</h3>
+                
+                <div class="form-group">
+                    <label>Endereço Atual do Blocado</label>
+                    <input type="text" id="ab-ender" placeholder="Ex: 205-14" oninput="buscarDadosBlocado(this.value)">
+                </div>
+                <div class="form-group">
+                    <label>Código Material</label>
+                    <input type="text" id="ab-mat" readonly style="opacity: 0.5;" placeholder="Preenchido automaticamente">
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="ab-desc" readonly style="opacity: 0.5;" placeholder="Preenchido automaticamente">
+                </div>
+                <div class="form-group">
+                    <label>Saldo de Pallets Atual</label>
+                    <input type="text" id="ab-qtd-atual" readonly style="opacity: 0.5;" placeholder="0 PL">
+                </div>
+                <div class="form-group">
+                    <label>Quantidade de Pallets a Liberar/Abrir</label>
+                    <input type="number" id="ab-qtd-abrir" placeholder="Digite a quantidade">
+                </div>
+                
+                <button class="btn-admin" style="background: #0284c7; color: white;" onclick="salvarAberturaBlocado()">Confirmar Abertura</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-retirada">
+    <div class="modal-content">
+        <h3 id="modal-titulo" style="margin-top:0; color:var(--primary);">Retirar Material</h3>
+        <p id="modal-info" style="font-size:13px; opacity:0.8; margin-bottom: 15px; line-height: 1.4;"></p>
+        <label style="font-size:11px; color:#94a3b8; text-transform: uppercase;">Quantidade de Pallets:</label>
+        <input type="number" id="modal-input-qtd" inputmode="numeric" pattern="[0-9]*" placeholder="0" style="font-size:28px; text-align:center; margin:10px 0; border: 2px solid var(--primary); height: 60px;">
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button onclick="fecharModal()" style="flex:1; padding:15px; background:#334155; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">CANCELAR</button>
+            <button id="btn-confirmar-modal" style="flex:1; padding:15px; background:var(--primary); color:black; border:none; border-radius:8px; font-weight:900; cursor:pointer;">CONFIRMAR</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // Configurações Firebase (Use as suas credenciais aqui)
     const firebaseConfig = {
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
         authDomain: "sistema-fefo.firebaseapp.com",
@@ -114,91 +211,320 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
+    let estoqueCompleto = [];
     let usuarioLogado = null;
+    let diasCalculadosEntrada = 0;
+    let wakeLock = null;
+    let itemParaRetirar = null;
 
-    // Login e Navegação
+    async function ativarWakeLock() {
+        try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); } } catch (e) {}
+    }
+
     async function tentarLogin() {
-        const mat = document.getElementById('login-mat').value;
-        const senha = document.getElementById('login-senha').value;
+        const mat = document.getElementById('login-mat').value.trim();
+        const senha = document.getElementById('login-senha').value.trim();
         try {
             await auth.signInWithEmailAndPassword(mat + "@alb.com", senha);
-            usuarioLogado = { nome: mat, perfil: "ADMIN" }; // Simulação
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-screen').style.display = 'block';
-            document.getElementById('user-name').innerText = mat;
-            navegar('abastecer');
-        } catch (e) { alert("Erro de Login"); }
+            const doc = await db.collection("usuarios_wms").doc(mat + "@alb.com").get();
+            if (doc.exists) {
+                usuarioLogado = doc.data();
+                usuarioLogado.email = mat + "@alb.com";
+                localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
+                iniciarApp();
+            }
+        } catch (e) { alert("Erro de Login."); }
+    }
+
+    function iniciarApp() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'block';
+        document.getElementById('user-name').innerText = usuarioLogado.nome;
+        
+        const isAdmin = usuarioLogado.perfil.toUpperCase() === "ADMIN";
+        document.getElementById('role-label').innerText = isAdmin ? "PERFIL: ADMINISTRADOR" : "PERFIL: OPERADOR";
+        document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('admin-tools-section').style.display = isAdmin ? 'block' : 'none';
+
+        conectarFirebase();
+        ativarWakeLock();
+        navegar(isAdmin ? 'admin' : 'retirar');
     }
 
     function navegar(tela) {
-        ['admin', 'retirar', 'abastecer', 'transferir'].forEach(t => {
-            document.getElementById('view-' + t).style.display = 'none';
+        ['admin', 'retirar', 'entrada-bloco', 'abertura-blocado'].forEach(t => {
+            const el = document.getElementById('view-' + t);
+            if(el) el.style.display = 'none';
         });
         document.getElementById('view-' + tela).style.display = 'block';
-        toggleMenu();
+        document.getElementById('sidebar').classList.remove('active');
     }
 
-    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
+    function conectarFirebase() {
+        db.collection("estoque_blocado").onSnapshot(snap => {
+            estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if(usuarioLogado && usuarioLogado.perfil.toUpperCase() === "ADMIN") atualizarEstatisticas();
+            renderizarEstoque();
+        });
+    }
 
-    // Salvar Entrada e Registrar Histórico
-    async function salvarEntrada() {
-        const dados = {
-            origem: document.getElementById('in-origem').value,
-            ender: document.getElementById('in-ender').value,
-            mat: document.getElementById('in-mat').value,
-            desc: document.getElementById('in-desc').value,
-            qtd: document.getElementById('in-qtd').value,
-            validade: document.getElementById('in-venc').value,
-            operador: usuarioLogado.nome,
-            data: new Date().toLocaleDateString('pt-BR'),
-            hora: new Date().toLocaleTimeString('pt-BR'),
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        };
+    function atualizarEstatisticas() {
+        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
+        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length;
+        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
+    }
+
+    function renderizarEstoque() {
+        const termo = document.getElementById('search-input').value.toLowerCase().trim();
+        const lista = document.getElementById('lista-estoque');
+        lista.innerHTML = '';
+        if (termo.length === 0) return;
+
+        let filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
+        if (filtrados.length === 0) return;
+
+        const menorDia = Math.min(...filtrados.map(i => i.dias));
+        const apenasPrioritarios = filtrados.filter(i => i.dias === menorDia);
+
+        apenasPrioritarios.forEach(item => {
+            let statusTexto = "";
+            let statusCor = "";
+
+            if (item.dias <= 30) {
+                statusTexto = "RETIDO";
+                statusCor = "var(--retido)";
+            } else if (item.dias <= 60) {
+                statusTexto = "CRÍTICO";
+                statusCor = "var(--critico)";
+            } else {
+                statusTexto = "DATA BOA";
+                statusCor = "var(--verde)";
+            }
+
+            const card = document.createElement('div');
+            card.className = `item-card`;
+            card.style.borderLeftColor = statusCor;
+            card.innerHTML = `
+                <div>
+                    <span class="badge-ender">${item.ender}</span>
+                    <span class="badge-status" style="background-color: ${statusCor}">${statusTexto}</span>
+                    <div style="font-weight:900; font-size:18px; margin-top:5px;">${item.mat}</div>
+                    <div style="font-size:11px; opacity:0.7;">${item.desc}</div>
+                    <div style="font-size:12px; margin-top:5px;">Vence em: <b>${item.dias} dias</b></div>
+                </div>
+                <div style="text-align:right">
+                    <div style="font-size:22px; font-weight:900;">${item.qtd} PL</div>
+                    <button class="btn-retirar" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button>
+                </div>`;
+            lista.appendChild(card);
+        });
+    }
+
+    function retirarMaterial(id, qtdAtual, mat, ender, validade) {
+        itemParaRetirar = { id, qtdAtual, mat, ender, validade };
+        document.getElementById('modal-titulo').innerText = `Retirar de: ${mat}`;
+        document.getElementById('modal-info').innerHTML = `Endereço: <b>${ender}</b><br>Saldo Atual: <b>${qtdAtual} PL</b>`;
+        document.getElementById('modal-input-qtd').value = '';
+        document.getElementById('modal-retirada').style.display = 'flex';
+        setTimeout(() => document.getElementById('modal-input-qtd').focus(), 150);
+        document.getElementById('btn-confirmar-modal').onclick = processarRetirada;
+    }
+
+    function fecharModal() {
+        document.getElementById('modal-retirada').style.display = 'none';
+        itemParaRetirar = null;
+    }
+
+    async function processarRetirada() {
+        const inputQtd = document.getElementById('modal-input-qtd').value;
+        const v = parseInt(inputQtd);
+        if (isNaN(v) || v <= 0) return alert("Digite uma quantidade válida!");
+        if (v > itemParaRetirar.qtdAtual) return alert("Quantidade solicitada maior que o saldo!");
+
+        const { id, qtdAtual, mat, ender, validade } = itemParaRetirar;
+        try {
+            if (v === qtdAtual) { await db.collection("estoque_blocado").doc(id).delete(); } 
+            else { await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v }); }
+            registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`);
+            fecharModal();
+            alert("Retirada concluída!");
+        } catch (e) { alert("Erro ao salvar no banco."); }
+    }
+
+    /* LÓGICA DO MÓDULO: ENTRADA NO BLOCO */
+    function puxarDescricaoEntrada(cod) {
+        const p = estoqueCompleto.find(i => i.mat.toString() === cod);
+        document.getElementById('ent-desc').value = p ? p.desc : "NOVO MATERIAL";
+    }
+
+    function calcularDiasEntrada(data) {
+        diasCalculadosEntrada = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
+        document.getElementById('ent-label-dias').innerText = `Vencimento em ${diasCalculadosEntrada} dias`;
+    }
+
+    async function salvarEntradaBloco() {
+        const origem = document.getElementById('ent-origem').value;
+        const ender = document.getElementById('ent-ender').value.toUpperCase().trim();
+        const mat = document.getElementById('ent-mat').value.trim();
+        const qtd = parseInt(document.getElementById('ent-qtd').value);
+        const dataVRaw = document.getElementById('ent-venc').value;
+        
+        if(!ender || !mat || isNaN(qtd) || !dataVRaw) return alert("Preencha todos os campos!");
+        const dataV = dataVRaw.split('-').reverse().join('/');
+
+        const ocupante = estoqueCompleto.find(i => i.ender === ender);
+        if (ocupante) {
+            if (ocupante.mat === mat) {
+                if (confirm(`Endereço ocupado pelo mesmo material. Somar +${qtd} PL?`)) {
+                    await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd });
+                    registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada via ${origem})`);
+                    alert("Atualizado com sucesso!");
+                    navegar('retirar');
+                }
+                return;
+            } else { return alert(`BLOQUEADO! Endereço ocupado por: ${ocupante.mat}`); }
+        }
+
+        await db.collection("estoque_blocado").add({ 
+            ender, mat, qtd, dias: diasCalculadosEntrada, valFrente: dataV, desc: document.getElementById('ent-desc').value 
+        });
+        registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada via ${origem})`);
+        alert("Entrada Salva!");
+        navegar('retirar');
+    }
+
+    /* LÓGICA DO MÓDULO: ABERTURA DE BLOCADO */
+    let itemSelecionadoAbertura = null;
+
+    function buscarDadosBlocado(endereco) {
+        const enderProc = endereco.toUpperCase().trim();
+        const item = estoqueCompleto.find(i => i.ender === enderProc);
+        
+        if(item) {
+            itemSelecionadoAbertura = item;
+            document.getElementById('ab-mat').value = item.mat;
+            document.getElementById('ab-desc').value = item.desc;
+            document.getElementById('ab-qtd-atual').value = item.qtd + " PL";
+        } else {
+            itemSelecionadoAbertura = null;
+            document.getElementById('ab-mat').value = "";
+            document.getElementById('ab-desc').value = "";
+            document.getElementById('ab-qtd-atual').value = "";
+        }
+    }
+
+    async function salvarAberturaBlocado() {
+        const qtdAbrir = parseInt(document.getElementById('ab-qtd-abrir').value);
+        if(!itemSelecionadoAbertura) return alert("Nenhum material encontrado neste endereço!");
+        if(isNaN(qtdAbrir) || qtdAbrir <= 0) return alert("Insira uma quantidade de pallets válida!");
+        if(qtdAbrir > itemSelecionadoAbertura.qtd) return alert("A quantidade para abrir não pode ser maior que o saldo atual!");
 
         try {
-            // Adiciona ao estoque
-            await db.collection("estoque_blocado").add(dados);
-            // Registra no histórico (movimentações)
-            await db.collection("movimentacoes_wms").add({
-                Data: dados.data,
-                Hora: dados.hora,
-                Origem: dados.origem,
-                Destino: dados.ender,
-                Material: dados.mat,
-                Validade: dados.validade,
-                Qtd: dados.qtd,
-                Operador: dados.operador,
-                timestamp: dados.timestamp
-            });
-            alert("Entrada registrada com sucesso!");
-        } catch (e) { alert("Erro ao salvar"); }
+            const novoSaldo = itemSelecionadoAbertura.qtd - qtdAbrir;
+            if(novoSaldo === 0) {
+                await db.collection("estoque_blocado").doc(itemSelecionadoAbertura.id).delete();
+            } else {
+                await db.collection("estoque_blocado").doc(itemSelecionadoAbertura.id).update({ qtd: novoSaldo });
+            }
+            
+            registrarMovimentacao(itemSelecionadoAbertura.ender, itemSelecionadoAbertura.mat, itemSelecionadoAbertura.valFrente, `-${qtdAbrir} PL (Abertura Blocado)`);
+            alert("Abertura confirmada e registrada com sucesso!");
+            
+            // Limpa o formulário
+            document.getElementById('ab-ender').value = "";
+            buscarDadosBlocado("");
+            document.getElementById('ab-qtd-abrir').value = "";
+            navegar('retirar');
+        } catch(e) {
+            alert("Erro ao processar abertura no banco.");
+        }
     }
 
-    // Exportação do Histórico conforme a imagem solicitada
+    /* MOVIMENTAÇÕES E FUNÇÕES AUXILIARES */
+    async function registrarMovimentacao(e, m, v, q) {
+        const agora = new Date();
+        await db.collection("movimentacoes_wms").add({ 
+            endereco: e, material: m, validade: v, quantidade: q, 
+            login: usuarioLogado.email, data: agora.toLocaleDateString('pt-BR'), 
+            hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora 
+        });
+    }
+
     async function exportarHistoricoExcel() {
         try {
             const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-            const dadosParaExcel = snap.docs.map(doc => {
+            if (snap.empty) return alert("Nenhum histórico.");
+            const dados = snap.docs.map(doc => {
                 const d = doc.data();
-                return {
-                    "Data": d.Data,
-                    "Hora": d.Hora,
-                    "Origem": d.Origem,
-                    "Destino": d.Destino,
-                    "Material": d.Material,
-                    "Validade": d.Validade,
-                    "Qtd": d.Qtd,
-                    "Operador": d.Operador
-                };
+                return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Hora": d.hora, "Login": d.login, "Data": d.data, "Qtd": d.quantidade };
             });
-
-            const ws = XLSX.utils.json_to_sheet(dadosParaExcel);
+            const ws = XLSX.utils.json_to_sheet(dados);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Histórico");
-            XLSX.writeFile(wb, "Historico_Movimentacoes.xlsx");
-        } catch (e) { alert("Erro ao gerar histórico: " + e.message); }
+            XLSX.writeFile(wb, `Historico_WMS_${new Date().getTime()}.xlsx`);
+        } catch (error) { alert("Erro na exportação."); }
     }
+
+    async function importarCSV(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const texto = e.target.result;
+                const linhas = texto.split(/\r?\n/).filter(l => l.trim() !== "");
+                if (linhas.length <= 1) return alert("Planilha vazia!");
+                const dados = linhas.slice(1);
+                if (!confirm(`Apagar estoque atual e carregar ${dados.length} itens?`)) return;
+
+                const snapshot = await db.collection("estoque_blocado").get();
+                if (!snapshot.empty) {
+                    let deleteBatch = db.batch();
+                    let delCount = 0;
+                    for (const doc of snapshot.docs) {
+                        deleteBatch.delete(doc.ref);
+                        delCount++;
+                        if (delCount % 400 === 0) { await deleteBatch.commit(); deleteBatch = db.batch(); }
+                    }
+                    await deleteBatch.commit();
+                }
+
+                let batch = db.batch();
+                let count = 0;
+                for (const linha of dados) {
+                    const c = linha.split(";");
+                    if (c.length >= 6) {
+                        const ender = c[0].trim();
+                        const mat = c[1].trim();
+                        const desc = c[2].trim();
+                        const valFrente = c[3].trim();
+                        const qtd = parseInt(c[5].replace(/\D/g, '')) || 0;
+                        const dias = parseInt(c[7].replace(/\D/g, '')) || 0;
+                        if (ender && mat) {
+                            const docRef = db.collection("estoque_blocado").doc();
+                            batch.set(docRef, { ender, mat, desc, valFrente, qtd, dias });
+                            count++;
+                            if (count % 400 === 0) { await batch.commit(); batch = db.batch(); }
+                        }
+                    }
+                }
+                await batch.commit();
+                alert("Sucesso! " + count + " carregados.");
+                location.reload();
+            } catch (err) { alert("Erro: " + err.message); }
+        };
+        reader.readAsText(file, 'ISO-8859-1');
+    }
+
+    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
+    function logout() { if(wakeLock) wakeLock.release(); auth.signOut(); localStorage.removeItem('wms_session'); location.reload(); }
+
+    window.onload = () => {
+        const s = localStorage.getItem('wms_session');
+        if(s) { usuarioLogado = JSON.parse(s); iniciarApp(); }
+    };
 </script>
 </body>
 </html>
