@@ -65,6 +65,11 @@
         
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
+        
+        /* Remove setas padrão de inputs numéricos no Chrome/Safari/Firefox */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
     </style>
 </head>
 <body>
@@ -80,7 +85,7 @@
 <div id="login-screen">
     <div class="login-box">
         <h2 style="text-align: center; color: var(--primary); margin-bottom: 25px;">WMS FLOW PRO</h2>
-        <input type="text" id="login-mat" placeholder="Matrícula" style="margin-bottom:10px;">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="login-mat" placeholder="Matrícula" style="margin-bottom:10px;">
         <input type="password" id="login-senha" placeholder="Senha" style="margin-bottom:20px;">
         <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%; font-size: 16px;">ENTRAR</button>
     </div>
@@ -113,7 +118,7 @@
 
         <div id="view-retirar">
             <div class="search-area">
-                <input type="text" id="search-input" placeholder="Pesquisar material ou endereço..." oninput="renderizarEstoque()">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" id="search-input" placeholder="Pesquisar material..." oninput="renderizarEstoque()">
             </div>
             <div id="lista-estoque"></div>
         </div>
@@ -135,7 +140,7 @@
                 </div>
                 <div class="form-group">
                     <label>Código Material</label>
-                    <input type="text" id="eb-mat" placeholder="Código..." oninput="puxarDescricao(this.value, 'eb-desc')">
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="eb-mat" placeholder="Código..." oninput="puxarDescricao(this.value, 'eb-desc')">
                 </div>
                 <div class="form-group">
                     <label>Descrição</label>
@@ -143,7 +148,7 @@
                 </div>
                 <div class="form-group">
                     <label>Quantidade (Pallets)</label>
-                    <input type="number" id="eb-qtd" placeholder="0">
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="eb-qtd" placeholder="0">
                 </div>
                 <div class="form-group">
                     <label>Data de Vencimento</label>
@@ -176,7 +181,7 @@
                 </div>
                 <div class="form-group">
                     <label>Quantidade a Transferir (Pallets)</label>
-                    <input type="number" id="ab-qtd" placeholder="Saldo max disponível: 0">
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="ab-qtd" placeholder="Saldo max disponível: 0">
                 </div>
                 <button class="btn-admin" style="background: #e11d48; color: white;" onclick="processarAberturaBlocado()">CONFIRMAR TRANSFERÊNCIA</button>
             </div>
@@ -540,7 +545,7 @@
                 let batch = db.batch();
                 let count = 0;
                 for (const linha of dados) {
-                    const c = linha.split(";"); // CORRIGIDO: alterado de 'inline' para 'linha'
+                    const c = linha.split(";");
                     if (c.length >= 6) {
                         const ender = c[0].trim();
                         const mat = c[1].trim();
