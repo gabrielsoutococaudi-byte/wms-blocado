@@ -131,7 +131,7 @@
                 </div>
                 <div class="form-group">
                     <label>Endereço Destino (Ex: 205-14)</label>
-                    <input type="text" id="eb-ender" placeholder="Digite o endereço de destino...">
+                    <input type="text" id="eb-ender" placeholder="Digite the endereço de destino...">
                 </div>
                 <div class="form-group">
                     <label>Código Material</label>
@@ -297,15 +297,15 @@
         let filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
         if (filtrados.length === 0) return;
 
-        const menorDia = Math.min(...filtrados.map(i => i.dias));
-        const apenasPrioritarios = filtrados.filter(i => i.dias === menorDia);
+        // Regra Corrigida: Ordena pelo menor dia (prioridade de vencimento) sem ocultar os outros lotes
+        filtrados.sort((a, b) => a.dias - b.dias);
 
-        apenasPrioritarios.forEach(item => {
+        filtrados.forEach(item => {
             let statusTexto = "";
             let statusCor = "";
 
             if (item.dias <= 30) {
-                statusTexto = "RETIDO";
+                statusTexto = item.dias < 0 ? "VENCIDO / RETIDO" : "RETIDO";
                 statusCor = "var(--retido)";
             } else if (item.dias <= 60) {
                 statusTexto = "CRÍTICO";
@@ -323,7 +323,7 @@
                     <span class="badge-ender">${item.ender}</span>
                     <span class="badge-status" style="background-color: ${statusCor}">${statusTexto}</span>
                     <div style="font-weight:900; font-size:18px; margin-top:5px;">${item.mat}</div>
-                    <div style="font-size:11px; opacity:0.7;">${item.desc}</div>
+                    <div style="font-size:11px; opacity:0.7;">${item.desc || "Sem descrição"}</div>
                     <div style="font-size:12px; margin-top:5px;">Vence em: <b>${item.dias} dias</b></div>
                 </div>
                 <div style="text-align:right">
@@ -541,7 +541,7 @@
                 let batch = db.batch();
                 let count = 0;
                 for (const linha of dados) {
-                    const c = linha.split(";");
+                    const c = inline.split(";");
                     if (c.length >= 6) {
                         const ender = c[0].trim();
                         const mat = c[1].trim();
