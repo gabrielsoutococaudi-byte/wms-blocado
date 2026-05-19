@@ -131,7 +131,7 @@
                 </div>
                 <div class="form-group">
                     <label>Endereço Destino (Ex: 205-14)</label>
-                    <input type="text" id="eb-ender" placeholder="Digite the endereço de destino...">
+                    <input type="text" id="eb-ender" placeholder="Digite o endereço de destino...">
                 </div>
                 <div class="form-group">
                     <label>Código Material</label>
@@ -297,7 +297,6 @@
         let filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
         if (filtrados.length === 0) return;
 
-        // Regra Corrigida: Ordena pelo menor dia (prioridade de vencimento) sem ocultar os outros lotes
         filtrados.sort((a, b) => a.dias - b.dias);
 
         filtrados.forEach(item => {
@@ -369,7 +368,7 @@
     }
 
     async function salvarEntradaBloco() {
-        const origem = document.getElementById('eb-origem').value;
+        const origen = document.getElementById('eb-origem').value;
         const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
         const mat = document.getElementById('eb-mat').value.trim();
         const qtd = parseInt(document.getElementById('eb-qtd').value);
@@ -384,7 +383,7 @@
             if (ocupante.mat === mat) {
                 if (confirm(`Endereço ocupado pelo mesmo material. Somar +${qtd} PL?`)) {
                     await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd });
-                    registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma Manual)`, `ENTRADA VIA ${origem}`);
+                    registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma Manual)`, `ENTRADA VIA ${origen}`);
                     alert("Atualizado com sucesso!");
                     limparFormularioEntrada();
                     navegar('retirar');
@@ -395,7 +394,7 @@
 
         const desc = document.getElementById('eb-desc').value;
         await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc });
-        registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada)`, `ENTRADA VIA ${origem}`);
+        registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada)`, `ENTRADA VIA ${origen}`);
         alert("Entrada registrada!");
         limparFormularioEntrada();
         navegar('retirar');
@@ -541,7 +540,7 @@
                 let batch = db.batch();
                 let count = 0;
                 for (const linha of dados) {
-                    const c = inline.split(";");
+                    const c = linha.split(";"); // CORRIGIDO: alterado de 'inline' para 'linha'
                     if (c.length >= 6) {
                         const ender = c[0].trim();
                         const mat = c[1].trim();
