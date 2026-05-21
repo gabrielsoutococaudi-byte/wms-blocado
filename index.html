@@ -236,6 +236,17 @@
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
 
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('active');
+    }
+
+    function logout() {
+        auth.signOut().then(() => {
+            localStorage.removeItem('wms_session');
+            location.reload();
+        });
+    }
+
     async function ativarWakeLock() {
         try { 
             if ('wakeLock' in navigator) { 
@@ -303,6 +314,7 @@
         document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
     }
 
+    // LÓGICA DE ATUALIZADA DE ORDENAÇÃO
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
@@ -312,12 +324,13 @@
         let filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
         if (filtrados.length === 0) return;
 
-        // NOVA LÓGICA DE ORDENAÇÃO: Prioriza Retidos -> Críticos -> Data Boa
+        // CRÍTICO APARECE PRIMEIRO, SEGUIDO POR DATA BOA.
+        // DENTRO DO MESMO STATUS, MENORES DIAS FICAM NO TOPO.
         filtrados.sort((a, b) => {
             const getPrioridade = (item) => {
-                if (item.dias <= 30) return 1; // VENCIDO / RETIDO (Mais crítico)
-                if (item.dias <= 60) return 2; // CRÍTICO (Médio)
-                return 3;                      // DATA BOA (Mais seguro)
+                if (item.dias > 30 && item.dias <= 60) return 1; // CRÍTICO (Prioridade máxima)
+                if (item.dias > 60) return 2;                    // DATA BOA (Prioridade secundária)
+                return 3;                                        // VENCIDO / RETIDO (Fundo da lista)
             };
 
             const prioridadeA = getPrioridade(a);
@@ -326,7 +339,7 @@
             if (prioridadeA !== prioridadeB) {
                 return prioridadeA - prioridadeB;
             }
-            return a.dias - b.dias; // Desempate por menor número de dias
+            return a.dias - b.dias; // Desempate por menor número de dias (FEFO)
         });
 
         filtrados.forEach(item => {
@@ -589,17 +602,18 @@
                 await batch.commit();
                 alert("Sucesso! " + count + " carregados.");
                 location.reload();
-            } catch (err) { alert("Erro: " + err.message); }
+            } catch (error) { alert("Erro ao importar CSV."); }
         };
-        reader.readAsText(file, 'ISO-8859-1');
+        reader.readAsText(file);
     }
 
-    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
-    function logout() { if(wakeLock) wakeLock.release(); auth.signOut(); localStorage.removeItem('wms_session'); location.reload(); }
-
+    // Carregar sessão existente
     window.onload = () => {
-        const s = localStorage.getItem('wms_session');
-        if(s) { usuarioLogado = JSON.parse(s); iniciarApp(); }
+        const session = localStorage.getItem('wms_session');
+        if (session) {
+            usuarioLogado = JSON.parse(session);
+            iniciarApp();
+        }
     };
 </script>
 </body>
