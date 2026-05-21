@@ -319,7 +319,9 @@
         lista.innerHTML = '';
         if (termo.length === 0) return;
 
-        // Filtro: Evita misturar códigos parecidos (ex: exige termo exato se for apenas número)
+        const isAdmin = usuarioLogado && usuarioLogado.perfil.toUpperCase() === "ADMIN";
+
+        // Filtro básico de busca por código ou endereço
         let filtrados = estoqueCompleto.filter(i => {
             const termoEhNumero = /^\d+$/.test(termo);
             if (termoEhNumero) {
@@ -329,9 +331,14 @@
             }
         });
 
+        // REGRA EXTRA: Se for operador, oculta os lotes que possuem 30 dias ou menos (status RETIDO)
+        if (!isAdmin) {
+            filtrados = filtrados.filter(item => item.dias > 30);
+        }
+
         if (filtrados.length === 0) return;
 
-        // ORDENAÇÃO ATUALIZADA: Organiza diretamente do menor número de dias para o maior (FEFO/PVPS)
+        // Ordenação estrita pelo menor número de dias para o maior (FEFO)
         filtrados.sort((a, b) => {
             const diasA = parseInt(a.dias) || 0;
             const diasB = parseInt(b.dias) || 0;
@@ -492,7 +499,6 @@
                     ender: enderDestino,
                     mat: itemOrigemAbertura.mat,
                     desc: itemOrigemAbertura.desc,
-                    text: itemOrigemAbertura.desc,
                     qtd: qtdTransferir,
                     dias: itemOrigemAbertura.dias,
                     valFrente: itemOrigemAbertura.valFrente
