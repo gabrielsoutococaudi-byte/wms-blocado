@@ -66,7 +66,7 @@
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
         
-        /* Remove setas padrão de inputs numéricos no Chrome/Safari/Firefox */
+        /* Remove setas padrão de inputs numéricos */
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
@@ -314,23 +314,30 @@
         document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
     }
 
-    // LÓGICA DE ATUALIZADA DE ORDENAÇÃO
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
         if (termo.length === 0) return;
 
-        let filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
+        // Filtro aprimorado: Evita misturar códigos parecidos (ex: 75 e 1375)
+        let filtrados = estoqueCompleto.filter(i => {
+            const termoEhNumero = /^\d+$/.test(termo);
+            if (termoEhNumero) {
+                return i.mat.toString().toLowerCase() === termo;
+            } else {
+                return i.ender.toLowerCase().includes(termo);
+            }
+        });
+
         if (filtrados.length === 0) return;
 
-        // CRÍTICO APARECE PRIMEIRO, SEGUIDO POR DATA BOA.
-        // DENTRO DO MESMO STATUS, MENORES DIAS FICAM NO TOPO.
+        // Ordenação: CRÍTICO -> DATA BOA -> RETIDO (Com desempate por menores dias)
         filtrados.sort((a, b) => {
             const getPrioridade = (item) => {
-                if (item.dias > 30 && item.dias <= 60) return 1; // CRÍTICO (Prioridade máxima)
-                if (item.dias > 60) return 2;                    // DATA BOA (Prioridade secundária)
-                return 3;                                        // VENCIDO / RETIDO (Fundo da lista)
+                if (item.dias > 30 && item.dias <= 60) return 1; // CRÍTICO
+                if (item.dias > 60) return 2;                    // DATA BOA
+                return 3;                                        // RETIDO
             };
 
             const prioridadeA = getPrioridade(a);
@@ -339,7 +346,7 @@
             if (prioridadeA !== prioridadeB) {
                 return prioridadeA - prioridadeB;
             }
-            return a.dias - b.dias; // Desempate por menor número de dias (FEFO)
+            return a.dias - b.dias;
         });
 
         filtrados.forEach(item => {
@@ -607,7 +614,7 @@
         reader.readAsText(file);
     }
 
-    // Carregar sessão existente
+    // Mantém o login ativo ao recarregar a página
     window.onload = () => {
         const session = localStorage.getItem('wms_session');
         if (session) {
