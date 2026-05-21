@@ -136,7 +136,7 @@
                 </div>
                 <div class="form-group">
                     <label>Endereço Destino (Ex: 205-14)</label>
-                    <input type="text" id="eb-ender" placeholder="Digite o endereço de destino...">
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="eb-ender" placeholder="Digite o endereço de destino...">
                 </div>
                 <div class="form-group">
                     <label>Código Material</label>
@@ -165,7 +165,7 @@
                 
                 <div class="form-group">
                     <label>Endereço Origem (Ex: 201-14)</label>
-                    <input type="text" id="ab-origem" placeholder="Digite a posição de origem..." onchange="carregarDadosOrigemAbertura(this.value)">
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="ab-origem" placeholder="Digite a posição de origem..." onchange="carregarDadosOrigemAbertura(this.value)">
                 </div>
                 <div class="form-group">
                     <label>Código Material</label>
@@ -177,7 +177,7 @@
                 </div>
                 <div class="form-group">
                     <label>Endereço Destino (Ex: 205-20)</label>
-                    <input type="text" id="ab-destino" placeholder="Digite a nova posição...">
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="ab-destino" placeholder="Digite a nova posição...">
                 </div>
                 <div class="form-group">
                     <label>Quantidade a Transferir (Pallets)</label>
@@ -237,8 +237,19 @@
     let itemOrigemAbertura = null;
 
     async function ativarWakeLock() {
-        try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); } } catch (e) {}
+        try { 
+            if ('wakeLock' in navigator) { 
+                wakeLock = await navigator.wakeLock.request('screen'); 
+            } 
+        } catch (e) {}
     }
+
+    // Ouvinte para reativar o Wake Lock caso o aplicativo mude de estado ou aba
+    document.addEventListener('visibilitychange', async () => {
+        if (wakeLock !== null && document.visibilityState === 'visible' && usuarioLogado) {
+            ativarWakeLock();
+        }
+    });
 
     async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
@@ -464,6 +475,7 @@
                 });
             }
 
+            // Registrando Logs Duplos para Rastreabilidade Completa
             registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtdTransferir} PL`, `TRANSFERIDO PARA ${enderDestino}`);
             registrarMovimentacao(enderDestino, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtdTransferir} PL`, `RECEBIDO DE ${itemOrigemAbertura.ender}`);
 
