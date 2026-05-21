@@ -244,7 +244,6 @@
         } catch (e) {}
     }
 
-    // Ouvinte para reativar o Wake Lock caso o aplicativo mude de estado ou aba
     document.addEventListener('visibilitychange', async () => {
         if (wakeLock !== null && document.visibilityState === 'visible' && usuarioLogado) {
             ativarWakeLock();
@@ -313,7 +312,22 @@
         let filtrados = estoqueCompleto.filter(i => i.mat.toString().toLowerCase().includes(termo) || i.ender.toLowerCase().includes(termo));
         if (filtrados.length === 0) return;
 
-        filtrados.sort((a, b) => a.dias - b.dias);
+        // NOVA LÓGICA DE ORDENAÇÃO: Prioriza Retidos -> Críticos -> Data Boa
+        filtrados.sort((a, b) => {
+            const getPrioridade = (item) => {
+                if (item.dias <= 30) return 1; // VENCIDO / RETIDO (Mais crítico)
+                if (item.dias <= 60) return 2; // CRÍTICO (Médio)
+                return 3;                      // DATA BOA (Mais seguro)
+            };
+
+            const prioridadeA = getPrioridade(a);
+            const prioridadeB = getPrioridade(b);
+
+            if (prioridadeA !== prioridadeB) {
+                return prioridadeA - prioridadeB;
+            }
+            return a.dias - b.dias; // Desempate por menor número de dias
+        });
 
         filtrados.forEach(item => {
             let statusTexto = "";
@@ -475,7 +489,6 @@
                 });
             }
 
-            // Registrando Logs Duplos para Rastreabilidade Completa
             registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtdTransferir} PL`, `TRANSFERIDO PARA ${enderDestino}`);
             registrarMovimentacao(enderDestino, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtdTransferir} PL`, `RECEBIDO DE ${itemOrigemAbertura.ender}`);
 
