@@ -66,7 +66,6 @@
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
         
-        /* Remove setas padrão de inputs numéricos */
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
@@ -320,7 +319,7 @@
         lista.innerHTML = '';
         if (termo.length === 0) return;
 
-        // Filtro aprimorado: Evita misturar códigos parecidos (ex: 75 e 1375)
+        // Filtro: Evita misturar códigos parecidos (ex: exige termo exato se for apenas número)
         let filtrados = estoqueCompleto.filter(i => {
             const termoEhNumero = /^\d+$/.test(termo);
             if (termoEhNumero) {
@@ -332,21 +331,11 @@
 
         if (filtrados.length === 0) return;
 
-        // Ordenação: CRÍTICO -> DATA BOA -> RETIDO (Com desempate por menores dias)
+        // ORDENAÇÃO ATUALIZADA: Organiza diretamente do menor número de dias para o maior (FEFO/PVPS)
         filtrados.sort((a, b) => {
-            const getPrioridade = (item) => {
-                if (item.dias > 30 && item.dias <= 60) return 1; // CRÍTICO
-                if (item.dias > 60) return 2;                    // DATA BOA
-                return 3;                                        // RETIDO
-            };
-
-            const prioridadeA = getPrioridade(a);
-            const prioridadeB = getPrioridade(b);
-
-            if (prioridadeA !== prioridadeB) {
-                return prioridadeA - prioridadeB;
-            }
-            return a.dias - b.dias;
+            const diasA = parseInt(a.dias) || 0;
+            const diasB = parseInt(b.dias) || 0;
+            return diasA - diasB;
         });
 
         filtrados.forEach(item => {
@@ -503,6 +492,7 @@
                     ender: enderDestino,
                     mat: itemOrigemAbertura.mat,
                     desc: itemOrigemAbertura.desc,
+                    text: itemOrigemAbertura.desc,
                     qtd: qtdTransferir,
                     dias: itemOrigemAbertura.dias,
                     valFrente: itemOrigemAbertura.valFrente
@@ -614,7 +604,6 @@
         reader.readAsText(file);
     }
 
-    // Mantém o login ativo ao recarregar a página
     window.onload = () => {
         const session = localStorage.getItem('wms_session');
         if (session) {
