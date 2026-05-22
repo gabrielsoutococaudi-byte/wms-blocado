@@ -33,6 +33,7 @@
             --border: #2d2d2d;
         }
 
+        /* Ajustes globais para mobile e toque */
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
@@ -49,7 +50,7 @@
             overflow-x: hidden;
         }
 
-        /* Indicador de Status da Conexão (Novo) */
+        /* Indicador de Status da Conexão */
         #network-status {
             display: none;
             background: var(--critico);
@@ -65,12 +66,13 @@
             letter-spacing: 1px;
         }
         
+        /* Sidebar */
         .sidebar { 
             position: fixed; 
             left: -280px; 
             top: 0; 
             width: 280px; 
-            height: 100dvh; 
+            height: 100dvh; /* dvh adapta-se dinamicamente à altura da tela mobile */
             background: #121212; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             z-index: 1000; 
@@ -101,6 +103,7 @@
             color: var(--text);
         }
 
+        /* Header */
         .header { 
             padding: calc(15px + env(safe-area-inset-top)) 20px 15px 20px; 
             background: rgba(26, 26, 26, 0.85); 
@@ -136,6 +139,7 @@
             padding: 16px; 
         }
 
+        /* Dashboard Responsivo */
         .admin-dashboard { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
@@ -153,6 +157,7 @@
         .stat-box h5 { margin: 0; font-size: 10px; color: var(--text-secondary); text-transform: uppercase; }
         .stat-box p { margin: 6px 0 0; font-size: 24px; font-weight: 900; color: #fff; }
 
+        /* Inputs e Buscas */
         .search-area { 
             background: var(--card); 
             padding: 12px; 
@@ -169,7 +174,7 @@
             color: white; 
             outline: none; 
             font-family: 'Inter', sans-serif; 
-            font-size: 16px; 
+            font-size: 16px; /* Impede zoom forçado nativo no iOS/Android */
             transition: all 0.2s;
         }
         input:focus, select:focus {
@@ -183,6 +188,7 @@
             background-position: right 14px center; 
         }
         
+        /* Cards de Itens */
         .item-card { 
             background: var(--card); 
             border-radius: 12px; 
@@ -200,6 +206,7 @@
         .badge-ender { background: #fff; color: #000; padding: 4px 6px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
         .badge-status { color: #fff; padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; margin-left: 4px; text-transform: uppercase; }
 
+        /* Botões */
         .btn-retirar { 
             background: var(--primary); 
             color: #fff; 
@@ -227,6 +234,7 @@
         }
         .btn-excel { background: #107c41; border: none;}
 
+        /* Tela de Login */
         #login-screen { 
             height: 100dvh; 
             display: flex; 
@@ -245,6 +253,7 @@
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); 
         }
 
+        /* Formulários e Modais */
         .form-container-box {
             background: var(--card); 
             padding: 20px; 
@@ -310,7 +319,7 @@
 <div id="login-screen">
     <div class="login-box">
         <h2 style="text-align: center; color: var(--primary); margin-top: 0; margin-bottom: 30px; font-weight: 900; letter-spacing: 1px;">WMS FLOW PRO</h2>
-        <input type="text" inputmode="numeric" pattern="[0-9]*" id="login-mat" placeholder="Matrícula" style="margin-bottom:14px;">
+        <input type="text" inputmode="decimal" id="login-mat" placeholder="Matrícula" style="margin-bottom:14px;">
         <input type="password" id="login-senha" placeholder="Senha" style="margin-bottom:24px;">
         <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%; font-size: 15px; padding: 14px;">ENTRAR</button>
     </div>
@@ -343,7 +352,7 @@
 
         <div id="view-retirar">
             <div class="search-area">
-                <input type="text" inputmode="numeric" pattern="[0-9]*" id="search-input" placeholder="Pesquisar material ou posição..." oninput="renderizarEstoque()">
+                <input type="text" inputmode="search" id="search-input" placeholder="Pesquisar material ou posição..." oninput="renderizarEstoque()">
             </div>
             <div id="lista-estoque"></div>
         </div>
@@ -361,11 +370,11 @@
                 </div>
                 <div class="form-group">
                     <label>Endereço Destino (Ex: 205-14)</label>
-                    <input type="text" id="eb-ender" placeholder="Digite o endereço de destino...">
+                    <input type="text" inputmode="text" id="eb-ender" placeholder="Digite o endereço de destino...">
                 </div>
                 <div class="form-group">
                     <label>Código Material</label>
-                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="eb-mat" placeholder="Código..." oninput="puxarDescricao(this.value, 'eb-desc')">
+                    <input type="text" inputmode="decimal" id="eb-mat" placeholder="Código..." oninput="puxarDescricao(this.value, 'eb-desc')">
                 </div>
                 <div class="form-group">
                     <label>Descrição</label>
@@ -373,7 +382,7 @@
                 </div>
                 <div class="form-group">
                     <label>Quantidade (Pallets)</label>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="eb-qtd" placeholder="0">
+                    <input type="text" inputmode="decimal" id="eb-qtd" placeholder="0">
                 </div>
                 <div class="form-group">
                     <label>Data de Vencimento</label>
@@ -390,7 +399,7 @@
                 
                 <div class="form-group">
                     <label>Endereço Origem (Ex: 201-14)</label>
-                    <input type="text" id="ab-origem" placeholder="Digite a posição de origem..." onchange="carregarDadosOrigemAbertura(this.value)">
+                    <input type="text" inputmode="text" id="ab-origem" placeholder="Digite a posição de origem..." onchange="carregarDadosOrigemAbertura(this.value)">
                 </div>
                 <div class="form-group">
                     <label>Código Material</label>
@@ -402,11 +411,11 @@
                 </div>
                 <div class="form-group">
                     <label>Endereço Destino (Ex: 205-20)</label>
-                    <input type="text" id="ab-destino" placeholder="Digite a nova posição...">
+                    <input type="text" inputmode="text" id="ab-destino" placeholder="Digite a nova posição...">
                 </div>
                 <div class="form-group">
                     <label>Quantidade a Transferir (Pallets)</label>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="ab-qtd" placeholder="Saldo max disponível: 0">
+                    <input type="text" inputmode="decimal" id="ab-qtd" placeholder="Saldo max disponível: 0">
                 </div>
                 <button class="btn-retirar" style="width: 100%; padding: 16px; margin-top: 10px;" onclick="processarAberturaBlocado()">CONFIRMAR TRANSFERÊNCIA</button>
             </div>
@@ -421,7 +430,7 @@
         
         <div class="form-group">
             <label>Quantidade de Pallets:</label>
-            <input type="number" id="modal-input-qtd" inputmode="numeric" pattern="[0-9]*" placeholder="0" style="font-size:32px; text-align:center; margin:10px 0; border: 2px solid var(--primary); height: 65px; font-weight: 900; color: #fff;">
+            <input type="text" id="modal-input-qtd" inputmode="decimal" placeholder="0" style="font-size:32px; text-align:center; margin:10px 0; border: 2px solid var(--primary); height: 65px; font-weight: 900; color: #fff;">
         </div>
         
         <div class="form-group">
@@ -451,15 +460,15 @@
     };
     firebase.initializeApp(firebaseConfig);
     
-    // Configuração crucial para persistência em cache e funcionamento Offline
+    // Configurações e habilitação de cache e persistência offline do Firestore
     const db = firebase.firestore();
     db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
     db.enablePersistence({ synchronizeTabs: true })
       .catch((err) => {
           if (err.code == 'failed-precondition') {
-              console.log("Persistência falhou: Múltiplas abas abertas.");
+              console.log("Persistência falhou: Múltiplas abas abertas simultaneamente.");
           } else if (err.code == 'unimplemented') {
-              console.log("O navegador atual não suporta persistência local.");
+              console.log("O navegador não possui suporte para cache de dados.");
           }
       });
 
@@ -473,7 +482,7 @@
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
 
-    // Monitora o estado da rede física do celular
+    // Gerenciador e listeners do status da conexão de dados
     window.addEventListener('online', atualizarStatusRede);
     window.addEventListener('offline', atualizarStatusRede);
 
@@ -514,8 +523,6 @@
     async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
-        
-        // Se estiver offline no primeiro login, o Firebase Auth usará o cache local se o usuário já logou antes
         try {
             await auth.signInWithEmailAndPassword(mat + "@alb.com", senha);
             const doc = await db.collection("usuarios_wms").doc(mat + "@alb.com").get();
@@ -526,7 +533,6 @@
                 iniciarApp();
             }
         } catch (e) { 
-            // Fallback caso esteja totalmente sem rede e o Auth offline falhe
             if(!navigator.onLine) {
                 const session = localStorage.getItem('wms_session');
                 if(session) {
@@ -535,7 +541,7 @@
                     return;
                 }
             }
-            alert("Erro de Login. Verifique as credenciais ou sua conexão."); 
+            alert("Erro de Login. Verifique os dados inseridos ou a conexão."); 
         }
     }
 
@@ -565,13 +571,12 @@
     }
 
     function conectarFirebase() {
-        // onSnapshot funciona offline puxando os dados instantaneamente do banco de cache local
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             if(usuarioLogado && usuarioLogado.perfil.toUpperCase() === "ADMIN") atualizarEstatisticas();
             renderizarEstoque();
         }, error => {
-            console.log("Erro ao escutar dados:", error);
+            console.log("Erro snapshot:", error);
         });
     }
 
@@ -669,20 +674,18 @@
 
         const { id, qtdAtual, mat, ender, validade } = itemParaRetirar;
         try {
-            // Removido o await do bloco principal para que a resposta visual seja instantânea mesmo offline
             if (v === qtdAtual) { db.collection("estoque_blocado").doc(id).delete(); } 
             else { db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v }); }
             
             registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`, destinoMov);
             fecharModal();
             
-            // Mensagem adaptada para o operador saber o estado do envio
             if(navigator.onLine) {
                 alert("Retirada concluída com sucesso!");
             } else {
-                alert("Retirada salva localmente! Será sincronizada assim que a internet voltar.");
+                alert("Retirada salva localmente (Offline)! Será sincronizada automaticamente ao recuperar o sinal.");
             }
-        } catch (e) { alert("Erro na operação."); }
+        } catch (e) { alert("Erro ao concluir operação."); }
     }
 
     async function salvarEntradaBloco() {
@@ -702,7 +705,7 @@
                 if (confirm(`Endereço ocupado pelo mesmo material. Somar +${qtd} PL?`)) {
                     db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd });
                     registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma Manual)`, `ENTRADA VIA ${origen}`);
-                    alert(navigator.onLine ? "Atualizado com sucesso!" : "Atualizado localmente (Offline)!");
+                    alert(navigator.onLine ? "Atualizado com sucesso!" : "Atualizado localmente (Modo Offline)!");
                     limparFormularioEntrada();
                     navegar('retirar');
                 }
@@ -714,7 +717,7 @@
         db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc });
         registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada)`, `ENTRADA VIA ${origen}`);
         
-        alert(navigator.onLine ? "Entrada registrada!" : "Entrada registrada localmente (Offline)!");
+        alert(navigator.onLine ? "Entrada registrada!" : "Entrada registrada localmente (Modo Offline)!");
         limparFormularioEntrada();
         navegar('retirar');
     }
@@ -781,7 +784,7 @@
             registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtdTransferir} PL`, `TRANSFERIDO PARA ${enderDestino}`);
             registrarMovimentacao(enderDestino, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtdTransferir} PL`, `RECEBIDO DE ${itemOrigemAbertura.ender}`);
 
-            alert(navigator.onLine ? "Transferência de Blocado executada!" : "Transferência salva localmente (Offline)!");
+            alert(navigator.onLine ? "Transferência de Blocado executada!" : "Transferência salva localmente (Modo Offline)!");
             document.getElementById('ab-origem').value = '';
             document.getElementById('ab-destino').value = '';
             document.getElementById('ab-mat').value = '';
@@ -818,7 +821,7 @@
     }
 
     async function exportarHistoricoExcel() {
-        if(!navigator.onLine) return alert("A exportação de relatórios exige conexão ativa com a internet.");
+        if(!navigator.onLine) return alert("A exportação de planilhas e relatórios necessita de internet ativa.");
         try {
             const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
             if (snap.empty) return alert("Nenhum histórico.");
@@ -834,7 +837,7 @@
     }
 
     async function importarCSV(event) {
-        if(!navigator.onLine) return alert("A importação de novas planilhas exige conexão ativa com a internet.");
+        if(!navigator.onLine) return alert("A importação de novas planilhas massivas exige conexão ativa com a internet.");
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
