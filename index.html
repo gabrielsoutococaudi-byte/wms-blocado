@@ -1,508 +1,833 @@
-<style>
-:root{
-    --bg:#050505;
-    --bg-secondary:#0f0f0f;
-
-    --card:#121212;
-    --card-hover:#1a1a1a;
-
-    --primary:#ff1e3c;
-    --primary-dark:#b80024;
-
-    --critico:#ffb020;
-    --retido:#ff4d4d;
-    --verde:#22c55e;
-
-    --text:#f5f5f5;
-    --text-soft:#9ca3af;
-
-    --border:rgba(255,255,255,0.08);
-
-    --shadow:
-        0 10px 30px rgba(0,0,0,0.45);
-
-    --radius:18px;
-}
-
-*{
-    box-sizing:border-box;
-}
-
-body{
-    font-family:'Inter',sans-serif;
-    background:
-        radial-gradient(circle at top right, rgba(255,0,43,0.12), transparent 25%),
-        linear-gradient(135deg,#050505 0%,#0d0d0d 100%);
-    color:var(--text);
-    margin:0;
-    padding-bottom:30px;
-}
-
-/* ===== SIDEBAR ===== */
-
-.sidebar{
-    position:fixed;
-    left:-250px;
-    top:0;
-    width:250px;
-    height:100%;
-    background:rgba(10,10,10,0.98);
-    backdrop-filter:blur(14px);
-    transition:0.35s ease;
-    z-index:1000;
-    padding-top:70px;
-    border-right:1px solid var(--border);
-    box-shadow:var(--shadow);
-}
-
-.sidebar.active{
-    left:0;
-}
-
-.sidebar button{
-    width:100%;
-    padding:16px 18px;
-    background:transparent;
-    border:none;
-    color:white;
-    text-align:left;
-    cursor:pointer;
-    border-bottom:1px solid rgba(255,255,255,0.04);
-    font-weight:700;
-    font-size:13px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    transition:0.25s;
-}
-
-.sidebar button:hover{
-    background:rgba(255,30,60,0.12);
-    padding-left:24px;
-    color:#fff;
-}
-
-/* ===== HEADER ===== */
-
-.header{
-    padding:16px 22px;
-    background:rgba(10,10,10,0.92);
-    backdrop-filter:blur(12px);
-
-    display:flex;
-    align-items:center;
-    gap:15px;
-
-    border-bottom:1px solid var(--border);
-
-    position:sticky;
-    top:0;
-    z-index:900;
-}
-
-.menu-btn{
-    background:rgba(255,255,255,0.04);
-    border:1px solid rgba(255,255,255,0.06);
-
-    border-radius:14px;
-
-    cursor:pointer;
-
-    color:white;
-    font-size:20px;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    width:46px;
-    height:46px;
-
-    transition:0.25s;
-}
-
-.menu-btn:hover{
-    background:var(--primary);
-    transform:scale(1.05);
-    box-shadow:0 0 20px rgba(255,30,60,0.35);
-}
-
-.container{
-    max-width:1200px;
-    margin:auto;
-    padding:22px;
-}
-
-/* ===== DASHBOARD ===== */
-
-.admin-dashboard{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:16px;
-    margin-bottom:22px;
-}
-
-.stat-box{
-    background:
-        linear-gradient(145deg,#171717,#0d0d0d);
-
-    padding:20px;
-
-    border-radius:var(--radius);
-
-    border:1px solid rgba(255,255,255,0.05);
-
-    text-align:center;
-
-    position:relative;
-    overflow:hidden;
-
-    box-shadow:var(--shadow);
-
-    transition:0.25s;
-}
-
-.stat-box:hover{
-    transform:translateY(-4px);
-}
-
-.stat-box::before{
-    content:'';
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:4px;
-    background:linear-gradient(90deg,var(--primary),#ff5f78);
-}
-
-.stat-box h5{
-    margin:0;
-    font-size:11px;
-    opacity:0.7;
-    text-transform:uppercase;
-    letter-spacing:1px;
-}
-
-.stat-box p{
-    margin:12px 0 0;
-    font-size:34px;
-    font-weight:900;
-}
-
-/* ===== SEARCH ===== */
-
-.search-area{
-    background:rgba(18,18,18,0.95);
-
-    padding:18px;
-
-    border-radius:22px;
-
-    margin-bottom:18px;
-
-    border:1px solid rgba(255,255,255,0.04);
-
-    box-shadow:var(--shadow);
-}
-
-/* ===== INPUTS ===== */
-
-input,
-select{
-    width:100%;
-    padding:14px 16px;
-
-    border-radius:14px;
-
-    border:1px solid rgba(255,255,255,0.08);
-
-    background:#0c0c0c;
-    color:white;
-
-    box-sizing:border-box;
-
-    outline:none;
-
-    font-family:'Inter',sans-serif;
-
-    transition:0.25s;
-}
-
-input:focus,
-select:focus{
-    border-color:var(--primary);
-    box-shadow:0 0 0 4px rgba(255,30,60,0.12);
-    background:#151515;
-}
-
-select{
-    cursor:pointer;
-}
-
-/* ===== ITEM CARD ===== */
-
-.item-card{
-    background:
-        linear-gradient(145deg,#171717,#101010);
-
-    border-radius:22px;
-
-    padding:18px;
-
-    margin-bottom:14px;
-
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-
-    border-left:6px solid var(--primary);
-
-    border:1px solid rgba(255,255,255,0.04);
-
-    box-shadow:var(--shadow);
-
-    transition:0.25s;
-}
-
-.item-card:hover{
-    transform:translateY(-4px);
-    background:var(--card-hover);
-}
-
-.badge-ender{
-    background:
-        linear-gradient(90deg,var(--primary),#ff5870);
-
-    color:#fff;
-
-    padding:5px 10px;
-
-    border-radius:999px;
-
-    font-size:11px;
-    font-weight:900;
-
-    letter-spacing:0.5px;
-}
-
-.badge-status{
-    color:#000;
-
-    padding:5px 10px;
-
-    border-radius:999px;
-
-    font-size:10px;
-    font-weight:900;
-
-    margin-left:8px;
-
-    text-transform:uppercase;
-}
-
-/* ===== BUTTONS ===== */
-
-.btn-retirar{
-    background:
-        linear-gradient(90deg,var(--primary),#ff5870);
-
-    color:white;
-
-    border:none;
-
-    padding:12px 18px;
-
-    border-radius:14px;
-
-    font-weight:900;
-
-    cursor:pointer;
-
-    transition:0.25s;
-
-    box-shadow:
-        0 10px 20px rgba(255,30,60,0.25);
-}
-
-.btn-retirar:hover{
-    transform:translateY(-2px);
-    box-shadow:
-        0 14px 28px rgba(255,30,60,0.4);
-}
-
-.btn-admin{
-    background:
-        linear-gradient(90deg,#1f1f1f,#2d2d2d);
-
-    color:white;
-
-    padding:15px;
-
-    width:100%;
-
-    border-radius:16px;
-
-    font-weight:900;
-
-    margin-top:12px;
-
-    border:1px solid rgba(255,255,255,0.05);
-
-    cursor:pointer;
-
-    text-transform:uppercase;
-
-    transition:0.25s;
-}
-
-.btn-admin:hover{
-    background:
-        linear-gradient(90deg,var(--primary-dark),var(--primary));
-}
-
-.btn-excel{
-    background:
-        linear-gradient(90deg,#107c41,#16a34a);
-}
-
-/* ===== LOGIN ===== */
-
-#login-screen{
-    height:100vh;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    background:
-        radial-gradient(circle, rgba(255,0,43,0.15) 0%, transparent 30%),
-        linear-gradient(135deg,#050505,#0d0d0d);
-}
-
-.login-box{
-    background:rgba(15,15,15,0.96);
-
-    padding:35px;
-
-    border-radius:28px;
-
-    width:340px;
-
-    border:1px solid rgba(255,255,255,0.05);
-
-    box-shadow:
-        0 25px 60px rgba(0,0,0,0.55);
-}
-
-.login-box h2{
-    text-align:center;
-
-    color:var(--primary);
-
-    margin-bottom:28px;
-
-    font-size:30px;
-    font-weight:900;
-
-    letter-spacing:1px;
-}
-
-/* ===== MODAL ===== */
-
-#modal-retirada{
-    display:none;
-
-    position:fixed;
-
-    top:0;
-    left:0;
-
-    width:100%;
-    height:100%;
-
-    background:rgba(0,0,0,0.85);
-
-    z-index:2000;
-
-    align-items:center;
-    justify-content:center;
-
-    backdrop-filter:blur(8px);
-}
-
-.modal-content{
-    background:#111;
-
-    padding:28px;
-
-    border-radius:24px;
-
-    width:92%;
-    max-width:430px;
-
-    border:1px solid rgba(255,255,255,0.05);
-
-    box-shadow:
-        0 25px 60px rgba(0,0,0,0.6);
-}
-
-/* ===== FORM ===== */
-
-.form-group{
-    margin-bottom:16px;
-}
-
-.form-group label{
-    display:block;
-
-    font-size:11px;
-
-    color:var(--text-soft);
-
-    text-transform:uppercase;
-
-    margin-bottom:7px;
-
-    font-weight:700;
-
-    letter-spacing:1px;
-}
-
-/* ===== MOBILE ===== */
-
-@media(max-width:768px){
-
-    .container{
-        padding:16px;
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WMS FLOW PRO">
+    
+    <title>WMS FLOW PRO - Sistema Integrado</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --bg: #0d0d0d; 
+            --card: #1a1a1a; 
+            --card-hover: #242424;
+            --primary: #e50914; /* Vermelho Moderno */
+            --primary-hover: #b80710;
+            --critico: #f59e0b; 
+            --retido: #ef4444; 
+            --verde: #10b981; 
+            --text: #ffffff; 
+            --text-secondary: #a3a3a3;
+            --border: #2d2d2d;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding-bottom: 40px; 
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Sidebar */
+        .sidebar { 
+            position: fixed; 
+            left: -280px; 
+            top: 0; 
+            width: 280px; 
+            height: 100%; 
+            background: #121212; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 1000; 
+            padding-top: 80px; 
+            border-right: 1px solid var(--border); 
+            box-shadow: 15px 0 30px rgba(0,0,0,0.7); 
+        }
+        .sidebar.active { left: 0; }
+        .sidebar button { 
+            width: 90%; 
+            padding: 14px 20px; 
+            background: transparent; 
+            border: none; 
+            color: var(--text-secondary); 
+            text-align: left; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 13px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            margin: 8px auto;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+        .sidebar button:hover { 
+            background: rgba(229, 9, 20, 0.1); 
+            color: var(--text);
+        }
+
+        /* Header */
+        .header { 
+            padding: 15px 24px; 
+            background: rgba(26, 26, 26, 0.85); 
+            display: flex; 
+            align-items: center; 
+            gap: 20px; 
+            border-bottom: 1px solid var(--border); 
+            position: sticky; 
+            top: 0; 
+            z-index: 900; 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .menu-btn { 
+            background: none; 
+            border: 1px solid var(--border); 
+            padding: 8px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            color: white; 
+            font-size: 22px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 42px; 
+            height: 42px; 
+            transition: 0.2s;
+        }
+        .menu-btn:hover {
+            background: var(--card);
+            border-color: var(--primary);
+        }
+        .container { max-width: 900px; margin: auto; padding: 20px; }
+
+        /* Dashboard */
+        .admin-dashboard { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+            gap: 16px; 
+            margin-bottom: 25px; 
+        }
+        .stat-box { 
+            background: var(--card); 
+            padding: 20px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--primary); 
+            text-align: center; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+        }
+        .stat-box h5 { margin: 0; font-size: 11px; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase; }
+        .stat-box p { margin: 10px 0 0; font-size: 28px; font-weight: 900; color: #fff; }
+
+        /* Inputs & Componentes de busca */
+        .search-area { 
+            background: var(--card); 
+            padding: 16px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            border: 1px solid var(--border);
+        }
+        input, select { 
+            width: 100%; 
+            padding: 14px 16px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border); 
+            background: #0d0d0d; 
+            color: white; 
+            box-sizing: border-box; 
+            outline: none; 
+            font-family: 'Inter', sans-serif; 
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.2);
+        }
+        select { 
+            cursor: pointer; 
+            appearance: none; 
+            background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>"); 
+            background-repeat: no-repeat; 
+            background-position: right 14px center; 
+        }
+        
+        /* Cards de Itens */
+        .item-card { 
+            background: var(--card); 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin-bottom: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border: 1px solid var(--border);
+            border-left: 6px solid #444; 
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .item-card:hover {
+            background: var(--card-hover);
+            transform: translateY(-2px);
+        }
+        
+        .badge-ender { background: #fff; color: #000; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .badge-status { color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; margin-left: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Botões */
+        .btn-retirar { 
+            background: var(--primary); 
+            color: #fff; 
+            border: none; 
+            padding: 12px 20px; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            transition: background 0.2s;
+        }
+        .btn-retirar:hover { background: var(--primary-hover); }
+        
+        .btn-admin { 
+            background: var(--card); 
+            color: #fff; 
+            padding: 16px; 
+            width: 100%; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            margin-top: 12px; 
+            border: 1px solid var(--border); 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+        .btn-admin:hover {
+            border-color: var(--primary);
+            background: rgba(229, 9, 20, 0.05);
+        }
+        .btn-excel { 
+            background: #107c41; 
+            border: none;
+        }
+        .btn-excel:hover {
+            background: #0b592e;
+        }
+
+        /* Telas Especiais */
+        #login-screen { 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            background: radial-gradient(circle, #1a1a1a 0%, #000000 100%); 
+        }
+        .login-box { 
+            background: var(--card); 
+            padding: 40px 32px; 
+            border-radius: 16px; 
+            width: 340px; 
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); 
+        }
+
+        /* Componentes de Formulário & Modais */
+        .form-container-box {
+            background: var(--card); 
+            padding: 30px; 
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        #modal-retirada { 
+            display:none; 
+            position:fixed; 
+            top:0; 
+            left:0; 
+            width:100%; 
+            height:100%; 
+            background:rgba(0,0,0,0.85); 
+            z-index:2000; 
+            align-items:center; 
+            justify-content:center; 
+            backdrop-filter: blur(8px); 
+        }
+        .modal-content { 
+            background:var(--card); 
+            padding:32px; 
+            border-radius:16px; 
+            width:90%; 
+            max-width:420px; 
+            border:1px solid var(--border); 
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8); 
+        }
+        
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; font-weight: bold; letter-spacing: 0.5px; }
+        
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+    </style>
+</head>
+<body>
+
+<div id="sidebar" class="sidebar">
+    <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ADMIN</button>
+    <button onclick="navegar('retirar')">📦 PESQUISAR / RETIRAR</button>
+    <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
+    <button onclick="navegar('abertura_blocado')">🔄 ABERTURA DE BLOCADO</button>
+    <button onclick="logout()" style="color: var(--retido); margin-top: 30px; border-top: 1px solid var(--border); border-radius: 0; width: 100%;">🚪 SAIR</button>
+</div>
+
+<div id="login-screen">
+    <div class="login-box">
+        <h2 style="text-align: center; color: var(--primary); margin-top: 0; margin-bottom: 30px; font-weight: 900; letter-spacing: 1px;">WMS FLOW PRO</h2>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="login-mat" placeholder="Matrícula" style="margin-bottom:14px;">
+        <input type="password" id="login-senha" placeholder="Senha" style="margin-bottom:24px;">
+        <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%; font-size: 15px; padding: 14px;">ENTRAR</button>
+    </div>
+</div>
+
+<div id="app-screen" style="display: none;">
+    <div class="header">
+        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+        <div style="flex-grow: 1;">
+            <div id="user-name" style="font-weight: 800; font-size: 16px; letter-spacing: -0.3px;"></div>
+            <div id="role-label" style="font-size: 10px; color: var(--primary); font-weight: bold; letter-spacing: 1px; margin-top: 2px;"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="view-admin" style="display: none;">
+            <div id="dash-container" class="admin-dashboard">
+                <div class="stat-box"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
+                <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS</h5><p id="st-critico">0</p></div>
+                <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS</h5><p id="st-retido">0</p></div>
+            </div>
+
+            <div id="admin-tools-section" style="background: var(--card); padding: 25px; border-radius: 16px; border: 1px solid var(--border);">
+                <h3 style="font-size: 12px; color: var(--primary); margin-top: 0; letter-spacing: 1px; font-weight: 800;">GERENCIAMENTO ADMINISTRATIVO</h3>
+                <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
+                <button class="btn-admin" onclick="document.getElementById('csv-file').click()" style="border-color: var(--primary); color: #fff;">ALIMENTAR NOVO ESTOQUE (CSV)</button>
+                <button class="btn-admin btn-excel" onclick="exportarHistoricoExcel()">SOLICITAR HISTÓRICO (EXCEL)</button>
+            </div>
+        </div>
+
+        <div id="view-retirar">
+            <div class="search-area">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" id="search-input" placeholder="Pesquisar material ou posição..." oninput="renderizarEstoque()">
+            </div>
+            <div id="lista-estoque"></div>
+        </div>
+
+        <div id="view-entrada_bloco" style="display: none;">
+            <div class="form-container-box">
+                <h3 style="color: var(--primary); margin-top: 0; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px;">Entrada no Bloco</h3>
+                
+                <div class="form-group">
+                    <label>Origem da Carga</label>
+                    <select id="eb-origem">
+                        <option value="STAGE">STAGE</option>
+                        <option value="RECEBIMENTO">RECEBIMENTO</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Endereço Destino (Ex: 205-14)</label>
+                    <input type="text" id="eb-ender" placeholder="Digite o endereço de destino...">
+                </div>
+                <div class="form-group">
+                    <label>Código Material</label>
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="eb-mat" placeholder="Código..." oninput="puxarDescricao(this.value, 'eb-desc')">
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="eb-desc" readonly style="opacity: 0.4; background: #000;" placeholder="Descrição do material...">
+                </div>
+                <div class="form-group">
+                    <label>Quantidade (Pallets)</label>
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="eb-qtd" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label>Data de Vencimento</label>
+                    <input type="date" id="eb-venc" onchange="calcularDias(this.value, 'eb-label-dias')">
+                    <p id="eb-label-dias" style="color: var(--critico); font-size: 12px; margin-top: 8px; font-weight: bold;"></p>
+                </div>
+                <button class="btn-retirar" style="width: 100%; padding: 16px; margin-top: 10px;" onclick="salvarEntradaBloco()">SALVAR ENTRADA</button>
+            </div>
+        </div>
+
+        <div id="view-abertura_blocado" style="display: none;">
+            <div class="form-container-box">
+                <h3 style="color: var(--primary); margin-top: 0; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px;">Abertura de Blocado</h3>
+                
+                <div class="form-group">
+                    <label>Endereço Origem (Ex: 201-14)</label>
+                    <input type="text" id="ab-origem" placeholder="Digite a posição de origem..." onchange="carregarDadosOrigemAbertura(this.value)">
+                </div>
+                <div class="form-group">
+                    <label>Código Material</label>
+                    <input type="text" id="ab-mat" readonly style="opacity: 0.4; background: #000;" placeholder="Preenchido automaticamente...">
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="ab-desc" readonly style="opacity: 0.4; background: #000;" placeholder="Preenchido automaticamente...">
+                </div>
+                <div class="form-group">
+                    <label>Endereço Destino (Ex: 205-20)</label>
+                    <input type="text" id="ab-destino" placeholder="Digite a nova posição...">
+                </div>
+                <div class="form-group">
+                    <label>Quantidade a Transferir (Pallets)</label>
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="ab-qtd" placeholder="Saldo max disponível: 0">
+                </div>
+                <button class="btn-retirar" style="width: 100%; padding: 16px; margin-top: 10px;" onclick="processarAberturaBlocado()">CONFIRMAR TRANSFERÊNCIA</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-retirada">
+    <div class="modal-content">
+        <h3 id="modal-titulo" style="margin-top:0; color:var(--primary); font-weight: 900;">Retirar Material</h3>
+        <p id="modal-info" style="font-size:13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;"></p>
+        
+        <div class="form-group">
+            <label>Quantidade de Pallets:</label>
+            <input type="number" id="modal-input-qtd" inputmode="numeric" pattern="[0-9]*" placeholder="0" style="font-size:32px; text-align:center; margin:10px 0; border: 2px solid var(--primary); height: 65px; font-weight: 900; color: #fff;">
+        </div>
+        
+        <div class="form-group">
+            <label>Tipo de Movimentação (Destino):</label>
+            <select id="modal-destino-mov">
+                <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                <option value="APANHA">APANHA</option>
+                <option value="SEPARAÇÃO">SEPARAÇÃO</option>
+            </select>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:25px;">
+            <button onclick="fecharModal()" style="flex:1; padding:14px; background:#2d2d2d; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:13px;">CANCELAR</button>
+            <button id="btn-confirmar-modal" style="flex:1; padding:14px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:900; cursor:pointer; font-size:13px;">CONFIRMAR</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
+        authDomain: "sistema-fefo.firebaseapp.com",
+        projectId: "sistema-fefo",
+        storageBucket: "sistema-fefo.firebasestorage.app",
+        messagingSenderId: "755801777693",
+        appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+    let estoqueCompleto = [];
+    let usuarioLogado = null;
+    let diasCalculados = 0;
+    let wakeLock = null;
+    let itemParaRetirar = null;
+    let itemOrigemAbertura = null;
+
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('active');
     }
 
-    .item-card{
-        flex-direction:column;
-        align-items:flex-start;
-        gap:15px;
+    function logout() {
+        auth.signOut().then(() => {
+            localStorage.removeItem('wms_session');
+            location.reload();
+        });
     }
 
-    .item-card > div:last-child{
-        width:100%;
+    async function ativarWakeLock() {
+        try { 
+            if ('wakeLock' in navigator) { 
+                wakeLock = await navigator.wakeLock.request('screen'); 
+            } 
+        } catch (e) {}
     }
 
-    .btn-retirar{
-        width:100%;
+    document.addEventListener('visibilitychange', async () => {
+        if (wakeLock !== null && document.visibilityState === 'visible' && usuarioLogado) {
+            ativarWakeLock();
+        }
+    });
+
+    async function tentarLogin() {
+        const mat = document.getElementById('login-mat').value.trim();
+        const senha = document.getElementById('login-senha').value.trim();
+        try {
+            await auth.signInWithEmailAndPassword(mat + "@alb.com", senha);
+            const doc = await db.collection("usuarios_wms").doc(mat + "@alb.com").get();
+            if (doc.exists) {
+                usuarioLogado = doc.data();
+                usuarioLogado.email = mat + "@alb.com";
+                localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
+                iniciarApp();
+            }
+        } catch (e) { alert("Erro de Login."); }
     }
 
-    .login-box{
-        width:92%;
+    function iniciarApp() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'block';
+        document.getElementById('user-name').innerText = usuarioLogado.nome;
+        
+        const isAdmin = usuarioLogado.perfil.toUpperCase() === "ADMIN";
+        document.getElementById('role-label').innerText = isAdmin ? "PERFIL: ADMINISTRADOR" : "PERFIL: OPERADOR";
+        document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('admin-tools-section').style.display = isAdmin ? 'block' : 'none';
+
+        conectarFirebase();
+        ativarWakeLock();
+        navegar(isAdmin ? 'admin' : 'retirar');
     }
-}
 
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button{
-    -webkit-appearance:none;
-    margin:0;
-}
+    function navegar(tela) {
+        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado'].forEach(t => {
+            const el = document.getElementById('view-' + t);
+            if(el) el.style.display = 'none';
+        });
+        document.getElementById('view-' + tela).style.display = 'block';
+        document.getElementById('sidebar').classList.remove('active');
+    }
 
-input[type=number]{
-    -moz-appearance:textfield;
-}
-</style>
+    function conectarFirebase() {
+        db.collection("estoque_blocado").onSnapshot(snap => {
+            estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if(usuarioLogado && usuarioLogado.perfil.toUpperCase() === "ADMIN") atualizarEstatisticas();
+            renderizarEstoque();
+        });
+    }
+
+    function atualizarEstatisticas() {
+        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
+        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length;
+        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
+    }
+
+    function renderizarEstoque() {
+        const termo = document.getElementById('search-input').value.toLowerCase().trim();
+        const lista = document.getElementById('lista-estoque');
+        lista.innerHTML = '';
+        if (termo.length === 0) return;
+
+        const isAdmin = usuarioLogado && usuarioLogado.perfil.toUpperCase() === "ADMIN";
+
+        let filtrados = estoqueCompleto.filter(i => {
+            const termoEhNumero = /^\d+$/.test(termo);
+            if (termoEhNumero) {
+                return i.mat.toString().toLowerCase() === termo;
+            } else {
+                return i.ender.toLowerCase().includes(termo);
+            }
+        });
+
+        if (!isAdmin) {
+            filtrados = filtrados.filter(item => item.dias > 30);
+        }
+
+        if (filtrados.length === 0) return;
+
+        filtrados.sort((a, b) => {
+            const diasA = parseInt(a.dias) || 0;
+            const diasB = parseInt(b.dias) || 0;
+            return diasA - diasB;
+        });
+
+        filtrados.forEach(item => {
+            let statusTexto = "";
+            let statusCor = "";
+
+            if (item.dias <= 30) {
+                statusTexto = item.dias < 0 ? "VENCIDO / RETIDO" : "RETIDO";
+                statusCor = "var(--retido)";
+            } else if (item.dias <= 60) {
+                statusTexto = "CRÍTICO";
+                statusCor = "var(--critico)";
+            } else {
+                statusTexto = "DATA BOA";
+                statusCor = "var(--verde)";
+            }
+
+            const card = document.createElement('div');
+            card.className = `item-card`;
+            card.style.borderLeftColor = statusCor;
+            card.innerHTML = `
+                <div>
+                    <span class="badge-ender">${item.ender}</span>
+                    <span class="badge-status" style="background-color: ${statusCor}">${statusTexto}</span>
+                    <div style="font-weight:900; font-size:20px; margin-top:8px; letter-spacing:-0.5px;">${item.mat}</div>
+                    <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${item.desc || "Sem descrição"}</div>
+                    <div style="font-size:12px; margin-top:8px;">Vence em: <b style="color: ${statusCor}">${item.dias} dias</b></div>
+                </div>
+                <div style="text-align:right">
+                    <div style="font-size:24px; font-weight:900; margin-bottom:8px; color: #fff;">${item.qtd} <span style="font-size:14px; color:var(--text-secondary)">PL</span></div>
+                    <button class="btn-retirar" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button>
+                </div>`;
+            lista.appendChild(card);
+        });
+    }
+
+    function retirarMaterial(id, qtdAtual, mat, ender, validade) {
+        itemParaRetirar = { id, qtdAtual, mat, ender, validade };
+        document.getElementById('modal-titulo').innerText = `Retirar de: ${mat}`;
+        document.getElementById('modal-info').innerHTML = `Endereço: <b>${ender}</b> | Saldo Atual: <b style="color:#fff">${qtdAtual} PL</b>`;
+        document.getElementById('modal-input-qtd').value = '';
+        document.getElementById('modal-retirada').style.display = 'flex';
+        setTimeout(() => document.getElementById('modal-input-qtd').focus(), 150);
+        document.getElementById('btn-confirmar-modal').onclick = processarRetirada;
+    }
+
+    function fecharModal() {
+        document.getElementById('modal-retirada').style.display = 'none';
+        itemParaRetirar = null;
+    }
+
+    async function processarRetirada() {
+        const inputQtd = document.getElementById('modal-input-qtd').value;
+        const destinoMov = document.getElementById('modal-destino-mov').value;
+        const v = parseInt(inputQtd);
+        
+        if (isNaN(v) || v <= 0) return alert("Digite uma quantidade válida!");
+        if (v > itemParaRetirar.qtdAtual) return alert("Quantidade solicitada maior que o saldo!");
+
+        const { id, qtdAtual, mat, ender, validade } = itemParaRetirar;
+        try {
+            if (v === qtdAtual) { await db.collection("estoque_blocado").doc(id).delete(); } 
+            else { await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v }); }
+            
+            registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`, destinoMov);
+            fecharModal();
+            alert("Retirada concluída!");
+        } catch (e) { alert("Erro ao salvar no banco."); }
+    }
+
+    async function salvarEntradaBloco() {
+        const origen = document.getElementById('eb-origem').value;
+        const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
+        const mat = document.getElementById('eb-mat').value.trim();
+        const qtd = parseInt(document.getElementById('eb-qtd').value);
+        const inputVenc = document.getElementById('eb-venc').value;
+        
+        if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos da Entrada!");
+        
+        const dataV = inputVenc.split('-').reverse().join('/');
+        const ocupante = estoqueCompleto.find(i => i.ender === ender);
+
+        if (ocupante) {
+            if (ocupante.mat === mat) {
+                if (confirm(`Endereço ocupado pelo mesmo material. Somar +${qtd} PL?`)) {
+                    await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd });
+                    registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma Manual)`, `ENTRADA VIA ${origen}`);
+                    alert("Atualizado com sucesso!");
+                    limparFormularioEntrada();
+                    navegar('retirar');
+                }
+                return;
+            } else { return alert(`BLOQUEADO! O endereço ${ender} já está ocupado por: ${ocupante.mat}`); }
+        }
+
+        const desc = document.getElementById('eb-desc').value;
+        await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc });
+        registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada)`, `ENTRADA VIA ${origen}`);
+        alert("Entrada registrada!");
+        limparFormularioEntrada();
+        navegar('retirar');
+    }
+
+    function limparFormularioEntrada() {
+        document.getElementById('eb-ender').value = '';
+        document.getElementById('eb-mat').value = '';
+        document.getElementById('eb-desc').value = '';
+        document.getElementById('eb-qtd').value = '';
+        document.getElementById('eb-venc').value = '';
+        document.getElementById('eb-label-dias').innerText = '';
+    }
+
+    function carregarDadosOrigemAbertura(enderOrigem) {
+        const item = estoqueCompleto.find(i => i.ender.toLowerCase() === enderOrigem.toLowerCase().trim());
+        if (item) {
+            itemOrigemAbertura = item;
+            document.getElementById('ab-mat').value = item.mat;
+            document.getElementById('ab-desc').value = item.desc;
+            document.getElementById('ab-qtd').placeholder = `Saldo max disponível: ${item.qtd}`;
+        } else {
+            itemOrigemAbertura = null;
+            document.getElementById('ab-mat').value = '';
+            document.getElementById('ab-desc').value = '';
+            document.getElementById('ab-qtd').placeholder = 'Posição vazia ou não encontrada';
+            alert("Nenhum material ativo localizado nesta posição de origem.");
+        }
+    }
+
+    async function processarAberturaBlocado() {
+        const enderDestino = document.getElementById('ab-destino').value.toUpperCase().trim();
+        const qtdTransferir = parseInt(document.getElementById('ab-qtd').value);
+
+        if(!itemOrigemAbertura) return alert("Defina uma posição de origem válida primeiro!");
+        if(isNaN(qtdTransferir) || qtdTransferir <= 0) return alert("Insira uma quantidade de pallets válida!");
+        if(qtdTransferir > itemOrigemAbertura.qtd) return alert("Quantidade inserida maior do que o saldo atual da posição!");
+        if(!enderDestino) return alert("Especifique a posição de destino!");
+
+        try {
+            const ocupanteDestino = estoqueCompleto.find(i => i.ender === enderDestino);
+            if (ocupanteDestino && ocupanteDestino.mat !== itemOrigemAbertura.mat) {
+                return alert(`BLOQUEADO! O destino ${enderDestino} está ocupado por outro material: ${ocupanteDestino.mat}`);
+            }
+
+            if (qtdTransferir === itemOrigemAbertura.qtd) {
+                await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete();
+            } else {
+                await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtdTransferir });
+            }
+
+            if (ocupanteDestino && ocupanteDestino.mat === itemOrigemAbertura.mat) {
+                await db.collection("estoque_blocado").doc(ocupanteDestino.id).update({ qtd: ocupanteDestino.qtd + qtdTransferir });
+            } else {
+                await db.collection("estoque_blocado").add({
+                    ender: enderDestino,
+                    mat: itemOrigemAbertura.mat,
+                    desc: itemOrigemAbertura.desc,
+                    qtd: qtdTransferir,
+                    dias: itemOrigemAbertura.dias,
+                    valFrente: itemOrigemAbertura.valFrente
+                });
+            }
+
+            registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtdTransferir} PL`, `TRANSFERIDO PARA ${enderDestino}`);
+            registrarMovimentacao(enderDestino, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtdTransferir} PL`, `RECEBIDO DE ${itemOrigemAbertura.ender}`);
+
+            alert("Transferência de Blocado executada!");
+            document.getElementById('ab-origem').value = '';
+            document.getElementById('ab-destino').value = '';
+            document.getElementById('ab-mat').value = '';
+            document.getElementById('ab-desc').value = '';
+            document.getElementById('ab-qtd').value = '';
+            navegar('retirar');
+
+        } catch (error) { alert("Erro ao processar transferência."); }
+    }
+
+    function puxarDescricao(cod, inputDestinoId) {
+        const p = estoqueCompleto.find(i => i.mat.toString() === cod.trim());
+        document.getElementById(inputDestinoId).value = p ? p.desc : "NOVO MATERIAL";
+    }
+
+    function calcularDias(data, labelId) {
+        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
+        document.getElementById(labelId).innerText = `Vencimento em ${diasCalculados} dias`;
+    }
+
+    async function registrarMovimentacao(ender, mat, val, qtd, fluxoInfo) {
+        const agora = new Date();
+        await db.collection("movimentacoes_wms").add({ 
+            endereco: ender, 
+            material: mat, 
+            validade: val, 
+            quantidade: qtd, 
+            fluxo: fluxoInfo || "N/A",
+            login: usuarioLogado.email, 
+            data: agora.toLocaleDateString('pt-BR'), 
+            hora: agora.toLocaleTimeString('pt-BR'), 
+            timestamp: agora 
+        });
+    }
+
+    async function exportarHistoricoExcel() {
+        try {
+            const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
+            if (snap.empty) return alert("Nenhum histórico.");
+            const dados = snap.docs.map(doc => {
+                const d = doc.data();
+                return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação/Fluxo": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora };
+            });
+            const ws = XLSX.utils.json_to_sheet(dados);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Histórico");
+            XLSX.writeFile(wb, `Historico_WMS_${new Date().getTime()}.xlsx`);
+        } catch (error) { alert("Erro na exportação."); }
+    }
+
+    async function importarCSV(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const texto = e.target.result;
+                const linhas = texto.split(/\r?\n/).filter(l => l.trim() !== "");
+                if (linhas.length <= 1) return alert("Planilha vazia!");
+                const dados = linhas.slice(1);
+                if (!confirm(`Apagar estoque atual e carregar ${dados.length} itens?`)) return;
+
+                const snapshot = await db.collection("estoque_blocado").get();
+                if (!snapshot.empty) {
+                    let deleteBatch = db.batch();
+                    let delCount = 0;
+                    for (const doc of snapshot.docs) {
+                        deleteBatch.delete(doc.ref);
+                        delCount++;
+                        if (delCount % 400 === 0) { await deleteBatch.commit(); deleteBatch = db.batch(); }
+                    }
+                    await deleteBatch.commit();
+                }
+
+                let batch = db.batch();
+                let count = 0;
+                for (const linha of dados) {
+                    const c = linha.split(";");
+                    if (c.length >= 6) {
+                        const ender = c[0].trim();
+                        const mat = c[1].trim();
+                        const desc = c[2].trim();
+                        const valFrente = c[3].trim();
+                        const qtd = parseInt(c[5].replace(/\D/g, '')) || 0;
+                        const dias = parseInt(c[7].replace(/\D/g, '')) || 0;
+                        if (ender && mat) {
+                            const docRef = db.collection("estoque_blocado").doc();
+                            batch.set(docRef, { ender, mat, desc, valFrente, qtd, dias });
+                            count++;
+                            if (count % 400 === 0) { await batch.commit(); batch = db.batch(); }
+                        }
+                    }
+                }
+                await batch.commit();
+                alert("Importação concluída com sucesso!");
+            } catch (error) { alert("Erro ao importar o arquivo."); }
+        };
+        reader.readAsText(file);
+    }
+
+    // Checagem automática de sessão ao carregar a página
+    window.onload = function() {
+        const session = localStorage.getItem('wms_session');
+        if (session) {
+            usuarioLogado = JSON.parse(session);
+            iniciarApp();
+        }
+    };
+</script>
+</body>
+</html>
