@@ -33,10 +33,9 @@
             --border: #2d2d2d;
         }
 
-        /* Ajustes globais para mobile e toque */
         * {
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent; /* Remove o flash azul ao tocar no mobile */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body { 
@@ -44,19 +43,34 @@
             background: var(--bg); 
             color: var(--text); 
             margin: 0; 
-            padding-bottom: env(safe-area-inset-bottom, 40px); /* Respeita a barra de navegação por gestos do celular */
+            padding-bottom: env(safe-area-inset-bottom, 40px); 
             padding-top: env(safe-area-inset-top, 0px);
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
         }
+
+        /* Indicador de Status da Conexão (Novo) */
+        #network-status {
+            display: none;
+            background: var(--critico);
+            color: #000;
+            text-align: center;
+            padding: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            position: sticky;
+            top: 0;
+            z-index: 1001;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
         
-        /* Sidebar */
         .sidebar { 
             position: fixed; 
             left: -280px; 
             top: 0; 
             width: 280px; 
-            height: 100dvh; /* dvh adapta-se dinamicamente à altura da tela mobile */
+            height: 100dvh; 
             background: #121212; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             z-index: 1000; 
@@ -74,7 +88,7 @@
             text-align: left; 
             cursor: pointer; 
             font-weight: 600; 
-            font-size: 14px; /* Aumentado ligeiramente para facilitar o clique no celular */
+            font-size: 14px; 
             display: flex; 
             align-items: center; 
             gap: 12px; 
@@ -87,7 +101,6 @@
             color: var(--text);
         }
 
-        /* Header */
         .header { 
             padding: calc(15px + env(safe-area-inset-top)) 20px 15px 20px; 
             background: rgba(26, 26, 26, 0.85); 
@@ -123,7 +136,6 @@
             padding: 16px; 
         }
 
-        /* Dashboard Responsivo */
         .admin-dashboard { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
@@ -141,7 +153,6 @@
         .stat-box h5 { margin: 0; font-size: 10px; color: var(--text-secondary); text-transform: uppercase; }
         .stat-box p { margin: 6px 0 0; font-size: 24px; font-weight: 900; color: #fff; }
 
-        /* Inputs e Buscas otimizados para toque */
         .search-area { 
             background: var(--card); 
             padding: 12px; 
@@ -158,7 +169,7 @@
             color: white; 
             outline: none; 
             font-family: 'Inter', sans-serif; 
-            font-size: 16px; /* Tamanho 16px impede o iOS/Android de dar zoom forçado ao focar */
+            font-size: 16px; 
             transition: all 0.2s;
         }
         input:focus, select:focus {
@@ -172,7 +183,6 @@
             background-position: right 14px center; 
         }
         
-        /* Cards de Itens Flexíveis para telas menores */
         .item-card { 
             background: var(--card); 
             border-radius: 12px; 
@@ -190,7 +200,6 @@
         .badge-ender { background: #fff; color: #000; padding: 4px 6px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
         .badge-status { color: #fff; padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; margin-left: 4px; text-transform: uppercase; }
 
-        /* Botões Mobile */
         .btn-retirar { 
             background: var(--primary); 
             color: #fff; 
@@ -218,7 +227,6 @@
         }
         .btn-excel { background: #107c41; border: none;}
 
-        /* Tela de Login adaptada com dvh */
         #login-screen { 
             height: 100dvh; 
             display: flex; 
@@ -237,7 +245,6 @@
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); 
         }
 
-        /* Formulários e Modais Mobile */
         .form-container-box {
             background: var(--card); 
             padding: 20px; 
@@ -271,7 +278,6 @@
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; font-weight: bold; }
         
-        /* Responsividade para telas muito pequenas */
         @media (max-width: 400px) {
             .item-card {
                 flex-direction: column;
@@ -290,6 +296,8 @@
     </style>
 </head>
 <body>
+
+<div id="network-status">⚠️ Modo Offline Ativo. As alterações serão salvas localmente e sincronizadas ao reconectar.</div>
 
 <div id="sidebar" class="sidebar">
     <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ADMIN</button>
@@ -442,7 +450,19 @@
         appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
     };
     firebase.initializeApp(firebaseConfig);
+    
+    // Configuração crucial para persistência em cache e funcionamento Offline
     const db = firebase.firestore();
+    db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
+    db.enablePersistence({ synchronizeTabs: true })
+      .catch((err) => {
+          if (err.code == 'failed-precondition') {
+              console.log("Persistência falhou: Múltiplas abas abertas.");
+          } else if (err.code == 'unimplemented') {
+              console.log("O navegador atual não suporta persistência local.");
+          }
+      });
+
     const auth = firebase.auth();
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
@@ -452,6 +472,19 @@
     let wakeLock = null;
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
+
+    // Monitora o estado da rede física do celular
+    window.addEventListener('online', atualizarStatusRede);
+    window.addEventListener('offline', atualizarStatusRede);
+
+    function atualizarStatusRede() {
+        const barraStatus = document.getElementById('network-status');
+        if (navigator.onLine) {
+            barraStatus.style.display = 'none';
+        } else {
+            barraStatus.style.display = 'block';
+        }
+    }
 
     function toggleMenu() {
         document.getElementById('sidebar').classList.toggle('active');
@@ -464,7 +497,7 @@
         });
     }
 
-    async function ativarWakeLock() {
+    async function activarWakeLock() {
         try { 
             if ('wakeLock' in navigator) { 
                 wakeLock = await navigator.wakeLock.request('screen'); 
@@ -474,13 +507,15 @@
 
     document.addEventListener('visibilitychange', async () => {
         if (wakeLock !== null && document.visibilityState === 'visible' && usuarioLogado) {
-            ativarWakeLock();
+            activarWakeLock();
         }
     });
 
     async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
+        
+        // Se estiver offline no primeiro login, o Firebase Auth usará o cache local se o usuário já logou antes
         try {
             await auth.signInWithEmailAndPassword(mat + "@alb.com", senha);
             const doc = await db.collection("usuarios_wms").doc(mat + "@alb.com").get();
@@ -490,7 +525,18 @@
                 localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
                 iniciarApp();
             }
-        } catch (e) { alert("Erro de Login."); }
+        } catch (e) { 
+            // Fallback caso esteja totalmente sem rede e o Auth offline falhe
+            if(!navigator.onLine) {
+                const session = localStorage.getItem('wms_session');
+                if(session) {
+                    usuarioLogado = JSON.parse(session);
+                    iniciarApp();
+                    return;
+                }
+            }
+            alert("Erro de Login. Verifique as credenciais ou sua conexão."); 
+        }
     }
 
     function iniciarApp() {
@@ -503,8 +549,9 @@
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
         document.getElementById('admin-tools-section').style.display = isAdmin ? 'block' : 'none';
 
+        atualizarStatusRede();
         conectarFirebase();
-        ativarWakeLock();
+        activarWakeLock();
         navegar(isAdmin ? 'admin' : 'retirar');
     }
 
@@ -518,10 +565,13 @@
     }
 
     function conectarFirebase() {
+        // onSnapshot funciona offline puxando os dados instantaneamente do banco de cache local
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             if(usuarioLogado && usuarioLogado.perfil.toUpperCase() === "ADMIN") atualizarEstatisticas();
             renderizarEstoque();
+        }, error => {
+            console.log("Erro ao escutar dados:", error);
         });
     }
 
@@ -619,13 +669,20 @@
 
         const { id, qtdAtual, mat, ender, validade } = itemParaRetirar;
         try {
-            if (v === qtdAtual) { await db.collection("estoque_blocado").doc(id).delete(); } 
-            else { await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v }); }
+            // Removido o await do bloco principal para que a resposta visual seja instantânea mesmo offline
+            if (v === qtdAtual) { db.collection("estoque_blocado").doc(id).delete(); } 
+            else { db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v }); }
             
             registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`, destinoMov);
             fecharModal();
-            alert("Retirada concluída!");
-        } catch (e) { alert("Erro ao salvar no banco."); }
+            
+            // Mensagem adaptada para o operador saber o estado do envio
+            if(navigator.onLine) {
+                alert("Retirada concluída com sucesso!");
+            } else {
+                alert("Retirada salva localmente! Será sincronizada assim que a internet voltar.");
+            }
+        } catch (e) { alert("Erro na operação."); }
     }
 
     async function salvarEntradaBloco() {
@@ -643,9 +700,9 @@
         if (ocupante) {
             if (ocupante.mat === mat) {
                 if (confirm(`Endereço ocupado pelo mesmo material. Somar +${qtd} PL?`)) {
-                    await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd });
+                    db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd });
                     registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma Manual)`, `ENTRADA VIA ${origen}`);
-                    alert("Atualizado com sucesso!");
+                    alert(navigator.onLine ? "Atualizado com sucesso!" : "Atualizado localmente (Offline)!");
                     limparFormularioEntrada();
                     navegar('retirar');
                 }
@@ -654,9 +711,10 @@
         }
 
         const desc = document.getElementById('eb-desc').value;
-        await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc });
+        db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc });
         registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada)`, `ENTRADA VIA ${origen}`);
-        alert("Entrada registrada!");
+        
+        alert(navigator.onLine ? "Entrada registrada!" : "Entrada registrada localmente (Offline)!");
         limparFormularioEntrada();
         navegar('retirar');
     }
@@ -702,15 +760,15 @@
             }
 
             if (qtdTransferir === itemOrigemAbertura.qtd) {
-                await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete();
+                db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete();
             } else {
-                await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtdTransferir });
+                db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtdTransferir });
             }
 
             if (ocupanteDestino && ocupanteDestino.mat === itemOrigemAbertura.mat) {
-                await db.collection("estoque_blocado").doc(ocupanteDestino.id).update({ qtd: ocupanteDestino.qtd + qtdTransferir });
+                db.collection("estoque_blocado").doc(ocupanteDestino.id).update({ qtd: ocupanteDestino.qtd + qtdTransferir });
             } else {
-                await db.collection("estoque_blocado").add({
+                db.collection("estoque_blocado").add({
                     ender: enderDestino,
                     mat: itemOrigemAbertura.mat,
                     desc: itemOrigemAbertura.desc,
@@ -723,7 +781,7 @@
             registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtdTransferir} PL`, `TRANSFERIDO PARA ${enderDestino}`);
             registrarMovimentacao(enderDestino, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtdTransferir} PL`, `RECEBIDO DE ${itemOrigemAbertura.ender}`);
 
-            alert("Transferência de Blocado executada!");
+            alert(navigator.onLine ? "Transferência de Blocado executada!" : "Transferência salva localmente (Offline)!");
             document.getElementById('ab-origem').value = '';
             document.getElementById('ab-destino').value = '';
             document.getElementById('ab-mat').value = '';
@@ -746,7 +804,7 @@
 
     async function registrarMovimentacao(ender, mat, val, qtd, fluxoInfo) {
         const agora = new Date();
-        await db.collection("movimentacoes_wms").add({ 
+        db.collection("movimentacoes_wms").add({ 
             endereco: ender, 
             material: mat, 
             validade: val, 
@@ -760,6 +818,7 @@
     }
 
     async function exportarHistoricoExcel() {
+        if(!navigator.onLine) return alert("A exportação de relatórios exige conexão ativa com a internet.");
         try {
             const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
             if (snap.empty) return alert("Nenhum histórico.");
@@ -775,6 +834,7 @@
     }
 
     async function importarCSV(event) {
+        if(!navigator.onLine) return alert("A importação de novas planilhas exige conexão ativa com a internet.");
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
