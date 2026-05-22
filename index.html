@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -23,7 +23,7 @@
             --bg: #0d0d0d; 
             --card: #1a1a1a; 
             --card-hover: #242424;
-            --primary: #e50914; /* Vermelho Moderno */
+            --primary: #e50914; 
             --primary-hover: #b80710;
             --critico: #f59e0b; 
             --retido: #ef4444; 
@@ -33,13 +33,21 @@
             --border: #2d2d2d;
         }
 
+        /* Ajustes globais para mobile e toque */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; /* Remove o flash azul ao tocar no mobile */
+        }
+
         body { 
             font-family: 'Inter', sans-serif; 
             background: var(--bg); 
             color: var(--text); 
             margin: 0; 
-            padding-bottom: 40px; 
+            padding-bottom: env(safe-area-inset-bottom, 40px); /* Respeita a barra de navegação por gestos do celular */
+            padding-top: env(safe-area-inset-top, 0px);
             -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
         
         /* Sidebar */
@@ -48,11 +56,11 @@
             left: -280px; 
             top: 0; 
             width: 280px; 
-            height: 100%; 
+            height: 100dvh; /* dvh adapta-se dinamicamente à altura da tela mobile */
             background: #121212; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             z-index: 1000; 
-            padding-top: 80px; 
+            padding-top: calc(60px + env(safe-area-inset-top)); 
             border-right: 1px solid var(--border); 
             box-shadow: 15px 0 30px rgba(0,0,0,0.7); 
         }
@@ -66,7 +74,7 @@
             text-align: left; 
             cursor: pointer; 
             font-weight: 600; 
-            font-size: 13px; 
+            font-size: 14px; /* Aumentado ligeiramente para facilitar o clique no celular */
             display: flex; 
             align-items: center; 
             gap: 12px; 
@@ -81,11 +89,11 @@
 
         /* Header */
         .header { 
-            padding: 15px 24px; 
+            padding: calc(15px + env(safe-area-inset-top)) 20px 15px 20px; 
             background: rgba(26, 26, 26, 0.85); 
             display: flex; 
             align-items: center; 
-            gap: 20px; 
+            gap: 15px; 
             border-bottom: 1px solid var(--border); 
             position: sticky; 
             top: 0; 
@@ -106,57 +114,55 @@
             justify-content: center; 
             width: 42px; 
             height: 42px; 
-            transition: 0.2s;
         }
-        .menu-btn:hover {
-            background: var(--card);
-            border-color: var(--primary);
+        
+        .container { 
+            width: 100%;
+            max-width: 900px; 
+            margin: auto; 
+            padding: 16px; 
         }
-        .container { max-width: 900px; margin: auto; padding: 20px; }
 
-        /* Dashboard */
+        /* Dashboard Responsivo */
         .admin-dashboard { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-            gap: 16px; 
-            margin-bottom: 25px; 
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
+            gap: 12px; 
+            margin-bottom: 20px; 
         }
         .stat-box { 
             background: var(--card); 
-            padding: 20px; 
+            padding: 16px; 
             border-radius: 12px; 
             border: 1px solid var(--border);
             border-top: 4px solid var(--primary); 
             text-align: center; 
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
         }
-        .stat-box h5 { margin: 0; font-size: 11px; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase; }
-        .stat-box p { margin: 10px 0 0; font-size: 28px; font-weight: 900; color: #fff; }
+        .stat-box h5 { margin: 0; font-size: 10px; color: var(--text-secondary); text-transform: uppercase; }
+        .stat-box p { margin: 6px 0 0; font-size: 24px; font-weight: 900; color: #fff; }
 
-        /* Inputs & Componentes de busca */
+        /* Inputs e Buscas otimizados para toque */
         .search-area { 
             background: var(--card); 
-            padding: 16px; 
+            padding: 12px; 
             border-radius: 12px; 
-            margin-bottom: 20px; 
+            margin-bottom: 15px; 
             border: 1px solid var(--border);
         }
         input, select { 
             width: 100%; 
-            padding: 14px 16px; 
+            padding: 14px; 
             border-radius: 8px; 
             border: 1px solid var(--border); 
             background: #0d0d0d; 
             color: white; 
-            box-sizing: border-box; 
             outline: none; 
             font-family: 'Inter', sans-serif; 
-            font-size: 14px;
+            font-size: 16px; /* Tamanho 16px impede o iOS/Android de dar zoom forçado ao focar */
             transition: all 0.2s;
         }
         input:focus, select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.2);
         }
         select { 
             cursor: pointer; 
@@ -166,41 +172,36 @@
             background-position: right 14px center; 
         }
         
-        /* Cards de Itens */
+        /* Cards de Itens Flexíveis para telas menores */
         .item-card { 
             background: var(--card); 
             border-radius: 12px; 
-            padding: 20px; 
+            padding: 16px; 
             margin-bottom: 12px; 
             display: flex; 
+            flex-direction: row;
             justify-content: space-between; 
             align-items: center; 
             border: 1px solid var(--border);
             border-left: 6px solid #444; 
-            transition: transform 0.2s, background-color 0.2s;
-        }
-        .item-card:hover {
-            background: var(--card-hover);
-            transform: translateY(-2px);
+            gap: 10px;
         }
         
-        .badge-ender { background: #fff; color: #000; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-        .badge-status { color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; margin-left: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-ender { background: #fff; color: #000; padding: 4px 6px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .badge-status { color: #fff; padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; margin-left: 4px; text-transform: uppercase; }
 
-        /* Botões */
+        /* Botões Mobile */
         .btn-retirar { 
             background: var(--primary); 
             color: #fff; 
             border: none; 
-            padding: 12px 20px; 
+            padding: 12px 16px; 
             border-radius: 8px; 
             font-weight: 800; 
             cursor: pointer; 
             font-size: 13px;
-            letter-spacing: 0.5px;
-            transition: background 0.2s;
+            white-space: nowrap;
         }
-        .btn-retirar:hover { background: var(--primary-hover); }
         
         .btn-admin { 
             background: var(--card); 
@@ -214,42 +215,32 @@
             cursor: pointer; 
             text-transform: uppercase; 
             font-size: 13px;
-            letter-spacing: 0.5px;
-            transition: all 0.2s;
         }
-        .btn-admin:hover {
-            border-color: var(--primary);
-            background: rgba(229, 9, 20, 0.05);
-        }
-        .btn-excel { 
-            background: #107c41; 
-            border: none;
-        }
-        .btn-excel:hover {
-            background: #0b592e;
-        }
+        .btn-excel { background: #107c41; border: none;}
 
-        /* Telas Especiais */
+        /* Tela de Login adaptada com dvh */
         #login-screen { 
-            height: 100vh; 
+            height: 100dvh; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
             background: radial-gradient(circle, #1a1a1a 0%, #000000 100%); 
+            padding: 20px;
         }
         .login-box { 
             background: var(--card); 
-            padding: 40px 32px; 
+            padding: 35px 24px; 
             border-radius: 16px; 
-            width: 340px; 
+            width: 100%;
+            max-width: 340px; 
             border: 1px solid var(--border);
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); 
         }
 
-        /* Componentes de Formulário & Modais */
+        /* Formulários e Modais Mobile */
         .form-container-box {
             background: var(--card); 
-            padding: 30px; 
+            padding: 20px; 
             border-radius: 16px;
             border: 1px solid var(--border);
         }
@@ -260,29 +251,42 @@
             top:0; 
             left:0; 
             width:100%; 
-            height:100%; 
+            height:100dvh; 
             background:rgba(0,0,0,0.85); 
             z-index:2000; 
             align-items:center; 
             justify-content:center; 
             backdrop-filter: blur(8px); 
+            padding: 16px;
         }
         .modal-content { 
             background:var(--card); 
-            padding:32px; 
+            padding: 24px; 
             border-radius:16px; 
-            width:90%; 
-            max-width:420px; 
+            width:100%; 
+            max-width:400px; 
             border:1px solid var(--border); 
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8); 
         }
         
-        .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; font-weight: bold; letter-spacing: 0.5px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; font-weight: bold; }
         
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; }
+        /* Responsividade para telas muito pequenas */
+        @media (max-width: 400px) {
+            .item-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .item-card > div:last-child {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 10px;
+                border-top: 1px solid var(--border);
+                padding-top: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -321,7 +325,7 @@
                 <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS</h5><p id="st-retido">0</p></div>
             </div>
 
-            <div id="admin-tools-section" style="background: var(--card); padding: 25px; border-radius: 16px; border: 1px solid var(--border);">
+            <div id="admin-tools-section" style="background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border);">
                 <h3 style="font-size: 12px; color: var(--primary); margin-top: 0; letter-spacing: 1px; font-weight: 800;">GERENCIAMENTO ADMINISTRATIVO</h3>
                 <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
                 <button class="btn-admin" onclick="document.getElementById('csv-file').click()" style="border-color: var(--primary); color: #fff;">ALIMENTAR NOVO ESTOQUE (CSV)</button>
@@ -338,7 +342,7 @@
 
         <div id="view-entrada_bloco" style="display: none;">
             <div class="form-container-box">
-                <h3 style="color: var(--primary); margin-top: 0; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px;">Entrada no Bloco</h3>
+                <h3 style="color: var(--primary); margin-top: 0; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px; font-size: 18px;">Entrada no Bloco</h3>
                 
                 <div class="form-group">
                     <label>Origem da Carga</label>
@@ -374,7 +378,7 @@
 
         <div id="view-abertura_blocado" style="display: none;">
             <div class="form-container-box">
-                <h3 style="color: var(--primary); margin-top: 0; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px;">Abertura de Blocado</h3>
+                <h3 style="color: var(--primary); margin-top: 0; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px; font-size: 18px;">Abertura de Blocado</h3>
                 
                 <div class="form-group">
                     <label>Endereço Origem (Ex: 201-14)</label>
@@ -582,7 +586,7 @@
                     <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${item.desc || "Sem descrição"}</div>
                     <div style="font-size:12px; margin-top:8px;">Vence em: <b style="color: ${statusCor}">${item.dias} dias</b></div>
                 </div>
-                <div style="text-align:right">
+                <div>
                     <div style="font-size:24px; font-weight:900; margin-bottom:8px; color: #fff;">${item.qtd} <span style="font-size:14px; color:var(--text-secondary)">PL</span></div>
                     <button class="btn-retirar" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button>
                 </div>`;
@@ -820,7 +824,6 @@
         reader.readAsText(file);
     }
 
-    // Checagem automática de sessão ao carregar a página
     window.onload = function() {
         const session = localStorage.getItem('wms_session');
         if (session) {
