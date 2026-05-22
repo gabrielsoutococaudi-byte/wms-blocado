@@ -7,7 +7,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WMS FLOW PRO">
-    <meta name="description" content="WMS FLOW PRO - Sistema Integrado de Gestão de Estoque para Uberlândia Refresco">
+    <meta name="description" content="WMS FLOW PRO - Sistema Integrado de Gestão de Estoque">
     <meta name="theme-color" content="#DC143C">
     
     <title>WMS FLOW PRO - Sistema Integrado de Gestão de Estoque</title>
@@ -22,23 +22,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
             --primary: #DC143C;
             --primary-dark: #E31937;
             --bg-dark: #1A1A1A;
             --bg-light: #F8F9FA;
+            --card: #FFFFFF;
             --text-dark: #1A1A1A;
             --text-light: #FFFFFF;
             --border-color: #E8EAED;
-            --success: #27AE60;
-            --warning: #F39C12;
-            --danger: #E74C3C;
+            --verde: #27AE60;
+            --critico: #F39C12;
+            --retido: #E74C3C;
             --gray-light: #636E72;
             --gray-dark: #2D3436;
         }
@@ -58,36 +55,14 @@
 
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(30px); }
+            50% { transform: translateY(15px); }
         }
 
-        .animate-float {
-            animation: float 8s ease-in-out infinite;
-        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-light); }
+        ::-webkit-scrollbar-thumb { background: var(--gray-light); border-radius: 4px; }
 
-        .animate-float-delay {
-            animation: float 10s ease-in-out infinite 2s;
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-light);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--gray-light);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--gray-dark);
-        }
-
-        /* LOGIN STYLES */
+        /* LOGIN */
         .login-container {
             min-height: 100vh;
             background: linear-gradient(135deg, #1a1a1a 0%, #2d3436 100%);
@@ -108,17 +83,8 @@
             filter: blur(80px);
         }
 
-        .login-bg-float:nth-child(1) {
-            top: -80px;
-            right: -80px;
-            animation: float 8s ease-in-out infinite;
-        }
-
-        .login-bg-float:nth-child(2) {
-            bottom: -80px;
-            left: -80px;
-            animation: float 10s ease-in-out infinite 2s;
-        }
+        .login-bg-float:nth-child(1) { top: -80px; right: -80px; animation: float 8s ease-in-out infinite; }
+        .login-bg-float:nth-child(2) { bottom: -80px; left: -80px; animation: float 10s ease-in-out infinite 2s; }
 
         .login-card {
             position: relative;
@@ -137,6 +103,7 @@
             padding: 40px;
             text-align: center;
             color: white;
+            margin: -16px -16px 20px -16px;
         }
 
         .login-header-icon {
@@ -151,23 +118,9 @@
             font-size: 32px;
         }
 
-        .login-header h1 {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
+        .login-form { padding: 20px; }
 
-        .login-header p {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-
-        .login-form {
-            padding: 40px;
-        }
-
-        .form-group {
-            margin-bottom: 24px;
-        }
+        .form-group { margin-bottom: 20px; }
 
         .form-label {
             display: block;
@@ -185,7 +138,8 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 14px;
-            font-family: 'Inter', sans-serif;
+            background-color: #fff;
+            color: #000;
             transition: all 0.3s ease;
         }
 
@@ -197,27 +151,18 @@
 
         .form-button {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
             border: none;
             border-radius: 8px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        .form-button:hover {
-            box-shadow: 0 8px 20px rgba(220, 20, 60, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .form-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .form-button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(220, 20, 60, 0.3); }
 
         .login-error {
             margin-bottom: 24px;
@@ -229,20 +174,8 @@
             font-size: 13px;
         }
 
-        .login-footer {
-            padding: 24px 40px;
-            border-top: 1px solid #eee;
-            text-align: center;
-            font-size: 11px;
-            color: #999;
-        }
-
-        /* DASHBOARD STYLES */
-        .dashboard-container {
-            display: flex;
-            height: 100vh;
-            background: #f8f9fa;
-        }
+        /* DASHBOARD INTERFACE */
+        .dashboard-container { display: flex; height: 100vh; background: #f8f9fa; }
 
         .sidebar {
             position: fixed;
@@ -254,8 +187,8 @@
             color: white;
             padding: 24px;
             box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
             z-index: 100;
+            transition: transform 0.3s ease;
         }
 
         .sidebar-logo {
@@ -276,48 +209,12 @@
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 14px;
         }
 
-        .sidebar-logo-text h3 {
-            font-size: 14px;
-            margin-bottom: 2px;
-        }
-
-        .sidebar-logo-text p {
-            font-size: 11px;
-            color: #999;
-        }
-
-        .sidebar-user {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-        }
-
-        .sidebar-user-label {
-            font-size: 10px;
-            color: #999;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-
-        .sidebar-user-name {
-            font-weight: 600;
-            font-size: 13px;
-            margin-bottom: 8px;
-        }
-
-        .sidebar-user-role {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .sidebar-menu {
-            margin-bottom: 24px;
-        }
+        .sidebar-user { background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px; margin-bottom: 24px; }
+        .sidebar-user-label { font-size: 10px; color: #999; text-transform: uppercase; margin-bottom: 4px; }
+        .sidebar-user-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+        .sidebar-user-role { font-size: 11px; font-weight: 600; color: var(--primary); }
 
         .sidebar-menu-item {
             width: 100%;
@@ -327,22 +224,16 @@
             font-size: 13px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
             border: none;
             background: none;
             color: #ccc;
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .sidebar-menu-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .sidebar-menu-item.active {
-            background: var(--primary);
-            color: white;
-        }
+        .sidebar-menu-item:hover, .sidebar-menu-item.active { background: var(--primary); color: white; }
 
         .sidebar-logout {
             width: 100%;
@@ -353,20 +244,10 @@
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 13px;
+            margin-top: 20px;
         }
 
-        .sidebar-logout:hover {
-            background: rgba(231, 76, 60, 0.3);
-        }
-
-        .main-content {
-            margin-left: 256px;
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
+        .main-content { margin-left: 256px; display: flex; flex-direction: column; flex: 1; width: calc(100% - 256px); }
 
         .header {
             position: fixed;
@@ -380,393 +261,73 @@
             justify-content: space-between;
             align-items: center;
             z-index: 50;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
-        .header-left h2 {
-            font-size: 18px;
-            margin-bottom: 4px;
-        }
+        .header-left h2 { font-size: 18px; }
+        .header-left p { font-size: 12px; color: #999; }
+        .header-right { display: flex; align-items: center; gap: 24px; }
 
-        .header-left p {
-            font-size: 12px;
-            color: #999;
-        }
+        .header-user { display: flex; align-items: center; gap: 12px; padding-left: 24px; border-left: 1px solid #eee; }
+        .header-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
 
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-        }
+        .content { margin-top: 80px; padding: 32px; flex: 1; overflow-y: auto; }
+        .content-title { font-size: 22px; margin-bottom: 24px; text-transform: uppercase; color: var(--gray-dark); }
 
-        .header-time {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #666;
-        }
+        .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); margin-bottom: 24px; }
+        .card-title { font-size: 14px; color: var(--primary); margin-bottom: 16px; text-transform: uppercase; font-weight: bold; }
 
-        .header-user {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding-left: 24px;
-            border-left: 1px solid #eee;
-        }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 24px; }
+        .stat-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); border-top: 4px solid var(--primary); }
+        .stat-label { font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 8px; font-weight: bold; }
+        .stat-value { font-size: 32px; font-weight: 800; color: #333; }
 
-        .header-user-info {
-            text-align: right;
-        }
+        .search-box { position: relative; margin-bottom: 24px; }
+        .search-box input { width: 100%; padding: 14px 16px 14px 45px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .search-box::before { content: '🔍'; position: absolute; left: 16px; top: 50%; transform: translateY(-50%); }
 
-        .header-user-info p:first-child {
-            font-size: 13px;
-            font-weight: 600;
-            color: #333;
-        }
+        /* CARDS DO ESTOQUE */
+        .item-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); border-left: 6px solid #444; display: flex; justify-content: space-between; align-items: center; }
+        .item-badges { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .badge-address { background: #333; color: white; }
+        .badge-status { color: white; }
 
-        .header-user-info p:last-child {
-            font-size: 11px;
-            color: #999;
-        }
+        .item-code { font-size: 24px; font-weight: 800; margin-bottom: 2px; }
+        .item-desc { font-size: 13px; color: #555; margin-bottom: 8px; }
+        
+        .btn { padding: 12px 24px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px; text-transform: uppercase; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-secondary { background: #64748b; color: white; }
 
-        .header-avatar {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-        }
+        /* MODAL */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 16px; padding: 32px; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
+        .modal-title { font-size: 18px; font-weight: 800; color: var(--primary); margin-bottom: 12px; }
+        .modal-info { background: #f1f5f9; padding: 14px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; line-height: 1.5; color: #334155; }
+        .modal-input { width: 100%; padding: 12px; border: 2px solid var(--primary); border-radius: 8px; font-size: 26px; font-weight: 700; text-align: center; margin-bottom: 16px; }
+        .modal-select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; font-size: 14px; background: #fff; }
+        .modal-buttons { display: flex; gap: 12px; }
+        .modal-buttons button { flex: 1; }
 
-        .content {
-            margin-top: 80px;
-            padding: 32px;
-            flex: 1;
-            overflow-y: auto;
-        }
+        .menu-toggle-btn { display: none; background: none; border: 1px solid #ddd; padding: 8px; border-radius: 6px; font-size: 18px; cursor: pointer; }
 
-        .content-title {
-            font-size: 24px;
-            margin-bottom: 24px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            margin-bottom: 24px;
-            border-left: 4px solid var(--primary);
-        }
-
-        .card-title {
-            font-size: 16px;
-            color: var(--primary);
-            margin-bottom: 16px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            border-left: 4px solid var(--primary);
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #999;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: #333;
-        }
-
-        .search-box {
-            position: relative;
-            margin-bottom: 24px;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px 16px 12px 40px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .search-box::before {
-            content: '🔍';
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .item-card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            border-left: 4px solid #27ae60;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .item-info {
-            flex: 1;
-        }
-
-        .item-badges {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .badge-address {
-            background: #333;
-            color: white;
-        }
-
-        .badge-status {
-            background: #fee;
-            color: #c33;
-        }
-
-        .item-code {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .item-desc {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 12px;
-        }
-
-        .item-details {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            padding-top: 12px;
-            border-top: 1px solid #eee;
-            font-size: 12px;
-        }
-
-        .item-detail-label {
-            color: #999;
-            text-transform: uppercase;
-            font-size: 10px;
-        }
-
-        .item-detail-value {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .item-action {
-            text-align: right;
-        }
-
-        .item-qty {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 13px;
-            text-transform: uppercase;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            box-shadow: 0 8px 20px rgba(220, 20, 60, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #e0e0e0;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 16px;
-        }
-
-        .modal-info {
-            background: #e3f2fd;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-            font-size: 13px;
-        }
-
-        .modal-input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            font-size: 24px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 16px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .modal-select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 24px;
-            font-size: 13px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-        }
-
-        .modal-buttons button {
-            flex: 1;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f0f0f0;
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        select {
+            cursor: pointer; appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px !important;
         }
 
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-
-            .sidebar.active {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .header {
-                left: 0;
-            }
-
-            .header-right {
-                gap: 12px;
-            }
-
-            .header-time {
-                display: none;
-            }
-
-            .item-card {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .item-action {
-                width: 100%;
-                text-align: left;
-                margin-top: 16px;
-            }
-
-            .item-qty {
-                font-size: 24px;
-            }
-
-            .btn {
-                width: 100%;
-            }
+            .sidebar { transform: translateX(-260px); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; width: 100%; }
+            .header { left: 0; padding: 16px; }
+            .menu-toggle-btn { display: block; }
+            .item-card { flex-direction: column; align-items: flex-start; gap: 16px; }
+            .item-action { width: 100%; text-align: right; }
+            .btn { width: 100%; }
         }
     </style>
 </head>
@@ -774,7 +335,6 @@
     <div id="app"></div>
 
     <script>
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
             authDomain: "sistema-fefo.firebaseapp.com",
@@ -787,14 +347,18 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-        // Global State
+        // Estados Globais
         let currentUser = null;
         let currentView = 'retirar';
-        let estoque = [];
-        let sidebarOpen = false;
+        let estoqueCompleto = [];
+        let wakeLock = null;
+        let itemParaRetirar = null;
+        let itemOrigemAbertura = null;
+        let diasCalculados = 0;
 
-        // Initialize App
+        // Inicialização Segura
         function init() {
             const session = localStorage.getItem('wms_session');
             if (session) {
@@ -810,7 +374,6 @@
             }
         }
 
-        // Show Login
         function showLogin() {
             document.getElementById('app').innerHTML = `
                 <div class="login-container">
@@ -820,639 +383,588 @@
                         <div class="login-header">
                             <div class="login-header-icon">📦</div>
                             <h1>WMS FLOW PRO</h1>
-                            <p>Uberlândia Refresco</p>
+                            <p>Uberlândia Refrescos</p>
                         </div>
-                        <form class="login-form" onsubmit="handleLogin(event)">
-                            <div id="loginError" class="login-error hidden"></div>
+                        <div class="login-form">
+                            <div id="loginError" class="login-error" style="display:none;"></div>
                             <div class="form-group">
                                 <label class="form-label">Matrícula</label>
-                                <input type="text" id="matricula" class="form-input" placeholder="Digite sua matrícula" inputmode="numeric" required>
+                                <input type="text" id="login-mat" class="form-input" placeholder="Digite sua matrícula" inputmode="numeric" pattern="[0-9]*">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Senha</label>
-                                <input type="password" id="senha" class="form-input" placeholder="Digite sua senha" required>
+                                <input type="password" id="login-senha" class="form-input" placeholder="Digite sua senha">
                             </div>
-                            <button type="submit" class="form-button">ENTRAR</button>
-                        </form>
-                        <div class="login-footer">
-                            <p>© 2026 Uberlândia Refrescos - Coca-Cola Company</p>
-                            <p style="margin-top: 8px;">Sistema de Gestão de Estoque Integrado</p>
+                            <button onclick="tentarLogin()" class="form-button">ENTRAR</button>
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        // Handle Login
-        async function handleLogin(event) {
-            event.preventDefault();
-            const matricula = document.getElementById('matricula').value;
-            const senha = document.getElementById('senha').value;
+        async function tentarLogin() {
+            const mat = document.getElementById('login-mat').value.trim();
+            const senha = document.getElementById('login-senha').value.trim();
             const errorDiv = document.getElementById('loginError');
 
-            try {
-                const email = `${matricula}@alb.com`;
-                await auth.signInWithEmailAndPassword(email, senha);
+            if(!mat || !senha) {
+                errorDiv.innerText = "Preencha todos os campos!";
+                errorDiv.style.display = 'block';
+                return;
+            }
 
-                const userDoc = await db.collection('usuarios_wms').doc(email).get();
-                if (userDoc.exists()) {
-                    currentUser = {
-                        email,
-                        nome: userDoc.data().nome,
-                        perfil: userDoc.data().perfil,
-                    };
+            try {
+                const email = mat + "@alb.com";
+                await auth.signInWithEmailAndPassword(email, senha);
+                const doc = await db.collection("usuarios_wms").doc(email).get();
+                
+                if (doc.exists) {
+                    currentUser = doc.data();
+                    currentUser.email = email;
                     localStorage.setItem('wms_session', JSON.stringify(currentUser));
                     showDashboard();
                 } else {
-                    errorDiv.textContent = 'Usuário não encontrado no banco de dados';
-                    errorDiv.classList.remove('hidden');
+                    errorDiv.innerText = "Usuário não localizado.";
+                    errorDiv.style.display = 'block';
                 }
-            } catch (err) {
-                errorDiv.textContent = 'Erro ao fazer login. Verifique suas credenciais.';
-                errorDiv.classList.remove('hidden');
+            } catch (e) {
+                errorDiv.innerText = "Erro ao autenticar. Verifique seus dados.";
+                errorDiv.style.display = 'block';
             }
         }
 
-        // Show Dashboard
         function showDashboard() {
-            loadEstoque();
-            renderDashboard();
-            updateTime();
-            setInterval(updateTime, 1000);
+            renderBaseLayout();
+            conectarFirebase();
+            ativarWakeLock();
         }
 
-        // Load Estoque
-        function loadEstoque() {
-            db.collection('estoque_blocado').onSnapshot(snap => {
-                estoque = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderContent();
-            });
+        async function ativarWakeLock() {
+            try { 
+                if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); } 
+            } catch (e) {}
         }
 
-        // Render Dashboard
-        function renderDashboard() {
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible' && currentUser) { ativarWakeLock(); }
+        });
+
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function renderBaseLayout() {
             const isAdmin = currentUser.perfil?.toUpperCase() === 'ADMIN';
             document.getElementById('app').innerHTML = `
                 <div class="dashboard-container">
                     <div class="sidebar" id="sidebar">
                         <div class="sidebar-logo">
                             <div class="sidebar-logo-icon">📦</div>
-                            <div class="sidebar-logo-text">
-                                <h3>WMS FLOW</h3>
-                                <p>Pro Edition</p>
+                            <div>
+                                <h3 style="font-size:15px;">WMS FLOW</h3>
+                                <p style="font-size:11px; opacity:0.6;">Pro Edition</p>
                             </div>
                         </div>
-
                         <div class="sidebar-user">
-                            <div class="sidebar-user-label">Usuário</div>
+                            <div class="sidebar-user-label">Colaborador</div>
                             <div class="sidebar-user-name">${currentUser.nome}</div>
-                            <div class="sidebar-user-role">${isAdmin ? '👨‍💼 ADMINISTRADOR' : '👤 OPERADOR'}</div>
+                            <div class="sidebar-user-role">${isAdmin ? '📊 ADMINISTRADOR' : '⚙️ OPERADOR'}</div>
                         </div>
-
                         <div class="sidebar-menu">
-                            ${isAdmin ? '<button class="sidebar-menu-item" onclick="switchView(\'admin\')">📊 Dashboard Admin</button>' : ''}
-                            <button class="sidebar-menu-item active" onclick="switchView(\'retirar\')">📦 Pesquisar / Retirar</button>
-                            <button class="sidebar-menu-item" onclick="switchView(\'entrada_bloco\')">🚙 Entrada no Bloco</button>
-                            <button class="sidebar-menu-item" onclick="switchView(\'abertura_blocado\')">🔄 Abertura de Blocado</button>
+                            ${isAdmin ? '<button class="sidebar-menu-item" id="nav-admin" onclick="navegar(\'admin\')">📊 Dashboard Admin</button>' : ''}
+                            <button class="sidebar-menu-item active" id="nav-retirar" onclick="navegar(\'retirar\')">📦 Pesquisar / Retirar</button>
+                            <button class="sidebar-menu-item" id="nav-entrada_bloco" onclick="navegar(\'entrada_bloco\')">🚙 Entrada no Bloco</button>
+                            <button class="sidebar-menu-item" id="nav-abertura_blocado" onclick="navegar(\'abertura_blocado\')">🔄 Abertura de Blocado</button>
                         </div>
-
-                        <button class="sidebar-logout" onclick="handleLogout()">🚪 SAIR</button>
+                        <button class="sidebar-logout" onclick="handleLogout()">🚪 SAIR OPERAÇÃO</button>
                     </div>
 
                     <div class="main-content">
                         <div class="header">
-                            <div class="header-left">
-                                <h2>WMS FLOW PRO</h2>
-                                <p>Uberlândia Refresco - Coca-Cola</p>
+                            <div style="display:flex; align-items:center; gap:15px;">
+                                <button class="menu-toggle-btn" onclick="toggleMenu()">☰</button>
+                                <div class="header-left">
+                                    <h2 style="font-size:16px;">WMS FLOW PRO</h2>
+                                    <p>Uberlândia Refrescos</p>
+                                </div>
                             </div>
                             <div class="header-right">
-                                <div class="header-time">
-                                    <span>🕐</span>
-                                    <span id="time">--:--</span>
-                                </div>
                                 <div class="header-user">
-                                    <div class="header-user-info">
-                                        <p>${currentUser.nome}</p>
-                                        <p>${isAdmin ? 'ADMINISTRADOR' : 'OPERADOR'}</p>
+                                    <div style="text-align:right;">
+                                        <p style="font-size:13px; font-weight:700;">${currentUser.nome}</p>
+                                        <p style="font-size:10px; color:var(--primary); font-weight:700;">${currentUser.perfil.toUpperCase()}</p>
                                     </div>
                                     <div class="header-avatar">${currentUser.nome.charAt(0).toUpperCase()}</div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="content" id="content"></div>
+                        <div class="content" id="content-view"></div>
                     </div>
                 </div>
 
-                <div class="modal" id="modal">
+                <div class="modal" id="modal-retirada">
                     <div class="modal-content">
-                        <div class="modal-title" id="modalTitle"></div>
-                        <div class="modal-info" id="modalInfo"></div>
-                        <input type="number" class="modal-input" id="modalQtd" placeholder="0" inputmode="numeric">
-                        <select class="modal-select" id="modalDestino">
-                            <option value="TRANSFERENCIA">TRANSFERENCIA</option>
-                            <option value="APANHA">APANHA</option>
-                            <option value="SEPARAÇÃO">SEPARAÇÃO</option>
-                        </select>
+                        <div class="modal-title" id="modal-titulo">Retirar Lote</div>
+                        <div class="modal-info" id="modal-info"></div>
+                        <div class="form-group">
+                            <label class="form-label">Quantidade de Pallets</label>
+                            <input type="number" class="modal-input" id="modal-input-qtd" placeholder="0" inputmode="numeric" pattern="[0-9]*">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Fluxo / Destino</label>
+                            <select class="modal-select" id="modal-destino-mov">
+                                <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                                <option value="APANHA">APANHA</option>
+                                <option value="SEPARAÇÃO">SEPARAÇÃO</option>
+                            </select>
+                        </div>
                         <div class="modal-buttons">
-                            <button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button>
-                            <button class="btn btn-primary" onclick="confirmRetirada()">CONFIRMAR</button>
+                            <button class="btn btn-secondary" onclick="fecharModal()">CANCELAR</button>
+                            <button class="btn btn-primary" onclick="processarRetirada()">CONFIRMAR</button>
                         </div>
                     </div>
                 </div>
             `;
-            renderContent();
         }
 
-        // Switch View
-        function switchView(view) {
-            currentView = view;
-            document.querySelectorAll('.sidebar-menu-item').forEach(item => item.classList.remove('active'));
-            event.target.classList.add('active');
-            renderContent();
+        function navegar(tela) {
+            currentView = tela;
+            document.querySelectorAll('.sidebar-menu-item').forEach(b => b.classList.remove('active'));
+            const btnAtivo = document.getElementById('nav-' + tela);
+            if(btnAtivo) btnAtivo.classList.add('active');
+            
+            const sidebar = document.getElementById('sidebar');
+            if(sidebar) sidebar.classList.remove('active');
+
+            renderizarTelaAtual();
         }
 
-        // Render Content
-        function renderContent() {
-            const isAdmin = currentUser.perfil?.toUpperCase() === 'ADMIN';
-            let html = '';
+        function conectarFirebase() {
+            db.collection("estoque_blocado").onSnapshot(snap => {
+                estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderizarTelaAtual();
+            });
+        }
 
-            if (currentView === 'admin' && isAdmin) {
-                html = renderAdminDashboard();
+        function renderizarTelaAtual() {
+            const container = document.getElementById('content-view');
+            if(!container) return;
+
+            if (currentView === 'admin') {
+                container.innerHTML = viewAdmin();
             } else if (currentView === 'retirar') {
-                html = renderRetirada();
+                container.innerHTML = viewRetirar();
+                renderizarListaEstoque();
             } else if (currentView === 'entrada_bloco') {
-                html = renderEntradaBloco();
+                container.innerHTML = viewEntradaBloco();
             } else if (currentView === 'abertura_blocado') {
-                html = renderAberturaBlocado();
+                container.innerHTML = viewAberturaBlocado();
             }
-
-            document.getElementById('content').innerHTML = html;
         }
 
-        // Render Admin Dashboard
-        function renderAdminDashboard() {
-            const total = estoque.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
-            const critico = estoque.filter(i => i.dias > 30 && i.dias <= 60).length;
-            const retido = estoque.filter(i => i.dias <= 30).length;
+        // Views Layout
+        function viewAdmin() {
+            const total = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
+            const critico = estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length;
+            const retido = estoqueCompleto.filter(i => i.dias <= 30).length;
 
             return `
                 <h2 class="content-title">Dashboard Administrativo</h2>
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-label">Total de Pallets</div>
+                        <div class="stat-label">Total Pallets</div>
                         <div class="stat-value">${total}</div>
                     </div>
-                    <div class="stat-card" style="border-left-color: var(--warning);">
-                        <div class="stat-label">Críticos</div>
+                    <div class="stat-card" style="border-top-color: var(--critico);">
+                        <div class="stat-label">Lotes Críticos</div>
                         <div class="stat-value">${critico}</div>
                     </div>
-                    <div class="stat-card" style="border-left-color: var(--danger);">
-                        <div class="stat-label">Retidos</div>
+                    <div class="stat-card" style="border-top-color: var(--retido);">
+                        <div class="stat-label">Lotes Retidos</div>
                         <div class="stat-value">${retido}</div>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-title">Gerenciamento Administrativo</div>
-                    <div style="display: flex; gap: 12px; flex-direction: column;">
-                        <input type="file" id="csvFile" accept=".csv" style="display: none;">
-                        <button class="btn btn-primary" onclick="document.getElementById('csvFile').click()" style="width: 100%;">📤 ALIMENTAR NOVO ESTOQUE (CSV)</button>
-                        <button class="btn btn-primary" onclick="exportarHistorico()" style="width: 100%; background: #27ae60; background-image: linear-gradient(135deg, #27ae60 0%, #229954 100%);">📥 SOLICITAR HISTÓRICO (EXCEL)</button>
+                <div class="card" style="border-top: 3px solid var(--primary);">
+                    <div class="card-title">Alimentação e Dados</div>
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <input type="file" id="csv-file" accept=".csv" style="display:none;" onchange="importarCSV(event)">
+                        <button class="btn btn-primary" onclick="document.getElementById('csv-file').click()">ALIMENTAR NOVO ESTOQUE (CSV)</button>
+                        <button class="btn" style="background:#107c41; color:white;" onclick="exportarHistoricoExcel()">SOLICITAR HISTÓRICO (EXCEL)</button>
                     </div>
                 </div>
             `;
         }
 
-        // Render Retirada
-        function renderRetirada() {
-            const searchTerm = document.getElementById('searchTerm')?.value || '';
-            const filtered = estoque
-                .filter(item => {
-                    if (!searchTerm) return false;
-                    const termo = searchTerm.toLowerCase().trim();
-                    if (/^\d+$/.test(termo)) {
-                        return item.mat.toString().toLowerCase() === termo;
-                    }
-                    return item.ender.toLowerCase().includes(termo);
-                })
-                .filter(item => currentUser.perfil?.toUpperCase() === 'ADMIN' || item.dias > 30)
-                .sort((a, b) => parseInt(a.dias) - parseInt(b.dias));
-
-            let html = `
-                <h2 class="content-title">Pesquisar / Retirar Material</h2>
-                <div class="card">
-                    <input type="text" id="searchTerm" class="form-input" placeholder="Pesquisar por código ou endereço..." 
-                        style="width: 100%; padding: 12px 16px 12px 40px;" 
-                        oninput="renderContent()">
+        function viewRetirar() {
+            return `
+                <h2 class="content-title">Pesquisar e Retirar Material</h2>
+                <div class="search-box">
+                    <input type="text" id="search-input" inputmode="numeric" pattern="[0-9]*" placeholder="Digite o código do material ou endereço..." oninput="renderizarListaEstoque()">
                 </div>
+                <div id="lista-estoque-dinamica"></div>
             `;
-
-            if (filtered.length === 0 && searchTerm) {
-                html += '<div style="text-align: center; padding: 40px; color: #999;"><p>Nenhum material encontrado</p></div>';
-            }
-
-            filtered.forEach(item => {
-                let statusTexto = '', statusClass = '', borderClass = '';
-                if (item.dias <= 30) {
-                    statusTexto = item.dias < 0 ? 'VENCIDO / RETIDO' : 'RETIDO';
-                    statusClass = 'background: #fee; color: #c33;';
-                    borderClass = 'border-left-color: #e74c3c;';
-                } else if (item.dias <= 60) {
-                    statusTexto = 'CRÍTICO';
-                    statusClass = 'background: #fef3cd; color: #856404;';
-                    borderClass = 'border-left-color: var(--warning);';
-                } else {
-                    statusTexto = 'DATA BOA';
-                    statusClass = 'background: #d4edda; color: #155724;';
-                    borderClass = 'border-left-color: var(--success);';
-                }
-
-                html += `
-                    <div class="item-card" style="${borderClass}">
-                        <div class="item-info">
-                            <div class="item-badges">
-                                <span class="badge badge-address">${item.ender}</span>
-                                <span class="badge" style="${statusClass}">${statusTexto}</span>
-                            </div>
-                            <div class="item-code">${item.mat}</div>
-                            <div class="item-desc">${item.desc || 'Sem descrição'}</div>
-                            <div class="item-details">
-                                <div>
-                                    <div class="item-detail-label">Vencimento</div>
-                                    <div class="item-detail-value">${item.dias} dias</div>
-                                </div>
-                                <div>
-                                    <div class="item-detail-label">Data Frente</div>
-                                    <div class="item-detail-value">${item.valFrente}</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item-action">
-                            <div class="item-qty">${item.qtd} PL</div>
-                            <button class="btn btn-primary" onclick="openRetiradaModal('${item.id}', '${item.mat}', ${item.qtd}, '${item.ender}', '${item.valFrente}')">RETIRAR</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            return html;
         }
 
-        // Render Entrada Bloco
-        function renderEntradaBloco() {
+        function viewEntradaBloco() {
             return `
                 <h2 class="content-title">Entrada no Bloco</h2>
                 <div class="card">
-                    <div class="card-title">Registrar Nova Entrada</div>
-                    <form onsubmit="handleEntradaBloco(event)" style="display: flex; flex-direction: column; gap: 16px;">
-                        <div>
-                            <label class="form-label">Origem da Carga</label>
-                            <select id="origem" class="form-input" style="padding: 8px;">
-                                <option value="STAGE">STAGE</option>
-                                <option value="RECEBIMENTO">RECEBIMENTO</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="form-label">Endereço Destino (Ex: 205-14)</label>
-                            <input type="text" id="enderDestino" class="form-input" placeholder="Digite o endereço..." required>
-                        </div>
-                        <div>
-                            <label class="form-label">Código Material</label>
-                            <input type="text" id="matEntrada" class="form-input" placeholder="Código..." inputmode="numeric" required>
-                        </div>
-                        <div>
-                            <label class="form-label">Descrição</label>
-                            <input type="text" id="descEntrada" class="form-input" placeholder="Descrição..." readonly style="background: #f0f0f0;">
-                        </div>
-                        <div>
-                            <label class="form-label">Quantidade (Pallets)</label>
-                            <input type="number" id="qtdEntrada" class="form-input" placeholder="0" inputmode="numeric" required>
-                        </div>
-                        <div>
-                            <label class="form-label">Data de Vencimento</label>
-                            <input type="date" id="vencEntrada" class="form-input" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">✅ SALVAR ENTRADA</button>
-                    </form>
+                    <div class="form-group">
+                        <label class="form-label">Origem do Fluxo</label>
+                        <select id="eb-origem" class="form-input">
+                            <option value="STAGE">STAGE</option>
+                            <option value="RECEBIMENTO">RECEBIMENTO</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Endereço Destino (Ex: 205-14)</label>
+                        <input type="text" id="eb-ender" class="form-input" placeholder="Digite a posição">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Código Material</label>
+                        <input type="text" id="eb-mat" class="form-input" inputmode="numeric" placeholder="Código..." oninput="puxarDescricao(this.value, 'eb-desc')">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descrição</label>
+                        <input type="text" id="eb-desc" class="form-input" readonly style="opacity:0.6;" placeholder="Descrição automática...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quantidade (Pallets)</label>
+                        <input type="number" id="eb-qtd" class="form-input" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data de Vencimento</label>
+                        <input type="date" id="eb-venc" class="form-input" onchange="calcularDias(this.value, 'eb-label-dias')">
+                        <p id="eb-label-dias" style="color:var(--critico); font-size:12px; font-weight:bold; margin-top:5px;"></p>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="salvarEntradaBloco()">SALVAR ENTRADA NO BANCO</button>
                 </div>
             `;
         }
 
-        // Render Abertura Blocado
-        function renderAberturaBlocado() {
+        function viewAberturaBlocado() {
             return `
                 <h2 class="content-title">Abertura de Blocado</h2>
                 <div class="card">
-                    <div class="card-title">Transferir Material</div>
-                    <form onsubmit="handleAberturaBlocado(event)" style="display: flex; flex-direction: column; gap: 16px;">
-                        <div style="display: flex; gap: 12px;">
-                            <div style="flex: 1;">
-                                <label class="form-label">Endereço Origem (Ex: 201-14)</label>
-                                <input type="text" id="enderOrigem" class="form-input" placeholder="Digite a posição..." required>
-                            </div>
-                            <div style="display: flex; align-items: flex-end;">
-                                <button type="button" class="btn btn-secondary" onclick="carregarOrigem()">CARREGAR</button>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="form-label">Código Material</label>
-                            <input type="text" id="matOrigem" class="form-input" readonly style="background: #f0f0f0;">
-                        </div>
-                        <div>
-                            <label class="form-label">Descrição</label>
-                            <input type="text" id="descOrigem" class="form-input" readonly style="background: #f0f0f0;">
-                        </div>
-                        <div>
-                            <label class="form-label">Endereço Destino (Ex: 205-20)</label>
-                            <input type="text" id="enderDestino2" class="form-input" placeholder="Digite a nova posição..." required>
-                        </div>
-                        <div>
-                            <label class="form-label">Quantidade a Transferir (Pallets)</label>
-                            <input type="number" id="qtdTransf" class="form-input" placeholder="0" inputmode="numeric" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">🔄 CONFIRMAR TRANSFERÊNCIA</button>
-                    </form>
+                    <div class="form-group">
+                        <label class="form-label">Endereço Origem (Ex: 201-14)</label>
+                        <input type="text" id="ab-origem" class="form-input" placeholder="Digite a posição de origem..." onchange="carregarDadosOrigemAbertura(this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Código Material</label>
+                        <input type="text" id="ab-mat" class="form-input" readonly style="opacity:0.6;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descrição</label>
+                        <input type="text" id="ab-desc" class="form-input" readonly style="opacity:0.6;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Endereço Destino (Ex: 205-20)</label>
+                        <input type="text" id="ab-destino" class="form-input" placeholder="Digite a nova posição...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quantidade a Transferir (Pallets)</label>
+                        <input type="number" id="ab-qtd" class="form-input" placeholder="Saldo max disponível: 0">
+                    </div>
+                    <button class="btn" style="background:#e11d48; color:white; width:100%; margin-top:10px;" onclick="processarAberturaBlocado()">CONFIRMAR TRANSFERÊNCIA DE ENDEREÇO</button>
                 </div>
             `;
         }
 
-        // Open Retirada Modal
-        let modalData = {};
-        function openRetiradaModal(id, mat, qtd, ender, val) {
-            modalData = { id, mat, qtd, ender, val };
-            document.getElementById('modalTitle').textContent = `Retirar de: ${mat}`;
-            document.getElementById('modalInfo').innerHTML = `
-                <p><strong>Endereço:</strong> ${ender}</p>
-                <p style="margin-top: 8px;"><strong>Saldo Atual:</strong> ${qtd} PL</p>
-            `;
-            document.getElementById('modalQtd').value = '';
-            document.getElementById('modal').classList.add('active');
-            document.getElementById('modalQtd').focus();
-        }
+        // Lógicas Operacionais do Estoque (FEFO)
+        function renderizarListaEstoque() {
+            const input = document.getElementById('search-input');
+            const lista = document.getElementById('lista-estoque-dinamica');
+            if(!lista) return;
 
-        // Close Modal
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-        }
+            const termo = input ? input.value.toLowerCase().trim() : "";
+            lista.innerHTML = '';
+            if(termo.length === 0) return;
 
-        // Confirm Retirada
-        async function confirmRetirada() {
-            const qtd = parseInt(document.getElementById('modalQtd').value);
-            const destino = document.getElementById('modalDestino').value;
+            const isAdmin = currentUser.perfil?.toUpperCase() === 'ADMIN';
 
-            if (isNaN(qtd) || qtd <= 0) {
-                alert('Digite uma quantidade válida!');
+            let filtrados = estoqueCompleto.filter(i => {
+                if(/^\d+$/.test(termo)) { return i.mat.toString().toLowerCase() === termo; }
+                return i.ender.toLowerCase().includes(termo);
+            });
+
+            // Regra Crítica de Segurança: Operadores comuns não enxergam lotes retidos (<=30 dias)
+            if (!isAdmin) { filtrados = filtrados.filter(item => item.dias > 30); }
+
+            // Ordenação Estrita FEFO (Menor tempo de shelf-life primeiro)
+            filtrados.sort((a, b) => (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0));
+
+            if(filtrados.length === 0) {
+                lista.innerHTML = `<p style="font-size:13px; color:#666; text-align:center; padding:20px;">Nenhum saldo compatível ou liberado encontrado.</p>`;
                 return;
             }
 
-            if (qtd > modalData.qtd) {
-                alert('Quantidade solicitada maior que o saldo!');
-                return;
-            }
+            filtrados.forEach(item => {
+                let statusTexto = "DATA BOA";
+                let statusCor = "var(--verde)";
 
-            try {
-                if (qtd === modalData.qtd) {
-                    await db.collection('estoque_blocado').doc(modalData.id).delete();
-                } else {
-                    await db.collection('estoque_blocado').doc(modalData.id).update({
-                        qtd: modalData.qtd - qtd
-                    });
+                if (item.dias <= 30) {
+                    statusTexto = item.dias < 0 ? "VENCIDO / RETIDO" : "RETIDO";
+                    statusCor = "var(--retido)";
+                } else if (item.dias <= 60) {
+                    statusTexto = "CRÍTICO";
+                    statusCor = "var(--critico)";
                 }
 
-                await registrarMovimentacao(
-                    modalData.ender,
-                    modalData.mat,
-                    modalData.val,
-                    `-${qtd} PL (Retirada)`,
-                    destino
-                );
-
-                closeModal();
-                alert('Retirada processada com sucesso!');
-            } catch (error) {
-                alert('Erro ao processar retirada');
-            }
-        }
-
-        // Handle Entrada Bloco
-        async function handleEntradaBloco(event) {
-            event.preventDefault();
-            const origem = document.getElementById('origem').value;
-            const ender = document.getElementById('enderDestino').value.toUpperCase();
-            const mat = document.getElementById('matEntrada').value;
-            const desc = document.getElementById('descEntrada').value;
-            const qtd = parseInt(document.getElementById('qtdEntrada').value);
-            const venc = document.getElementById('vencEntrada').value;
-
-            if (!ender || !mat || !qtd || !venc) {
-                alert('Preencha todos os campos!');
-                return;
-            }
-
-            try {
-                const dataV = venc.split('-').reverse().join('/');
-                const ocupante = estoque.find(i => i.ender === ender);
-
-                if (ocupante) {
-                    if (ocupante.mat === mat) {
-                        if (confirm(`Endereço ocupado pelo mesmo material. Somar +${qtd} PL?`)) {
-                            await db.collection('estoque_blocado').doc(ocupante.id).update({
-                                qtd: ocupante.qtd + qtd
-                            });
-                            await registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma Manual)`, `ENTRADA VIA ${origem}`);
-                            alert('Atualizado com sucesso!');
-                            event.target.reset();
-                        }
-                    } else {
-                        alert(`BLOQUEADO! Endereço ${ender} já ocupado por: ${ocupante.mat}`);
-                    }
-                    return;
-                }
-
-                const diasCalculados = Math.ceil((new Date(venc) - new Date()) / (1000 * 60 * 60 * 24));
-
-                await db.collection('estoque_blocado').add({
-                    ender,
-                    mat,
-                    qtd,
-                    dias: diasCalculados,
-                    valFrente: dataV,
-                    desc: desc || 'NOVO MATERIAL'
-                });
-
-                await registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada)`, `ENTRADA VIA ${origem}`);
-                alert('Entrada registrada com sucesso!');
-                event.target.reset();
-            } catch (error) {
-                alert('Erro ao salvar entrada');
-            }
-        }
-
-        // Handle Abertura Blocado
-        let itemOrigemData = null;
-        async function carregarOrigem() {
-            const ender = document.getElementById('enderOrigem').value.toLowerCase().trim();
-            const item = estoque.find(i => i.ender.toLowerCase() === ender);
-
-            if (item) {
-                itemOrigemData = item;
-                document.getElementById('matOrigem').value = item.mat;
-                document.getElementById('descOrigem').value = item.desc;
-            } else {
-                alert('Nenhum material ativo localizado nesta posição');
-                itemOrigemData = null;
-                document.getElementById('matOrigem').value = '';
-                document.getElementById('descOrigem').value = '';
-            }
-        }
-
-        async function handleAberturaBlocado(event) {
-            event.preventDefault();
-
-            if (!itemOrigemData) {
-                alert('Defina uma posição de origem válida!');
-                return;
-            }
-
-            const qtd = parseInt(document.getElementById('qtdTransf').value);
-            const enderDestino = document.getElementById('enderDestino2').value.toUpperCase().trim();
-
-            if (isNaN(qtd) || qtd <= 0) {
-                alert('Insira uma quantidade válida!');
-                return;
-            }
-
-            if (qtd > itemOrigemData.qtd) {
-                alert('Quantidade maior que o saldo!');
-                return;
-            }
-
-            if (!enderDestino) {
-                alert('Especifique o endereço de destino!');
-                return;
-            }
-
-            try {
-                const ocupanteDestino = estoque.find(i => i.ender === enderDestino);
-
-                if (ocupanteDestino && ocupanteDestino.mat !== itemOrigemData.mat) {
-                    alert(`BLOQUEADO! Destino ${enderDestino} ocupado por: ${ocupanteDestino.mat}`);
-                    return;
-                }
-
-                if (qtd === itemOrigemData.qtd) {
-                    await db.collection('estoque_blocado').doc(itemOrigemData.id).delete();
-                } else {
-                    await db.collection('estoque_blocado').doc(itemOrigemData.id).update({
-                        qtd: itemOrigemData.qtd - qtd
-                    });
-                }
-
-                if (ocupanteDestino && ocupanteDestino.mat === itemOrigemData.mat) {
-                    await db.collection('estoque_blocado').doc(ocupanteDestino.id).update({
-                        qtd: ocupanteDestino.qtd + qtd
-                    });
-                } else {
-                    await db.collection('estoque_blocado').add({
-                        ender: enderDestino,
-                        mat: itemOrigemData.mat,
-                        desc: itemOrigemData.desc,
-                        qtd,
-                        dias: itemOrigemData.dias,
-                        valFrente: itemOrigemData.valFrente
-                    });
-                }
-
-                await registrarMovimentacao(
-                    itemOrigemData.ender,
-                    itemOrigemData.mat,
-                    itemOrigemData.valFrente,
-                    `-${qtd} PL`,
-                    `TRANSFERIDO PARA ${enderDestino}`
-                );
-
-                await registrarMovimentacao(
-                    enderDestino,
-                    itemOrigemData.mat,
-                    itemOrigemData.valFrente,
-                    `+${qtd} PL`,
-                    `RECEBIDO DE ${itemOrigemData.ender}`
-                );
-
-                alert('Transferência executada com sucesso!');
-                event.target.reset();
-                itemOrigemData = null;
-            } catch (error) {
-                alert('Erro ao processar transferência');
-            }
-        }
-
-        // Registrar Movimentação
-        async function registrarMovimentacao(endereco, material, validade, quantidade, fluxo) {
-            const agora = new Date();
-            await db.collection('movimentacoes_wms').add({
-                endereco,
-                material,
-                validade,
-                quantidade,
-                fluxo,
-                login: currentUser.email,
-                data: agora.toLocaleDateString('pt-BR'),
-                hora: agora.toLocaleTimeString('pt-BR'),
-                timestamp: agora
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.style.borderLeftColor = statusCor;
+                card.innerHTML = `
+                    <div>
+                        <div class="item-badges">
+                            <span class="badge badge-address">${item.ender}</span>
+                            <span class="badge badge-status" style="background-color:${statusCor}">${statusTexto}</span>
+                        </div>
+                        <div class="item-code">${item.mat}</div>
+                        <div class="item-desc">${item.desc || "Sem descrição"}</div>
+                        <div style="font-size:12px; color:#555;">Vencimento: <b>${item.dias} dias</b> (${item.valFrente || 'S/D'})</div>
+                    </div>
+                    <div class="item-action">
+                        <div style="font-size:24px; font-weight:800; margin-bottom:5px;">${item.qtd} PL</div>
+                        <button class="btn btn-primary" style="padding:8px 16px; font-size:12px;" onclick="abrirModalRetirada('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button>
+                    </div>
+                `;
+                lista.appendChild(card);
             });
         }
 
-        // Exportar Histórico
-        async function exportarHistorico() {
-            try {
-                const snap = await db.collection('movimentacoes_wms').orderBy('timestamp', 'desc').get();
+        function abrirModalRetirada(id, qtdAtual, mat, ender, validade) {
+            itemParaRetirar = { id, qtdAtual, mat, ender, validade };
+            document.getElementById('modal-titulo').innerText = `Retirar de: ${mat}`;
+            document.getElementById('modal-info').innerHTML = `Endereço: <b>${ender}</b><br>Saldo Atual na Posição: <b>${qtdAtual} PL</b>`;
+            document.getElementById('modal-input-qtd').value = '';
+            document.getElementById('modal-retirada').classList.add('active');
+            setTimeout(() => document.getElementById('modal-input-qtd').focus(), 150);
+        }
 
-                if (snap.empty) {
-                    alert('Nenhum histórico disponível');
-                    return;
+        function fecharModal() {
+            document.getElementById('modal-retirada').classList.remove('active');
+            itemParaRetirar = null;
+        }
+
+        async function processarRetirada() {
+            const inputQtd = document.getElementById('modal-input-qtd').value;
+            const destinoMov = document.getElementById('modal-destino-mov').value;
+            const v = parseInt(inputQtd);
+
+            if(isNaN(v) || v <= 0) return alert("Digite uma quantidade válida!");
+            if(v > itemParaRetirar.qtdAtual) return alert("Quantidade inserida excede o saldo físico disponível!");
+
+            const { id, qtdAtual, mat, ender, validade } = itemParaRetirar;
+
+            try {
+                if (v === qtdAtual) {
+                    await db.collection("estoque_blocado").doc(id).delete();
+                } else {
+                    await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v });
                 }
 
+                await registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`, destinoMov);
+                fecharModal();
+                alert("Retirada concluída com sucesso!");
+                renderizarListaEstoque();
+            } catch(e) {
+                alert("Erro de comunicação com o Firestore.");
+            }
+        }
+
+        async function salvarEntradaBloco() {
+            const origem = document.getElementById('eb-origem').value;
+            const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
+            const mat = document.getElementById('eb-mat').value.trim();
+            const qtd = parseInt(document.getElementById('eb-qtd').value);
+            const inputVenc = document.getElementById('eb-venc').value;
+
+            if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos da Entrada!");
+
+            const dataV = inputVenc.split('-').reverse().join('/');
+            const ocupante = estoqueCompleto.find(i => i.ender === ender);
+
+            if (ocupante) {
+                if (ocupante.mat === mat) {
+                    if (confirm(`Endereço ocupado pelo mesmo material. Somar +${qtd} PL no saldo atual?`)) {
+                        await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd });
+                        await registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma Manual)`, `ENTRADA VIA ${origem}`);
+                        alert("Saldo atualizado com sucesso!");
+                        navegar('retirar');
+                    }
+                    return;
+                } else {
+                    return alert(`BLOQUEIO DE ENDEREÇO! A posição ${ender} já possui o material: ${ocupante.mat}`);
+                }
+            }
+
+            const desc = document.getElementById('eb-desc').value;
+            await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc });
+            await registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada)`, `ENTRADA VIA ${origem}`);
+            alert("Nova entrada consolidada!");
+            navegar('retirar');
+        }
+
+        function carregarDadosOrigemAbertura(enderOrigem) {
+            const item = estoqueCompleto.find(i => i.ender.toLowerCase() === enderOrigem.toLowerCase().trim());
+            if(item) {
+                itemOrigemAbertura = item;
+                document.getElementById('ab-mat').value = item.mat;
+                document.getElementById('ab-desc').value = item.desc || "Sem descrição";
+                document.getElementById('ab-qtd').placeholder = `Saldo max disponível: ${item.qtd}`;
+            } else {
+                itemOrigemAbertura = null;
+                document.getElementById('ab-mat').value = '';
+                document.getElementById('ab-desc').value = '';
+                document.getElementById('ab-qtd').placeholder = 'Posição não encontrada';
+                alert("Nenhum material ativo localizado nesta posição.");
+            }
+        }
+
+        async function processarAberturaBlocado() {
+            const enderDestino = document.getElementById('ab-destino').value.toUpperCase().trim();
+            const qtdTransferir = parseInt(document.getElementById('ab-qtd').value);
+
+            if(!itemOrigemAbertura) return alert("A posição de origem precisa ser válida!");
+            if(isNaN(qtdTransferir) || qtdTransferir <= 0) return alert("Insira uma quantidade de pallets válida!");
+            if(qtdTransferir > itemOrigemAbertura.qtd) return alert("Quantidade maior do que o saldo físico disponível!");
+            if(!enderDestino) return alert("Indique a posição de destino!");
+
+            try {
+                const ocupanteDestino = estoqueCompleto.find(i => i.ender === enderDestino);
+                if (ocupanteDestino && ocupanteDestino.mat !== itemOrigemAbertura.mat) {
+                    return alert(`BLOQUEADO! O destino ${enderDestino} já está ocupado por: ${ocupanteDestino.mat}`);
+                }
+
+                if (qtdTransferir === itemOrigemAbertura.qtd) {
+                    await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete();
+                } else {
+                    await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtdTransferir });
+                }
+
+                if (ocupanteDestino && ocupanteDestino.mat === itemOrigemAbertura.mat) {
+                    await db.collection("estoque_blocado").doc(ocupanteDestino.id).update({ qtd: ocupanteDestino.qtd + qtdTransferir });
+                } else {
+                    await db.collection("estoque_blocado").add({
+                        ender: enderDestino,
+                        mat: itemOrigemAbertura.mat,
+                        desc: itemOrigemAbertura.desc,
+                        qtd: qtdTransferir,
+                        dias: itemOrigemAbertura.dias,
+                        valFrente: itemOrigemAbertura.valFrente
+                    });
+                }
+
+                await registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtdTransferir} PL`, `TRANSFERIDO PARA ${enderDestino}`);
+                await registrarMovimentacao(enderDestino, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtdTransferir} PL`, `RECEBIDO DE ${itemOrigemAbertura.ender}`);
+
+                alert("Transferência realizada!");
+                navegar('retirar');
+            } catch(e) {
+                alert("Erro ao processar transferência interna.");
+            }
+        }
+
+        // Funções de Suporte Técnico
+        function puxarDescricao(cod, inputDestinoId) {
+            const p = estoqueCompleto.find(i => i.mat.toString() === cod.trim());
+            document.getElementById(inputDestinoId).value = p ? p.desc : "NOVO MATERIAL";
+        }
+
+        function calcularDias(data, labelId) {
+            diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
+            document.getElementById(labelId).innerText = `Vencimento calculado em: ${diasCalculados} dias`;
+        }
+
+        async function registrarMovimentacao(ender, mat, val, qtd, fluxoInfo) {
+            const agora = new Date();
+            await db.collection("movimentacoes_wms").add({ 
+                endereco: ender, 
+                material: mat, 
+                validade: val, 
+                quantidade: qtd, 
+                fluxo: fluxoInfo || "N/A",
+                login: currentUser.email, 
+                data: agora.toLocaleDateString('pt-BR'), 
+                hora: agora.toLocaleTimeString('pt-BR'), 
+                timestamp: agora 
+            });
+        }
+
+        async function exportarHistoricoExcel() {
+            try {
+                const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
+                if (snap.empty) return alert("Nenhum histórico registrado no banco de dados.");
                 const dados = snap.docs.map(doc => {
                     const d = doc.data();
-                    return {
-                        'Endereço': d.endereco,
-                        'Material': d.material,
-                        'Validade': d.validade,
-                        'Qtd': d.quantidade,
-                        'Ação/Fluxo': d.fluxo,
-                        'Login': d.login,
-                        'Data': d.data,
-                        'Hora': d.hora
-                    };
+                    return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Fluxo": d.fluxo, "Usuário": d.login, "Data": d.data, "Hora": d.hora };
                 });
-
                 const ws = XLSX.utils.json_to_sheet(dados);
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, 'Histórico');
+                XLSX.utils.book_append_sheet(wb, ws, "Histórico WMS");
                 XLSX.writeFile(wb, `Historico_WMS_${new Date().getTime()}.xlsx`);
-            } catch (error) {
-                alert('Erro ao exportar histórico');
-            }
+            } catch (error) { alert("Erro ao gerar arquivo XLS."); }
         }
 
-        // Update Time
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('time').textContent = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        async function importarCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const texto = e.target.result;
+                    const linhas = texto.split(/\r?\n/).filter(l => l.trim() !== "");
+                    if (linhas.length <= 1) return alert("Planilha sem registros válidos!");
+                    const dados = linhas.slice(1);
+                    if (!confirm(`ATENÇÃO! Apagar o estoque ativo atual e carregar ${dados.length} novos itens?`)) return;
+
+                    const snapshot = await db.collection("estoque_blocado").get();
+                    if (!snapshot.empty) {
+                        let deleteBatch = db.batch();
+                        let delCount = 0;
+                        for (const doc of snapshot.docs) {
+                            deleteBatch.delete(doc.ref);
+                            delCount++;
+                            if (delCount % 400 === 0) { await deleteBatch.commit(); deleteBatch = db.batch(); }
+                        }
+                        await deleteBatch.commit();
+                    }
+
+                    let batch = db.batch();
+                    let count = 0;
+                    for (const linha of dados) {
+                        const c = linha.split(";");
+                        if (c.length >= 6) {
+                            const ender = c[0].trim();
+                            const mat = c[1].trim();
+                            const desc = c[2].trim();
+                            const valFrente = c[3].trim();
+                            const qtd = parseInt(c[5].replace(/\D/g, '')) || 0;
+                            const dias = parseInt(c[7].replace(/\D/g, '')) || 0;
+                            if (ender && mat) {
+                                const docRef = db.collection("estoque_blocado").doc();
+                                batch.set(docRef, { ender, mat, desc, valFrente, qtd, dias });
+                                count++;
+                                if (count % 400 === 0) { await batch.commit(); batch = db.batch(); }
+                            }
+                        }
+                    }
+                    await batch.commit();
+                    alert("Novo estoque alimentado com sucesso!");
+                } catch(err) { alert("Erro ao processar arquivo CSV."); }
+            };
+            reader.readAsText(file);
         }
 
-        // Handle Logout
         function handleLogout() {
-            if (confirm('Tem certeza que deseja sair?')) {
+            auth.signOut().then(() => {
                 localStorage.removeItem('wms_session');
-                currentUser = null;
-                showLogin();
-            }
+                location.reload();
+            });
         }
 
-        // Initialize
-        init();
+        window.onload = init;
     </script>
 </body>
 </html>
