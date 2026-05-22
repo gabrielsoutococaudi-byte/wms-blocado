@@ -33,7 +33,6 @@
             --border: #2d2d2d;
         }
 
-        /* Ajustes globais para mobile e toque */
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
@@ -50,7 +49,6 @@
             overflow-x: hidden;
         }
 
-        /* Indicador de Status da Conexão */
         #network-status {
             display: none;
             background: var(--critico);
@@ -66,13 +64,12 @@
             letter-spacing: 1px;
         }
         
-        /* Sidebar */
         .sidebar { 
             position: fixed; 
             left: -280px; 
             top: 0; 
             width: 280px; 
-            height: 100dvh; /* dvh adapta-se dinamicamente à altura da tela mobile */
+            height: 100dvh; 
             background: #121212; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             z-index: 1000; 
@@ -103,7 +100,6 @@
             color: var(--text);
         }
 
-        /* Header */
         .header { 
             padding: calc(15px + env(safe-area-inset-top)) 20px 15px 20px; 
             background: rgba(26, 26, 26, 0.85); 
@@ -139,7 +135,6 @@
             padding: 16px; 
         }
 
-        /* Dashboard Responsivo */
         .admin-dashboard { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
@@ -157,7 +152,6 @@
         .stat-box h5 { margin: 0; font-size: 10px; color: var(--text-secondary); text-transform: uppercase; }
         .stat-box p { margin: 6px 0 0; font-size: 24px; font-weight: 900; color: #fff; }
 
-        /* Inputs e Buscas */
         .search-area { 
             background: var(--card); 
             padding: 12px; 
@@ -174,7 +168,7 @@
             color: white; 
             outline: none; 
             font-family: 'Inter', sans-serif; 
-            font-size: 16px; /* Impede zoom forçado nativo no iOS/Android */
+            font-size: 16px; 
             transition: all 0.2s;
         }
         input:focus, select:focus {
@@ -188,7 +182,6 @@
             background-position: right 14px center; 
         }
         
-        /* Cards de Itens */
         .item-card { 
             background: var(--card); 
             border-radius: 12px; 
@@ -206,7 +199,6 @@
         .badge-ender { background: #fff; color: #000; padding: 4px 6px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
         .badge-status { color: #fff; padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; margin-left: 4px; text-transform: uppercase; }
 
-        /* Botões */
         .btn-retirar { 
             background: var(--primary); 
             color: #fff; 
@@ -234,7 +226,6 @@
         }
         .btn-excel { background: #107c41; border: none;}
 
-        /* Tela de Login */
         #login-screen { 
             height: 100dvh; 
             display: flex; 
@@ -253,7 +244,6 @@
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); 
         }
 
-        /* Formulários e Modais */
         .form-container-box {
             background: var(--card); 
             padding: 20px; 
@@ -460,7 +450,6 @@
     };
     firebase.initializeApp(firebaseConfig);
     
-    // Configurações e habilitação de cache e persistência offline do Firestore
     const db = firebase.firestore();
     db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
     db.enablePersistence({ synchronizeTabs: true })
@@ -482,7 +471,6 @@
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
 
-    // Gerenciador e listeners do status da conexão de dados
     window.addEventListener('online', atualizarStatusRede);
     window.addEventListener('offline', atualizarStatusRede);
 
@@ -523,12 +511,19 @@
     async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
+        const emailMontado = mat.toLowerCase() + "@alb.com";
+        
         try {
-            await auth.signInWithEmailAndPassword(mat + "@alb.com", senha);
-            const doc = await db.collection("usuarios_wms").doc(mat + "@alb.com").get();
+            await auth.signInWithEmailAndPassword(emailMontado, senha);
+            const doc = await db.collection("usuarios_wms").doc(emailMontado).get();
             if (doc.exists) {
                 usuarioLogado = doc.data();
-                usuarioLogado.email = mat + "@alb.com";
+                usuarioLogado.email = emailMontado;
+                localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
+                iniciarApp();
+            } else {
+                // Fallback caso a conta exista no Auth mas falte o doc na coleção do Firestore
+                usuarioLogado = { nome: mat, perfil: "OPERADOR", email: emailMontado };
                 localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
                 iniciarApp();
             }
@@ -550,7 +545,7 @@
         document.getElementById('app-screen').style.display = 'block';
         document.getElementById('user-name').innerText = usuarioLogado.nome;
         
-        const isAdmin = usuarioLogado.perfil.toUpperCase() === "ADMIN";
+        const isAdmin = usuarioLogado.perfil && usuarioLogado.perfil.toUpperCase() === "ADMIN";
         document.getElementById('role-label').innerText = isAdmin ? "PERFIL: ADMINISTRADOR" : "PERFIL: OPERADOR";
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
         document.getElementById('admin-tools-section').style.display = isAdmin ? 'block' : 'none';
@@ -573,7 +568,7 @@
     function conectarFirebase() {
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if(usuarioLogado && usuarioLogado.perfil.toUpperCase() === "ADMIN") atualizarEstatisticas();
+            if(usuarioLogado && usuarioLogado.perfil && usuarioLogado.perfil.toUpperCase() === "ADMIN") atualizarEstatisticas();
             renderizarEstoque();
         }, error => {
             console.log("Erro snapshot:", error);
@@ -592,14 +587,17 @@
         lista.innerHTML = '';
         if (termo.length === 0) return;
 
-        const isAdmin = usuarioLogado && usuarioLogado.perfil.toUpperCase() === "ADMIN";
+        const isAdmin = usuarioLogado && usuarioLogado.perfil && usuarioLogado.perfil.toUpperCase() === "ADMIN";
 
         let filtrados = estoqueCompleto.filter(i => {
-            const termoEhNumero = /^\d+$/.test(termo);
-            if (termoEhNumero) {
-                return i.mat.toString().toLowerCase() === termo;
+            const matString = i.mat ? i.mat.toString().toLowerCase() : "";
+            const enderString = i.ender ? i.ender.toString().toLowerCase() : "";
+            
+            // Aceita busca por número de material completo (independente de ter 4, 6 ou mais dígitos)
+            if (/^\d+$/.test(termo)) {
+                return matString === termo;
             } else {
-                return i.ender.toLowerCase().includes(termo);
+                return enderString.includes(termo);
             }
         });
 
