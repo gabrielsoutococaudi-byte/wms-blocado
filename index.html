@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -45,6 +45,7 @@
             background: var(--bg-light);
             color: var(--text-dark);
             line-height: 1.6;
+            -webkit-tap-highlight-color: transparent;
         }
 
         h1, h2, h3, h4, h5, h6 {
@@ -58,11 +59,11 @@
             50% { transform: translateY(15px); }
         }
 
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg-light); }
         ::-webkit-scrollbar-thumb { background: var(--gray-light); border-radius: 4px; }
 
-        /* LOGIN */
+        /* LOGIN RESPONSIVO */
         .login-container {
             min-height: 100vh;
             background: linear-gradient(135deg, #1a1a1a 0%, #2d3436 100%);
@@ -71,12 +72,13 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
+            padding: 16px;
         }
 
         .login-bg-float {
             position: absolute;
-            width: 384px;
-            height: 384px;
+            width: 300px;
+            height: 300px;
             background: var(--primary);
             opacity: 0.1;
             border-radius: 50%;
@@ -90,8 +92,7 @@
             position: relative;
             z-index: 10;
             width: 100%;
-            max-width: 448px;
-            padding: 16px;
+            max-width: 400px;
             background: white;
             border-radius: 16px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -100,26 +101,26 @@
 
         .login-header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            padding: 40px;
+            padding: 32px 20px;
             text-align: center;
             color: white;
-            margin: -16px -16px 20px -16px;
         }
 
+        .login-header h1 { font-size: 24px; }
+
         .login-header-icon {
-            width: 64px;
-            height: 64px;
+            width: 56px;
+            height: 56px;
             background: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 32px;
+            margin: 0 auto 16px;
+            font-size: 28px;
         }
 
-        .login-form { padding: 20px; }
-
+        .login-form { padding: 24px 20px; }
         .form-group { margin-bottom: 20px; }
 
         .form-label {
@@ -134,10 +135,10 @@
 
         .form-input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 16px;
             border: 1px solid #ddd;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 16px; /* Tamanho 16 evita zoom automático no iOS */
             background-color: #fff;
             color: #000;
             transition: all 0.3s ease;
@@ -158,11 +159,10 @@
             border-radius: 8px;
             font-weight: 700;
             text-transform: uppercase;
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
-
-        .form-button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(220, 20, 60, 0.3); }
 
         .login-error {
             margin-bottom: 24px;
@@ -174,21 +174,21 @@
             font-size: 13px;
         }
 
-        /* DASHBOARD INTERFACE */
-        .dashboard-container { display: flex; height: 100vh; background: #f8f9fa; }
+        /* LAYOUT DASHBOARD RESPONSIVO */
+        .dashboard-container { display: flex; min-height: 100vh; background: #f8f9fa; position: relative; }
 
         .sidebar {
             position: fixed;
             left: 0;
             top: 0;
-            width: 256px;
+            width: 260px;
             height: 100vh;
             background: linear-gradient(180deg, #1a1a1a 0%, #2d3436 100%);
             color: white;
             padding: 24px;
             box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
-            z-index: 100;
-            transition: transform 0.3s ease;
+            z-index: 200;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .sidebar-logo {
@@ -219,9 +219,9 @@
         .sidebar-menu-item {
             width: 100%;
             text-align: left;
-            padding: 12px 16px;
+            padding: 14px 16px;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
             cursor: pointer;
             border: none;
@@ -237,7 +237,7 @@
 
         .sidebar-logout {
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 16px;
             background: rgba(231, 76, 60, 0.2);
             color: #e74c3c;
             border: none;
@@ -247,71 +247,101 @@
             margin-top: 20px;
         }
 
-        .main-content { margin-left: 256px; display: flex; flex-direction: column; flex: 1; width: calc(100% - 256px); }
+        /* CONTEÚDO PRINCIPAL AJUSTÁVEL */
+        .main-content { 
+            margin-left: 260px; 
+            display: flex; 
+            flex-direction: column; 
+            flex: 1; 
+            width: calc(100% - 260px); 
+            min-width: 0;
+        }
 
         .header {
             position: fixed;
             top: 0;
-            left: 256px;
+            left: 260px;
             right: 0;
             background: white;
             border-bottom: 1px solid #eee;
-            padding: 16px 32px;
+            padding: 16px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 50;
+            z-index: 150;
+            height: 70px;
+            transition: left 0.3s ease;
         }
 
-        .header-left h2 { font-size: 18px; }
-        .header-left p { font-size: 12px; color: #999; }
-        .header-right { display: flex; align-items: center; gap: 24px; }
+        .header-left h2 { font-size: 16px; }
+        .header-left p { font-size: 11px; color: #999; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-user { display: flex; align-items: center; gap: 12px; }
+        .header-avatar { width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; }
 
-        .header-user { display: flex; align-items: center; gap: 12px; padding-left: 24px; border-left: 1px solid #eee; }
-        .header-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
+        .content { margin-top: 70px; padding: 24px; flex: 1; overflow-y: auto; }
+        .content-title { font-size: 20px; margin-bottom: 20px; text-transform: uppercase; color: var(--gray-dark); }
 
-        .content { margin-top: 80px; padding: 32px; flex: 1; overflow-y: auto; }
-        .content-title { font-size: 22px; margin-bottom: 24px; text-transform: uppercase; color: var(--gray-dark); }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); margin-bottom: 20px; }
+        .card-title { font-size: 13px; color: var(--primary); margin-bottom: 16px; text-transform: uppercase; font-weight: bold; }
 
-        .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); margin-bottom: 24px; }
-        .card-title { font-size: 14px; color: var(--primary); margin-bottom: 16px; text-transform: uppercase; font-weight: bold; }
+        /* GRIDS COMPATÍVEIS COM TELAS PEQUENAS */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .stat-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); border-top: 4px solid var(--primary); }
+        .stat-label { font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 6px; font-weight: bold; }
+        .stat-value { font-size: 28px; font-weight: 800; color: #333; }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 24px; }
-        .stat-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); border-top: 4px solid var(--primary); }
-        .stat-label { font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 8px; font-weight: bold; }
-        .stat-value { font-size: 32px; font-weight: 800; color: #333; }
-
-        .search-box { position: relative; margin-bottom: 24px; }
-        .search-box input { width: 100%; padding: 14px 16px 14px 45px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-        .search-box::before { content: '🔍'; position: absolute; left: 16px; top: 50%; transform: translateY(-50%); }
+        .search-box { position: relative; margin-bottom: 20px; }
+        .search-box input { width: 100%; padding: 14px 16px 14px 45px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .search-box::before { content: '🔍'; position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 16px; }
 
         /* CARDS DO ESTOQUE */
-        .item-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); border-left: 6px solid #444; display: flex; justify-content: space-between; align-items: center; }
-        .item-badges { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
-        .badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .item-card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 16px; 
+            margin-bottom: 12px; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
+            border-left: 6px solid #444; 
+            display: flex; 
+            flex-direction: column;
+            gap: 14px;
+        }
+        
+        @media(min-width: 576px) {
+            .item-card { flex-direction: row; justify-content: space-between; align-items: center; }
+        }
+
+        .item-info { flex: 1; }
+        .item-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; align-items: center; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
         .badge-address { background: #333; color: white; }
         .badge-status { color: white; }
 
-        .item-code { font-size: 24px; font-weight: 800; margin-bottom: 2px; }
-        .item-desc { font-size: 13px; color: #555; margin-bottom: 8px; }
+        .item-code { font-size: 22px; font-weight: 800; margin-bottom: 2px; line-height: 1.2; }
+        .item-desc { font-size: 13px; color: #555; margin-bottom: 4px; }
         
-        .btn { padding: 12px 24px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px; text-transform: uppercase; transition: 0.2s; }
+        .btn { padding: 14px 20px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; text-transform: uppercase; transition: 0.2s; text-align: center; display: inline-block; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-secondary { background: #64748b; color: white; }
 
-        /* MODAL */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        /* MODAL RESPONSIVO */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 16px; }
         .modal.active { display: flex; }
-        .modal-content { background: white; border-radius: 16px; padding: 32px; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
+        .modal-content { background: white; border-radius: 16px; padding: 24px; max-width: 420px; width: 100%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); max-height: 90vh; overflow-y: auto; }
         .modal-title { font-size: 18px; font-weight: 800; color: var(--primary); margin-bottom: 12px; }
-        .modal-info { background: #f1f5f9; padding: 14px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; line-height: 1.5; color: #334155; }
-        .modal-input { width: 100%; padding: 12px; border: 2px solid var(--primary); border-radius: 8px; font-size: 26px; font-weight: 700; text-align: center; margin-bottom: 16px; }
-        .modal-select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; font-size: 14px; background: #fff; }
-        .modal-buttons { display: flex; gap: 12px; }
-        .modal-buttons button { flex: 1; }
+        .modal-info { background: #f1f5f9; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; line-height: 1.5; color: #334155; }
+        .modal-input { width: 100%; padding: 12px; border: 2px solid var(--primary); border-radius: 8px; font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 16px; }
+        .modal-select { width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; font-size: 16px; background: #fff; }
+        
+        .modal-buttons { display: flex; flex-direction: column; gap: 10px; }
+        @media(min-width: 400px) {
+            .modal-buttons { flex-direction: row; }
+            .modal-buttons button { flex: 1; }
+        }
 
-        .menu-toggle-btn { display: none; background: none; border: 1px solid #ddd; padding: 8px; border-radius: 6px; font-size: 18px; cursor: pointer; }
+        .menu-toggle-btn { display: none; background: none; border: 1px solid #ddd; padding: 10px; border-radius: 8px; font-size: 20px; cursor: pointer; color: var(--gray-dark); align-items: center; justify-content: center; }
 
         select {
             cursor: pointer; appearance: none;
@@ -319,15 +349,27 @@
             background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px !important;
         }
 
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-260px); }
+        /* --- MEDIA QUERIES PARA ADAPTAÇÃO MOBILE --- */
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-270px); }
             .sidebar.active { transform: translateX(0); }
+            
+            /* Overlay de fundo quando o menu mobile abre */
+            .sidebar.active::after {
+                content: '';
+                position: fixed;
+                left: 260px; top: 0; width: calc(100vw - 260px); height: 100vh;
+                background: rgba(0,0,0,0.4); z-index: 199;
+            }
+
             .main-content { margin-left: 0; width: 100%; }
-            .header { left: 0; padding: 16px; }
-            .menu-toggle-btn { display: block; }
-            .item-card { flex-direction: column; align-items: flex-start; gap: 16px; }
-            .item-action { width: 100%; text-align: right; }
-            .btn { width: 100%; }
+            .header { left: 0; padding: 12px 16px; }
+            .menu-toggle-btn { display: flex; }
+            .content { padding: 16px; }
+            .header-user-info { display: none; } /* Oculta nome extenso no topo mobile para salvar espaço */
+            
+            .item-action { width: 100%; }
+            .item-action .btn { width: 100%; }
         }
     </style>
 </head>
@@ -453,6 +495,15 @@
             document.getElementById('sidebar').classList.toggle('active');
         }
 
+        // Fecha o menu lateral se clicar fora dele no mobile
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const menuBtn = document.querySelector('.menu-toggle-btn');
+            if(sidebar && sidebar.classList.contains('active') && !sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+
         function renderBaseLayout() {
             const isAdmin = currentUser.perfil?.toUpperCase() === 'ADMIN';
             document.getElementById('app').innerHTML = `
@@ -481,16 +532,16 @@
 
                     <div class="main-content">
                         <div class="header">
-                            <div style="display:flex; align-items:center; gap:15px;">
+                            <div style="display:flex; align-items:center; gap:12px;">
                                 <button class="menu-toggle-btn" onclick="toggleMenu()">☰</button>
                                 <div class="header-left">
-                                    <h2 style="font-size:16px;">WMS FLOW PRO</h2>
-                                    <p>Uberlândia Refrescos</p>
+                                    <h2 style="font-size:15px; line-height:1.2;">WMS FLOW PRO</h2>
+                                    <p style="font-size:11px;">Uberlândia Refrescos</p>
                                 </div>
                             </div>
                             <div class="header-right">
                                 <div class="header-user">
-                                    <div style="text-align:right;">
+                                    <div class="header-user-info" style="text-align:right;">
                                         <p style="font-size:13px; font-weight:700;">${currentUser.nome}</p>
                                         <p style="font-size:10px; color:var(--primary); font-weight:700;">${currentUser.perfil.toUpperCase()}</p>
                                     </div>
@@ -569,7 +620,7 @@
             const retido = estoqueCompleto.filter(i => i.dias <= 30).length;
 
             return `
-                <h2 class="content-title">Dashboard Administrativo</h2>
+                <h2 class="content-title">Dashboard Admin</h2>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-label">Total Pallets</div>
@@ -599,7 +650,7 @@
             return `
                 <h2 class="content-title">Pesquisar e Retirar Material</h2>
                 <div class="search-box">
-                    <input type="text" id="search-input" inputmode="numeric" pattern="[0-9]*" placeholder="Digite o código do material ou endereço..." oninput="renderizarListaEstoque()">
+                    <input type="text" id="search-input" inputmode="numeric" pattern="[0-9]*" placeholder="Digite o código ou endereço..." oninput="renderizarListaEstoque()">
                 </div>
                 <div id="lista-estoque-dinamica"></div>
             `;
@@ -611,7 +662,7 @@
                 <div class="card">
                     <div class="form-group">
                         <label class="form-label">Origem do Fluxo</label>
-                        <select id="eb-origem" class="form-input">
+                        <select id="eb-origem" class="modal-select" style="margin-bottom:0;">
                             <option value="STAGE">STAGE</option>
                             <option value="RECEBIMENTO">RECEBIMENTO</option>
                         </select>
@@ -666,302 +717,9 @@
                         <label class="form-label">Quantidade a Transferir (Pallets)</label>
                         <input type="number" id="ab-qtd" class="form-input" placeholder="Saldo max disponível: 0">
                     </div>
-                    <button class="btn" style="background:#e11d48; color:white; width:100%; margin-top:10px;" onclick="processarAberturaBlocado()">CONFIRMAR TRANSFERÊNCIA DE ENDEREÇO</button>
+                    <button class="btn" style="background:#e11d48; color:white; width:100%; margin-top:10px;" onclick="processarAberturaBlocado()">CONFIRMAR TRANSFERÊNCIA</button>
                 </div>
             `;
-        }
-
-        // Lógicas Operacionais do Estoque (FEFO)
-        function renderizarListaEstoque() {
-            const input = document.getElementById('search-input');
-            const lista = document.getElementById('lista-estoque-dinamica');
-            if(!lista) return;
-
-            const termo = input ? input.value.toLowerCase().trim() : "";
-            lista.innerHTML = '';
-            if(termo.length === 0) return;
-
-            const isAdmin = currentUser.perfil?.toUpperCase() === 'ADMIN';
-
-            let filtrados = estoqueCompleto.filter(i => {
-                if(/^\d+$/.test(termo)) { return i.mat.toString().toLowerCase() === termo; }
-                return i.ender.toLowerCase().includes(termo);
-            });
-
-            // Regra Crítica de Segurança: Operadores comuns não enxergam lotes retidos (<=30 dias)
-            if (!isAdmin) { filtrados = filtrados.filter(item => item.dias > 30); }
-
-            // Ordenação Estrita FEFO (Menor tempo de shelf-life primeiro)
-            filtrados.sort((a, b) => (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0));
-
-            if(filtrados.length === 0) {
-                lista.innerHTML = `<p style="font-size:13px; color:#666; text-align:center; padding:20px;">Nenhum saldo compatível ou liberado encontrado.</p>`;
-                return;
-            }
-
-            filtrados.forEach(item => {
-                let statusTexto = "DATA BOA";
-                let statusCor = "var(--verde)";
-
-                if (item.dias <= 30) {
-                    statusTexto = item.dias < 0 ? "VENCIDO / RETIDO" : "RETIDO";
-                    statusCor = "var(--retido)";
-                } else if (item.dias <= 60) {
-                    statusTexto = "CRÍTICO";
-                    statusCor = "var(--critico)";
-                }
-
-                const card = document.createElement('div');
-                card.className = 'item-card';
-                card.style.borderLeftColor = statusCor;
-                card.innerHTML = `
-                    <div>
-                        <div class="item-badges">
-                            <span class="badge badge-address">${item.ender}</span>
-                            <span class="badge badge-status" style="background-color:${statusCor}">${statusTexto}</span>
-                        </div>
-                        <div class="item-code">${item.mat}</div>
-                        <div class="item-desc">${item.desc || "Sem descrição"}</div>
-                        <div style="font-size:12px; color:#555;">Vencimento: <b>${item.dias} dias</b> (${item.valFrente || 'S/D'})</div>
-                    </div>
-                    <div class="item-action">
-                        <div style="font-size:24px; font-weight:800; margin-bottom:5px;">${item.qtd} PL</div>
-                        <button class="btn btn-primary" style="padding:8px 16px; font-size:12px;" onclick="abrirModalRetirada('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button>
-                    </div>
-                `;
-                lista.appendChild(card);
-            });
-        }
-
-        function abrirModalRetirada(id, qtdAtual, mat, ender, validade) {
-            itemParaRetirar = { id, qtdAtual, mat, ender, validade };
-            document.getElementById('modal-titulo').innerText = `Retirar de: ${mat}`;
-            document.getElementById('modal-info').innerHTML = `Endereço: <b>${ender}</b><br>Saldo Atual na Posição: <b>${qtdAtual} PL</b>`;
-            document.getElementById('modal-input-qtd').value = '';
-            document.getElementById('modal-retirada').classList.add('active');
-            setTimeout(() => document.getElementById('modal-input-qtd').focus(), 150);
-        }
-
-        function fecharModal() {
-            document.getElementById('modal-retirada').classList.remove('active');
-            itemParaRetirar = null;
-        }
-
-        async function processarRetirada() {
-            const inputQtd = document.getElementById('modal-input-qtd').value;
-            const destinoMov = document.getElementById('modal-destino-mov').value;
-            const v = parseInt(inputQtd);
-
-            if(isNaN(v) || v <= 0) return alert("Digite uma quantidade válida!");
-            if(v > itemParaRetirar.qtdAtual) return alert("Quantidade inserida excede o saldo físico disponível!");
-
-            const { id, qtdAtual, mat, ender, validade } = itemParaRetirar;
-
-            try {
-                if (v === qtdAtual) {
-                    await db.collection("estoque_blocado").doc(id).delete();
-                } else {
-                    await db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v });
-                }
-
-                await registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`, destinoMov);
-                fecharModal();
-                alert("Retirada concluída com sucesso!");
-                renderizarListaEstoque();
-            } catch(e) {
-                alert("Erro de comunicação com o Firestore.");
-            }
-        }
-
-        async function salvarEntradaBloco() {
-            const origem = document.getElementById('eb-origem').value;
-            const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
-            const mat = document.getElementById('eb-mat').value.trim();
-            const qtd = parseInt(document.getElementById('eb-qtd').value);
-            const inputVenc = document.getElementById('eb-venc').value;
-
-            if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos da Entrada!");
-
-            const dataV = inputVenc.split('-').reverse().join('/');
-            const ocupante = estoqueCompleto.find(i => i.ender === ender);
-
-            if (ocupante) {
-                if (ocupante.mat === mat) {
-                    if (confirm(`Endereço ocupado pelo mesmo material. Somar +${qtd} PL no saldo atual?`)) {
-                        await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd });
-                        await registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma Manual)`, `ENTRADA VIA ${origem}`);
-                        alert("Saldo atualizado com sucesso!");
-                        navegar('retirar');
-                    }
-                    return;
-                } else {
-                    return alert(`BLOQUEIO DE ENDEREÇO! A posição ${ender} já possui o material: ${ocupante.mat}`);
-                }
-            }
-
-            const desc = document.getElementById('eb-desc').value;
-            await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc });
-            await registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada)`, `ENTRADA VIA ${origem}`);
-            alert("Nova entrada consolidada!");
-            navegar('retirar');
-        }
-
-        function carregarDadosOrigemAbertura(enderOrigem) {
-            const item = estoqueCompleto.find(i => i.ender.toLowerCase() === enderOrigem.toLowerCase().trim());
-            if(item) {
-                itemOrigemAbertura = item;
-                document.getElementById('ab-mat').value = item.mat;
-                document.getElementById('ab-desc').value = item.desc || "Sem descrição";
-                document.getElementById('ab-qtd').placeholder = `Saldo max disponível: ${item.qtd}`;
-            } else {
-                itemOrigemAbertura = null;
-                document.getElementById('ab-mat').value = '';
-                document.getElementById('ab-desc').value = '';
-                document.getElementById('ab-qtd').placeholder = 'Posição não encontrada';
-                alert("Nenhum material ativo localizado nesta posição.");
-            }
-        }
-
-        async function processarAberturaBlocado() {
-            const enderDestino = document.getElementById('ab-destino').value.toUpperCase().trim();
-            const qtdTransferir = parseInt(document.getElementById('ab-qtd').value);
-
-            if(!itemOrigemAbertura) return alert("A posição de origem precisa ser válida!");
-            if(isNaN(qtdTransferir) || qtdTransferir <= 0) return alert("Insira uma quantidade de pallets válida!");
-            if(qtdTransferir > itemOrigemAbertura.qtd) return alert("Quantidade maior do que o saldo físico disponível!");
-            if(!enderDestino) return alert("Indique a posição de destino!");
-
-            try {
-                const ocupanteDestino = estoqueCompleto.find(i => i.ender === enderDestino);
-                if (ocupanteDestino && ocupanteDestino.mat !== itemOrigemAbertura.mat) {
-                    return alert(`BLOQUEADO! O destino ${enderDestino} já está ocupado por: ${ocupanteDestino.mat}`);
-                }
-
-                if (qtdTransferir === itemOrigemAbertura.qtd) {
-                    await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete();
-                } else {
-                    await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtdTransferir });
-                }
-
-                if (ocupanteDestino && ocupanteDestino.mat === itemOrigemAbertura.mat) {
-                    await db.collection("estoque_blocado").doc(ocupanteDestino.id).update({ qtd: ocupanteDestino.qtd + qtdTransferir });
-                } else {
-                    await db.collection("estoque_blocado").add({
-                        ender: enderDestino,
-                        mat: itemOrigemAbertura.mat,
-                        desc: itemOrigemAbertura.desc,
-                        qtd: qtdTransferir,
-                        dias: itemOrigemAbertura.dias,
-                        valFrente: itemOrigemAbertura.valFrente
-                    });
-                }
-
-                await registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtdTransferir} PL`, `TRANSFERIDO PARA ${enderDestino}`);
-                await registrarMovimentacao(enderDestino, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtdTransferir} PL`, `RECEBIDO DE ${itemOrigemAbertura.ender}`);
-
-                alert("Transferência realizada!");
-                navegar('retirar');
-            } catch(e) {
-                alert("Erro ao processar transferência interna.");
-            }
-        }
-
-        // Funções de Suporte Técnico
-        function puxarDescricao(cod, inputDestinoId) {
-            const p = estoqueCompleto.find(i => i.mat.toString() === cod.trim());
-            document.getElementById(inputDestinoId).value = p ? p.desc : "NOVO MATERIAL";
-        }
-
-        function calcularDias(data, labelId) {
-            diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
-            document.getElementById(labelId).innerText = `Vencimento calculado em: ${diasCalculados} dias`;
-        }
-
-        async function registrarMovimentacao(ender, mat, val, qtd, fluxoInfo) {
-            const agora = new Date();
-            await db.collection("movimentacoes_wms").add({ 
-                endereco: ender, 
-                material: mat, 
-                validade: val, 
-                quantidade: qtd, 
-                fluxo: fluxoInfo || "N/A",
-                login: currentUser.email, 
-                data: agora.toLocaleDateString('pt-BR'), 
-                hora: agora.toLocaleTimeString('pt-BR'), 
-                timestamp: agora 
-            });
-        }
-
-        async function exportarHistoricoExcel() {
-            try {
-                const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-                if (snap.empty) return alert("Nenhum histórico registrado no banco de dados.");
-                const dados = snap.docs.map(doc => {
-                    const d = doc.data();
-                    return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Fluxo": d.fluxo, "Usuário": d.login, "Data": d.data, "Hora": d.hora };
-                });
-                const ws = XLSX.utils.json_to_sheet(dados);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Histórico WMS");
-                XLSX.writeFile(wb, `Historico_WMS_${new Date().getTime()}.xlsx`);
-            } catch (error) { alert("Erro ao gerar arquivo XLS."); }
-        }
-
-        async function importarCSV(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const texto = e.target.result;
-                    const linhas = texto.split(/\r?\n/).filter(l => l.trim() !== "");
-                    if (linhas.length <= 1) return alert("Planilha sem registros válidos!");
-                    const dados = linhas.slice(1);
-                    if (!confirm(`ATENÇÃO! Apagar o estoque ativo atual e carregar ${dados.length} novos itens?`)) return;
-
-                    const snapshot = await db.collection("estoque_blocado").get();
-                    if (!snapshot.empty) {
-                        let deleteBatch = db.batch();
-                        let delCount = 0;
-                        for (const doc of snapshot.docs) {
-                            deleteBatch.delete(doc.ref);
-                            delCount++;
-                            if (delCount % 400 === 0) { await deleteBatch.commit(); deleteBatch = db.batch(); }
-                        }
-                        await deleteBatch.commit();
-                    }
-
-                    let batch = db.batch();
-                    let count = 0;
-                    for (const linha of dados) {
-                        const c = linha.split(";");
-                        if (c.length >= 6) {
-                            const ender = c[0].trim();
-                            const mat = c[1].trim();
-                            const desc = c[2].trim();
-                            const valFrente = c[3].trim();
-                            const qtd = parseInt(c[5].replace(/\D/g, '')) || 0;
-                            const dias = parseInt(c[7].replace(/\D/g, '')) || 0;
-                            if (ender && mat) {
-                                const docRef = db.collection("estoque_blocado").doc();
-                                batch.set(docRef, { ender, mat, desc, valFrente, qtd, dias });
-                                count++;
-                                if (count % 400 === 0) { await batch.commit(); batch = db.batch(); }
-                            }
-                        }
-                    }
-                    await batch.commit();
-                    alert("Novo estoque alimentado com sucesso!");
-                } catch(err) { alert("Erro ao processar arquivo CSV."); }
-            };
-            reader.readAsText(file);
-        }
-
-        function handleLogout() {
-            auth.signOut().then(() => {
-                localStorage.removeItem('wms_session');
-                location.reload();
-            });
         }
 
         window.onload = init;
