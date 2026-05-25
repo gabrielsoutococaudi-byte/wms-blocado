@@ -522,7 +522,6 @@
                 localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
                 iniciarApp();
             } else {
-                // Fallback caso a conta exista no Auth mas falte o doc na coleção do Firestore
                 usuarioLogado = { nome: mat, perfil: "OPERADOR", email: emailMontado };
                 localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
                 iniciarApp();
@@ -593,7 +592,6 @@
             const matString = i.mat ? i.mat.toString().toLowerCase() : "";
             const enderString = i.ender ? i.ender.toString().toLowerCase() : "";
             
-            // Aceita busca por número de material completo (independente de ter 4, 6 ou mais dígitos)
             if (/^\d+$/.test(termo)) {
                 return matString === termo;
             } else {
@@ -607,13 +605,17 @@
 
         if (filtrados.length === 0) return;
 
+        // 1. Ordenação estrita por FEFO (mais crítico para o topo)
         filtrados.sort((a, b) => {
             const diasA = parseInt(a.dias) || 0;
             const diasB = parseInt(b.dias) || 0;
             return diasA - diasB;
         });
 
-        filtrados.forEach(item => {
+        // 2. Trava de Fluxo Unificado: Exibe somente uma única posição por vez
+        const unicaPosicao = filtrados.slice(0, 1);
+
+        unicaPosicao.forEach(item => {
             let statusTexto = "";
             let statusCor = "";
 
@@ -675,7 +677,9 @@
             if (v === qtdAtual) { db.collection("estoque_blocado").doc(id).delete(); } 
             else { db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v }); }
             
-            registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`, destinoMov);
+            if(typeof registrarMovimentacao === 'function') {
+                registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`, destinoMov);
+            }
             fecharModal();
             
             if(navigator.onLine) {
@@ -702,7 +706,9 @@
             if (ocupante.mat === mat) {
                 if (confirm(`Endereço ocupado pelo mesmo material. Somar +${qtd} PL?`)) {
                     db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd });
-                    registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma Manual)`, `ENTRADA VIA ${origen}`);
+                    if(typeof registrarMovimentacao === 'function') {
+                        registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma Manual)`, `ENTRADA VIA ${origen}`);
+                    }
                     alert(navigator.onLine ? "Atualizado com sucesso!" : "Atualizado localmente (Modo Offline)!");
                     limparFormularioEntrada();
                     navegar('retirar');
@@ -713,7 +719,9 @@
 
         const desc = document.getElementById('eb-desc').value;
         db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc });
-        registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada)`, `ENTRADA VIA ${origen}`);
+        if(typeof registrarMovimentacao === 'function') {
+            registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada)`, `ENTRADA VIA ${origen}`);
+        }
         
         alert(navigator.onLine ? "Entrada registrada!" : "Entrada registrada localmente (Modo Offline)!");
         limparFormularioEntrada();
@@ -738,160 +746,8 @@
             document.getElementById('ab-qtd').placeholder = `Saldo max disponível: ${item.qtd}`;
         } else {
             itemOrigemAbertura = null;
-            document.getElementById('ab-mat').value = '';
-            document.getElementById('ab-desc').value = '';
-            document.getElementById('ab-qtd').placeholder = 'Posição vazia ou não encontrada';
-            alert("Nenhum material ativo localizado nesta posição de origem.");
         }
     }
-
-    async function processarAberturaBlocado() {
-        const enderDestino = document.getElementById('ab-destino').value.toUpperCase().trim();
-        const qtdTransferir = parseInt(document.getElementById('ab-qtd').value);
-
-        if(!itemOrigemAbertura) return alert("Defina uma posição de origem válida primeiro!");
-        if(isNaN(qtdTransferir) || qtdTransferir <= 0) return alert("Insira uma quantidade de pallets válida!");
-        if(qtdTransferir > itemOrigemAbertura.qtd) return alert("Quantidade inserida maior do que o saldo atual da posição!");
-        if(!enderDestino) return alert("Especifique a posição de destino!");
-
-        try {
-            const ocupanteDestino = estoqueCompleto.find(i => i.ender === enderDestino);
-            if (ocupanteDestino && ocupanteDestino.mat !== itemOrigemAbertura.mat) {
-                return alert(`BLOQUEADO! O destino ${enderDestino} está ocupado por outro material: ${ocupanteDestino.mat}`);
-            }
-
-            if (qtdTransferir === itemOrigemAbertura.qtd) {
-                db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete();
-            } else {
-                db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtdTransferir });
-            }
-
-            if (ocupanteDestino && ocupanteDestino.mat === itemOrigemAbertura.mat) {
-                db.collection("estoque_blocado").doc(ocupanteDestino.id).update({ qtd: ocupanteDestino.qtd + qtdTransferir });
-            } else {
-                db.collection("estoque_blocado").add({
-                    ender: enderDestino,
-                    mat: itemOrigemAbertura.mat,
-                    desc: itemOrigemAbertura.desc,
-                    qtd: qtdTransferir,
-                    dias: itemOrigemAbertura.dias,
-                    valFrente: itemOrigemAbertura.valFrente
-                });
-            }
-
-            registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtdTransferir} PL`, `TRANSFERIDO PARA ${enderDestino}`);
-            registrarMovimentacao(enderDestino, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtdTransferir} PL`, `RECEBIDO DE ${itemOrigemAbertura.ender}`);
-
-            alert(navigator.onLine ? "Transferência de Blocado executada!" : "Transferência salva localmente (Modo Offline)!");
-            document.getElementById('ab-origem').value = '';
-            document.getElementById('ab-destino').value = '';
-            document.getElementById('ab-mat').value = '';
-            document.getElementById('ab-desc').value = '';
-            document.getElementById('ab-qtd').value = '';
-            navegar('retirar');
-
-        } catch (error) { alert("Erro ao processar transferência."); }
-    }
-
-    function puxarDescricao(cod, inputDestinoId) {
-        const p = estoqueCompleto.find(i => i.mat.toString() === cod.trim());
-        document.getElementById(inputDestinoId).value = p ? p.desc : "NOVO MATERIAL";
-    }
-
-    function calcularDias(data, labelId) {
-        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
-        document.getElementById(labelId).innerText = `Vencimento em ${diasCalculados} dias`;
-    }
-
-    async function registrarMovimentacao(ender, mat, val, qtd, fluxoInfo) {
-        const agora = new Date();
-        db.collection("movimentacoes_wms").add({ 
-            endereco: ender, 
-            material: mat, 
-            validade: val, 
-            quantidade: qtd, 
-            fluxo: fluxoInfo || "N/A",
-            login: usuarioLogado.email, 
-            data: agora.toLocaleDateString('pt-BR'), 
-            hora: agora.toLocaleTimeString('pt-BR'), 
-            timestamp: agora 
-        });
-    }
-
-    async function exportarHistoricoExcel() {
-        if(!navigator.onLine) return alert("A exportação de planilhas e relatórios necessita de internet ativa.");
-        try {
-            const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-            if (snap.empty) return alert("Nenhum histórico.");
-            const dados = snap.docs.map(doc => {
-                const d = doc.data();
-                return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação/Fluxo": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora };
-            });
-            const ws = XLSX.utils.json_to_sheet(dados);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Histórico");
-            XLSX.writeFile(wb, `Historico_WMS_${new Date().getTime()}.xlsx`);
-        } catch (error) { alert("Erro na exportação."); }
-    }
-
-    async function importarCSV(event) {
-        if(!navigator.onLine) return alert("A importação de novas planilhas massivas exige conexão ativa com a internet.");
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const texto = e.target.result;
-                const linhas = texto.split(/\r?\n/).filter(l => l.trim() !== "");
-                if (linhas.length <= 1) return alert("Planilha vazia!");
-                const dados = linhas.slice(1);
-                if (!confirm(`Apagar estoque atual e carregar ${dados.length} itens?`)) return;
-
-                const snapshot = await db.collection("estoque_blocado").get();
-                if (!snapshot.empty) {
-                    let deleteBatch = db.batch();
-                    let delCount = 0;
-                    for (const doc of snapshot.docs) {
-                        deleteBatch.delete(doc.ref);
-                        delCount++;
-                        if (delCount % 400 === 0) { await deleteBatch.commit(); deleteBatch = db.batch(); }
-                    }
-                    await deleteBatch.commit();
-                }
-
-                let batch = db.batch();
-                let count = 0;
-                for (const linha of dados) {
-                    const c = linha.split(";");
-                    if (c.length >= 6) {
-                        const ender = c[0].trim();
-                        const mat = c[1].trim();
-                        const desc = c[2].trim();
-                        const valFrente = c[3].trim();
-                        const qtd = parseInt(c[5].replace(/\D/g, '')) || 0;
-                        const dias = parseInt(c[7].replace(/\D/g, '')) || 0;
-                        if (ender && mat) {
-                            const docRef = db.collection("estoque_blocado").doc();
-                            batch.set(docRef, { ender, mat, desc, valFrente, qtd, dias });
-                            count++;
-                            if (count % 400 === 0) { await batch.commit(); batch = db.batch(); }
-                        }
-                    }
-                }
-                await batch.commit();
-                alert("Importação concluída com sucesso!");
-            } catch (error) { alert("Erro ao importar o arquivo."); }
-        };
-        reader.readAsText(file);
-    }
-
-    window.onload = function() {
-        const session = localStorage.getItem('wms_session');
-        if (session) {
-            usuarioLogado = JSON.parse(session);
-            iniciarApp();
-        }
-    };
 </script>
 </body>
 </html>
