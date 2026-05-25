@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WMS FLOW PRO">
-
+    
     <title>WMS FLOW PRO - Sistema Integrado</title>
-
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
-
+    
     <style>
         :root { 
             --bg: #0d0d0d; 
@@ -33,128 +33,491 @@
             --border: #2d2d2d;
         }
 
-        /* Ajustes globais para mobile e toque */
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
-@@ -50,7 +49,6 @@
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding-bottom: env(safe-area-inset-bottom, 40px); 
+            padding-top: env(safe-area-inset-top, 0px);
+            -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
         }
 
-        /* Indicador de Status da Conexão */
         #network-status {
             display: none;
             background: var(--critico);
-@@ -66,13 +64,12 @@
+            color: #000;
+            text-align: center;
+            padding: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            position: sticky;
+            top: 0;
+            z-index: 1001;
+            text-transform: uppercase;
             letter-spacing: 1px;
         }
-
-        /* Sidebar */
+        
         .sidebar { 
             position: fixed; 
             left: -280px; 
             top: 0; 
             width: 280px; 
-            height: 100dvh; /* dvh adapta-se dinamicamente à altura da tela mobile */
             height: 100dvh; 
             background: #121212; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             z-index: 1000; 
-@@ -103,7 +100,6 @@
+            padding-top: calc(60px + env(safe-area-inset-top)); 
+            border-right: 1px solid var(--border); 
+            box-shadow: 15px 0 30px rgba(0,0,0,0.7); 
+        }
+        .sidebar.active { left: 0; }
+        .sidebar button { 
+            width: 90%; 
+            padding: 14px 20px; 
+            background: transparent; 
+            border: none; 
+            color: var(--text-secondary); 
+            text-align: left; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 14px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            margin: 8px auto;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+        .sidebar button:hover { 
+            background: rgba(229, 9, 20, 0.1); 
             color: var(--text);
         }
 
-        /* Header */
         .header { 
             padding: calc(15px + env(safe-area-inset-top)) 20px 15px 20px; 
             background: rgba(26, 26, 26, 0.85); 
-@@ -139,7 +135,6 @@
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            border-bottom: 1px solid var(--border); 
+            position: sticky; 
+            top: 0; 
+            z-index: 900; 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .menu-btn { 
+            background: none; 
+            border: 1px solid var(--border); 
+            padding: 8px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            color: white; 
+            font-size: 22px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 42px; 
+            height: 42px; 
+        }
+        
+        .container { 
+            width: 100%;
+            max-width: 900px; 
+            margin: auto; 
             padding: 16px; 
         }
 
-        /* Dashboard Responsivo */
         .admin-dashboard { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
-@@ -157,7 +152,6 @@
+            gap: 12px; 
+            margin-bottom: 20px; 
+        }
+        .stat-box { 
+            background: var(--card); 
+            padding: 16px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--primary); 
+            text-align: center; 
+        }
         .stat-box h5 { margin: 0; font-size: 10px; color: var(--text-secondary); text-transform: uppercase; }
         .stat-box p { margin: 6px 0 0; font-size: 24px; font-weight: 900; color: #fff; }
 
-        /* Inputs e Buscas */
         .search-area { 
             background: var(--card); 
             padding: 12px; 
-@@ -174,7 +168,7 @@
+            border-radius: 12px; 
+            margin-bottom: 15px; 
+            border: 1px solid var(--border);
+        }
+        input, select { 
+            width: 100%; 
+            padding: 14px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border); 
+            background: #0d0d0d; 
             color: white; 
             outline: none; 
             font-family: 'Inter', sans-serif; 
-            font-size: 16px; /* Impede zoom forçado nativo no iOS/Android */
             font-size: 16px; 
             transition: all 0.2s;
         }
         input:focus, select:focus {
-@@ -188,7 +182,6 @@
+            border-color: var(--primary);
+        }
+        select { 
+            cursor: pointer; 
+            appearance: none; 
+            background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>"); 
+            background-repeat: no-repeat; 
             background-position: right 14px center; 
         }
-
-        /* Cards de Itens */
+        
         .item-card { 
             background: var(--card); 
             border-radius: 12px; 
-@@ -206,7 +199,6 @@
+            padding: 16px; 
+            margin-bottom: 12px; 
+            display: flex; 
+            flex-direction: row;
+            justify-content: space-between; 
+            align-items: center; 
+            border: 1px solid var(--border);
+            border-left: 6px solid #444; 
+            gap: 10px;
+        }
+        
         .badge-ender { background: #fff; color: #000; padding: 4px 6px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
         .badge-status { color: #fff; padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; margin-left: 4px; text-transform: uppercase; }
 
-        /* Botões */
         .btn-retirar { 
             background: var(--primary); 
             color: #fff; 
-@@ -234,7 +226,6 @@
+            border: none; 
+            padding: 12px 16px; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        
+        .btn-admin { 
+            background: var(--card); 
+            color: #fff; 
+            padding: 16px; 
+            width: 100%; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            margin-top: 12px; 
+            border: 1px solid var(--border); 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            font-size: 13px;
         }
         .btn-excel { background: #107c41; border: none;}
 
-        /* Tela de Login */
         #login-screen { 
             height: 100dvh; 
             display: flex; 
-@@ -253,7 +244,6 @@
+            justify-content: center; 
+            align-items: center; 
+            background: radial-gradient(circle, #1a1a1a 0%, #000000 100%); 
+            padding: 20px;
+        }
+        .login-box { 
+            background: var(--card); 
+            padding: 35px 24px; 
+            border-radius: 16px; 
+            width: 100%;
+            max-width: 340px; 
+            border: 1px solid var(--border);
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); 
         }
 
-        /* Formulários e Modais */
         .form-container-box {
             background: var(--card); 
             padding: 20px; 
-@@ -460,7 +450,6 @@
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        #modal-retirada { 
+            display:none; 
+            position:fixed; 
+            top:0; 
+            left:0; 
+            width:100%; 
+            height:100dvh; 
+            background:rgba(0,0,0,0.85); 
+            z-index:2000; 
+            align-items:center; 
+            justify-content:center; 
+            backdrop-filter: blur(8px); 
+            padding: 16px;
+        }
+        .modal-content { 
+            background:var(--card); 
+            padding: 24px; 
+            border-radius:16px; 
+            width:100%; 
+            max-width:400px; 
+            border:1px solid var(--border); 
+        }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; font-weight: bold; }
+        
+        @media (max-width: 400px) {
+            .item-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .item-card > div:last-child {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 10px;
+                border-top: 1px solid var(--border);
+                padding-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="network-status">⚠️ Modo Offline Ativo. As alterações serão salvas localmente e sincronizadas ao reconectar.</div>
+
+<div id="sidebar" class="sidebar">
+    <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ADMIN</button>
+    <button onclick="navegar('retirar')">📦 PESQUISAR / RETIRAR</button>
+    <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
+    <button onclick="navegar('abertura_blocado')">🔄 ABERTURA DE BLOCADO</button>
+    <button onclick="logout()" style="color: var(--retido); margin-top: 30px; border-top: 1px solid var(--border); border-radius: 0; width: 100%;">🚪 SAIR</button>
+</div>
+
+<div id="login-screen">
+    <div class="login-box">
+        <h2 style="text-align: center; color: var(--primary); margin-top: 0; margin-bottom: 30px; font-weight: 900; letter-spacing: 1px;">WMS FLOW PRO</h2>
+        <input type="text" inputmode="decimal" id="login-mat" placeholder="Matrícula" style="margin-bottom:14px;">
+        <input type="password" id="login-senha" placeholder="Senha" style="margin-bottom:24px;">
+        <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%; font-size: 15px; padding: 14px;">ENTRAR</button>
+    </div>
+</div>
+
+<div id="app-screen" style="display: none;">
+    <div class="header">
+        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+        <div style="flex-grow: 1;">
+            <div id="user-name" style="font-weight: 800; font-size: 16px; letter-spacing: -0.3px;"></div>
+            <div id="role-label" style="font-size: 10px; color: var(--primary); font-weight: bold; letter-spacing: 1px; margin-top: 2px;"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="view-admin" style="display: none;">
+            <div id="dash-container" class="admin-dashboard">
+                <div class="stat-box"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
+                <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS</h5><p id="st-critico">0</p></div>
+                <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS</h5><p id="st-retido">0</p></div>
+            </div>
+
+            <div id="admin-tools-section" style="background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border);">
+                <h3 style="font-size: 12px; color: var(--primary); margin-top: 0; letter-spacing: 1px; font-weight: 800;">GERENCIAMENTO ADMINISTRATIVO</h3>
+                <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
+                <button class="btn-admin" onclick="document.getElementById('csv-file').click()" style="border-color: var(--primary); color: #fff;">ALIMENTAR NOVO ESTOQUE (CSV)</button>
+                <button class="btn-admin btn-excel" onclick="exportarHistoricoExcel()">SOLICITAR HISTÓRICO (EXCEL)</button>
+            </div>
+        </div>
+
+        <div id="view-retirar">
+            <div class="search-area">
+                <input type="text" inputmode="search" id="search-input" placeholder="Pesquisar material ou posição..." oninput="renderizarEstoque()">
+            </div>
+            <div id="lista-estoque"></div>
+        </div>
+
+        <div id="view-entrada_bloco" style="display: none;">
+            <div class="form-container-box">
+                <h3 style="color: var(--primary); margin-top: 0; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px; font-size: 18px;">Entrada no Bloco</h3>
+                
+                <div class="form-group">
+                    <label>Origem da Carga</label>
+                    <select id="eb-origem">
+                        <option value="STAGE">STAGE</option>
+                        <option value="RECEBIMENTO">RECEBIMENTO</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Endereço Destino (Ex: 205-14)</label>
+                    <input type="text" inputmode="text" id="eb-ender" placeholder="Digite o endereço de destino...">
+                </div>
+                <div class="form-group">
+                    <label>Código Material</label>
+                    <input type="text" inputmode="decimal" id="eb-mat" placeholder="Código..." oninput="puxarDescricao(this.value, 'eb-desc')">
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="eb-desc" readonly style="opacity: 0.4; background: #000;" placeholder="Descrição do material...">
+                </div>
+                <div class="form-group">
+                    <label>Quantidade (Pallets)</label>
+                    <input type="text" inputmode="decimal" id="eb-qtd" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label>Data de Vencimento</label>
+                    <input type="date" id="eb-venc" onchange="calcularDias(this.value, 'eb-label-dias')">
+                    <p id="eb-label-dias" style="color: var(--critico); font-size: 12px; margin-top: 8px; font-weight: bold;"></p>
+                </div>
+                <button class="btn-retirar" style="width: 100%; padding: 16px; margin-top: 10px;" onclick="salvarEntradaBloco()">SALVAR ENTRADA</button>
+            </div>
+        </div>
+
+        <div id="view-abertura_blocado" style="display: none;">
+            <div class="form-container-box">
+                <h3 style="color: var(--primary); margin-top: 0; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px; font-size: 18px;">Abertura de Blocado</h3>
+                
+                <div class="form-group">
+                    <label>Endereço Origem (Ex: 201-14)</label>
+                    <input type="text" inputmode="text" id="ab-origem" placeholder="Digite a posição de origem..." onchange="carregarDadosOrigemAbertura(this.value)">
+                </div>
+                <div class="form-group">
+                    <label>Código Material</label>
+                    <input type="text" id="ab-mat" readonly style="opacity: 0.4; background: #000;" placeholder="Preenchido automaticamente...">
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="ab-desc" readonly style="opacity: 0.4; background: #000;" placeholder="Preenchido automaticamente...">
+                </div>
+                <div class="form-group">
+                    <label>Endereço Destino (Ex: 205-20)</label>
+                    <input type="text" inputmode="text" id="ab-destino" placeholder="Digite a nova posição...">
+                </div>
+                <div class="form-group">
+                    <label>Quantidade a Transferir (Pallets)</label>
+                    <input type="text" inputmode="decimal" id="ab-qtd" placeholder="Saldo max disponível: 0">
+                </div>
+                <button class="btn-retirar" style="width: 100%; padding: 16px; margin-top: 10px;" onclick="processarAberturaBlocado()">CONFIRMAR TRANSFERÊNCIA</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-retirada">
+    <div class="modal-content">
+        <h3 id="modal-titulo" style="margin-top:0; color:var(--primary); font-weight: 900;">Retirar Material</h3>
+        <p id="modal-info" style="font-size:13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;"></p>
+        
+        <div class="form-group">
+            <label>Quantidade de Pallets:</label>
+            <input type="text" id="modal-input-qtd" inputmode="decimal" placeholder="0" style="font-size:32px; text-align:center; margin:10px 0; border: 2px solid var(--primary); height: 65px; font-weight: 900; color: #fff;">
+        </div>
+        
+        <div class="form-group">
+            <label>Tipo de Movimentação (Destino):</label>
+            <select id="modal-destino-mov">
+                <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                <option value="APANHA">APANHA</option>
+                <option value="SEPARAÇÃO">SEPARAÇÃO</option>
+            </select>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:25px;">
+            <button onclick="fecharModal()" style="flex:1; padding:14px; background:#2d2d2d; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:13px;">CANCELAR</button>
+            <button id="btn-confirmar-modal" style="flex:1; padding:14px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:900; cursor:pointer; font-size:13px;">CONFIRMAR</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
+        authDomain: "sistema-fefo.firebaseapp.com",
+        projectId: "sistema-fefo",
+        storageBucket: "sistema-fefo.firebasestorage.app",
+        messagingSenderId: "755801777693",
+        appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
     };
     firebase.initializeApp(firebaseConfig);
-
-    // Configurações e habilitação de cache e persistência offline do Firestore
+    
     const db = firebase.firestore();
     db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
     db.enablePersistence({ synchronizeTabs: true })
-@@ -482,7 +471,6 @@
+      .catch((err) => {
+          if (err.code == 'failed-precondition') {
+              console.log("Persistência falhou: Múltiplas abas abertas simultaneamente.");
+          } else if (err.code == 'unimplemented') {
+              console.log("O navegador não possui suporte para cache de dados.");
+          }
+      });
+
+    const auth = firebase.auth();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+    let estoqueCompleto = [];
+    let usuarioLogado = null;
+    let diasCalculados = 0;
+    let wakeLock = null;
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
 
-    // Gerenciador e listeners do status da conexão de dados
     window.addEventListener('online', atualizarStatusRede);
     window.addEventListener('offline', atualizarStatusRede);
 
-@@ -523,12 +511,19 @@
+    function atualizarStatusRede() {
+        const barraStatus = document.getElementById('network-status');
+        if (navigator.onLine) {
+            barraStatus.style.display = 'none';
+        } else {
+            barraStatus.style.display = 'block';
+        }
+    }
+
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('active');
+    }
+
+    function logout() {
+        auth.signOut().then(() => {
+            localStorage.removeItem('wms_session');
+            location.reload();
+        });
+    }
+
+    async function activarWakeLock() {
+        try { 
+            if ('wakeLock' in navigator) { 
+                wakeLock = await navigator.wakeLock.request('screen'); 
+            } 
+        } catch (e) {}
+    }
+
+    document.addEventListener('visibilitychange', async () => {
+        if (wakeLock !== null && document.visibilityState === 'visible' && usuarioLogado) {
+            activarWakeLock();
+        }
+    });
+
     async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
         const emailMontado = mat.toLowerCase() + "@alb.com";
         
         try {
-            await auth.signInWithEmailAndPassword(mat + "@alb.com", senha);
-            const doc = await db.collection("usuarios_wms").doc(mat + "@alb.com").get();
             await auth.signInWithEmailAndPassword(emailMontado, senha);
             const doc = await db.collection("usuarios_wms").doc(emailMontado).get();
             if (doc.exists) {
                 usuarioLogado = doc.data();
-                usuarioLogado.email = mat + "@alb.com";
                 usuarioLogado.email = emailMontado;
                 localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
                 iniciarApp();
@@ -164,35 +527,69 @@
                 localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
                 iniciarApp();
             }
-@@ -550,7 +545,7 @@
+        } catch (e) { 
+            if(!navigator.onLine) {
+                const session = localStorage.getItem('wms_session');
+                if(session) {
+                    usuarioLogado = JSON.parse(session);
+                    iniciarApp();
+                    return;
+                }
+            }
+            alert("Erro de Login. Verifique os dados inseridos ou a conexão."); 
+        }
+    }
+
+    function iniciarApp() {
+        document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-screen').style.display = 'block';
         document.getElementById('user-name').innerText = usuarioLogado.nome;
-
-        const isAdmin = usuarioLogado.perfil.toUpperCase() === "ADMIN";
+        
         const isAdmin = usuarioLogado.perfil && usuarioLogado.perfil.toUpperCase() === "ADMIN";
         document.getElementById('role-label').innerText = isAdmin ? "PERFIL: ADMINISTRADOR" : "PERFIL: OPERADOR";
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
         document.getElementById('admin-tools-section').style.display = isAdmin ? 'block' : 'none';
-@@ -573,7 +568,7 @@
+
+        atualizarStatusRede();
+        conectarFirebase();
+        activarWakeLock();
+        navegar(isAdmin ? 'admin' : 'retirar');
+    }
+
+    function navegar(tela) {
+        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado'].forEach(t => {
+            const el = document.getElementById('view-' + t);
+            if(el) el.style.display = 'none';
+        });
+        document.getElementById('view-' + tela).style.display = 'block';
+        document.getElementById('sidebar').classList.remove('active');
+    }
+
     function conectarFirebase() {
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if(usuarioLogado && usuarioLogado.perfil.toUpperCase() === "ADMIN") atualizarEstatisticas();
             if(usuarioLogado && usuarioLogado.perfil && usuarioLogado.perfil.toUpperCase() === "ADMIN") atualizarEstatisticas();
             renderizarEstoque();
         }, error => {
             console.log("Erro snapshot:", error);
-@@ -592,308 +587,311 @@
+        });
+    }
+
+    function atualizarEstatisticas() {
+        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
+        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length;
+        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
+    }
+
+    function renderizarEstoque() {
+        const termo = document.getElementById('search-input').value.toLowerCase().trim();
+        const lista = document.getElementById('lista-estoque');
         lista.innerHTML = '';
         if (termo.length === 0) return;
 
-        const isAdmin = usuarioLogado && usuarioLogado.perfil.toUpperCase() === "ADMIN";
         const isAdmin = usuarioLogado && usuarioLogado.perfil && usuarioLogado.perfil.toUpperCase() === "ADMIN";
 
         let filtrados = estoqueCompleto.filter(i => {
-            const termoEhNumero = /^\d+$/.test(termo);
-            if (termoEhNumero) {
-                return i.mat.toString().toLowerCase() === termo;
             const matString = i.mat ? i.mat.toString().toLowerCase() : "";
             const enderString = i.ender ? i.ender.toString().toLowerCase() : "";
             
@@ -200,7 +597,6 @@
             if (/^\d+$/.test(termo)) {
                 return matString === termo;
             } else {
-                return i.ender.toLowerCase().includes(termo);
                 return enderString.includes(termo);
             }
         });
@@ -270,7 +666,7 @@
         const inputQtd = document.getElementById('modal-input-qtd').value;
         const destinoMov = document.getElementById('modal-destino-mov').value;
         const v = parseInt(inputQtd);
-
+        
         if (isNaN(v) || v <= 0) return alert("Digite uma quantidade válida!");
         if (v > itemParaRetirar.qtdAtual) return alert("Quantidade solicitada maior que o saldo!");
 
@@ -278,10 +674,10 @@
         try {
             if (v === qtdAtual) { db.collection("estoque_blocado").doc(id).delete(); } 
             else { db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v }); }
-
+            
             registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`, destinoMov);
             fecharModal();
-
+            
             if(navigator.onLine) {
                 alert("Retirada concluída com sucesso!");
             } else {
@@ -296,9 +692,9 @@
         const mat = document.getElementById('eb-mat').value.trim();
         const qtd = parseInt(document.getElementById('eb-qtd').value);
         const inputVenc = document.getElementById('eb-venc').value;
-
+        
         if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos da Entrada!");
-
+        
         const dataV = inputVenc.split('-').reverse().join('/');
         const ocupante = estoqueCompleto.find(i => i.ender === ender);
 
@@ -318,7 +714,7 @@
         const desc = document.getElementById('eb-desc').value;
         db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc });
         registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada)`, `ENTRADA VIA ${origen}`);
-
+        
         alert(navigator.onLine ? "Entrada registrada!" : "Entrada registrada localmente (Modo Offline)!");
         limparFormularioEntrada();
         navegar('retirar');
