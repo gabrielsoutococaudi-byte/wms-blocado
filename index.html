@@ -15,6 +15,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     
@@ -152,6 +153,29 @@
         .stat-box h5 { margin: 0; font-size: 10px; color: var(--text-secondary); text-transform: uppercase; }
         .stat-box p { margin: 6px 0 0; font-size: 24px; font-weight: 900; color: #fff; }
 
+        .chart-container {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .ranking-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .ranking-item:last-child { border-bottom: none; }
+        .ranking-item b { color: var(--primary); }
+
         .search-area { 
             background: var(--card); 
             padding: 12px; 
@@ -173,13 +197,6 @@
         }
         input:focus, select:focus {
             border-color: var(--primary);
-        }
-        select { 
-            cursor: pointer; 
-            appearance: none; 
-            background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>"); 
-            background-repeat: no-repeat; 
-            background-position: right 14px center; 
         }
         
         .item-card { 
@@ -293,7 +310,6 @@
             }
         }
 
-        /* Estilo para a lista de sugestões */
         .autocomplete-items {
             position: absolute;
             border: 1px solid var(--border);
@@ -314,10 +330,6 @@
         }
         .autocomplete-item:hover {
             background-color: var(--card-hover);
-        }
-        .autocomplete-active {
-            background-color: var(--primary) !important;
-            color: #ffffff;
         }
     </style>
 </head>
@@ -357,6 +369,23 @@
                 <div class="stat-box"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
                 <div class="stat-box" style="border-color: var(--critico);"><h5>CRÍTICOS</h5><p id="st-critico">0</p></div>
                 <div class="stat-box" style="border-color: var(--retido);"><h5>RETIDOS</h5><p id="st-retido">0</p></div>
+            </div>
+
+            <!-- Dashboard Interativo Admin -->
+            <div class="chart-container">
+                <h3 style="font-size: 12px; color: var(--primary); margin-top: 0; letter-spacing: 1px; font-weight: 800; text-transform: uppercase;">Top Materiais Retidos (Qtd)</h3>
+                <canvas id="chart-retidos" style="max-height: 250px;"></canvas>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                <div class="chart-container" style="margin-bottom: 0;">
+                    <h3 style="font-size: 10px; color: var(--primary); margin-top: 0; letter-spacing: 1px; font-weight: 800; text-transform: uppercase;">Operadores (Hoje)</h3>
+                    <div id="ranking-operadores" class="ranking-list"></div>
+                </div>
+                <div class="chart-container" style="margin-bottom: 0;">
+                    <h3 style="font-size: 10px; color: var(--primary); margin-top: 0; letter-spacing: 1px; font-weight: 800; text-transform: uppercase;">Mais Movimentados</h3>
+                    <div id="ranking-materiais" class="ranking-list"></div>
+                </div>
             </div>
 
             <div id="admin-tools-section" style="background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border);">
@@ -481,14 +510,7 @@
     
     const db = firebase.firestore();
     db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
-    db.enablePersistence({ synchronizeTabs: true })
-      .catch((err) => {
-          if (err.code == 'failed-precondition') {
-              console.log("Persistência falhou: Múltiplas abas abertas simultaneamente.");
-          } else if (err.code == 'unimplemented') {
-              console.log("O navegador não possui suporte para cache de dados.");
-          }
-      });
+    db.enablePersistence({ synchronizeTabs: true });
 
     const auth = firebase.auth();
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
@@ -500,22 +522,18 @@
     let wakeLock = null;
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
+    let chartRetidos = null;
 
     window.addEventListener('online', atualizarStatusRede);
     window.addEventListener('offline', atualizarStatusRede);
 
     function atualizarStatusRede() {
         const barraStatus = document.getElementById('network-status');
-        if (navigator.onLine) {
-            barraStatus.style.display = 'none';
-        } else {
-            barraStatus.style.display = 'block';
-        }
+        if (navigator.onLine) { barraStatus.style.display = 'none'; } 
+        else { barraStatus.style.display = 'block'; }
     }
 
-    function toggleMenu() {
-        document.getElementById('sidebar').classList.toggle('active');
-    }
+    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
 
     function logout() {
         auth.signOut().then(() => {
@@ -525,18 +543,8 @@
     }
 
     async function activarWakeLock() {
-        try { 
-            if ('wakeLock' in navigator) { 
-                wakeLock = await navigator.wakeLock.request('screen'); 
-            } 
-        } catch (e) {}
+        try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); } } catch (e) {}
     }
-
-    document.addEventListener('visibilitychange', async () => {
-        if (wakeLock !== null && document.visibilityState === 'visible' && usuarioLogado) {
-            activarWakeLock();
-        }
-    });
 
     async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
@@ -559,13 +567,9 @@
         } catch (e) { 
             if(!navigator.onLine) {
                 const session = localStorage.getItem('wms_session');
-                if(session) {
-                    usuarioLogado = JSON.parse(session);
-                    iniciarApp();
-                    return;
-                }
+                if(session) { usuarioLogado = JSON.parse(session); iniciarApp(); return; }
             }
-            alert("Erro de Login. Verifique os dados inseridos ou a conexão."); 
+            alert("Erro de Login."); 
         }
     }
 
@@ -593,24 +597,23 @@
         });
         document.getElementById('view-' + tela).style.display = 'block';
         document.getElementById('sidebar').classList.remove('active');
+        if(tela === 'admin') carregarDadosDashboard();
     }
 
     function conectarFirebase() {
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if(usuarioLogado && usuarioLogado.perfil && usuarioLogado.perfil.toUpperCase() === "ADMIN") atualizarEstatisticas();
+            if(usuarioLogado && usuarioLogado.perfil && usuarioLogado.perfil.toUpperCase() === "ADMIN") {
+                atualizarEstatisticas();
+                carregarDadosDashboard();
+            }
             renderizarEstoque();
-        }, error => {
-            console.log("Erro snapshot:", error);
         });
     }
 
     async function carregarBaseMateriais() {
         const cache = localStorage.getItem('base_materiais');
-        if (cache) {
-            baseMateriais = JSON.parse(cache);
-        }
-        
+        if (cache) { baseMateriais = JSON.parse(cache); }
         if (navigator.onLine) {
             try {
                 const snap = await db.collection("base_materiais").get();
@@ -618,7 +621,7 @@
                     baseMateriais = snap.docs.map(doc => doc.data());
                     localStorage.setItem('base_materiais', JSON.stringify(baseMateriais));
                 }
-            } catch (e) { console.log("Erro ao carregar base remota:", e); }
+            } catch (e) {}
         }
     }
 
@@ -628,6 +631,64 @@
         document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
     }
 
+    async function carregarDadosDashboard() {
+        if(!navigator.onLine) return;
+
+        // 1. Gráfico de Materiais Retidos (Maior para o Menor)
+        const retidos = estoqueCompleto.filter(i => i.dias <= 30);
+        const agrupadoRetidos = {};
+        retidos.forEach(r => {
+            agrupadoRetidos[r.mat] = (agrupadoRetidos[r.mat] || 0) + (parseInt(r.qtd) || 0);
+        });
+        const sortedRetidos = Object.entries(agrupadoRetidos).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        renderizarGraficoRetidos(sortedRetidos);
+
+        // 2. Rankings (Operadores e Materiais Movimentados)
+        const hoje = new Date().toLocaleDateString('pt-BR');
+        const movSnap = await db.collection("movimentacoes_wms").where("data", "==", hoje).get();
+        const movs = movSnap.docs.map(d => d.data());
+
+        const ops = {};
+        const mats = {};
+        movSnap.docs.forEach(doc => {
+            const d = doc.data();
+            const login = d.login ? d.login.split('@')[0] : 'N/A';
+            ops[login] = (ops[login] || 0) + 1;
+            mats[d.material] = (mats[d.material] || 0) + 1;
+        });
+
+        renderizarRanking('ranking-operadores', ops);
+        renderizarRanking('ranking-materiais', mats);
+    }
+
+    function renderizarGraficoRetidos(dados) {
+        const ctx = document.getElementById('chart-retidos').getContext('2d');
+        if (chartRetidos) chartRetidos.destroy();
+        chartRetidos = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: dados.map(d => d[0]),
+                datasets: [{
+                    label: 'Pallets Retidos',
+                    data: dados.map(d => d[1]),
+                    backgroundColor: '#ef4444',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true, grid: { color: '#2d2d2d' } }, x: { grid: { display: false } } },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    function renderizarRanking(elementId, obj) {
+        const el = document.getElementById(elementId);
+        const sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        el.innerHTML = sorted.map(s => `<div class="ranking-item"><span>${s[0]}</span><b>${s[1]}</b></div>`).join('') || '<p style="font-size:10px; color:var(--text-secondary)">Sem dados hoje.</p>';
+    }
+
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
@@ -635,44 +696,21 @@
         if (termo.length === 0) return;
 
         const isAdmin = usuarioLogado && usuarioLogado.perfil && usuarioLogado.perfil.toUpperCase() === "ADMIN";
-
         let filtrados = estoqueCompleto.filter(i => {
             const matString = i.mat ? i.mat.toString().toLowerCase() : "";
             const enderString = i.ender ? i.ender.toString().toLowerCase() : "";
-            if (/^\d+$/.test(termo)) {
-                return matString === termo;
-            } else {
-                return enderString.includes(termo);
-            }
+            return /^\d+$/.test(termo) ? matString === termo : enderString.includes(termo);
         });
 
-        if (!isAdmin) {
-            filtrados = filtrados.filter(item => item.dias > 30);
-        }
-
+        if (!isAdmin) filtrados = filtrados.filter(item => item.dias > 30);
         if (filtrados.length === 0) return;
 
-        // Ordenação FEFO Estrita
         filtrados.sort((a, b) => (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0));
-
-        // Se for pesquisa por material (Código numérico), mostrar apenas a posição mais crítica (a primeira da lista ordenada)
-        if (/^\d+$/.test(termo)) {
-            filtrados = [filtrados[0]];
-        }
+        if (/^\d+$/.test(termo)) filtrados = [filtrados[0]]; // FEFO Estrito: uma por vez
 
         filtrados.forEach(item => {
-            let statusTexto = "";
-            let statusCor = "";
-            if (item.dias <= 30) {
-                statusTexto = item.dias < 0 ? "VENCIDO / RETIDO" : "RETIDO";
-                statusCor = "var(--retido)";
-            } else if (item.dias <= 60) {
-                statusTexto = "CRÍTICO";
-                statusCor = "var(--critico)";
-            } else {
-                statusTexto = "DATA BOA";
-                statusCor = "var(--verde)";
-            }
+            let statusTexto = item.dias <= 30 ? (item.dias < 0 ? "VENCIDO / RETIDO" : "RETIDO") : (item.dias <= 60 ? "CRÍTICO" : "DATA BOA");
+            let statusCor = item.dias <= 30 ? "var(--retido)" : (item.dias <= 60 ? "var(--critico)" : "var(--verde)");
 
             const card = document.createElement('div');
             card.className = `item-card`;
@@ -697,9 +735,7 @@
         const list = document.getElementById(listId);
         list.innerHTML = '';
         if (!val) return;
-
         const matches = baseMateriais.filter(m => m.mat.toString().startsWith(val)).slice(0, 5);
-        
         matches.forEach(m => {
             const div = document.createElement('div');
             div.className = 'autocomplete-item';
@@ -711,21 +747,11 @@
             };
             list.appendChild(div);
         });
-
         const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
-        if (exact) {
-            document.getElementById(inputDescId).value = exact.desc;
-        } else {
-            document.getElementById(inputDescId).value = "NOVO MATERIAL";
-        }
+        document.getElementById(inputDescId).value = exact ? exact.desc : "NOVO MATERIAL";
     }
 
-    document.addEventListener('click', function (e) {
-        if (e.target.id !== 'eb-mat') {
-            const list = document.getElementById('eb-mat-list');
-            if(list) list.innerHTML = '';
-        }
-    });
+    document.addEventListener('click', e => { if (e.target.id !== 'eb-mat') { const l = document.getElementById('eb-mat-list'); if(l) l.innerHTML = ''; } });
 
     function retirarMaterial(id, qtdAtual, mat, ender, validade) {
         itemParaRetirar = { id, qtdAtual, mat, ender, validade };
@@ -737,67 +763,41 @@
         document.getElementById('btn-confirmar-modal').onclick = processarRetirada;
     }
 
-    function fecharModal() {
-        document.getElementById('modal-retirada').style.display = 'none';
-        itemParaRetirar = null;
-    }
+    function fecharModal() { document.getElementById('modal-retirada').style.display = 'none'; itemParaRetirar = null; }
 
     async function processarRetirada() {
-        const inputQtd = document.getElementById('modal-input-qtd').value;
-        const destinoMov = document.getElementById('modal-destino-mov').value;
-        const v = parseInt(inputQtd);
-        if (isNaN(v) || v <= 0) return alert("Digite uma quantidade válida!");
-        if (v > itemParaRetirar.qtdAtual) return alert("Quantidade solicitada maior que o saldo!");
-
+        const v = parseInt(document.getElementById('modal-input-qtd').value);
+        if (isNaN(v) || v <= 0 || v > itemParaRetirar.qtdAtual) return alert("Qtd inválida!");
         const { id, qtdAtual, mat, ender, validade } = itemParaRetirar;
         try {
             if (v === qtdAtual) { db.collection("estoque_blocado").doc(id).delete(); } 
             else { db.collection("estoque_blocado").doc(id).update({ qtd: qtdAtual - v }); }
-            registrarMovimentacao(ender, mat, validade, `-${v} PL (Retirada)`, destinoMov);
+            registrarMovimentacao(ender, mat, validade, `-${v} PL`, document.getElementById('modal-destino-mov').value);
             fecharModal();
-            alert(navigator.onLine ? "Retirada concluída com sucesso!" : "Retirada salva localmente (Offline)!");
-        } catch (e) { alert("Erro ao processar retirada."); }
+        } catch (e) { alert("Erro!"); }
     }
 
     async function salvarEntradaBloco() {
-        const origen = document.getElementById('eb-origem').value;
         const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
         const mat = document.getElementById('eb-mat').value.trim();
         const qtd = parseInt(document.getElementById('eb-qtd').value);
         const inputVenc = document.getElementById('eb-venc').value;
-        
-        if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos da Entrada!");
-        
+        if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Erro!");
         const dataV = inputVenc.split('-').reverse().join('/');
         const ocupante = estoqueCompleto.find(i => i.ender === ender);
-
+        if (ocupante && ocupante.mat !== mat) return alert("Endereço ocupado!");
         if (ocupante) {
-            if (ocupante.mat === mat) {
-                if (confirm(`Endereço ocupado pelo mesmo material. Somar +${qtd} PL?`)) {
-                    db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd });
-                    registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Soma Manual)`, `ENTRADA VIA ${origen}`);
-                    alert(navigator.onLine ? "Atualizado com sucesso!" : "Atualizado localmente!");
-                    limparFormularioEntrada();
-                    navegar('retirar');
-                }
-                return;
-            } else { return alert(`BLOQUEADO! O endereço ${ender} já está ocupado por: ${ocupante.mat}`); }
+            db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd });
+        } else {
+            db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc: document.getElementById('eb-desc').value });
         }
-
-        const desc = document.getElementById('eb-desc').value;
-        db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: dataV, desc });
-        registrarMovimentacao(ender, mat, dataV, `+${qtd} PL (Entrada)`, `ENTRADA VIA ${origen}`);
-        alert(navigator.onLine ? "Entrada registrada!" : "Entrada registrada localmente!");
+        registrarMovimentacao(ender, mat, dataV, `+${qtd} PL`, `ENTRADA VIA ${document.getElementById('eb-origem').value}`);
         limparFormularioEntrada();
         navegar('retirar');
     }
 
     function limparFormularioEntrada() {
-        document.getElementById('eb-ender').value = '';
-        document.getElementById('eb-mat').value = '';
-        document.getElementById('eb-desc').value = '';
-        document.getElementById('eb-qtd').value = '';
-        document.getElementById('eb-venc').value = '';
+        ['eb-ender', 'eb-mat', 'eb-desc', 'eb-qtd', 'eb-venc'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('eb-label-dias').innerText = '';
     }
 
@@ -807,42 +807,25 @@
             itemOrigemAbertura = item;
             document.getElementById('ab-mat').value = item.mat;
             document.getElementById('ab-desc').value = item.desc;
-            document.getElementById('ab-qtd').placeholder = `Saldo max disponível: ${item.qtd}`;
         } else {
             itemOrigemAbertura = null;
-            document.getElementById('ab-mat').value = '';
-            document.getElementById('ab-desc').value = '';
-            document.getElementById('ab-qtd').placeholder = 'Posição vazia';
-            alert("Nenhum material ativo nesta posição.");
+            ['ab-mat', 'ab-desc'].forEach(id => document.getElementById(id).value = '');
         }
     }
 
     async function processarAberturaBlocado() {
         const enderDestino = document.getElementById('ab-destino').value.toUpperCase().trim();
-        const qtdTransferir = parseInt(document.getElementById('ab-qtd').value);
-
-        if(!itemOrigemAbertura) return alert("Defina origem válida!");
-        if(isNaN(qtdTransferir) || qtdTransferir <= 0 || qtdTransferir > itemOrigemAbertura.qtd) return alert("Quantidade inválida!");
-        if(!enderDestino) return alert("Especifique destino!");
-
-        try {
-            const ocupanteDestino = estoqueCompleto.find(i => i.ender === enderDestino);
-            if (ocupanteDestino && ocupanteDestino.mat !== itemOrigemAbertura.mat) return alert(`Destino ocupado por: ${ocupanteDestino.mat}`);
-
-            if (qtdTransferir === itemOrigemAbertura.qtd) { db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete(); } 
-            else { db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtdTransferir }); }
-
-            if (ocupanteDestino && ocupanteDestino.mat === itemOrigemAbertura.mat) {
-                db.collection("estoque_blocado").doc(ocupanteDestino.id).update({ qtd: ocupanteDestino.qtd + qtdTransferir });
-            } else {
-                db.collection("estoque_blocado").add({ ender: enderDestino, mat: itemOrigemAbertura.mat, desc: itemOrigemAbertura.desc, qtd: qtdTransferir, dias: itemOrigemAbertura.dias, valFrente: itemOrigemAbertura.valFrente });
-            }
-
-            registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtdTransferir} PL`, `PARA ${enderDestino}`);
-            registrarMovimentacao(enderDestino, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtdTransferir} PL`, `DE ${itemOrigemAbertura.ender}`);
-            alert(navigator.onLine ? "Transferência executada!" : "Transferência salva localmente!");
-            navegar('retirar');
-        } catch (error) { alert("Erro ao processar transferência."); }
+        const qtd = parseInt(document.getElementById('ab-qtd').value);
+        if(!itemOrigemAbertura || isNaN(qtd) || qtd <= 0 || qtd > itemOrigemAbertura.qtd || !enderDestino) return alert("Erro!");
+        const ocupanteDestino = estoqueCompleto.find(i => i.ender === enderDestino);
+        if (ocupanteDestino && ocupanteDestino.mat !== itemOrigemAbertura.mat) return alert("Destino ocupado!");
+        if (qtd === itemOrigemAbertura.qtd) { db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete(); } 
+        else { db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtd }); }
+        if (ocupanteDestino) { db.collection("estoque_blocado").doc(ocupanteDestino.id).update({ qtd: ocupanteDestino.qtd + qtd }); } 
+        else { db.collection("estoque_blocado").add({ ender: enderDestino, mat: itemOrigemAbertura.mat, desc: itemOrigemAbertura.desc, qtd, dias: itemOrigemAbertura.dias, valFrente: itemOrigemAbertura.valFrente }); }
+        registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtd} PL`, `PARA ${enderDestino}`);
+        registrarMovimentacao(enderDestino, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtd} PL`, `DE ${itemOrigemAbertura.ender}`);
+        navegar('retirar');
     }
 
     function calcularDias(data, labelId) {
@@ -856,49 +839,36 @@
     }
 
     async function exportarHistoricoExcel() {
-        if(!navigator.onLine) return alert("Necessita internet ativa.");
-        try {
-            const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-            const dados = snap.docs.map(doc => { const d = doc.data(); return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora }; });
-            const ws = XLSX.utils.json_to_sheet(dados);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Histórico");
-            XLSX.writeFile(wb, `Historico_WMS_${new Date().getTime()}.xlsx`);
-        } catch (error) { alert("Erro na exportação."); }
+        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
+        const dados = snap.docs.map(doc => { const d = doc.data(); return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora }; });
+        const ws = XLSX.utils.json_to_sheet(dados);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Histórico");
+        XLSX.writeFile(wb, `Historico_WMS_${new Date().getTime()}.xlsx`);
     }
 
     async function importarCSV(event) {
-        if(!navigator.onLine) return alert("Exige internet ativa.");
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = async (e) => {
-            try {
-                const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
-                if (!confirm(`Apagar estoque e carregar ${linhas.length} itens?`)) return;
-                const snapshot = await db.collection("estoque_blocado").get();
-                if (!snapshot.empty) {
-                    let batch = db.batch();
-                    snapshot.docs.forEach((doc, i) => { batch.delete(doc.ref); if((i+1)%400===0) { batch.commit(); batch = db.batch(); } });
-                    await batch.commit();
+            const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
+            if (!confirm(`Importar ${linhas.length} itens?`)) return;
+            let batch = db.batch();
+            linhas.forEach((linha, i) => {
+                const c = linha.split(";");
+                if (c.length >= 6) {
+                    batch.set(db.collection("estoque_blocado").doc(), { ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(), valFrente: c[3].trim(), qtd: parseInt(c[5].replace(/\D/g, '')) || 0, dias: parseInt(c[7].replace(/\D/g, '')) || 0 });
+                    if((i+1)%400===0) { batch.commit(); batch = db.batch(); }
                 }
-                let batch = db.batch();
-                linhas.forEach((linha, i) => {
-                    const c = linha.split(";");
-                    if (c.length >= 6) {
-                        batch.set(db.collection("estoque_blocado").doc(), { ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(), valFrente: c[3].trim(), qtd: parseInt(c[5].replace(/\D/g, '')) || 0, dias: parseInt(c[7].replace(/\D/g, '')) || 0 });
-                        if((i+1)%400===0) { batch.commit(); batch = db.batch(); }
-                    }
-                });
-                await batch.commit();
-                alert("Sucesso!");
-            } catch (error) { alert("Erro na importação."); }
+            });
+            await batch.commit();
+            alert("Sucesso!");
         };
         reader.readAsText(file);
     }
 
     async function sincronizarBaseMateriais() {
-        if(!navigator.onLine) return alert("Necessita internet ativa.");
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.xlsx, .xls';
@@ -906,49 +876,31 @@
             const file = e.target.files[0];
             const reader = new FileReader();
             reader.onload = async (ev) => {
-                try {
-                    const data = new Uint8Array(ev.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(sheet);
-                    
-                    if(!confirm(`Deseja atualizar a base com ${json.length} materiais?`)) return;
-
-                    let batch = db.batch();
-                    let count = 0;
-                    for(const item of json) {
-                        const mat = item['Cód. Material'];
-                        if(mat) {
-                            const ref = db.collection("base_materiais").doc(mat.toString());
-                            batch.set(ref, {
-                                mat: mat,
-                                desc: item['Descrição'] || '',
-                                qtd_base: item['Quantidade'] || 0,
-                                categoria: item['Categoria'] || '',
-                                vasilhame: item['Vasilhame'] || '',
-                                lastro: item['Lastro'] || null,
-                                camada: item['Camada'] || null
-                            });
-                            count++;
-                            if(count % 400 === 0) { await batch.commit(); batch = db.batch(); }
-                        }
+                const data = new Uint8Array(ev.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                let batch = db.batch();
+                let count = 0;
+                for(const item of json) {
+                    const mat = item['Cód. Material'];
+                    if(mat) {
+                        batch.set(db.collection("base_materiais").doc(mat.toString()), { mat, desc: item['Descrição'] || '', qtd_base: item['Quantidade'] || 0, categoria: item['Categoria'] || '', vasilhame: item['Vasilhame'] || '', lastro: item['Lastro'] || null, camada: item['Camada'] || null });
+                        count++;
+                        if(count % 400 === 0) { await batch.commit(); batch = db.batch(); }
                     }
-                    await batch.commit();
-                    alert("Base de materiais sincronizada com sucesso!");
-                    carregarBaseMateriais();
-                } catch (err) { alert("Erro ao processar Excel."); }
+                }
+                await batch.commit();
+                alert("Sucesso!");
+                carregarBaseMateriais();
             };
             reader.readAsArrayBuffer(file);
         };
         input.click();
     }
 
-    window.onload = function() {
+    window.onload = () => {
         const session = localStorage.getItem('wms_session');
-        if (session) {
-            usuarioLogado = JSON.parse(session);
-            iniciarApp();
-        }
+        if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); }
     };
 </script>
 </body>
