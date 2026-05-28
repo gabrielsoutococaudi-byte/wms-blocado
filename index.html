@@ -336,7 +336,7 @@
 <div id="login-screen">
     <div class="login-box">
         <h2 style="text-align: center; color: var(--primary); margin-top: 0; margin-bottom: 30px; font-weight: 900; letter-spacing: 1px;">WMS FLOW PRO</h2>
-        <input type="text" inputmode="decimal" id="login-mat" placeholder="Matrícula" style="margin-bottom:14px;">
+        <input type="text" inputmode="numeric" id="login-mat" placeholder="Matrícula" style="margin-bottom:14px;">
         <input type="password" id="login-senha" placeholder="Senha" style="margin-bottom:24px;">
         <button onclick="tentarLogin()" class="btn-retirar" style="width: 100%; font-size: 15px; padding: 14px;">ENTRAR</button>
     </div>
@@ -370,7 +370,8 @@
 
         <div id="view-retirar">
             <div class="search-area">
-                <input type="text" inputmode="search" id="search-input" placeholder="Pesquisar material ou posição..." oninput="renderizarEstoque()">
+                <!-- Usando inputmode="tel" para tentar forçar teclado numérico com símbolos como o traço -->
+                <input type="text" inputmode="tel" id="search-input" placeholder="Pesquisar material ou posição..." oninput="renderizarEstoque()">
             </div>
             <div id="lista-estoque"></div>
         </div>
@@ -382,17 +383,17 @@
                 <div class="form-group">
                     <label>Origem da Carga</label>
                     <select id="eb-origem">
-                        <option value="STAGE">STAGE</option>
+                        <option value="DRIVE IN">DRIVE IN</option>
                         <option value="RECEBIMENTO">RECEBIMENTO</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Endereço Destino (Ex: 205-14)</label>
-                    <input type="text" inputmode="text" id="eb-ender" placeholder="Digite o endereço de destino...">
+                    <input type="text" inputmode="tel" id="eb-ender" placeholder="Digite o endereço de destino...">
                 </div>
                 <div class="form-group" style="position: relative;">
                     <label>Código Material</label>
-                    <input type="text" inputmode="decimal" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoAutocomplete(this.value, 'eb-desc', 'eb-mat-list')">
+                    <input type="text" inputmode="numeric" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoAutocomplete(this.value, 'eb-desc', 'eb-mat-list')">
                     <div id="eb-mat-list" class="autocomplete-items"></div>
                 </div>
                 <div class="form-group">
@@ -418,7 +419,7 @@
                 
                 <div class="form-group">
                     <label>Endereço Origem (Ex: 201-14)</label>
-                    <input type="text" inputmode="text" id="ab-origem" placeholder="Digite a posição de origem..." onchange="carregarDadosOrigemAbertura(this.value)">
+                    <input type="text" inputmode="tel" id="ab-origem" placeholder="Digite a posição de origem..." onchange="carregarDadosOrigemAbertura(this.value)">
                 </div>
                 <div class="form-group">
                     <label>Código Material</label>
@@ -430,7 +431,7 @@
                 </div>
                 <div class="form-group">
                     <label>Endereço Destino (Ex: 205-20)</label>
-                    <input type="text" inputmode="text" id="ab-destino" placeholder="Digite a nova posição...">
+                    <input type="text" inputmode="tel" id="ab-destino" placeholder="Digite a nova posição...">
                 </div>
                 <div class="form-group">
                     <label>Quantidade a Transferir (Pallets)</label>
@@ -606,13 +607,11 @@
     }
 
     async function carregarBaseMateriais() {
-        // Tenta carregar do cache local primeiro
         const cache = localStorage.getItem('base_materiais');
         if (cache) {
             baseMateriais = JSON.parse(cache);
         }
         
-        // Se estiver online, tenta atualizar do Firestore
         if (navigator.onLine) {
             try {
                 const snap = await db.collection("base_materiais").get();
@@ -654,6 +653,7 @@
 
         if (filtrados.length === 0) return;
 
+        // Ordenação por Dias (Crescente) - Prioriza sempre a data mais crítica (FEFO)
         filtrados.sort((a, b) => (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0));
 
         filtrados.forEach(item => {
@@ -708,7 +708,6 @@
             list.appendChild(div);
         });
 
-        // Se houver um match exato, preenche a descrição
         const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
         if (exact) {
             document.getElementById(inputDescId).value = exact.desc;
@@ -717,10 +716,10 @@
         }
     }
 
-    // Fecha a lista de autocomplete quando clica fora
     document.addEventListener('click', function (e) {
         if (e.target.id !== 'eb-mat') {
-            document.getElementById('eb-mat-list').innerHTML = '';
+            const list = document.getElementById('eb-mat-list');
+            if(list) list.innerHTML = '';
         }
     });
 
@@ -894,7 +893,6 @@
         reader.readAsText(file);
     }
 
-    // Função para o Administrador subir a base de materiais do Excel para o Firestore
     async function sincronizarBaseMateriais() {
         if(!navigator.onLine) return alert("Necessita internet ativa.");
         const input = document.createElement('input');
@@ -912,8 +910,6 @@
                     
                     if(!confirm(`Deseja atualizar a base com ${json.length} materiais?`)) return;
 
-                    // Limpa base antiga (opcional, ou faz merge)
-                    // Para simplicidade aqui, vamos apenas adicionar/atualizar
                     let batch = db.batch();
                     let count = 0;
                     for(const item of json) {
