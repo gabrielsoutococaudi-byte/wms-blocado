@@ -370,7 +370,6 @@
 
         <div id="view-retirar">
             <div class="search-area">
-                <!-- Usando inputmode="tel" para tentar forçar teclado numérico com símbolos como o traço -->
                 <input type="text" inputmode="tel" id="search-input" placeholder="Pesquisar material ou posição..." oninput="renderizarEstoque()">
             </div>
             <div id="lista-estoque"></div>
@@ -653,8 +652,13 @@
 
         if (filtrados.length === 0) return;
 
-        // Ordenação por Dias (Crescente) - Prioriza sempre a data mais crítica (FEFO)
+        // Ordenação FEFO Estrita
         filtrados.sort((a, b) => (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0));
+
+        // Se for pesquisa por material (Código numérico), mostrar apenas a posição mais crítica (a primeira da lista ordenada)
+        if (/^\d+$/.test(termo)) {
+            filtrados = [filtrados[0]];
+        }
 
         filtrados.forEach(item => {
             let statusTexto = "";
