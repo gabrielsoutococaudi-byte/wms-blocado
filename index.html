@@ -46,7 +46,8 @@
             background-image: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #050505 100%);
         }
 
-        .glass-card { background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 20px; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 20px; transition: 0.3s; }
+        .glass-card:hover { border-color: rgba(255,255,255,0.15); }
 
         #network-status { display: none; background: var(--critico); color: #000; text-align: center; padding: 8px; font-size: 11px; font-weight: 800; position: sticky; top: 0; z-index: 2000; text-transform: uppercase; letter-spacing: 1px; }
         
@@ -60,10 +61,10 @@
         
         .container { width: 100%; max-width: 1000px; margin: auto; padding: 0 20px; }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .stat-card { padding: 20px; position: relative; overflow: hidden; }
-        .stat-card h5 { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-        .stat-card p { font-size: 28px; font-weight: 800; color: #fff; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { padding: 20px; position: relative; overflow: hidden; cursor: pointer; }
+        .stat-card h5 { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .stat-card p { font-size: 26px; font-weight: 800; color: #fff; }
         .stat-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: var(--primary); opacity: 0.5; }
 
         .search-wrapper { margin-bottom: 24px; position: relative; }
@@ -83,7 +84,7 @@
         @media (max-width: 768px) { .dashboard-row { grid-template-columns: 1fr; } }
 
         .chart-box { padding: 24px; }
-        .chart-title { font-size: 14px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .chart-title { font-size: 14px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
 
         .ranking-list { list-style: none; }
         .ranking-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--glass-border); }
@@ -93,6 +94,16 @@
         .ranking-info span { display: block; font-size: 13px; font-weight: 600; }
         .ranking-info small { font-size: 11px; color: var(--text-secondary); }
         .ranking-value { font-weight: 800; color: var(--primary); }
+
+        /* Feed de Atividades */
+        .activity-feed { max-height: 400px; overflow-y: auto; padding-right: 10px; }
+        .activity-item { display: flex; gap: 15px; margin-bottom: 20px; position: relative; }
+        .activity-item::before { content: ''; position: absolute; left: 7px; top: 20px; width: 2px; height: calc(100% + 5px); background: var(--glass-border); }
+        .activity-item:last-child::before { display: none; }
+        .activity-icon { width: 16px; height: 16px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: 4px; z-index: 1; border: 3px solid var(--bg); }
+        .activity-content { font-size: 12px; }
+        .activity-content b { color: var(--primary); }
+        .activity-time { font-size: 10px; color: var(--text-secondary); margin-top: 4px; display: block; }
 
         .form-box { padding: 30px; margin-bottom: 30px; }
         .form-group { margin-bottom: 20px; }
@@ -149,9 +160,9 @@
     <div class="container">
         <div id="view-admin" style="display: none;">
             <div class="stats-grid">
-                <div class="stat-card glass-card"><h5>ESTOQUE TOTAL</h5><p id="st-total">0</p></div>
-                <div class="stat-card glass-card" style="border-bottom: 4px solid var(--critico);"><h5>ALERTA CRÍTICO</h5><p id="st-critico">0</p></div>
-                <div class="stat-card glass-card" style="border-bottom: 4px solid var(--retido);"><h5>BLOQUEADOS</h5><p id="st-retido">0</p></div>
+                <div class="stat-card glass-card" onclick="navegarComFiltro('')"><h5>ESTOQUE TOTAL</h5><p id="st-total">0</p></div>
+                <div class="stat-card glass-card" onclick="navegarComFiltro('critico')" style="border-bottom: 4px solid var(--critico);"><h5>ALERTA CRÍTICO</h5><p id="st-critico">0</p></div>
+                <div class="stat-card glass-card" onclick="navegarComFiltro('retido')" style="border-bottom: 4px solid var(--retido);"><h5>BLOQUEADOS</h5><p id="st-retido">0</p></div>
             </div>
 
             <div class="dashboard-row">
@@ -160,24 +171,24 @@
                     <canvas id="chart-retidos" style="max-height: 280px;"></canvas>
                 </div>
                 <div class="chart-box glass-card">
-                    <div class="chart-title">⏱️ STATUS DE VALIDADE</div>
-                    <canvas id="chart-status" style="max-height: 280px;"></canvas>
+                    <div class="chart-title">🕒 ATIVIDADE RECENTE</div>
+                    <div id="activity-feed" class="activity-feed"></div>
                 </div>
             </div>
 
             <div class="dashboard-row">
                 <div class="chart-box glass-card">
-                    <div class="chart-title">🏆 PERFORMANCE OPERACIONAL</div>
-                    <div id="ranking-operadores" class="ranking-list"></div>
+                    <div class="chart-title">⏱️ STATUS DE VALIDADE</div>
+                    <canvas id="chart-status" style="max-height: 250px;"></canvas>
                 </div>
                 <div class="chart-box glass-card">
-                    <div class="chart-title">🔥 MATERIAIS EM ALTA</div>
-                    <div id="ranking-materiais" class="ranking-list"></div>
+                    <div class="chart-title">🏆 TOP OPERADORES (HOJE)</div>
+                    <div id="ranking-operadores" class="ranking-list"></div>
                 </div>
             </div>
 
             <div class="glass-card" style="padding: 30px; margin-bottom: 30px;">
-                <h3 style="font-size: 14px; color: var(--primary); margin-bottom: 20px; font-weight: 800;">CONTROLE DE DADOS</h3>
+                <h3 style="font-size: 14px; color: var(--primary); margin-bottom: 20px; font-weight: 800; text-transform: uppercase;">Controle de Dados</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
                     <button class="btn-action" onclick="document.getElementById('csv-file').click()" style="background: var(--glass); border: 1px solid var(--glass-border); box-shadow: none;">IMPORTAR CSV</button>
@@ -197,35 +208,12 @@
         <div id="view-entrada_bloco" style="display: none;">
             <div class="form-box glass-card">
                 <h3 style="color: var(--primary); margin-bottom: 25px; font-weight: 800; font-size: 20px;">Entrada no Bloco</h3>
-                <div class="form-group">
-                    <label>Origem</label>
-                    <select id="eb-origem">
-                        <option value="DRIVE IN">DRIVE IN</option>
-                        <option value="RECEBIMENTO">RECEBIMENTO</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Destino</label>
-                    <input type="text" inputmode="tel" id="eb-ender" placeholder="Ex: 205-14">
-                </div>
-                <div class="form-group" style="position: relative;">
-                    <label>Código Material</label>
-                    <input type="text" inputmode="numeric" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')">
-                    <div id="eb-mat-list" class="autocomplete-items glass-card"></div>
-                </div>
-                <div class="form-group">
-                    <label>Descrição (Base de Dados)</label>
-                    <input type="text" id="eb-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.3);" placeholder="Aguardando código válido...">
-                </div>
-                <div class="form-group">
-                    <label>Quantidade (Pallets)</label>
-                    <input type="text" inputmode="decimal" id="eb-qtd" placeholder="0">
-                </div>
-                <div class="form-group">
-                    <label>Vencimento</label>
-                    <input type="date" id="eb-venc" onchange="calcularDias(this.value, 'eb-label-dias')">
-                    <p id="eb-label-dias" style="color: var(--critico); font-size: 12px; margin-top: 10px; font-weight: 700;"></p>
-                </div>
+                <div class="form-group"><label>Origem</label><select id="eb-origem"><option value="DRIVE IN">DRIVE IN</option><option value="RECEBIMENTO">RECEBIMENTO</option></select></div>
+                <div class="form-group"><label>Destino</label><input type="text" inputmode="tel" id="eb-ender" placeholder="Ex: 205-14"></div>
+                <div class="form-group" style="position: relative;"><label>Código Material</label><input type="text" inputmode="numeric" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')"><div id="eb-mat-list" class="autocomplete-items glass-card"></div></div>
+                <div class="form-group"><label>Descrição (Base de Dados)</label><input type="text" id="eb-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.3);" placeholder="Aguardando código válido..."></div>
+                <div class="form-group"><label>Quantidade (Pallets)</label><input type="text" inputmode="decimal" id="eb-qtd" placeholder="0"></div>
+                <div class="form-group"><label>Vencimento</label><input type="date" id="eb-venc" onchange="calcularDias(this.value, 'eb-label-dias')"><p id="eb-label-dias" style="color: var(--critico); font-size: 12px; margin-top: 10px; font-weight: 700;"></p></div>
                 <button class="btn-action" style="width: 100%; padding: 18px;" onclick="salvarEntradaBloco()">REGISTRAR ENTRADA</button>
             </div>
         </div>
@@ -233,22 +221,10 @@
         <div id="view-abertura_blocado" style="display: none;">
             <div class="form-box glass-card">
                 <h3 style="color: var(--primary); margin-bottom: 25px; font-weight: 800; font-size: 20px;">Transferência Interna</h3>
-                <div class="form-group">
-                    <label>Posição Origem</label>
-                    <input type="text" inputmode="tel" id="ab-origem" placeholder="Ex: 201-14" onchange="carregarDadosOrigemAbertura(this.value)">
-                </div>
-                <div class="form-group">
-                    <label>Material</label>
-                    <input type="text" id="ab-mat" readonly style="opacity: 0.5;">
-                </div>
-                <div class="form-group">
-                    <label>Posição Destino</label>
-                    <input type="text" inputmode="tel" id="ab-destino" placeholder="Ex: 205-20">
-                </div>
-                <div class="form-group">
-                    <label>Quantidade (Pallets)</label>
-                    <input type="text" inputmode="decimal" id="ab-qtd" placeholder="Saldo disponível: 0">
-                </div>
+                <div class="form-group"><label>Posição Origem</label><input type="text" inputmode="tel" id="ab-origem" placeholder="Ex: 201-14" onchange="carregarDadosOrigemAbertura(this.value)"></div>
+                <div class="form-group"><label>Material</label><input type="text" id="ab-mat" readonly style="opacity: 0.5;"></div>
+                <div class="form-group"><label>Posição Destino</label><input type="text" inputmode="tel" id="ab-destino" placeholder="Ex: 205-20"></div>
+                <div class="form-group"><label>Quantidade (Pallets)</label><input type="text" inputmode="decimal" id="ab-qtd" placeholder="Saldo disponível: 0"></div>
                 <button class="btn-action" style="width: 100%; padding: 18px;" onclick="processarAberturaBlocado()">CONFIRMAR MOVIMENTAÇÃO</button>
             </div>
         </div>
@@ -259,22 +235,9 @@
     <div class="modal-content glass-card">
         <h3 id="modal-titulo" style="margin-top:0; color:var(--primary); font-weight: 900; font-size: 22px;">Retirada</h3>
         <p id="modal-info" style="font-size:14px; color: var(--text-secondary); margin: 15px 0 25px; line-height: 1.6;"></p>
-        <div class="form-group">
-            <label>Qtd Pallets:</label>
-            <input type="text" id="modal-input-qtd" inputmode="decimal" placeholder="0" style="font-size:36px; text-align:center; background: rgba(255,255,255,0.05); border: 2px solid var(--primary); border-radius: 16px; height: 80px; font-weight: 900; color: #fff; width: 100%;">
-        </div>
-        <div class="form-group">
-            <label>Destino:</label>
-            <select id="modal-destino-mov">
-                <option value="TRANSFERENCIA">TRANSFERENCIA</option>
-                <option value="APANHA">APANHA</option>
-                <option value="SEPARAÇÃO">SEPARAÇÃO</option>
-            </select>
-        </div>
-        <div style="display:flex; gap:12px; margin-top:30px;">
-            <button onclick="fecharModal()" style="flex:1; padding:16px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:12px; font-weight:bold; cursor:pointer;">VOLTAR</button>
-            <button id="btn-confirmar-modal" class="btn-action" style="flex:1;">CONFIRMAR</button>
-        </div>
+        <div class="form-group"><label>Qtd Pallets:</label><input type="text" id="modal-input-qtd" inputmode="decimal" placeholder="0" style="font-size:36px; text-align:center; background: rgba(255,255,255,0.05); border: 2px solid var(--primary); border-radius: 16px; height: 80px; font-weight: 900; color: #fff; width: 100%;"></div>
+        <div class="form-group"><label>Destino:</label><select id="modal-destino-mov" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 16px; border-radius: 12px; color: #fff; width: 100%;"><option value="TRANSFERENCIA">TRANSFERENCIA</option><option value="APANHA">APANHA</option><option value="SEPARAÇÃO">SEPARAÇÃO</option></select></div>
+        <div style="display:flex; gap:12px; margin-top:30px;"><button onclick="fecharModal()" style="flex:1; padding:16px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:12px; font-weight:bold; cursor:pointer;">VOLTAR</button><button id="btn-confirmar-modal" class="btn-action" style="flex:1;">CONFIRMAR</button></div>
     </div>
 </div>
 
@@ -291,7 +254,6 @@
     const db = firebase.firestore();
     db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
     db.enablePersistence({ synchronizeTabs: true });
-
     const auth = firebase.auth();
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
@@ -308,7 +270,6 @@
     window.addEventListener('offline', () => document.getElementById('network-status').style.display = 'block');
 
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
-
     function logout() { auth.signOut().then(() => { localStorage.removeItem('wms_session'); location.reload(); }); }
 
     async function tentarLogin() {
@@ -343,6 +304,13 @@
         if(tela === 'admin') carregarDadosDashboard();
     }
 
+    function navegarComFiltro(tipo) {
+        navegar('retirar');
+        const input = document.getElementById('search-input');
+        input.value = tipo === 'critico' ? '60' : (tipo === 'retido' ? '30' : '');
+        renderizarEstoque();
+    }
+
     function conectarFirebase() {
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -356,10 +324,7 @@
         if (cache) baseMateriais = JSON.parse(cache);
         if (navigator.onLine) {
             const snap = await db.collection("base_materiais").get();
-            if (!snap.empty) {
-                baseMateriais = snap.docs.map(doc => doc.data());
-                localStorage.setItem('base_materiais', JSON.stringify(baseMateriais));
-            }
+            if (!snap.empty) { baseMateriais = snap.docs.map(doc => doc.data()); localStorage.setItem('base_materiais', JSON.stringify(baseMateriais)); }
         }
     }
 
@@ -379,7 +344,12 @@
         chartRetidos = new Chart(ctxB, {
             type: 'bar',
             data: { labels: sortedRetidos.map(d => d[0]), datasets: [{ label: 'Pallets', data: sortedRetidos.map(d => d[1]), backgroundColor: '#ff3e3e', borderRadius: 8 }] },
-            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } } }
+            options: { 
+                responsive: true, 
+                onClick: (e, active) => { if(active.length > 0) { const mat = sortedRetidos[active[0].index][0]; navegar('retirar'); document.getElementById('search-input').value = mat; renderizarEstoque(); } },
+                plugins: { legend: { display: false } }, 
+                scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } } 
+            }
         });
         const statusData = [estoqueCompleto.filter(i => i.dias > 60).length, estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length, estoqueCompleto.filter(i => i.dias <= 30).length];
         const ctxR = document.getElementById('chart-status').getContext('2d');
@@ -387,30 +357,29 @@
         chartStatus = new Chart(ctxR, {
             type: 'doughnut',
             data: { labels: ['Data Boa', 'Crítico', 'Retido'], datasets: [{ data: statusData, backgroundColor: ['#10b981', '#fbbf24', '#f87171'], borderWidth: 0, hoverOffset: 10 }] },
-            options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 20, font: { size: 10 } } } } }
+            options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 10, font: { size: 9 } } } } }
         });
         const hoje = new Date().toLocaleDateString('pt-BR');
-        const movSnap = await db.collection("movimentacoes_wms").where("data", "==", hoje).get();
-        const ops = {}, mats = {};
+        const movSnap = await db.collection("movimentacoes_wms").where("data", "==", hoje).orderBy("timestamp", "desc").limit(10).get();
+        const ops = {};
+        const feed = document.getElementById('activity-feed');
+        feed.innerHTML = '';
         movSnap.docs.forEach(doc => {
             const d = doc.data();
             const login = d.login ? d.login.split('@')[0] : 'N/A';
             ops[login] = (ops[login] || 0) + 1;
-            mats[d.material] = (mats[d.material] || 0) + 1;
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            item.innerHTML = `<div class="activity-icon"></div><div class="activity-content"><b>${login}</b> ${d.fluxo} de <b>${d.material}</b> em <b>${d.endereco}</b> (${d.quantidade})<span class="activity-time">${d.hora}</span></div>`;
+            feed.appendChild(item);
         });
         renderRanking('ranking-operadores', ops);
-        renderRanking('ranking-materiais', mats);
     }
 
     function renderRanking(id, obj) {
         const el = document.getElementById(id);
         const sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 5);
-        el.innerHTML = sorted.map(s => `
-            <div class="ranking-item">
-                <div class="ranking-avatar">${s[0].charAt(0).toUpperCase()}</div>
-                <div class="ranking-info"><span>${s[0]}</span><small>Movimentações</small></div>
-                <div class="ranking-value">${s[1]}</div>
-            </div>`).join('') || '<p style="font-size:12px; color:var(--text-secondary); padding:20px; text-align:center;">Sem atividade hoje.</p>';
+        el.innerHTML = sorted.map(s => `<div class="ranking-item"><div class="ranking-avatar">${s[0].charAt(0).toUpperCase()}</div><div class="ranking-info"><span>${s[0]}</span><small>Movimentações</small></div><div class="ranking-value">${s[1]}</div></div>`).join('') || '<p style="font-size:12px; color:var(--text-secondary); padding:20px; text-align:center;">Sem atividade hoje.</p>';
     }
 
     function renderizarEstoque() {
@@ -420,6 +389,8 @@
         if (!termo) return;
         const isAdmin = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
         let filtrados = estoqueCompleto.filter(i => {
+            if (termo === '60') return i.dias > 30 && i.dias <= 60;
+            if (termo === '30') return i.dias <= 30;
             const mat = i.mat?.toString().toLowerCase() || "";
             const ender = i.ender?.toString().toLowerCase() || "";
             return /^\d+$/.test(termo) ? mat === termo : ender.includes(termo);
@@ -427,25 +398,14 @@
         if (!isAdmin) filtrados = filtrados.filter(item => item.dias > 30);
         if (filtrados.length === 0) return;
         filtrados.sort((a, b) => (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0));
-        if (/^\d+$/.test(termo)) filtrados = [filtrados[0]];
+        if (/^\d+$/.test(termo) && termo !== '60' && termo !== '30') filtrados = [filtrados[0]];
         filtrados.forEach(item => {
             let status = item.dias <= 30 ? "RETIDO" : (item.dias <= 60 ? "CRÍTICO" : "DATA BOA");
             let cor = item.dias <= 30 ? "var(--retido)" : (item.dias <= 60 ? "var(--critico)" : "var(--verde)");
             const card = document.createElement('div');
             card.className = `item-card`;
             card.style.borderLeft = `6px solid ${cor}`;
-            card.innerHTML = `
-                <div>
-                    <span class="badge badge-ender">${item.ender}</span>
-                    <span class="badge" style="background: ${cor}20; color: ${cor}; border: 1px solid ${cor}40; margin-left: 5px;">${status}</span>
-                    <div style="font-weight:800; font-size:22px; margin-top:12px; letter-spacing:-1px;">${item.mat}</div>
-                    <div style="font-size:12px; color:var(--text-secondary); margin-top:4px; font-weight:500;">${item.desc || "---"}</div>
-                    <div style="font-size:11px; margin-top:12px; color: var(--text-secondary);">VAL: <b style="color: ${cor}">${item.dias} DIAS</b></div>
-                </div>
-                <div style="text-align: right;">
-                    <div style="font-size:28px; font-weight:800; margin-bottom:12px;">${item.qtd}<span style="font-size:12px; color:var(--text-secondary); margin-left:4px;">PL</span></div>
-                    <button class="btn-action" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button>
-                </div>`;
+            card.innerHTML = `<div><span class="badge badge-ender">${item.ender}</span><span class="badge" style="background: ${cor}20; color: ${cor}; border: 1px solid ${cor}40; margin-left: 5px;">${status}</span><div style="font-weight:800; font-size:22px; margin-top:12px; letter-spacing:-1px;">${item.mat}</div><div style="font-size:12px; color:var(--text-secondary); margin-top:4px; font-weight:500;">${item.desc || "---"}</div><div style="font-size:11px; margin-top:12px; color: var(--text-secondary);">VAL: <b style="color: ${cor}">${item.dias} DIAS</b></div></div><div style="text-align: right;"><div style="font-size:28px; font-weight:800; margin-bottom:12px;">${item.qtd}<span style="font-size:12px; color:var(--text-secondary); margin-left:4px;">PL</span></div><button class="btn-action" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button></div>`;
             lista.appendChild(card);
         });
     }
@@ -460,11 +420,7 @@
             const div = document.createElement('div');
             div.className = 'autocomplete-item';
             div.innerHTML = `<strong>${m.mat}</strong> - ${m.desc}`;
-            div.onclick = () => {
-                document.getElementById('eb-mat').value = m.mat;
-                descInput.value = m.desc;
-                list.innerHTML = '';
-            };
+            div.onclick = () => { document.getElementById('eb-mat').value = m.mat; descInput.value = m.desc; list.innerHTML = ''; };
             list.appendChild(div);
         });
         const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
@@ -504,10 +460,10 @@
         const qtd = parseInt(document.getElementById('eb-qtd').value);
         const inputVenc = document.getElementById('eb-venc').value;
         if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos!");
-        if(desc === "MATERIAL NÃO CADASTRADO NA BASE") return alert("Código de material inválido! Cadastre na base primeiro.");
+        if(desc === "MATERIAL NÃO CADASTRADO NA BASE") return alert("Código inválido!");
         const val = inputVenc.split('-').reverse().join('/');
         const ocupante = estoqueCompleto.find(i => i.ender === ender);
-        if (ocupante && ocupante.mat !== mat) return alert("Posição Ocupada por outro material!");
+        if (ocupante && ocupante.mat !== mat) return alert("Posição Ocupada!");
         if (ocupante) { db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd }); } 
         else { db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: val, desc: desc }); }
         registrarMovimentacao(ender, mat, val, `+${qtd} PL`, `ENTRADA VIA ${document.getElementById('eb-origem').value}`);
@@ -559,7 +515,7 @@
         const reader = new FileReader();
         reader.onload = async (e) => {
             const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
-            if (!confirm(`ATENÇÃO: Isso APAGARÁ o estoque atual e carregará ${linhas.length} novos itens. Confirmar?`)) return;
+            if (!confirm(`Confirmar atualização de ${linhas.length} itens?`)) return;
             const snapshot = await db.collection("estoque_blocado").get();
             if (!snapshot.empty) {
                 let batchDel = db.batch();
@@ -575,7 +531,7 @@
                 }
             });
             await batch.commit();
-            alert("Estoque Atualizado com Sucesso!");
+            alert("Sucesso!");
         };
         reader.readAsText(event.target.files[0]);
     }
@@ -601,7 +557,7 @@
                     }
                 }
                 await batch.commit();
-                alert("Base de Materiais Sincronizada!");
+                alert("Base Sincronizada!");
                 carregarBaseMateriais();
             };
             reader.readAsArrayBuffer(e.target.files[0]);
