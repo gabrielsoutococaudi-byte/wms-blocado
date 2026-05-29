@@ -280,6 +280,15 @@
                 </div>
             </div>
 
+            
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-apanha-setor', '7. Abastecimento APANHA por Setor')">Expandir ⛶</button>
+                    <div class="chart-title">📦 7. Abastecimento APANHA por Setor <span>(Fluxo APANHA)</span></div>
+                    <canvas id="chart-apanha-setor" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
             <div class="dashboard-row">
                 <div class="chart-box glass-card">
                     <div class="chart-title">🏆 3. Materiais Mais Movimentados <span style="color:var(--accent);">Top 10</span></div>
@@ -445,6 +454,7 @@
     let chartSetorMInst = null;
     let chartSetorDInst = null;
     let chartDestinosInst = null;
+    let chartApanhaSetorInst = null;
     let chartStatus = null;
     let chartExpandidoInst = null; // Instância temporária do modal de ampliação
 
@@ -620,6 +630,7 @@
         if (chartId === 'chart-setor-mensal') graficoOriginal = chartSetorMInst;
         if (chartId === 'chart-setor-diario') graficoOriginal = chartSetorDInst;
         if (chartId === 'chart-destinos-saida') graficoOriginal = chartDestinosInst;
+        if (chartId === 'chart-apanha-setor') graficoOriginal = chartApanhaSetorInst;
         if (chartId === 'chart-status') graficoOriginal = chartStatus;
 
         if (!graficoOriginal) return;
@@ -701,6 +712,8 @@
         
         // Objeto para controle do novo gráfico de saídas solicitadas
         const fluxosDestinoAcumulado = { "TRANSFERENCIA": 0, "APANHA": 0, "SEPARAÇÃO": 0 };
+        const apanhaSetorAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
+
 
         const dataAtualObjeto = new Date();
         const anoAtualStr = dataAtualObjeto.getFullYear().toString();
@@ -724,6 +737,13 @@
 
             // Alimentação do Novo Gráfico de Destinos de Carga (Apenas Fluxos de Saída)
             const fluxoNormalizado = mov.fluxo ? mov.fluxo.toUpperCase().trim() : "";
+            
+            if (fluxoNormalizado === "APANHA") {
+                if (apanhaSetorAcumulado[setorMat] !== undefined) {
+                    apanhaSetorAcumulado[setorMat] += qtdAbsoluta;
+                }
+            }
+
             if (fluxosDestinoAcumulado[fluxoNormalizado] !== undefined) {
                 fluxosDestinoAcumulado[fluxoNormalizado] += qtdAbsoluta;
             }
@@ -830,6 +850,42 @@
                 } 
             }
         });
+
+        
+        // 7. RENDER GRÁFICO APANHA POR SETOR
+        const ctxApanha = document.getElementById('chart-apanha-setor').getContext('2d');
+        if (chartApanhaSetorInst) chartApanhaSetorInst.destroy();
+        chartApanhaSetorInst = new Chart(ctxApanha, {
+            type: 'bar',
+            data: { 
+                labels: SETORES_LISTA, 
+                datasets: [{ 
+                    label: 'Paletes Abastecidos',
+                    data: SETORES_LISTA.map(s => apanhaSetorAcumulado[s]), 
+                    backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'],
+                    borderRadius: 8
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                plugins: { 
+                    legend: { display: false }, 
+                    datalabels: padraoDatalabelsBarra 
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.03)' },
+                        ticks: { color: 'var(--text-secondary)' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: 'var(--text-secondary)', font: { weight: '700' } }
+                    }
+                }
+            }
+        });
+
 
         // GRÁFICO DE SAÚDE INVENTÁRIO
         const ctxS = document.getElementById('chart-status').getContext('2d');
