@@ -18,7 +18,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-   
+    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
     <style>
@@ -92,17 +92,19 @@
         .chart-title { font-size: 12px; font-weight: 900; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); padding-right: 40px; }
         .chart-title span { color: var(--primary); }
 
+        /* Botão de Expansão */
         .expand-btn { position: absolute; top: 22px; right: 22px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; font-weight: 700; transition: 0.2s; z-index: 10; }
         .expand-btn:hover { background: var(--accent); border-color: var(--accent); }
 
+        /* Modal do Gráfico Expandido */
         .chart-fullscreen-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2,2,2,0.98); z-index: 5000; padding: 40px; flex-direction: column; }
         .chart-fullscreen-modal .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; }
         .chart-fullscreen-modal .canvas-container { flex-grow: 1; position: relative; width: 100%; height: 80%; display: flex; align-items: center; justify-content: center; }
 
         .activity-feed { max-height: 450px; overflow-y: auto; padding-right: 5px; }
-        .activity-item { display: flex; gap: 16px; margin-bottom: 24px; padding: 12px; border-radius: 16px; transition: 0.3s; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255,255,255,0.03); }
+        .activity-item { display: flex; gap: 16px; margin-bottom: 24px; padding: 12px; border-radius: 16px; transition: 0.3s; }
         .activity-icon-box { width: 40px; height: 40px; border-radius: 12px; background: var(--glass); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-        .activity-content { font-size: 12px; line-height: 1.5; flex-grow: 1; }
+        .activity-content { font-size: 12px; line-height: 1.5; }
         .activity-content b { color: #fff; font-weight: 700; }
         .activity-tag { font-size: 9px; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; font-weight: 900; margin-bottom: 6px; display: inline-block; }
         .activity-time { font-size: 10px; color: var(--text-secondary); margin-top: 6px; display: block; }
@@ -114,7 +116,7 @@
         .item-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 24px; padding: 24px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .item-card:hover { transform: scale(1.02); border-color: var(--primary); }
         
-        .badge { padding: 6px 12px; border-radius: 10px; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; display: inline-block; }
+        .badge { padding: 6px 12px; border-radius: 10px; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
         .badge-ender { background: #fff; color: #000; }
 
         .btn-action { background: var(--primary); color: #fff; border: none; padding: 16px 28px; border-radius: 16px; font-weight: 900; cursor: pointer; font-size: 13px; box-shadow: 0 10px 20px var(--primary-glow); transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
@@ -343,7 +345,7 @@
             </div>
         </div>
 
-        <div id="view-retirar" style="display: none;">
+        <div id="view-retirar">
             <div class="search-wrapper input-with-toggle">
                 <input type="text" inputmode="numeric" id="search-input" placeholder="Pesquisar Código ou Posição..." oninput="renderizarEstoque()">
                 <div class="toggle-kb-btn" onclick="toggleKB('search-input')" style="right: 15px;">Abc</div>
@@ -406,14 +408,24 @@
 </div>
 
 <script>
-    const firebaseConfig = { apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A", authDomain: "sistema-fefo.firebaseapp.com", projectId: "sistema-fefo", storageBucket: "sistema-fefo.firebasestorage.app", messagingSenderId: "755801777693", appId: "1:755801777693:web:a8a72a2fd483445a2d88f4" };
+    const firebaseConfig = {
+        apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
+        authDomain: "sistema-fefo.firebaseapp.com",
+        projectId: "sistema-fefo",
+        storageBucket: "sistema-fefo.firebasestorage.app",
+        messagingSenderId: "755801777693",
+        appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
     db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
     const auth = firebase.auth();
 
+    // Registrar globalmente o plugin de rótulos do Chart.js
     Chart.register(ChartDataLabels);
+
+    // Configuração de Estilos de Fonte Padrão para os Textos Internos dos Gráficos
     Chart.defaults.color = '#64748b';
     Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
     Chart.defaults.font.weight = '700';
@@ -421,20 +433,21 @@
     let estoqueCompleto = [];
     let baseMateriais = [];
     let todasMovimentacoes = [];
-    let dadosMovimentacoesFiltrados = [];
+    let movimentacoesFiltradas = [];
     let usuarioLogado = null;
     let diasCalculados = 0;
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
 
+    // Instâncias Globais de Gráficos
     let chartDiarioInst = null;
     let chartMensalInst = null;
     let chartSetorMInst = null;
     let chartSetorDInst = null;
     let chartDestinosInst = null;
     let chartStatus = null;
-    let chartExpandidoInst = null;
-    
+    let chartExpandidoInst = null; // Instância temporária do modal de ampliação
+
     const SETORES_LISTA = ["ALCOÓLICO", "AVULSO", "LATA", "PET", "SUCO", "VIDRO"];
 
     setInterval(() => { document.getElementById('current-time').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }, 1000);
@@ -450,425 +463,44 @@
         const email = mat.toLowerCase() + "@alb.com";
         try {
             await auth.signInWithEmailAndPassword(email, senha);
-        } catch(e) { alert("Credenciais Incorretas!"); }
+            const doc = await db.collection("usuarios_wms").doc(email).get();
+            usuarioLogado = doc.exists ? { ...doc.data(), email } : { nome: mat, perfil: "OPERADOR", email };
+            localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
+            iniciarApp();
+        } catch (e) { alert("Credenciais incorretas."); }
     }
 
-    auth.onAuthStateChanged(user => {
-        if(user) {
-            const mat = user.email.split('@')[0].toUpperCase();
-            db.collection("usuarios").doc(mat).get().then(doc => {
-                if(doc.exists) {
-                    usuarioLogado = doc.data();
-                    document.getElementById('user-name').innerText = usuarioLogado.nome;
-                    document.getElementById('role-label').innerText = usuarioLogado.funcao;
-                    document.getElementById('login-screen').style.display = 'none';
-                    document.getElementById('app-screen').style.display = 'block';
-                    
-                    if(usuarioLogado.funcao === 'ADMINISTRADOR') {
-                        document.getElementById('btn-nav-admin').style.display = 'block';
-                        navegar('admin');
-                    } else {
-                        document.getElementById('btn-nav-admin').style.display = 'none';
-                        navegar('retirar');
-                    }
-                    carregarBaseMateriais();
-                    escutarEstoque();
-                }
-            });
-        } else {
-            document.getElementById('login-screen').style.display = 'block';
-            document.getElementById('app-screen').style.display = 'none';
-        }
-    });
+    function iniciarApp() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'block';
+        document.getElementById('user-name').innerText = usuarioLogado.nome;
+        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
+        document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
+        document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
+        
+        const hoje = new Date();
+        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
+        document.getElementById('filtro-dia-valor').value = hoje.toISOString().substring(0, 10);
+        document.getElementById('filtro-de-valor').value = hoje.toISOString().substring(0, 10);
+        document.getElementById('filtro-ate-valor').value = hoje.toISOString().substring(0, 10);
+
+        conectarFirebase();
+        carregarBaseMateriais();
+        navegar(isAdmin ? 'admin' : 'retirar');
+    }
 
     function navegar(tela) {
-        document.getElementById('view-admin').style.display = tela === 'admin' ? 'block' : 'none';
-        document.getElementById('view-retirar').style.display = tela === 'retirar' ? 'block' : 'none';
-        document.getElementById('view-entrada_bloco').style.display = tela === 'entrada_bloco' ? 'block' : 'none';
-        document.getElementById('view-abertura_blocado').style.display = tela === 'abertura_blocado' ? 'block' : 'none';
+        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
+        document.getElementById('view-' + tela).style.display = 'block';
         document.getElementById('sidebar').classList.remove('active');
-        
-        if (tela === 'admin' && usuarioLogado && usuarioLogado.funcao === 'ADMINISTRADOR') {
-            const hoje = new Date();
-            document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
-            document.getElementById('filtro-dia-valor').value = hoje.toISOString().substring(0, 10);
-            inicializarPainelMovimentacoes();
-        }
+        if(tela === 'admin') carregarDadosDashboard();
     }
 
-    function navegarComFiltro(statusFiltro) {
+    function navegarComFiltro(tipo) {
         navegar('retirar');
-        if(statusFiltro === 'critico') {
-            document.getElementById('search-input').value = 'CRITICO';
-        } else if(statusFiltro === 'retido') {
-            document.getElementById('search-input').value = 'RETIDO';
-        } else {
-            document.getElementById('search-input').value = '';
-        }
+        const input = document.getElementById('search-input');
+        input.value = tipo === 'critico' ? '60' : (tipo === 'retido' ? '30' : '');
         renderizarEstoque();
-    }
-
-    function carregarBaseMateriais() {
-        db.collection("base_materiais").get().then(snap => {
-            baseMateriais = [];
-            snap.forEach(d => baseMateriais.push(d.data()));
-        });
-    }
-
-    function escutarEstoque() {
-        db.collection("estoque").onSnapshot(snap => {
-            estoqueCompleto = [];
-            snap.forEach(d => {
-                const item = d.data();
-                item.id = d.id;
-                estoqueCompleto.push(item);
-            });
-            renderizarEstoque();
-            if(usuarioLogado && usuarioLogado.funcao === 'ADMINISTRADOR') processarDashboardEstatistico();
-        });
-    }
-
-    function renderizarEstoque() {
-        const termo = document.getElementById('search-input').value.toUpperCase().trim();
-        const lista = document.getElementById('lista-estoque');
-        if(!lista) return;
-        lista.innerHTML = "";
-
-        const filtrados = estoqueCompleto.filter(i => {
-            if(!termo) return true;
-            if(termo === 'CRITICO') return i.status_fefo === 'CRÍTICO (30-60D)';
-            if(termo === 'RETIDO') return i.status_fefo === 'RETIDO (<30D)';
-            return i.ender.includes(termo) || i.mat.toString().includes(termo) || (i.desc && i.desc.toUpperCase().includes(termo));
-        });
-
-        filtrados.forEach(i => {
-            let color = 'var(--verde)';
-            if(i.status_fefo.includes('CRÍTICO')) color = 'var(--critico)';
-            if(i.status_fefo.includes('RETIDO')) color = 'var(--retido)';
-
-            const card = document.createElement('div');
-            card.className = "item-card glass-card";
-            card.onclick = () => abrirModalRetirada(i);
-            card.innerHTML = `
-                <div>
-                    <span class="badge badge-ender">📍 ${i.ender}</span>
-                    <h3 style="color:#fff; margin:10px 0 5px 0; font-size:16px; font-weight:800;">${i.mat} - ${i.desc || ''}</h3>
-                    <p style="font-size:12px; color:var(--text-secondary); font-weight:600;">Validade: ${i.venc.split('-').reverse().join('/')} (${i.dias_venc} Dias)</p>
-                </div>
-                <div style="text-align:right;">
-                    <span class="badge" style="background:${color}; color:#000;">${i.status_fefo}</span>
-                    <p style="font-size:26px; font-weight:900; color:#fff; margin-top:8px;">${i.qtd} <span style="font-size:12px; color:var(--text-secondary)">PL</span></p>
-                </div>
-            `;
-            lista.appendChild(card);
-        });
-    }
-
-    function abrirModalRetirada(item) {
-        itemParaRetirar = item;
-        document.getElementById('modal-titulo').innerText = `Retirada de Carga`;
-        document.getElementById('modal-info').innerHTML = `Posição: <b>${item.ender}</b><br>Material: <b>${item.mat} - ${item.desc}</b><br>Saldo Disponível: <b>${item.qtd} PL</b>`;
-        document.getElementById('modal-input-qtd').value = item.qtd;
-        document.getElementById('modal-retirada').style.display = 'flex';
-        document.getElementById('btn-confirmar-modal').onclick = executarRetirada;
-    }
-
-    function fecharModal() { document.getElementById('modal-retirada').style.display = 'none'; }
-
-    async function executarRetirada() {
-        const qtdMover = parseFloat(document.getElementById('modal-input-qtd').value);
-        const destinoMov = document.getElementById('modal-destino-mov').value;
-        if(isNaN(qtdMover) || qtdMover <= 0 || qtdMover > itemParaRetirar.qtd) { alert("Quantidade Inválida!"); return; }
-
-        const logRef = db.collection("historico_movimentacoes").doc();
-        const estRef = db.collection("estoque").doc(itemParaRetirar.id);
-        const batch = db.batch();
-
-        const dataHoje = new Date();
-        const docMov = {
-            data: dataHoje.toISOString().substring(0, 10),
-            hora: dataHoje.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'}),
-            material: itemParaRetirar.mat,
-            descricao: itemParaRetirar.desc || '',
-            setor: itemParaRetirar.categoria || 'AVULSO',
-            quantidade: qtdMover,
-            operador: usuarioLogado.nome,
-            tipo: "SAÍDA",
-            fluxo: destinoMov,
-            endereco: itemParaRetirar.ender,
-            vencimento: itemParaRetirar.venc,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-        batch.set(logRef, docMov);
-
-        if(qtdMover === itemParaRetirar.qtd) {
-            batch.delete(estRef);
-        } else {
-            batch.update(estRef, { qtd: firebase.firestore.FieldValue.increment(-qtdMover) });
-        }
-
-        try {
-            await batch.commit();
-            fecharModal();
-        } catch(e) { alert("Erro na operação."); }
-    }
-
-    function puxarDescricaoObrigatoria(val, idDesc, idList) {
-        const listDiv = document.getElementById(idList);
-        listDiv.innerHTML = "";
-        if(!val) return;
-        
-        const correspondentes = baseMateriais.filter(m => m.mat.toString().includes(val) || m.desc.toUpperCase().includes(val.toUpperCase())).slice(0, 5);
-        correspondentes.forEach(m => {
-            const row = document.createElement("div");
-            row.className = "autocomplete-item";
-            row.innerText = `${m.mat} - ${m.desc}`;
-            row.onclick = () => {
-                document.getElementById(idDesc).value = m.desc;
-                const inputMat = listDiv.previousElementSibling.querySelector('input');
-                inputMat.value = m.mat;
-                inputMat.dataset.categoria = m.categoria || 'AVULSO';
-                listDiv.innerHTML = "";
-            };
-            listDiv.appendChild(row);
-        });
-    }
-
-    function calcularDias(val, idLabel) {
-        if(!val) return;
-        const diff = new Date(val) - new Date();
-        diasCalculados = Math.ceil(diff / (1000 * 60 * 60 * 24));
-        document.getElementById(idLabel).innerText = `${diasCalculados} Dias Restantes para o Vencimento`;
-    }
-
-    async function salvarEntradaBloco() {
-        const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
-        const mat = document.getElementById('eb-mat').value.trim();
-        const desc = document.getElementById('eb-desc').value;
-        const qtd = parseFloat(document.getElementById('eb-qtd').value);
-        const venc = document.getElementById('eb-venc').value;
-        const origem = document.getElementById('eb-origem').value;
-        const cat = document.getElementById('eb-mat').dataset.categoria || 'AVULSO';
-
-        if(!ender || !mat || !desc || isNaN(qtd) || qtd <= 0 || !venc) { alert("Preencha tudo corretamente!"); return; }
-
-        let statusFefo = 'OK (>60D)';
-        if(diasCalculados <= 30) statusFefo = 'RETIDO (<30D)';
-        else if(diasCalculados <= 60) statusFefo = 'CRÍTICO (30-60D)';
-
-        const batch = db.batch();
-        const estRef = db.collection("estoque").doc(`${ender}_${mat}`);
-        
-        const dataHoje = new Date();
-        const movRef = db.collection("historico_movimentacoes").doc();
-        batch.set(movRef, {
-            data: dataHoje.toISOString().substring(0, 10),
-            hora: dataHoje.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'}),
-            material: mat,
-            descricao: desc,
-            setor: cat,
-            quantidade: qtd,
-            operador: usuarioLogado.nome,
-            tipo: "ENTRADA",
-            fluxo: origem,
-            endereco: ender,
-            vencimento: venc,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        batch.set(estRef, { ender, mat, desc, qtd, venc, dias_venc: diasCalculados, status_fefo: statusFefo, categoria: cat }, { merge: true });
-        await batch.commit();
-        
-        alert("Entrada Registada!");
-        document.getElementById('eb-ender').value = "";
-        document.getElementById('eb-mat').value = "";
-        document.getElementById('eb-desc').value = "";
-        document.getElementById('eb-qtd').value = "";
-        document.getElementById('eb-venc').value = "";
-        document.getElementById('eb-label-dias').innerText = "";
-    }
-
-    function carregarDadosOrigemAbertura(pos) {
-        const item = estoqueCompleto.find(i => i.ender === pos.toUpperCase().trim());
-        if(item) {
-            itemOrigemAbertura = item;
-            document.getElementById('ab-mat').value = `${item.mat} - ${item.desc}`;
-            document.getElementById('ab-qtd').placeholder = `Saldo: ${item.qtd}`;
-        } else {
-            itemOrigemAbertura = null;
-            document.getElementById('ab-mat').value = "Não localizado no estoque!";
-        }
-    }
-
-    async function processarAberturaBlocado() {
-        const dest = document.getElementById('ab-destino').value.toUpperCase().trim();
-        const qtdMover = parseFloat(document.getElementById('ab-qtd').value);
-        if(!itemOrigemAbertura || !dest || isNaN(qtdMover) || qtdMover <= 0 || qtdMover > itemOrigemAbertura.qtd) { alert("Verifique as informações!"); return; }
-
-        const batch = db.batch();
-        const refOrigem = db.collection("estoque").doc(itemOrigemAbertura.id);
-        const refDest = db.collection("estoque").doc(`${dest}_${itemOrigemAbertura.mat}`);
-
-        const dataHoje = new Date();
-        const logRef = db.collection("historico_movimentacoes").doc();
-        batch.set(logRef, {
-            data: dataHoje.toISOString().substring(0, 10),
-            hora: dataHoje.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'}),
-            material: itemOrigemAbertura.mat,
-            descricao: itemOrigemAbertura.desc,
-            setor: itemOrigemAbertura.categoria || 'AVULSO',
-            quantidade: qtdMover,
-            operador: usuarioLogado.nome,
-            tipo: "MOVIMENTAÇÃO INTERNA",
-            fluxo: "TRANSFERÊNCIA",
-            endereco: `${itemOrigemAbertura.ender} ➡️ ${dest}`,
-            vencimento: itemOrigemAbertura.venc,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        if(qtdMover === itemOrigemAbertura.qtd) {
-            batch.delete(refOrigem);
-        } else {
-            batch.update(refOrigem, { qtd: firebase.firestore.FieldValue.increment(-qtdMover) });
-        }
-
-        batch.set(refDest, {
-            ender: dest,
-            mat: itemOrigemAbertura.mat,
-            desc: itemOrigemAbertura.desc,
-            qtd: firebase.firestore.FieldValue.increment(qtdMover),
-            venc: itemOrigemAbertura.venc,
-            dias_venc: itemOrigemAbertura.dias_venc,
-            status_fefo: itemOrigemAbertura.status_fefo,
-            categoria: itemOrigemAbertura.categoria || 'AVULSO'
-        }, { merge: true });
-
-        await batch.commit();
-        alert("Transferência Concluída!");
-        document.getElementById('ab-origem').value = "";
-        document.getElementById('ab-destino').value = "";
-        document.getElementById('ab-mat').value = "";
-        document.getElementById('ab-qtd').value = "";
-    }
-
-    function processarDashboardEstatistico() {
-        let totalPl = 0, criticos = 0, retidos = 0;
-        estoqueCompleto.forEach(i => {
-            totalPl += i.qtd;
-            if(i.status_fefo.includes('CRÍTICO')) criticos += i.qtd;
-            if(i.status_fefo.includes('RETIDO')) retidos += i.qtd;
-        });
-        document.getElementById('st-total').innerText = totalPl.toFixed(0);
-        document.getElementById('st-critico').innerText = criticos.toFixed(0);
-        document.getElementById('st-retido').innerText = retidos.toFixed(0);
-
-        if(chartStatus) chartStatus.destroy();
-        const ctx = document.getElementById('chart-status')?.getContext('2d');
-        if(ctx) {
-            chartStatus = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['OK', 'CRÍTICO', 'RETIDO'],
-                    datasets: [{
-                        data: [totalPl - criticos - retidos, criticos, retidos],
-                        backgroundColor: ['#10b981', '#fbbf24', '#f87171'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
-        }
-    }
-
-    // ============================================================================
-    // SEÇÃO EXCLUSIVA DO ADMINISTRADOR: LÓGICA DE MOVIMENTAÇÕES E AGREGADOS
-    // ============================================================================
-
-    function inicializarPainelMovimentacoes() {
-        db.collection("historico_movimentacoes")
-            .orderBy("timestamp", "desc")
-            .limit(50)
-            .onSnapshot((snapshot) => {
-                const activityFeed = document.getElementById("activity-feed");
-                if (!activityFeed) return;
-                
-                activityFeed.innerHTML = "";
-                snapshot.forEach((doc) => {
-                    const mov = doc.data();
-
-                    let badgeFefo = '';
-                    if (mov.vencimento) {
-                        const dataVenc = new Date(mov.vencimento);
-                        const diffTime = dataVenc - new Date();
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        
-                        if (diffDays <= 30) {
-                            badgeFefo = `<span class="badge" style="background: var(--retido); color: #fff;">FEFO: CRÍTICO (&lt;30D)</span>`;
-                        } else if (diffDays <= 60) {
-                            badgeFefo = `<span class="badge" style="background: var(--critico); color: #000;">FEFO: ALERTA (30-60D)</span>`;
-                        } else {
-                            badgeFefo = `<span class="badge" style="background: var(--verde); color: #fff;">FEFO: OK</span>`;
-                        }
-                    }
-
-                    const item = document.createElement("div");
-                    item.className = "activity-item";
-                    item.innerHTML = `
-                        <div class="activity-icon-box" style="border-color: ${mov.tipo === 'ENTRADA' ? 'var(--verde)' : 'var(--primary)'}">
-                            ${mov.tipo === 'ENTRADA' ? '🚙' : '🔄'}
-                        </div>
-                        <div class="activity-content">
-                            <span class="activity-tag" style="background: ${mov.tipo === 'ENTRADA' ? 'var(--verde)' : 'var(--accent)'}">
-                                ${mov.fluxo || mov.tipo}
-                            </span>
-                            ${badgeFefo}
-                            <p>Material: <b>${mov.material}</b> - ${mov.descricao || ''}</p>
-                            <p>Qtd: <b>${mov.quantidade} PL</b> | Op: <b>${mov.operador || 'Sistema'}</b></p>
-                            <p>Destino/Posição: <b>${mov.destino || mov.endereco || 'N/A'}</b></p>
-                            <span class="activity-time">⏰ ${mov.data || ''} às ${mov.hora || ''}</span>
-                        </div>
-                    `;
-                    activityFeed.appendChild(item);
-                });
-
-                carregarDadosHistoricosCompletos();
-            });
-    }
-
-    async function carregarDadosHistoricosCompletos() {
-        try {
-            const snapshot = await db.collection("historico_movimentacoes").orderBy("timestamp", "desc").get();
-            const listaRegistros = [];
-            let totalGiroHoje = 0;
-            const hojeStr = new Date().toISOString().substring(0, 10);
-            
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                const qtd = parseFloat(data.quantidade) || 0;
-                if(data.data === hojeStr) {
-                    totalGiroHoje += qtd;
-                }
-                listaRegistros.push({
-                    id: doc.id,
-                    dataStr: data.data || '',
-                    hora: data.hora || '',
-                    fluxo: data.fluxo || data.tipo || 'MOVIMENTAÇÃO',
-                    material: data.material || '',
-                    descricao: data.descricao || '',
-                    setor: data.setor || 'AVULSO',
-                    quantidade: qtd,
-                    operador: data.operador || 'Desconhecido',
-                    vencimento: data.vencimento || ''
-                });
-            });
-
-            document.getElementById('st-mov').innerText = totalGiroHoje.toFixed(0);
-            todasMovimentacoes = listaRegistros;
-            processarFiltragemHistorica();
-        } catch (error) {
-            console.error("Erro ao processar logs estructurados WMS: ", error);
-        }
     }
 
     function alternarCamposData() {
@@ -880,23 +512,61 @@
         processarFiltragemHistorica();
     }
 
+    function conectarFirebase() {
+        db.collection("estoque_blocado").onSnapshot(snap => {
+            estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if(usuarioLogado?.perfil?.toUpperCase() === "ADMIN") { atualizarEstatisticas(); carregarDadosDashboard(); }
+            renderizarEstoque();
+        });
+
+        db.collection("movimentacoes_wms").orderBy("timestamp", "desc").onSnapshot(snap => {
+            todasMovimentacoes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            processarFiltragemHistorica();
+        });
+    }
+
+    async function carregarBaseMateriais() {
+        const cache = localStorage.getItem('base_materiais');
+        if (cache) baseMateriais = JSON.parse(cache);
+        if (navigator.onLine) {
+            const snap = await db.collection("base_materiais").get();
+            if (!snap.empty) { 
+                baseMateriais = snap.docs.map(doc => doc.data()); 
+                localStorage.setItem('base_materiais', JSON.stringify(baseMateriais));
+            }
+        }
+    }
+
+    function atualizarEstatisticas() {
+        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
+        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length;
+        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
+    }
+
     function processarFiltragemHistorica() {
-        if (!todasMovimentacoes) return;
+        if (todasMovimentacoes.length === 0) return;
 
         const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
-        const filtroMes = document.getElementById('filtro-mes-valor').value;
-        const filtroDia = document.getElementById('filtro-dia-valor').value;
+        const filtroMes = document.getElementById('filtro-mes-valor').value; 
+        const filtroDia = document.getElementById('filtro-dia-valor').value; 
         const filtroDe = document.getElementById('filtro-de-valor').value;
         const filtroAte = document.getElementById('filtro-ate-valor').value;
 
-        dadosMovimentacoesFiltrados = todasMovimentacoes.filter(mov => {
-            if (!mov.dataStr) return false;
-            if (tipoTempo === 'mes' && filtroMes) return mov.dataStr.startsWith(filtroMes);
-            if (tipoTempo === 'dia' && filtroDia) return mov.dataStr === filtroDia;
-            if (tipoTempo === 'periodo') {
-                if (filtroDe && mov.dataStr < filtroDe) return false;
-                if (filtroAte && mov.dataStr > filtroAte) return false;
-                return true;
+        movimentacoesFiltradas = todasMovimentacoes.filter(mov => {
+            if (!mov.data) return false;
+            const partes = mov.data.split('/');
+            const dataMov = new Date(partes[2], partes[1] - 1, partes[0]);
+            
+            if (tipoTempo === 'mes' && filtroMes) {
+                const [ano, mes] = filtroMes.split('-');
+                return dataMov.getFullYear() === parseInt(ano) && (dataMov.getMonth() + 1) === parseInt(mes);
+            } else if (tipoTempo === 'dia' && filtroDia) {
+                const [ano, mes, dia] = filtroDia.split('-');
+                return dataMov.getFullYear() === parseInt(ano) && (dataMov.getMonth() + 1) === parseInt(mes) && dataMov.getDate() === parseInt(dia);
+            } else if (tipoTempo === 'periodo' && filtroDe && filtroAte) {
+                const dInit = new Date(filtroDe + "T00:00:00");
+                const dEnd = new Date(filtroAte + "T23:59:59");
+                return dataMov >= dInit && dataMov <= dEnd;
             }
             return true;
         });
@@ -904,334 +574,491 @@
         filtrarTabelasEDados();
     }
 
-    function filtrarTabelasEDados() {
-        const termoPesquisa = document.getElementById('filtro-material').value.toLowerCase().trim();
-
-        const dadosFinais = dadosMovimentacoesFiltrados.filter(mov => {
-            if (!termoPesquisa) return true;
-            return mov.material.toLowerCase().includes(termoPesquisa) || 
-                   mov.descricao.toLowerCase().includes(termoPesquisa) ||
-                   mov.operador.toLowerCase().includes(termoPesquisa) ||
-                   mov.setor.toLowerCase().includes(termoPesquisa);
-        });
-
-        renderizarTabelaConsolidada(dadosFinais);
-        processarEPlotarGraficos(dadosFinais);
-    }
-
-    function renderizarTabelaConsolidada(dados) {
-        const tbody = document.getElementById("table-historico-consolidado");
-        if (!tbody) return;
-        tbody.innerHTML = "";
-        dados.forEach(mov => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${mov.dataStr.split('-').reverse().join('/')}</td>
-                <td>${mov.hora}</td>
-                <td><span class="badge" style="background:rgba(255,255,255,0.05)">${mov.fluxo}</span></td>
-                <td><b>${mov.material}</b></td>
-                <td>${mov.descricao}</td>
-                <td><span class="badge badge-ender">${mov.setor}</span></td>
-                <td><b>${mov.quantidade}</b></td>
-                <td>${mov.operador}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function processarEPlotarGraficos(dados) {
-        const acumDiario = {};
-        const acumMensal = {};
-        const acumMateriais = {};
-        const acumOperadores = {};
-        const destinosFluxo = {};
-        
-        const setorMensalAcum = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
-        const setorDiarioAcum = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
-        const hojeStr = new Date().toISOString().substring(0, 10);
-        const filtroDiaSelecionado = document.getElementById('filtro-dia-valor').value || hojeStr;
-
-        dados.forEach(mov => {
-            const qtd = mov.quantidade;
-            const dia = mov.dataStr;
-            const mes = mov.dataStr.substring(0, 7);
-            const setorNormalizado = SETORES_LISTA.includes(mov.setor.toUpperCase()) ? mov.setor.toUpperCase() : "AVULSO";
-
-            acumDiario[dia] = (acumDiario[dia] || 0) + qtd;
-            acumMensal[mes] = (acumMensal[mes] || 0) + qtd;
-
-            if (!acumMateriais[mov.material]) {
-                acumMateriais[mov.material] = { desc: mov.descricao, total: 0 };
-            }
-            acumMateriais[mov.material].total += qtd;
-
-            acumOperadores[mov.operador] = (acumOperadores[mov.operador] || 0) + qtd;
-            setorMensalAcum[setorNormalizado] += qtd;
-
-            if (mov.dataStr === filtroDiaSelecionado) {
-                setorDiarioAcum[setorNormalizado] += qtd;
-            }
-
-            if (mov.tipo === "SAÍDA" || mov.fluxo === "APANHA" || mov.fluxo === "SEPARAÇÃO" || mov.fluxo === "TRANSFERENCIA") {
-                destinosFluxo[mov.fluxo] = (destinosFluxo[mov.fluxo] || 0) + qtd;
-            }
-        });
-
-        const tbodyMateriais = document.getElementById("table-ranking-materiais");
-        if (tbodyMateriais) {
-            tbodyMateriais.innerHTML = "";
-            Object.keys(acumMateriais)
-                .map(cod => ({ cod, desc: acumMateriais[cod].desc, total: acumMateriais[cod].total }))
-                .sort((a, b) => b.total - a.total)
-                .slice(0, 10)
-                .forEach(item => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `<td>${item.cod}</td><td>${item.desc}</td><td><b style="color:var(--accent)">${item.total.toFixed(1)} PL</b></td>`;
-                    tbodyMateriais.appendChild(tr);
-                });
-        }
-
-        const tbodyOperadores = document.getElementById("table-ranking-operadores");
-        if (tbodyOperadores) {
-            tbodyOperadores.innerHTML = "";
-            Object.keys(acumOperadores)
-                .map(nome => ({ nome, total: acumOperadores[nome] }))
-                .sort((a, b) => b.total - a.total)
-                .forEach(item => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `<td><b>${item.nome}</b></td><td><b style="color:var(--verde)">${item.total.toFixed(1)} PL</b></td>`;
-                    tbodyOperadores.appendChild(tr);
-                });
-        }
-
-        const opcoesGraficoPadrao = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                datalabels: {
-                    color: '#fff',
-                    anchor: 'end',
-                    align: 'top',
-                    font: { weight: '800', size: 10 },
-                    formatter: (val) => val > 0 ? val.toFixed(0) : ''
-                }
-            },
-            scales: {
-                y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b' } },
-                x: { grid: { display: false }, ticks: { color: '#f8fafc' } }
-            }
-        };
-
-        const labelDias = Object.keys(acumDiario).sort();
-        if (chartDiarioInst) chartDiarioInst.destroy();
-        const ctxDiario = document.getElementById('chart-fluxo-diario')?.getContext('2d');
-        if (ctxDiario) {
-            chartDiarioInst = new Chart(ctxDiario, {
-                type: 'bar',
-                plugins: [ChartDataLabels],
-                data: {
-                    labels: labelDias.map(d => d.split('-').reverse().slice(0, 2).join('/')),
-                    datasets: [{ data: labelDias.map(d => acumDiario[d]), backgroundColor: '#ff3e3e', borderRadius: 6, barThickness: 16 }]
-                },
-                options: opcoesGraficoPadrao
-            });
-        }
-
-        const labelMeses = Object.keys(acumMensal).sort();
-        if (chartMensalInst) chartMensalInst.destroy();
-        const ctxMensal = document.getElementById('chart-fluxo-mensal')?.getContext('2d');
-        if (ctxMensal) {
-            chartMensalInst = new Chart(ctxMensal, {
-                type: 'bar',
-                plugins: [ChartDataLabels],
-                data: {
-                    labels: labelMeses.map(m => m.split('-').reverse().join('/')),
-                    datasets: [{ data: labelMeses.map(m => acumMensal[m]), backgroundColor: '#6366f1', borderRadius: 6, barThickness: 24 }]
-                },
-                options: opcoesGraficoPadrao
-            });
-        }
-
-        if (chartSetorMInst) chartSetorMInst.destroy();
-        const ctxSetorM = document.getElementById('chart-setor-mensal')?.getContext('2d');
-        if (ctxSetorM) {
-            chartSetorMInst = new Chart(ctxSetorM, {
-                type: 'bar',
-                plugins: [ChartDataLabels],
-                data: {
-                    labels: SETORES_LISTA,
-                    datasets: [{ data: SETORES_LISTA.map(s => setorMensalAcum[s]), backgroundColor: 'rgba(99, 102, 241, 0.75)', borderRadius: 8 }]
-                },
-                options: opcoesGraficoPadrao
-            });
-        }
-
-        if (chartSetorDInst) chartSetorDInst.destroy();
-        const ctxSetorD = document.getElementById('chart-setor-diario')?.getContext('2d');
-        if (ctxSetorD) {
-            chartSetorDInst = new Chart(ctxSetorD, {
-                type: 'bar',
-                plugins: [ChartDataLabels],
-                data: {
-                    labels: SETORES_LISTA,
-                    datasets: [{ data: SETORES_LISTA.map(s => setorDiarioAcum[s]), backgroundColor: 'rgba(255, 62, 62, 0.75)', borderRadius: 8 }]
-                },
-                options: opcoesGraficoPadrao
-            });
-        }
-
-        const labelsDest = Object.keys(destinosFluxo);
-        if (chartDestinosInst) chartDestinosInst.destroy();
-        const ctxDest = document.getElementById('chart-destinos-saida')?.getContext('2d');
-        if (ctxDest) {
-            chartDestinosInst = new Chart(ctxDest, {
-                type: 'bar',
-                plugins: [ChartDataLabels],
-                data: {
-                    labels: labelsDest,
-                    datasets: [{ data: labelsDest.map(k => destinosFluxo[k]), backgroundColor: '#00f2ff', borderRadius: 6 }]
-                },
-                options: opcoesGraficoPadrao
-            });
-        }
-    }
-
     function limparFiltrosHistoricos() {
         document.getElementById('filtro-tipo-tempo').value = 'mes';
         document.getElementById('filtro-material').value = '';
+        const hoje = new Date();
+        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
         alternarCamposData();
     }
 
-    function expandirGrafico(idCanvasOriginal, titulo) {
-        const modal = document.getElementById("modal-grafico-expandido");
-        document.getElementById("modal-grafico-titulo").innerText = titulo;
-        modal.style.display = "flex";
-
-        const canvasOriginal = document.getElementById(idCanvasOriginal);
-        if (!canvasOriginal) return;
+    function filtrarTabelasEDados() {
+        const queryMat = document.getElementById('filtro-material').value.toLowerCase().trim();
         
-        const chartOriginal = Chart.getChart(canvasOriginal);
-        if (!chartOriginal) return;
+        let dadosExibicao = movimentacoesFiltradas;
+        if (queryMat) {
+            dadosExibicao = movimentacoesFiltradas.filter(m => {
+                const materialCod = m.material ? m.material.toString().toLowerCase() : "";
+                const descMat = buscarDescricaoLocal(m.material).toLowerCase();
+                return materialCod.includes(queryMat) || descMat.includes(queryMat);
+            });
+        }
 
+        renderizarPaineisEGraticos(dadosExibicao);
+    }
+
+    function buscarDescricaoLocal(cod) {
+        const match = baseMateriais.find(m => m.mat.toString() === cod?.toString());
+        return match ? match.desc : "N/A";
+    }
+
+    function buscarSetorLocal(cod) {
+        const match = baseMateriais.find(m => m.mat.toString() === cod?.toString());
+        return match && match.categoria ? match.categoria.toUpperCase() : "AVULSO";
+    }
+
+    // COMANDO PARA EXPANDIR GRÁFICOS (MODAL FULLSCREEN)
+    function expandirGrafico(chartId, titulo) {
+        const modal = document.getElementById('modal-grafico-expandido');
+        document.getElementById('modal-grafico-titulo').innerText = titulo;
+        modal.style.display = 'flex';
+
+        // Captura a instância original do gráfico ativo
+        let graficoOriginal = null;
+        if (chartId === 'chart-fluxo-diario') graficoOriginal = chartDiarioInst;
+        if (chartId === 'chart-fluxo-mensal') graficoOriginal = chartMensalInst;
+        if (chartId === 'chart-setor-mensal') graficoOriginal = chartSetorMInst;
+        if (chartId === 'chart-setor-diario') graficoOriginal = chartSetorDInst;
+        if (chartId === 'chart-destinos-saida') graficoOriginal = chartDestinosInst;
+        if (chartId === 'chart-status') graficoOriginal = chartStatus;
+
+        if (!graficoOriginal) return;
+
+        const ctxExpanded = document.getElementById('canvas-expanded-render').getContext('2d');
         if (chartExpandidoInst) chartExpandidoInst.destroy();
 
-        const ctxExpanded = document.getElementById("canvas-expanded-render").getContext("2d");
+        // Clona a estrutura do gráfico com escala e fontes maiores para exibição em TV
         chartExpandidoInst = new Chart(ctxExpanded, {
-            type: chartOriginal.config.type,
-            data: JSON.parse(JSON.stringify(chartOriginal.config.data)),
-            plugins: [ChartDataLabels],
+            type: graficoOriginal.config.type,
+            data: JSON.parse(JSON.stringify(graficoOriginal.config.data)),
             options: {
-                responsive: true,
+                ...graficoOriginal.config.options,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: chartOriginal.config.options.plugins.legend,
-                    datalabels: chartOriginal.config.options.plugins.datalabels
-                },
-                scales: chartOriginal.config.options.scales
+                    ...graficoOriginal.config.options.plugins,
+                    legend: {
+                        display: graficoOriginal.config.options.plugins?.legend?.display !== false,
+                        position: 'bottom',
+                        labels: { color: '#fff', font: { size: 16, weight: '800' } }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: { size: 16, weight: '900' },
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        borderRadius: 6,
+                        padding: 8,
+                        formatter: (val, ctx) => {
+                            let label = ctx.chart.data.labels[ctx.dataIndex] || '';
+                            return graficoOriginal.config.type === 'doughnut' ? `${label}: ${val}` : val;
+                        }
+                    }
+                }
             }
         });
     }
 
     function fecharGraficoExpandido() {
-        document.getElementById("modal-grafico-expandido").style.display = "none";
+        document.getElementById('modal-grafico-expandido').style.display = 'none';
         if (chartExpandidoInst) { chartExpandidoInst.destroy(); chartExpandidoInst = null; }
     }
 
-    function exportarRelatorioFiltradoExcel() {
-        if (!dadosMovimentacoesFiltrados || dadosMovimentacoesFiltrados.length === 0) { alert("Sem dados no período!"); return; }
-        const dadosPlanilha = dadosMovimentacoesFiltrados.map(m => ({
-            "Data": m.dataStr.split('-').reverse().join('/'),
-            "Horário": m.hora,
-            "Fluxo / Ação": m.fluxo,
-            "Código Material": m.material,
-            "Descrição Material": m.descricao,
-            "Setor Atendido": m.setor,
-            "Quantidade (PL)": m.quantidade,
-            "Operador Responsável": m.operador,
-            "Vencimento do Lote": m.vencimento
-        }));
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
-        XLSX.utils.book_append_sheet(wb, ws, "Movimentações");
-        XLSX.writeFile(wb, `WMS_INFINITY_Relatorio_Filtro.xlsx`);
-    }
+    function renderizarPaineisEGraticos(dados) {
+        const hojeStr = new Date().toLocaleDateString('pt-BR');
+        let movHojeContagem = todasMovimentacoes.filter(m => m.data === hojeStr).length;
+        document.getElementById('st-mov').innerText = movHojeContagem;
 
-    function exportarHistoricoExcel() {
-        if(todasMovimentacoes.length === 0) { alert("Histórico vazio!"); return; }
-        const ws = XLSX.utils.json_to_sheet(todasMovimentacoes);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "LOG_COMPLETO_AUDITORIA");
-        XLSX.writeFile(wb, "WMS_INFINITY_Log_Geral.xlsx");
-    }
+        // FEED TEMPO REAL
+        const feed = document.getElementById('activity-feed');
+        feed.innerHTML = '';
+        todasMovimentacoes.slice(0, 15).forEach(d => {
+            const loginLimpo = d.login ? d.login.split('@')[0].toUpperCase() : 'SISTEMA';
+            const tagCor = (d.quantidade && d.quantidade.toString().includes('+')) ? 'var(--verde)' : 'var(--primary)';
+            const desc = buscarDescricaoLocal(d.material);
+            const estCorrespondente = estoqueCompleto.find(e => e.mat === d.material && e.ender === d.endereco);
+            const validadeInfo = estCorrespondente ? estCorrespondente.valFrente : (d.validade || "Não Informada");
 
-    function importarCSV(e) {
-        const file = e.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = async function(evt) {
-            const text = evt.target.result;
-            const linhas = text.split("\n");
-            let count = 0;
-            let batch = db.batch();
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            item.innerHTML = `
+                <div class="activity-icon-box" style="color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? '📥' : '📤'}</div>
+                <div class="activity-content">
+                    <span class="activity-tag" style="background: ${tagCor}20; color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? 'Entrada' : 'Saída'}</span>
+                    <br>Op: <b>${loginLimpo}</b> | Material: <b>${d.material} - ${desc}</b>
+                    <br>Endereço: <b>${d.endereco || 'N/A'}</b> | Vol: <b>${d.quantidade || '0'}</b>
+                    <span class="activity-time">Vencimento (FEFO): <span style="color:var(--critico); font-weight:700;">${validadeInfo}</span> às ${d.hora || '00:00'} - ${d.data}</span>
+                </div>`;
+            feed.appendChild(item);
+        });
 
-            for(let i=1; i<linhas.length; i++) {
-                if(!linhas[i].trim()) continue;
-                const col = linhas[i].split(";");
-                if(col.length < 5) continue;
+        // ESTRUTURAÇÃO DE DADOS DOS GRAFICOS
+        const volumeDiario = {};
+        const volumeMensal = {};
+        const rankingMateriais = {};
+        const rankingOperadores = {};
+        
+        const setorMensalAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
+        const setorDiarioAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
+        
+        // Objeto para controle do novo gráfico de saídas solicitadas
+        const fluxosDestinoAcumulado = { "TRANSFERENCIA": 0, "APANHA": 0, "SEPARAÇÃO": 0 };
 
-                const ender = col[0].toUpperCase().trim();
-                const mat = col[1].trim();
-                const desc = col[2].trim();
-                const qtd = parseFloat(col[3]);
-                const venc = col[4].trim();
+        const dataAtualObjeto = new Date();
+        const anoAtualStr = dataAtualObjeto.getFullYear().toString();
 
-                const diff = new Date(venc) - new Date();
-                const dias = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                let statusFefo = 'OK (>60D)';
-                if(dias <= 30) statusFefo = 'RETIDO (<30D)';
-                else if(dias <= 60) statusFefo = 'CRÍTICO (30-60D)';
+        dados.forEach(mov => {
+            const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
+            const dataMov = mov.data; 
+            if (!dataMov) return;
 
-                const ref = db.collection("estoque").doc(`${ender}_${mat}`);
-                batch.set(ref, { ender, mat, desc, qtd, venc, dias_venc: dias, status_fefo: statusFefo, categoria: 'AVULSO' }, { merge: true });
-                count++;
+            const partes = dataMov.split('/');
 
-                if(count % 400 === 0) { await batch.commit(); batch = db.batch(); }
+            volumeDiario[dataMov] = (volumeDiario[dataMov] || 0) + qtdAbsoluta;
+            rankingMateriais[mov.material] = (rankingMateriais[mov.material] || 0) + qtdAbsoluta;
+            const operadorChave = mov.login ? mov.login.split('@')[0].toUpperCase() : "SISTEMA";
+            rankingOperadores[operadorChave] = (rankingOperadores[operadorChave] || 0) + qtdAbsoluta;
+
+            const setorMat = buscarSetorLocal(mov.material);
+            if (setorMensalAcumulado[setorMat] !== undefined) {
+                setorMensalAcumulado[setorMat] += qtdAbsoluta;
             }
-            await batch.commit();
-            alert("Estoque Atualizado via CSV!");
+
+            // Alimentação do Novo Gráfico de Destinos de Carga (Apenas Fluxos de Saída)
+            const fluxoNormalizado = mov.fluxo ? mov.fluxo.toUpperCase().trim() : "";
+            if (fluxosDestinoAcumulado[fluxoNormalizado] !== undefined) {
+                fluxosDestinoAcumulado[fluxoNormalizado] += qtdAbsoluta;
+            }
+
+            const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
+            const filtroDiaSel = document.getElementById('filtro-dia-valor').value;
+            let diaAlvoStr = new Date().toISOString().substring(0,10);
+            if(tipoTempo === 'dia' && filtroDiaSel) diaAlvoStr = filtroDiaSel;
+            
+            const [aA, mM, dD] = diaAlvoStr.split('-');
+            const dataFormatadaComp = `${dD}/${mM}/${aA}`;
+
+            if(dataMov === dataFormatadaComp) {
+                if (setorDiarioAcumulado[setorMat] !== undefined) {
+                    setorDiarioAcumulado[setorMat] += qtdAbsoluta;
+                }
+            }
+        });
+
+        todasMovimentacoes.forEach(mov => {
+            if(!mov.data) return;
+            const partes = mov.data.split('/');
+            if(partes[2] === anoAtualStr) {
+                const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
+                volumeMensal[partes[1]] = (volumeMensal[partes[1]] || 0) + qtdAbsoluta;
+            }
+        });
+
+        // CONFIGURAÇÃO DOS PLUGINS DE LABELS VISUAIS DIRETOS NOS GRÁFICOS
+        const padraoDatalabelsBarra = {
+            anchor: 'end',
+            align: 'top',
+            color: '#fff',
+            font: { weight: '800', size: 10 },
+            formatter: (val) => val > 0 ? val : ''
         };
-        reader.readAsText(file);
+
+        const padraoDatalabelsRosca = {
+            color: '#fff',
+            font: { weight: '900', size: 11 },
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            borderRadius: 4,
+            padding: 4,
+            formatter: (val, ctx) => {
+                return val > 0 ? `${ctx.chart.data.labels[ctx.dataIndex]}\n${val} PL` : '';
+            }
+        };
+
+        // 1. RENDER GRÁFICO DIÁRIO
+        const labelsDias = Object.keys(volumeDiario).sort((a, b) => new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-')));
+        const ctxD = document.getElementById('chart-fluxo-diario').getContext('2d');
+        if (chartDiarioInst) chartDiarioInst.destroy();
+        chartDiarioInst = new Chart(ctxD, {
+            type: 'bar',
+            data: { labels: labelsDias, datasets: [{ label: 'Paletes', data: labelsDias.map(lbl => volumeDiario[lbl]), backgroundColor: '#6366f1' }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra }, scales: { y: { grid: { color: 'rgba(255,255,255,0.03)' } } } }
+        });
+
+        // 2. RENDER GRÁFICO MENSAL ACUMULADO
+        const mesesLabelsReduzidos = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        const ctxM = document.getElementById('chart-fluxo-mensal').getContext('2d');
+        if (chartMensalInst) chartMensalInst.destroy();
+        chartMensalInst = new Chart(ctxM, {
+            type: 'line',
+            data: { labels: mesesLabelsReduzidos, datasets: [{ data: ["01","02","03","04","05","06","07","08","09","10","11","12"].map(m => volumeMensal[m] || 0), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', fill: true, tension: 0.2 }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: { ...padraoDatalabelsBarra, align: 'right' } } }
+        });
+
+        // 6.1 GRÁFICO SETOR MENSAL
+        const ctxSM = document.getElementById('chart-setor-mensal').getContext('2d');
+        if (chartSetorMInst) chartSetorMInst.destroy();
+        chartSetorMInst = new Chart(ctxSM, {
+            type: 'doughnut',
+            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorMensalAcumulado[s]), backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'] }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } }
+        });
+
+        // 6.2 GRÁFICO SETOR DIÁRIO
+        const ctxSD = document.getElementById('chart-setor-diario').getContext('2d');
+        if (chartSetorDInst) chartSetorDInst.destroy();
+        chartSetorDInst = new Chart(ctxSD, {
+            type: 'bar',
+            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorDiarioAcumulado[s]), backgroundColor: 'rgba(255, 62, 62, 0.4)', borderColor: '#ff3e3e', borderWidth: 1 }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra } }
+        });
+
+        // NOVO GRÁFICO: DESTINO DAS CARGAS (TRANSFERENCIA, APANHA, SEPARAÇÃO)
+        const ctxDest = document.getElementById('chart-destinos-saida').getContext('2d');
+        if (chartDestinosInst) chartDestinosInst.destroy();
+        chartDestinosInst = new Chart(ctxDest, {
+            type: 'doughnut',
+            data: { 
+                labels: ["TRANSFERENCIA", "APANHA", "SEPARAÇÃO"], 
+                datasets: [{ 
+                    data: [fluxosDestinoAcumulado["TRANSFERENCIA"], fluxosDestinoAcumulado["APANHA"], fluxosDestinoAcumulado["SEPARAÇÃO"]], 
+                    backgroundColor: ['#00f2ff', '#fbbf24', '#6366f1'] 
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                plugins: { 
+                    legend: { display: false }, 
+                    datalabels: padraoDatalabelsRosca 
+                } 
+            }
+        });
+
+        // GRÁFICO DE SAÚDE INVENTÁRIO
+        const ctxS = document.getElementById('chart-status').getContext('2d');
+        if (chartStatus) chartStatus.destroy();
+        chartStatus = new Chart(ctxS, { 
+            type: 'doughnut', 
+            data: { labels: ['Boa', 'Crítica', 'Retida'], datasets: [{ data: [estoqueCompleto.filter(i => i.dias > 60).length, estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length, estoqueCompleto.filter(i => i.dias <= 30).length], backgroundColor: ['#10b981', '#fbbf24', '#f87171'] }] }, 
+            options: { responsive: true, cutout: '75%', plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } } 
+        });
+
+        // RENDERIZAR TABELAS OPERACIONAIS
+        const tbodyHist = document.getElementById('table-historico-consolidado');
+        tbodyHist.innerHTML = '';
+        dados.forEach(m => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
+            tbodyHist.appendChild(tr);
+        });
+
+        const tbodyMat = document.getElementById('table-ranking-materiais');
+        tbodyMat.innerHTML = '';
+        Object.entries(rankingMateriais).sort((a,b) => b[1] - a[1]).slice(0, 10).forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><b>${item[0]}</b></td><td>${buscarDescricaoLocal(item[0])}</td><td><span style="color:var(--primary); font-weight:900;">${item[1]} PL</span></td>`;
+            tbodyMat.appendChild(tr);
+        });
+
+        const tbodyOp = document.getElementById('table-ranking-operadores');
+        tbodyOp.innerHTML = '';
+        Object.entries(rankingOperadores).sort((a,b) => b[1] - a[1]).forEach((op, index) => {
+            const medalha = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${medalha}<b>${op[0]}</b></td><td><span style="color:var(--verde); font-weight:800;">${op[1]} Paletes</span></td>`;
+            tbodyOp.appendChild(tr);
+        });
     }
 
-    function sincronizarBaseMateriais() {
+    function carregarDadosDashboard() { processarFiltragemHistorica(); }
+
+    function renderizarEstoque() {
+        const termo = document.getElementById('search-input').value.toLowerCase().trim();
+        const lista = document.getElementById('lista-estoque');
+        lista.innerHTML = '';
+        if (!termo) return;
+        const isAdmin = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
+        let filtrados = estoqueCompleto.filter(i => {
+            if (parseInt(i.qtd) <= 0) return false;
+            if (termo === '60') return i.dias > 30 && i.dias <= 60;
+            if (termo === '30') return i.dias <= 30;
+            const mat = i.mat?.toString().toLowerCase() || "";
+            const ender = i.ender?.toString().toLowerCase() || "";
+            return /^\d+$/.test(termo) ? mat === termo : ender.includes(termo);
+        });
+        if (!isAdmin) filtrados = filtrados.filter(item => item.dias > 30);
+        if (filtrados.length === 0) return;
+        filtrados.sort((a, b) => (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0));
+        if (/^\d+$/.test(termo) && termo !== '60' && termo !== '30') filtrados = [filtrados[0]];
+        filtrados.forEach(item => {
+            let status = item.dias <= 30 ? "RETIDO" : (item.dias <= 60 ? "CRÍTICO" : "DATA BOA");
+            let cor = item.dias <= 30 ? "var(--retido)" : (item.dias <= 60 ? "var(--critico)" : "var(--verde)");
+            const card = document.createElement('div');
+            card.className = `item-card`;
+            card.style.borderLeft = `8px solid ${cor}`;
+            card.innerHTML = `<div><span class="badge badge-ender">${item.ender}</span><span class="badge" style="background: ${cor}20; color: ${cor}; border: 1px solid ${cor}40; margin-left: 5px;">${status}</span><div style="font-weight:900; font-size:24px; margin-top:15px; letter-spacing:-1px; color: #fff;">${item.mat}</div><div style="font-size:12px; color:var(--text-secondary); margin-top:5px; font-weight:600;">${item.desc || "---"}</div><div style="font-size:10px; margin-top:15px; color: var(--text-secondary); font-weight: 800;">VALIDADE: <b style="color: ${cor}">${item.dias} DIAS</b></div></div><div style="text-align: right;"><div style="font-size:32px; font-weight:900; margin-bottom:15px; color: #fff;">${item.qtd}<span style="font-size:12px; color:var(--text-secondary); margin-left:5px;">PL</span></div><button class="btn-action" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button></div>`;
+            lista.appendChild(card);
+        });
+    }
+
+    function puxarDescricaoObrigatoria(val, inputDescId, listId) {
+        const list = document.getElementById(listId);
+        const descInput = document.getElementById(inputDescId);
+        list.innerHTML = '';
+        if (!val) { descInput.value = ''; return; }
+        const matches = baseMateriais.filter(m => m.mat.toString().startsWith(val)).slice(0, 5);
+        matches.forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-item';
+            div.innerHTML = `<strong>${m.mat}</strong> - ${m.desc}`;
+            div.onclick = () => { document.getElementById('eb-mat').value = m.mat; descInput.value = m.desc; list.innerHTML = ''; };
+            list.appendChild(div);
+        });
+        const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
+        if (exact) { descInput.value = exact.desc; descInput.style.color = "var(--verde)"; } 
+        else { descInput.value = "MATERIAL NÃO CADASTRADO"; descInput.style.color = "var(--retido)"; }
+    }
+
+    document.addEventListener('click', e => { if (e.target.id !== 'eb-mat') { const l = document.getElementById('eb-mat-list'); if(l) l.innerHTML = ''; } });
+    
+    function retirarMaterial(id, qtdAtual, mat, ender, val) {
+        itemParaRetirar = { id, qtdAtual, mat, ender, val };
+        document.getElementById('modal-titulo').innerText = mat;
+        document.getElementById('modal-info').innerHTML = `Posição: <b>${ender}</b><br>Saldo Atual: <b>${qtdAtual} Pallets</b>`;
+        document.getElementById('modal-input-qtd').value = '';
+        document.getElementById('modal-retirada').style.display = 'flex';
+        setTimeout(() => document.getElementById('modal-input-qtd').focus(), 150);
+        document.getElementById('btn-confirmar-modal').onclick = processarRetirada;
+    }
+
+    function fecharModal() { document.getElementById('modal-retirada').style.display = 'none'; }
+
+    async function processarRetirada() {
+        const v = parseInt(document.getElementById('modal-input-qtd').value);
+        if (isNaN(v) || v <= 0 || v > itemParaRetirar.qtdAtual) return alert("Quantidade inválida.");
+        try {
+            if (v === itemParaRetirar.qtdAtual) { await db.collection("estoque_blocado").doc(itemParaRetirar.id).delete(); } 
+            else { await db.collection("estoque_blocado").doc(itemParaRetirar.id).update({ qtd: itemParaRetirar.qtdAtual - v }); }
+            registrarMovimentacao(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, `-${v} PL`, document.getElementById('modal-destino-mov').value);
+            fecharModal();
+        } catch (e) { alert("Erro ao processar retirada."); }
+    }
+
+    async function salvarEntradaBloco() {
+        const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
+        const mat = document.getElementById('eb-mat').value.trim();
+        const desc = document.getElementById('eb-desc').value;
+        const qtd = parseInt(document.getElementById('eb-qtd').value);
+        const inputVenc = document.getElementById('eb-venc').value;
+        if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos.");
+        if(desc === "MATERIAL NÃO CADASTRADO") return alert("Código não cadastrado na base.");
+        const val = inputVenc.split('-').reverse().join('/');
+        const ocupante = estoqueCompleto.find(i => i.ender === ender);
+        if (ocupante && ocupante.mat !== mat) return alert("Posição ocupada por outro material.");
+        if (ocupante) { await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd }); } 
+        else { await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: val, desc: desc }); }
+        registrarMovimentacao(ender, mat, val, `+${qtd} PL`, `ENTRADA VIA ${document.getElementById('eb-origem').value}`);
+        ['eb-ender', 'eb-mat', 'eb-desc', 'eb-qtd', 'eb-venc'].forEach(id => document.getElementById(id).value = '');
+        navegar('retirar');
+    }
+
+    function carregarDadosOrigemAbertura(ender) {
+        const item = estoqueCompleto.find(i => i.ender.toLowerCase() === ender.toLowerCase().trim());
+        if (item) { itemOrigemAbertura = item; document.getElementById('ab-mat').value = item.mat; document.getElementById('ab-qtd').placeholder = `Max: ${item.qtd}`; } 
+        else { itemOrigemAbertura = null; document.getElementById('ab-mat').value = ''; }
+    }
+
+    async function processarAberturaBlocado() {
+        const dest = document.getElementById('ab-destino').value.toUpperCase().trim();
+        const qtd = parseInt(document.getElementById('ab-qtd').value);
+        if(!itemOrigemAbertura || isNaN(qtd) || qtd <= 0 || qtd > itemOrigemAbertura.qtd || !dest) return alert("Dados inválidos.");
+        const ocup = estoqueCompleto.find(i => i.ender === dest);
+        if (ocup && ocup.mat !== itemOrigemAbertura.mat) return alert("Destino ocupado.");
+        if (qtd === itemOrigemAbertura.qtd) { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete(); } 
+        else { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtd }); }
+        if (ocup) { await db.collection("estoque_blocado").doc(ocup.id).update({ qtd: ocup.qtd + qtd }); } 
+        else { await db.collection("estoque_blocado").add({ ender: dest, mat: itemOrigemAbertura.mat, desc: itemOrigemAbertura.desc, qtd, dias: itemOrigemAbertura.dias, valFrente: itemOrigemAbertura.valFrente }); }
+        registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtd} PL`, `PARA ${dest}`);
+        registrarMovimentacao(dest, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtd} PL`, `DE ${itemOrigemAbertura.ender}`);
+        navegar('retirar');
+    }
+
+    function calcularDias(data, labelId) {
+        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
+        document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
+    }
+
+    async function registrarMovimentacao(ender, mat, val, qtd, fluxo) {
+        const agora = new Date();
+        await db.collection("movimentacoes_wms").add({ 
+            endereco: ender, 
+            material: mat, 
+            validade: val, 
+            quantidade: qtd, 
+            fluxo, 
+            login: usuarioLogado.email, 
+            data: agora.toLocaleDateString('pt-BR'), 
+            hora: agora.toLocaleTimeString('pt-BR'), 
+            timestamp: agora 
+        });
+    }
+
+    function exportarRelatorioFiltradoExcel() {
+        if(movimentacoesFiltradas.length === 0) return alert("Não existem dados no período filtrado para exportar.");
+        const dadosPlanilha = movimentacoesFiltradas.map(m => ({ "Data": m.data, "Horário": m.hora, "Fluxo / Ação": m.fluxo, "Código Material": m.material, "Descrição": buscarDescricaoLocal(m.material), "Setor Logístico": buscarSetorLocal(m.material), "Quantidade (PL)": m.quantidade, "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A' }));
+        const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Relatório_Filtrado");
+        XLSX.writeFile(wb, `WMS_Relatorio_Consolidado_${new Date().getTime()}.xlsx`);
+    }
+
+    async function exportarHistoricoExcel() {
+        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
+        const dados = snap.docs.map(doc => { const d = doc.data(); return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora }; });
+        const ws = XLSX.utils.json_to_sheet(dados);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Infinity_Log");
+        XLSX.writeFile(wb, `Infinity_WMS_Log_Completo_${new Date().getTime()}.xlsx`);
+    }
+
+    async function importarCSV(event) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
+            if (!confirm(`Confirmar reset de estoque para ${linhas.length} itens?`)) return;
+            const snapshot = await db.collection("estoque_blocado").get();
+            if (!snapshot.empty) {
+                let batchDel = db.batch();
+                snapshot.docs.forEach((doc, idx) => { batchDel.delete(doc.ref); if ((idx + 1) % 400 === 0) { batchDel.commit(); batchDel = db.batch(); } });
+                await batchDel.commit();
+            }
+            let batch = db.batch();
+            linhas.forEach((linha, i) => {
+                const c = linha.split(";");
+                if (c.length >= 6) {
+                    batch.set(db.collection("estoque_blocado").doc(), { ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(), valFrente: c[3].trim(), qtd: parseInt(c[5].replace(/\D/g, '')) || 0, dias: parseInt(c[7].replace(/\D/g, '')) || 0 });
+                    if((i+1)%400===0) { batch.commit(); batch = db.batch(); }
+                }
+            });
+            await batch.commit();
+            alert("Estoque Infinity Updated!");
+        };
+        reader.readAsText(event.target.files[0]);
+    }
+
+    async function sincronizarBaseMateriais() {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.xlsx, .xls';
-        input.onchange = e => {
+        input.onchange = async (e) => {
             const reader = new FileReader();
-            reader.onload = async (evt) => {
-                const data = new Uint8Array(evt.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const ws = workbook.Sheets[workbook.SheetNames[0]];
-                const json = XLSX.utils.sheet_to_json(ws);
-
+            reader.onload = async (ev) => {
+                const data = new Uint8Array(ev.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                 let batch = db.batch();
                 let count = 0;
-
-                for(let item of json) {
-                    const mat = item['Material'] || item['Código'] || item['Cod'];
+                for(const item of json) {
+                    const mat = item['Cód. Material'];
                     if(mat) {
-                        const ref = db.collection("base_materiais").doc(mat.toString());
-                        batch.set(ref, {
-                            mat: mat.toString(),
-                            desc: item['Descrição'] || item['Descricao'] || '',
-                            qtd_base: item['Quantidade'] || 0,
-                            categoria: item['Categoria'] || item['Setor'] || 'AVULSO',
-                            vasilhame: item['Vasilhame'] || '',
-                            lastro: item['Lastro'] || null,
-                            camada: item['Camada'] || null
-                        });
+                        batch.set(db.collection("base_materiais").doc(mat.toString()), { mat, desc: item['Descrição'] || '', qtd_base: item['Quantidade'] || 0, categoria: item['Categoria'] || '', vasilhame: item['Vasilhame'] || '', lastro: item['Lastro'] || null, camada: item['Camada'] || null });
                         count++;
                         if(count % 400 === 0) { await batch.commit(); batch = db.batch(); }
                     }
@@ -1262,15 +1089,7 @@
         input.focus();
     }
 
-    window.onload = () => {
-        const session = localStorage.getItem('wms_session');
-        if(session) {
-            const data = JSON.parse(session);
-            document.getElementById('login-mat').value = data.mat;
-            document.getElementById('login-senha').value = data.senha;
-            tentarLogin();
-        }
-    };
+    window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
 </script>
 </body>
 </html>
