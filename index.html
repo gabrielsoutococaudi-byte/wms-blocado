@@ -147,7 +147,7 @@
             <h2 style="color: #fff; margin-bottom: 10px; font-weight: 900; font-size: 26px; letter-spacing: -1px;">WMS INFINITY</h2>
             <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 35px; text-transform: uppercase; letter-spacing: 1px;">Acesse sua conta</p>
             <div class="form-group">
-                <input type="text" inputmode="numeric" id="login-mat" placeholder="Matrícula" style="margin-bottom:15px; text-align: center;">
+                <input type="text" inputmode="text" id="login-mat" placeholder="Matrícula" style="margin-bottom:15px; text-align: center;">
                 <input type="password" id="login-senha" placeholder="Senha" style="text-align: center;">
             </div>
             <button onclick="tentarLogin()" class="btn-action" style="width: 100%; padding: 20px; font-size: 15px; margin-top: 10px;">INICIAR OPERAÇÃO</button>
@@ -208,7 +208,7 @@
         </div>
 
         <div id="view-retirar">
-            <div class="search-wrapper"><input type="text" inputmode="tel" id="search-input" placeholder="Pesquisar Código ou Posição..." oninput="renderizarEstoque()"></div>
+            <div class="search-wrapper"><input type="text" inputmode="text" id="search-input" placeholder="Pesquisar Código ou Posição..." oninput="renderizarEstoque()"></div>
             <div id="lista-estoque"></div>
         </div>
 
@@ -216,10 +216,10 @@
             <div class="form-box glass-card">
                 <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Entrada no Bloco</h3>
                 <div class="form-group"><label>Fluxo de Origem</label><select id="eb-origem"><option value="DRIVE IN">DRIVE IN</option><option value="RECEBIMENTO">RECEBIMENTO</option></select></div>
-                <div class="form-group"><label>Endereço de Destino</label><input type="text" inputmode="tel" id="eb-ender" placeholder="Ex: 205-14"></div>
-                <div class="form-group" style="position: relative;"><label>Código do Material</label><input type="text" inputmode="numeric" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')"><div id="eb-mat-list" class="autocomplete-items"></div></div>
+                <div class="form-group"><label>Endereço de Destino</label><input type="text" inputmode="text" id="eb-ender" placeholder="Ex: 205-14"></div>
+                <div class="form-group" style="position: relative;"><label>Código do Material</label><input type="text" inputmode="text" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')"><div id="eb-mat-list" class="autocomplete-items"></div></div>
                 <div class="form-group"><label>Descrição do Material</label><input type="text" id="eb-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando código..."></div>
-                <div class="form-group"><label>Quantidade (Pallets)</label><input type="text" inputmode="decimal" id="eb-qtd" placeholder="0"></div>
+                <div class="form-group"><label>Quantidade (Pallets)</label><input type="text" inputmode="text" id="eb-qtd" placeholder="0"></div>
                 <div class="form-group"><label>Data de Vencimento</label><input type="date" id="eb-venc" onchange="calcularDias(this.value, 'eb-label-dias')"><p id="eb-label-dias" style="color: var(--critico); font-size: 11px; margin-top: 12px; font-weight: 800; text-transform: uppercase;"></p></div>
                 <button class="btn-action" style="width: 100%; padding: 20px;" onclick="salvarEntradaBloco()">CONFIRMAR ENTRADA</button>
             </div>
@@ -228,10 +228,10 @@
         <div id="view-abertura_blocado" style="display: none;">
             <div class="form-box glass-card">
                 <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Transferência Interna</h3>
-                <div class="form-group"><label>Posição Origem</label><input type="text" inputmode="tel" id="ab-origem" placeholder="Ex: 201-14" onchange="carregarDadosOrigemAbertura(this.value)"></div>
+                <div class="form-group"><label>Posição Origem</label><input type="text" inputmode="text" id="ab-origem" placeholder="Ex: 201-14" onchange="carregarDadosOrigemAbertura(this.value)"></div>
                 <div class="form-group"><label>Material Identificado</label><input type="text" id="ab-mat" readonly style="opacity: 0.5;"></div>
-                <div class="form-group"><label>Posição de Destino</label><input type="text" inputmode="tel" id="ab-destino" placeholder="Ex: 205-20"></div>
-                <div class="form-group"><label>Qtd para Mover</label><input type="text" inputmode="decimal" id="ab-qtd" placeholder="Saldo: 0"></div>
+                <div class="form-group"><label>Posição de Destino</label><input type="text" inputmode="text" id="ab-destino" placeholder="Ex: 205-20"></div>
+                <div class="form-group"><label>Qtd para Mover</label><input type="text" inputmode="text" id="ab-qtd" placeholder="Saldo: 0"></div>
                 <button class="btn-action" style="width: 100%; padding: 20px;" onclick="processarAberturaBlocado()">EXECUTAR MOVIMENTAÇÃO</button>
             </div>
         </div>
@@ -242,7 +242,7 @@
     <div class="modal-content glass-card">
         <h3 id="modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Retirada</h3>
         <p id="modal-info" style="font-size:13px; color: var(--text-secondary); margin: 20px 0 30px; line-height: 1.6;"></p>
-        <div class="form-group"><label>Quantidade de Pallets:</label><input type="text" id="modal-input-qtd" inputmode="decimal" placeholder="0" style="font-size:40px; text-align:center; background: rgba(255,255,255,0.02); border: 2px solid var(--primary); border-radius: 20px; height: 90px; font-weight: 900; color: #fff; width: 100%;"></div>
+        <div class="form-group"><label>Quantidade de Pallets:</label><input type="text" id="modal-input-qtd" inputmode="text" placeholder="0" style="font-size:40px; text-align:center; background: rgba(255,255,255,0.02); border: 2px solid var(--primary); border-radius: 20px; height: 90px; font-weight: 900; color: #fff; width: 100%;"></div>
         <div class="form-group"><label>Destino da Carga:</label><select id="modal-destino-mov" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 18px; border-radius: 16px; color: #fff; width: 100%; font-weight: 600;"><option value="TRANSFERENCIA">TRANSFERENCIA</option><option value="APANHA">APANHA</option><option value="SEPARAÇÃO">SEPARAÇÃO</option></select></div>
         <div style="display:flex; gap:15px; margin-top:35px;"><button onclick="fecharModal()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button><button id="btn-confirmar-modal" class="btn-action" style="flex:1;">CONFIRMAR</button></div>
     </div>
