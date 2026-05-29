@@ -18,10 +18,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+  
     <style>
         :root { 
-            --bg: #020202; 
+            --bg: #020202;
             --glass: rgba(255, 255, 255, 0.02);
             --glass-border: rgba(255, 255, 255, 0.06);
             --primary: #ff3e3e; 
@@ -35,47 +35,15 @@
             --text-secondary: #64748b;
             --neon-blue: #00f2ff;
         }
-
         .input-with-toggle { position: relative; display: flex; align-items: center; }
         .input-with-toggle input { padding-right: 50px !important; }
-        .toggle-kb-btn { position: absolute; right: 10px; background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-secondary); border-radius: 10px; width: 34px; height: 34px; display: none; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: 0.3s; z-index: 10; }
-        body.is-admin .toggle-kb-btn { display: flex; }
+        .toggle-kb-btn { position: absolute; right: 10px; background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-secondary); border-radius: 10px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: 0.3s; z-index: 10; }
         .toggle-kb-btn:hover { background: var(--primary); color: #fff; }
-
-        .data-table-styled {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 12px;
-            color: var(--text);
-        }
-
-        .data-table-styled th,
-        .data-table-styled td {
-            border: 1px solid var(--glass-border);
-            padding: 10px;
-            text-align: left;
-        }
-
-        .data-table-styled th {
-            background-color: var(--glass);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .data-table-styled tr:nth-child(even) {
-            background-color: rgba(255, 255, 255, 0.01);
-        }
-
-        .data-table-styled tr:hover {
-            background-color: rgba(255, 255, 255, 0.03);
-        }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
         body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background: var(--bg); 
             color: var(--text); 
             padding-bottom: env(safe-area-inset-bottom, 40px); 
@@ -87,7 +55,7 @@
         }
 
         .glass-card { 
-            background: var(--glass); 
+            background: var(--glass);
             backdrop-filter: blur(15px); 
             -webkit-backdrop-filter: blur(15px); 
             border: 1px solid var(--glass-border); 
@@ -114,6 +82,7 @@
         .stat-card p { font-size: 30px; font-weight: 900; color: #fff; letter-spacing: -1px; }
 
         .dashboard-row { display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; margin-bottom: 24px; }
+        .dashboard-fullrow { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 24px; }
         @media (max-width: 900px) { .dashboard-row { grid-template-columns: 1fr; } }
 
         .chart-box { padding: 28px; }
@@ -156,7 +125,16 @@
         .autocomplete-item { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid var(--glass-border); font-size: 13px; }
         .autocomplete-item:hover { background-color: var(--primary); color: #fff; }
 
-        ::-webkit-scrollbar { width: 4px; }
+        /* Estilos da Tabela Operacional */
+        .wms-table-container { width: 100%; overflow-x: auto; margin-top: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid var(--glass-border); }
+        .wms-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+        .wms-table th { background: rgba(255,255,255,0.05); padding: 14px 16px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; font-size: 10px; letter-spacing: 1px; }
+        .wms-table td { padding: 14px 16px; border-bottom: 1px solid var(--glass-border); color: var(--text); }
+        .wms-table tr:hover { background: rgba(255,255,255,0.01); }
+
+        .filter-panel { background: rgba(255,255,255,0.01); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
     </style>
 </head>
@@ -173,6 +151,7 @@
     <button onclick="navegar('retirar')">📦 PESQUISAR ESTOQUE</button>
     <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
     <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
+    
     <button onclick="logout()" style="color: var(--retido); margin-top: 40px; border-top: 1px solid var(--glass-border); border-radius: 0; width: 100%; opacity: 0.7;">🚪 ENCERRAR SESSÃO</button>
 </div>
 
@@ -210,160 +189,177 @@
     <div class="container">
         <div id="view-admin" style="display: none;">
             <div class="stats-grid">
-                <div class="stat-card glass-card" onclick="navegarComFiltro('')">
-                    <h5>Total Geral</h5>
-                    <p id="st-total">0</p>
+                <div class="stat-card glass-card" onclick="navegarComFiltro('')"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
+                <div class="stat-card glass-card" onclick="navegarComFiltro('critico')"><h5>CRÍTICOS (30-60D)</h5><p id="st-critico" style="color: var(--critico);">0</p></div>
+                <div class="stat-card glass-card" onclick="navegarComFiltro('retido')"><h5>RETIDOS (&lt;30D)</h5><p id="st-retido" style="color: var(--retido);">0</p></div>
+                <div class="stat-card glass-card"><h5>GIRO HOJE</h5><p id="st-mov" style="color: var(--verde);">0</p></div>
+            </div>
+
+            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
+                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">Filtros de Pesquisa do Histórico e Painéis Operacionais</h4>
+                <div class="filter-panel">
+                    <div class="form-group">
+                        <label>Tipo de Filtro Temporal</label>
+                        <select id="filtro-tipo-tempo" onchange="alternarCamposData()">
+                            <option value="mes">Por Mês Atual / Específico</option>
+                            <option value="dia">Por Dia Específico</option>
+                            <option value="periodo">Período Customizado</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="container-filtro-mes">
+                        <label>Mês / Ano de Análise</label>
+                        <input type="month" id="filtro-mes-valor" onchange="processarFiltragemHistorica()">
+                    </div>
+                    <div class="form-group" id="container-filtro-dia" style="display:none;">
+                        <label>Dia de Análise</label>
+                        <input type="date" id="filtro-dia-valor" onchange="processarFiltragemHistorica()">
+                    </div>
+                    <div class="form-group" id="container-filtro-de" style="display:none;">
+                        <label>Data Inicial</label>
+                        <input type="date" id="filtro-de-valor" onchange="processarFiltragemHistorica()">
+                    </div>
+                    <div class="form-group" id="container-filtro-ate" style="display:none;">
+                        <label>Data Final</label>
+                        <input type="date" id="filtro-ate-valor" onchange="processarFiltragemHistorica()">
+                    </div>
+                    <div class="form-group">
+                        <label>Buscar Material (Código/Nome)</label>
+                        <input type="text" id="filtro-material" placeholder="Filtrar tabela/ranking..." oninput="filtrarTabelasEDados()">
+                    </div>
                 </div>
-                <div class="stat-card glass-card" onclick="navegarComFiltro('critico')">
-                    <h5 style="color: var(--critico)">Crítico</h5>
-                    <p id="st-critico">0</p>
-                </div>
-                <div class="stat-card glass-card" onclick="navegarComFiltro('retido')">
-                    <h5 style="color: var(--retido)">Retido</h5>
-                    <p id="st-retido">0</p>
-                </div>
-                <div class="stat-card glass-card">
-                    <h5>Giro Hoje</h5>
-                    <p id="st-mov">0</p>
+                <div style="display:flex; justify-content: flex-end;">
+                    <button class="btn-action" style="padding: 12px 24px; font-size:11px; background:var(--accent); box-shadow:0 5px 15px var(--accent-glow);" onclick="limparFiltrosHistoricos()">Limpar Filtros</button>
                 </div>
             </div>
 
             <div class="dashboard-row">
                 <div class="chart-box glass-card">
-                    <div class="chart-title">📈 FLUXO DE OPERAÇÃO <span>(7 DIAS)</span></div>
-                    <canvas id="chart-fluxo" style="max-height: 300px;"></canvas>
+                    <div class="chart-title">📈 1. Movimentação de Paletes Diária <span>(Período Selecionado)</span></div>
+                    <canvas id="chart-fluxo-diario" style="max-height: 250px;"></canvas>
                 </div>
                 <div class="chart-box glass-card">
-                    <div class="chart-title">⚖️ STATUS DE VALIDADE</div>
-                    <canvas id="chart-status" style="max-height: 300px;"></canvas>
+                    <div class="chart-title">🗓️ 2. Histórico Mensal Acumulado <span>(Giro Anual)</span></div>
+                    <canvas id="chart-fluxo-mensal" style="max-height: 250px;"></canvas>
                 </div>
             </div>
 
             <div class="dashboard-row">
                 <div class="chart-box glass-card">
-                    <div class="chart-title">🔥 MATERIAIS MAIS MOVIMENTADOS</div>
-                    <div id="ranking-materiais" class="ranking-list"></div>
+                    <div class="chart-title">🧱 6.1 Setores Abastecidos (Visão Mensal)</div>
+                    <canvas id="chart-setor-mensal" style="max-height: 230px;"></canvas>
                 </div>
                 <div class="chart-box glass-card">
-                    <div class="chart-title">⚙️ ADMINISTRAÇÃO</div>
-                    <button class="btn-action" onclick="exportarHistoricoExcel()" style="width: 100%; margin-bottom: 12px; background: var(--accent);">📄 EXPORTAR LOG EXCEL</button>
-                    <button class="btn-action" onclick="document.getElementById('csv-input').click()" style="width: 100%; margin-bottom: 12px; background: #334155;">📥 IMPORTAR ESTOQUE</button>
-                    <button class="btn-action" onclick="sincronizarBaseMateriais()" style="width: 100%; background: #0f172a;">🔄 SINCRONIZAR BASE</button>
-                    <input type="file" id="csv-input" style="display: none;" onchange="importarCSV(event)">
+                    <div class="chart-title">⚡ 6.2 Setores Abastecidos (Visão Diária)</div>
+                    <canvas id="chart-setor-diario" style="max-height: 230px;"></canvas>
                 </div>
             </div>
 
-            <!-- NOVO PAINEL DE MOVIMENTAÇÕES -->
-            <div class="chart-box glass-card" style="margin-bottom: 24px;">
-                <div class="chart-title">📊 PALETES MOVIMENTADOS POR DIA</div>
-                <div style="height: 300px;"><canvas id="chart-paletes-dia"></canvas></div>
-                <div id="table-paletes-dia"></div>
-            </div>
-
-            <div class="chart-box glass-card" style="margin-bottom: 24px;">
-                <div class="chart-title">📈 PALETES MOVIMENTADOS POR MÊS (ACUMULADO)</div>
-                <div style="height: 300px;"><canvas id="chart-paletes-mes"></canvas></div>
-                <div id="table-paletes-mes"></div>
-            </div>
-
-            <div class="chart-box glass-card" style="margin-bottom: 24px;">
-                <div class="chart-title">🔥 MATERIAIS MAIS MOVIMENTADOS</div>
-                <div id="ranking-materiais-mov" class="ranking-list"></div>
-            </div>
-
-            <div class="chart-box glass-card" style="margin-bottom: 24px;">
-                <div class="chart-title">👨‍🏭 COLABORADOR QUE MAIS MOVIMENTOU</div>
-                <div id="ranking-colaboradores" class="ranking-list"></div>
-            </div>
-
-            <div class="dashboard-row" style="margin-bottom: 24px;">
+            <div class="dashboard-row">
                 <div class="chart-box glass-card">
-                    <div class="chart-title">📦 MOVIMENTAÇÕES POR SETOR (MENSAL)</div>
-                    <canvas id="chart-setor-mensal" style="max-height: 300px;"></canvas>
+                    <div class="chart-title">🏆 3. Materiais Mais Movimentados <span style="color:var(--accent);">Top 10</span></div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead>
+                                <tr><th>Código</th><th>Descrição</th><th>Qtd Movimentada (PL)</th></tr>
+                            </thead>
+                            <tbody id="table-ranking-materiais"></tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="chart-box glass-card">
-                    <div class="chart-title">🚚 MOVIMENTAÇÕES POR SETOR (DIÁRIO)</div>
-                    <canvas id="chart-setor-diario" style="max-height: 300px;"></canvas>
+                    <div class="chart-title">👥 5. Produtividade por Colaborador <span style="color:var(--verde);">Ranking</span></div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead>
+                                <tr><th>Colaborador</th><th>Paletes Movimentados</th></tr>
+                            </thead>
+                            <tbody id="table-ranking-operadores"></tbody>
+                        </table>
+                    </div>
                 </div>
+            </div>
+
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">
+                        <div>📋 Histórico Detalhado Consolidação Fluxos</div>
+                        <button class="btn-action" onclick="exportarRelatorioFiltradoExcel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">Exportar Planilha Filtrada</button>
+                    </div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead>
+                                <tr><th>Data</th><th>Hora</th><th>Fluxo/Ação</th><th>Material</th><th>Descrição</th><th>Setor</th><th>Qtd</th><th>Operador</th></tr>
+                            </thead>
+                            <tbody id="table-historico-consolidado"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-row">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">⚡ 4. Monitor de Atividades em Tempo Real (Controle FEFO)</div>
+                    <div id="activity-feed" class="activity-feed"></div>
+                </div>
+                <div class="chart-box glass-card">
+                    <div class="chart-title">📊 Saúde Geral do Inventário</div>
+                    <canvas id="chart-status" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-card" style="padding: 35px; margin-bottom: 30px;">
+                <h3 style="font-size: 12px; color: #fff; margin-bottom: 25px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">Sistema e Sincronização</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
+                    <button class="btn-action" onclick="document.getElementById('csv-file').click()" style="background: var(--glass); border: 1px solid var(--glass-border); box-shadow: none;">ATUALIZAR ESTOQUE (CSV)</button>
+                    <button class="btn-action" onclick="exportarHistoricoExcel()" style="background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">EXPORTAR LOG COMPLETO DE AUDITORIA</button>
+                </div>
+                <button class="btn-action" onclick="sincronizarBaseMateriais()" style="width: 100%; margin-top: 15px; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">SINCRONIZAR BASE DE MATERIAIS (EXCEL)</button>
             </div>
         </div>
 
-        <div id="view-retirar" style="display: none;">
-            <div class="search-wrapper">
-                <div class="input-with-toggle">
-                    <input type="text" id="search-input" placeholder="DIGITE O MATERIAL OU ENDEREÇO..." oninput="renderizarEstoque()" inputmode="numeric">
-                    <div class="toggle-kb-btn" onclick="toggleKB('search-input')">Abc</div>
-                </div>
+        <div id="view-retirar">
+            <div class="search-wrapper input-with-toggle">
+                <input type="text" inputmode="numeric" id="search-input" placeholder="Pesquisar Código ou Posição..." oninput="renderizarEstoque()">
+                <div class="toggle-kb-btn" onclick="toggleKB('search-input')" style="right: 15px;">Abc</div>
             </div>
             <div id="lista-estoque"></div>
         </div>
 
         <div id="view-entrada_bloco" style="display: none;">
-            <div class="glass-card form-box">
-                <h3 style="margin-bottom: 25px; font-weight: 900; letter-spacing: -0.5px;">NOVA ENTRADA NO BLOCO</h3>
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label>Endereço de Destino</label>
-                    <input type="text" id="eb-ender" placeholder="Ex: BLOCO A 01">
+            <div class="form-box glass-card">
+                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Entrada no Bloco</h3>
+                <div class="form-group"><label>Fluxo de Origem</label><select id="eb-origem"><option value="DRIVE IN">DRIVE IN</option><option value="RECEBIMENTO">RECEBIMENTO</option></select></div>
+                <div class="form-group"><label>Endereço de Destino</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-ender" placeholder="Ex: 205-14"><div class="toggle-kb-btn" onclick="toggleKB('eb-ender')">Abc</div></div>
                 </div>
-                <div class="form-group" style="margin-bottom: 20px; position: relative;">
-                    <label>Código do Material</label>
-                    <div class="input-with-toggle">
-                        <input type="text" id="eb-mat" placeholder="Digite o código" oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')" inputmode="numeric">
-                        <div class="toggle-kb-btn" onclick="toggleKB('eb-mat')">Abc</div>
-                    </div>
+                <div class="form-group" style="position: relative;"><label>Código do Material</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('eb-mat')">Abc</div></div>
                     <div id="eb-mat-list" class="autocomplete-items"></div>
                 </div>
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label>Descrição</label>
-                    <input type="text" id="eb-desc" readonly style="background: rgba(255,255,255,0.01); color: var(--text-secondary);">
+                <div class="form-group"><label>Descrição do Material</label><input type="text" id="eb-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando código..."></div>
+                <div class="form-group"><label>Quantidade (Pallets)</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="eb-qtd" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('eb-qtd')">Abc</div></div>
                 </div>
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label>Quantidade (Pallets)</label>
-                    <div class="input-with-toggle">
-                        <input type="text" id="eb-qtd" placeholder="Qtd Pallets" inputmode="decimal">
-                        <div class="toggle-kb-btn" onclick="toggleKB('eb-qtd')">Abc</div>
-                    </div>
-                </div>
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label>Data de Vencimento</label>
-                    <input type="date" id="eb-venc" onchange="calcularDias(this.value, 'eb-venc-label')">
-                    <small id="eb-venc-label" style="display: block; margin-top: 10px; font-weight: 800; color: var(--primary); font-size: 10px;"></small>
-                </div>
-                <div class="form-group" style="margin-bottom: 30px;">
-                    <label>Origem da Mercadoria</label>
-                    <select id="eb-origem">
-                        <option value="RECEBIMENTO">RECEBIMENTO DOCA</option>
-                        <option value="PRODUÇÃO">PRODUÇÃO INTERNA</option>
-                        <option value="DEVOLUÇÃO">DEVOLUÇÃO CLIENTE</option>
-                    </select>
-                </div>
-                <button class="btn-action" onclick="salvarEntradaBloco()" style="width: 100%; padding: 22px;">CONFIRMAR ENTRADA</button>
+                <div class="form-group"><label>Data de Vencimento</label><input type="date" id="eb-venc" onchange="calcularDias(this.value, 'eb-label-dias')"><p id="eb-label-dias" style="color: var(--critico); font-size: 11px; margin-top: 12px; font-weight: 800; text-transform: uppercase;"></p></div>
+                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="salvarEntradaBloco()">CONFIRMAR ENTRADA</button>
             </div>
         </div>
 
         <div id="view-abertura_blocado" style="display: none;">
-            <div class="glass-card form-box">
-                <h3 style="margin-bottom: 25px; font-weight: 900; letter-spacing: -0.5px;">MOVIMENTAÇÃO INTERNA</h3>
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label>Endereço de Origem</label>
-                    <input type="text" id="ab-ender-origem" placeholder="Ex: BLOCO A 01" oninput="carregarDadosOrigemAbertura(this.value)">
+            <div class="form-box glass-card">
+                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Transferência Interna</h3>
+                <div class="form-group"><label>Posição Origem</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-origem" placeholder="Ex: 201-14" onchange="carregarDadosOrigemAbertura(this.value)"><div class="toggle-kb-btn" onclick="toggleKB('ab-origem')">Abc</div></div>
                 </div>
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label>Material Identificado</label>
-                    <input type="text" id="ab-mat" readonly style="background: rgba(255,255,255,0.01); color: var(--text-secondary);">
+                <div class="form-group"><label>Material Identificado</label><input type="text" id="ab-mat" readonly style="opacity: 0.5;"></div>
+                <div class="form-group"><label>Posição de Destino</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-destino" placeholder="Ex: 205-20"><div class="toggle-kb-btn" onclick="toggleKB('ab-destino')">Abc</div></div>
                 </div>
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label>Quantidade a Mover</label>
-                    <div class="input-with-toggle">
-                        <input type="text" id="ab-qtd" placeholder="Qtd Pallets" inputmode="decimal">
-                        <div class="toggle-kb-btn" onclick="toggleKB('ab-qtd')">Abc</div>
-                    </div>
+                <div class="form-group"><label>Qtd para Mover</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="ab-qtd" placeholder="Saldo: 0"><div class="toggle-kb-btn" onclick="toggleKB('ab-qtd')">Abc</div></div>
                 </div>
-                <div class="form-group" style="margin-bottom: 30px;">
-                    <label>Endereço de Destino</label>
-                    <input type="text" id="ab-destino" placeholder="Ex: FRENTE 01">
-                </div>
-                <button class="btn-action" onclick="processarAberturaBlocado()" style="width: 100%; padding: 22px; background: var(--accent);">CONFIRMAR MOVIMENTAÇÃO</button>
+                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="processarAberturaBlocado()">EXECUTAR MOVIMENTAÇÃO</button>
             </div>
         </div>
     </div>
@@ -371,56 +367,55 @@
 
 <div id="modal-retirada">
     <div class="modal-content glass-card">
-        <h2 id="modal-titulo" style="margin-bottom: 10px; font-weight: 900; letter-spacing: -1px;">MATERIAL</h2>
-        <p id="modal-info" style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; margin-bottom: 25px;"></p>
-        <div class="form-group" style="margin-bottom: 20px;">
-            <label>Quantidade para Saída</label>
+        <h3 id="modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Retirada</h3>
+        <p id="modal-info" style="font-size:13px; color: var(--text-secondary); margin: 20px 0 30px; line-height: 1.6;"></p>
+        <div class="form-group"><label>Quantidade de Pallets:</label>
             <div class="input-with-toggle">
-                <input type="text" id="modal-input-qtd" placeholder="0" inputmode="decimal">
-                <div class="toggle-kb-btn" onclick="toggleKB('modal-input-qtd')">Abc</div>
+                <input type="text" id="modal-input-qtd" inputmode="decimal" placeholder="0" style="font-size:40px; text-align:center; background: rgba(255,255,255,0.02); border: 2px solid var(--primary); border-radius: 20px; height: 90px; font-weight: 900; color: #fff; width: 100%;">
+                <div class="toggle-kb-btn" onclick="toggleKB('modal-input-qtd')" style="height: 60px; width: 50px;">Abc</div>
             </div>
         </div>
-        <div class="form-group" style="margin-bottom: 30px;">
-            <label>Destino / Motivo</label>
-            <select id="modal-destino-mov">
-                <option value="EXPEDIÇÃO">EXPEDIÇÃO CARGA</option>
-                <option value="PRODUÇÃO">ABASTECIMENTO LINHA</option>
-                <option value="AVARIA">PRODUTO AVARIADO</option>
-                <option value="INVENTÁRIO">AJUSTE INVENTÁRIO</option>
-            </select>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <button class="btn-action" style="background: #334155; box-shadow: none;" onclick="fecharModal()">CANCELAR</button>
-            <button id="btn-confirmar-modal" class="btn-action">CONFIRMAR</button>
-        </div>
+        <div class="form-group"><label>Destino da Carga:</label><select id="modal-destino-mov" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 18px; border-radius: 16px; color: #fff; width: 100%; font-weight: 600;"><option value="TRANSFERENCIA">TRANSFERENCIA</option><option value="APANHA">APANHA</option><option value="SEPARAÇÃO">SEPARAÇÃO</option></select></div>
+        <div style="display:flex; gap:15px; margin-top:35px;"><button onclick="fecharModal()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button><button id="btn-confirmar-modal" class="btn-action" style="flex:1;">CONFIRMAR</button></div>
     </div>
 </div>
 
 <script>
     const firebaseConfig = {
-        apiKey: "AIzaSyAs-V5Y7V6X5Y7V6X5Y7V6X5Y7V6X5Y7V6X",
-        authDomain: "infinity-wms.firebaseapp.com",
-        projectId: "infinity-wms",
-        storageBucket: "infinity-wms.appspot.com",
-        messagingSenderId: "1234567890",
-        appId: "1:1234567890:web:1234567890"
+        apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
+        authDomain: "sistema-fefo.firebaseapp.com",
+        projectId: "sistema-fefo",
+        storageBucket: "sistema-fefo.firebasestorage.app",
+        messagingSenderId: "755801777693",
+        appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
     };
-
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
+    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
     const auth = firebase.auth();
-    
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
     let estoqueCompleto = [];
     let baseMateriais = [];
+    let todasMovimentacoes = [];
+    let movimentacoesFiltradas = [];
     let usuarioLogado = null;
     let diasCalculados = 0;
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
-    let chartFluxo = null;
+
+    // Instâncias Globais de Gráficos (ChartJS)
+    let chartDiarioInst = null;
+    let chartMensalInst = null;
+    let chartSetorMInst = null;
+    let chartSetorDInst = null;
     let chartStatus = null;
 
-    setInterval(() => { document.getElementById('current-time').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }, 1000);
+    // Definição dos Setores Padrão requisitados
+    const SETORES_LISTA = ["ALCOÓLICO", "AVULSO", "LATA", "PET", "SUCO", "VIDRO"];
 
+    setInterval(() => { document.getElementById('current-time').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }, 1000);
     window.addEventListener('online', () => document.getElementById('network-status').style.display = 'none');
     window.addEventListener('offline', () => document.getElementById('network-status').style.display = 'block');
 
@@ -447,7 +442,14 @@
         const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
         document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
-        if (isAdmin) document.body.classList.add('is-admin'); else document.body.classList.remove('is-admin');
+        
+        // Define data atual padrão nos inputs de filtro
+        const hoje = new Date();
+        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
+        document.getElementById('filtro-dia-valor').value = hoje.toISOString().substring(0, 10);
+        document.getElementById('filtro-de-valor').value = hoje.toISOString().substring(0, 10);
+        document.getElementById('filtro-ate-valor').value = hoje.toISOString().substring(0, 10);
+
         conectarFirebase();
         carregarBaseMateriais();
         navegar(isAdmin ? 'admin' : 'retirar');
@@ -457,7 +459,7 @@
         ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
         document.getElementById('view-' + tela).style.display = 'block';
         document.getElementById('sidebar').classList.remove('active');
-        if(tela === 'admin') { carregarDadosDashboard(); carregarDadosDashboardMovimentacoes(); }
+        if(tela === 'admin') carregarDadosDashboard();
     }
 
     function navegarComFiltro(tipo) {
@@ -467,11 +469,26 @@
         renderizarEstoque();
     }
 
+    function alternarCamposData() {
+        const tipo = document.getElementById('filtro-tipo-tempo').value;
+        document.getElementById('container-filtro-mes').style.display = tipo === 'mes' ? 'block' : 'none';
+        document.getElementById('container-filtro-dia').style.display = tipo === 'dia' ? 'block' : 'none';
+        document.getElementById('container-filtro-de').style.display = tipo === 'periodo' ? 'block' : 'none';
+        document.getElementById('container-filtro-ate').style.display = tipo === 'periodo' ? 'block' : 'none';
+        processarFiltragemHistorica();
+    }
+
     function conectarFirebase() {
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             if(usuarioLogado?.perfil?.toUpperCase() === "ADMIN") { atualizarEstatisticas(); carregarDadosDashboard(); }
             renderizarEstoque();
+        });
+
+        // Escuta em tempo real do histórico completo (Requisito 4)
+        db.collection("movimentacoes_wms").orderBy("timestamp", "desc").onSnapshot(snap => {
+            todasMovimentacoes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            processarFiltragemHistorica();
         });
     }
 
@@ -480,7 +497,10 @@
         if (cache) baseMateriais = JSON.parse(cache);
         if (navigator.onLine) {
             const snap = await db.collection("base_materiais").get();
-            if (!snap.empty) { baseMateriais = snap.docs.map(doc => doc.data()); localStorage.setItem('base_materiais', JSON.stringify(baseMateriais)); }
+            if (!snap.empty) { 
+                baseMateriais = snap.docs.map(doc => doc.data()); 
+                localStorage.setItem('base_materiais', JSON.stringify(baseMateriais));
+            }
         }
     }
 
@@ -490,50 +510,265 @@
         document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
     }
 
-    async function carregarDadosDashboard() {
-        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
-        if (!isAdmin) return;
-        if(!navigator.onLine) return;
-        const ultimos7Dias = [];
-        for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(d.getDate() - i); ultimos7Dias.push(d.toLocaleDateString('pt-BR')); }
-        const movSnapTotal = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").limit(500).get();
-        const entradasPorDia = Array(7).fill(0);
-        const saidasPorDia = Array(7).fill(0);
-        const matsMovimentados = {};
-        const hoje = new Date().toLocaleDateString('pt-BR');
-        let movHoje = 0;
+    // Processamento centralizado com base em todo o histórico armazenado e filtros aplicados
+    function processarFiltragemHistorica() {
+        if (todasMovimentacoes.length === 0) return;
+
+        const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
+        const filtroMes = document.getElementById('filtro-mes-valor').value; // YYYY-MM
+        const filtroDia = document.getElementById('filtro-dia-valor').value; // YYYY-MM-DD
+        const filtroDe = document.getElementById('filtro-de-valor').value;
+        const filtroAte = document.getElementById('filtro-ate-valor').value;
+
+        movimentacoesFiltradas = todasMovimentacoes.filter(mov => {
+            if (!mov.data) return false;
+            // Conversão de data formato pt-BR (DD/MM/YYYY) para objeto data comparável
+            const partes = mov.data.split('/');
+            const dataMov = new Date(partes[2], partes[1] - 1, partes[0]);
+            
+            if (tipoTempo === 'mes' && filtroMes) {
+                const [ano, mes] = filtroMes.split('-');
+                return dataMov.getFullYear() === parseInt(ano) && (dataMov.getMonth() + 1) === parseInt(mes);
+            } else if (tipoTempo === 'dia' && filtroDia) {
+                const [ano, mes, dia] = filtroDia.split('-');
+                return dataMov.getFullYear() === parseInt(ano) && (dataMov.getMonth() + 1) === parseInt(mes) && dataMov.getDate() === parseInt(dia);
+            } else if (tipoTempo === 'periodo' && filtroDe && filtroAte) {
+                const dInit = new Date(filtroDe + "T00:00:00");
+                const dEnd = new Date(filtroAte + "T23:59:59");
+                return dataMov >= dInit && dataMov <= dEnd;
+            }
+            return true;
+        });
+
+        filtrarTabelasEDados();
+    }
+
+    function limparFiltrosHistoricos() {
+        document.getElementById('filtro-tipo-tempo').value = 'mes';
+        document.getElementById('filtro-material').value = '';
+        const hoje = new Date();
+        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
+        alternarCamposData();
+    }
+
+    function filtrarTabelasEDados() {
+        const queryMat = document.getElementById('filtro-material').value.toLowerCase().trim();
+        
+        // Aplica filtro de texto adicional do material se inserido
+        let dadosExibicao = movimentacoesFiltradas;
+        if (queryMat) {
+            dadosExibicao = movimentacoesFiltradas.filter(m => {
+                const materialCod = m.material ? m.material.toString().toLowerCase() : "";
+                const descMat = buscarDescricaoLocal(m.material).toLowerCase();
+                return materialCod.includes(queryMat) || descMat.includes(queryMat);
+            });
+        }
+
+        renderizarPaineisEGraticos(dadosExibicao);
+    }
+
+    function buscarDescricaoLocal(cod) {
+        const match = baseMateriais.find(m => m.mat.toString() === cod?.toString());
+        return match ? match.desc : "N/A";
+    }
+
+    function buscarSetorLocal(cod) {
+        const match = baseMateriais.find(m => m.mat.toString() === cod?.toString());
+        return match && match.categoria ? match.categoria.toUpperCase() : "AVULSO";
+    }
+
+    function renderizarPaineisEGraticos(dados) {
+        const hojeStr = new Date().toLocaleDateString('pt-BR');
+        let movHojeContagem = todasMovimentacoes.filter(m => m.data === hojeStr).length;
+        document.getElementById('st-mov').innerText = movHojeContagem;
+
+        // 1. DADOS DE ATIVIDADES EM TEMPO REAL (Controle FEFO atualizado)
         const feed = document.getElementById('activity-feed');
-        if(feed) feed.innerHTML = '';
-        movSnapTotal.docs.forEach((doc, idx) => {
-            const d = doc.data();
-            const index = ultimos7Dias.indexOf(d.data);
-            if(index !== -1) { if(d.fluxo.includes('+') || d.fluxo.includes('ENTRADA')) entradasPorDia[index]++; else saidasPorDia[index]++; }
-            if(d.data === hoje) { movHoje++; matsMovimentados[d.material] = (matsMovimentados[d.material] || 0) + 1; }
-            if(idx < 10 && feed) {
-                const login = d.login ? d.login.split('@')[0] : 'N/A';
-                const tagCor = d.fluxo.includes('+') ? 'var(--verde)' : 'var(--primary)';
-                const item = document.createElement('div');
-                item.className = 'activity-item';
-                item.innerHTML = `<div class="activity-icon-box" style="color: ${tagCor}">${d.fluxo.includes('+') ? '📥' : '📤'}</div><div class="activity-content"><span class="activity-tag" style="background: ${tagCor}20; color: ${tagCor}">${d.fluxo.includes('+') ? 'Entrada' : 'Saída'}</span><br><b>${login}</b> moveu <b>${d.material}</b> em <b>${d.endereco}</b> (${d.quantidade})<span class="activity-time">${d.hora}</span></div>`;
-                feed.appendChild(item);
+        feed.innerHTML = '';
+        
+        // Pega as últimas 15 movimentações gerais para o Feed
+        todasMovimentacoes.slice(0, 15).forEach(d => {
+            const loginLimpo = d.login ? d.login.split('@')[0].toUpperCase() : 'SISTEMA';
+            const tagCor = (d.quantidade && d.quantidade.toString().includes('+')) ? 'var(--verde)' : 'var(--primary)';
+            const desc = buscarDescricaoLocal(d.material);
+            
+            // Busca data de vencimento correspondente na base do estoque atual se houver, visando FEFO
+            const estCorrespondente = estoqueCompleto.find(e => e.mat === d.material && e.ender === d.endereco);
+            const validadeInfo = estCorrespondente ? estCorrespondente.valFrente : (d.validade || "Não Informada");
+
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            item.innerHTML = `
+                <div class="activity-icon-box" style="color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? '📥' : '📤'}</div>
+                <div class="activity-content">
+                    <span class="activity-tag" style="background: ${tagCor}20; color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? 'Entrada' : 'Saída'}</span>
+                    <br>Op: <b>${loginLimpo}</b> | Material: <b>${d.material} - ${desc}</b>
+                    <br>Endereço: <b>${d.endereco || 'N/A'}</b> | Vol: <b>${d.quantidade || '0'}</b>
+                    <span class="activity-time">Vencimento (FEFO): <span style="color:var(--critico); font-weight:700;">${validadeInfo}</span> às ${d.hora || '00:00'} - ${d.data}</span>
+                </div>`;
+            feed.appendChild(item);
+        });
+
+        // ESTRUTURAS DE MAPS PARA ACUMULADOS DOS GRÁFICOS E RANKINGS
+        const volumeDiario = {};
+        const volumeMensal = {};
+        const rankingMateriais = {};
+        const rankingOperadores = {};
+        
+        const setorMensalAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
+        const setorDiarioAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
+
+        const dataAtualObjeto = new Date();
+        const anoAtualStr = dataAtualObjeto.getFullYear().toString();
+        const mesAtualZero = String(dataAtualObjeto.getMonth() + 1).padStart(2, '0');
+
+        // Processa todo histórico filtrado selecionado
+        dados.forEach(mov => {
+            const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
+            const dataMov = mov.data; // DD/MM/YYYY
+            if (!dataMov) return;
+
+            const partes = dataMov.split('/');
+            const mesAnoChave = `${partes[1]}/${partes[2]}`; // MM/YYYY
+
+            // Acumulado Diário do Período Selecionado
+            volumeDiario[dataMov] = (volumeDiario[dataMov] || 0) + qtdAbsoluta;
+
+            // Rankings
+            rankingMateriais[mov.material] = (rankingMateriais[mov.material] || 0) + qtdAbsoluta;
+            const operadorChave = mov.login ? mov.login.split('@')[0].toUpperCase() : "SISTEMA";
+            rankingOperadores[operadorChave] = (rankingOperadores[operadorChave] || 0) + qtdAbsoluta;
+
+            // Classificação e compilação por Setor cadastrado
+            const setorMat = buscarSetorLocal(mov.material);
+            if (setorMensalAcumulado[setorMat] !== undefined) {
+                setorMensalAcumulado[setorMat] += qtdAbsoluta;
+            }
+
+            // Visão Diária de Setor se corresponder ao dia filtrado ou ao dia atual
+            const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
+            const filtroDiaSel = document.getElementById('filtro-dia-valor').value;
+            let diaAlvoStr = new Date().toISOString().substring(0,10);
+            if(tipoTempo === 'dia' && filtroDiaSel) diaAlvoStr = filtroDiaSel;
+            
+            const [aA, mM, dD] = diaAlvoStr.split('-');
+            const dataFormatadaComp = `${dD}/${mM}/${aA}`;
+
+            if(dataMov === dataFormatadaComp) {
+                if (setorDiarioAcumulado[setorMat] !== undefined) {
+                    setorDiarioAcumulado[setorMat] += qtdAbsoluta;
+                }
             }
         });
-        document.getElementById('st-mov').innerText = movHoje;
-        const ctxF = document.getElementById('chart-fluxo').getContext('2d');
-        if (chartFluxo) chartFluxo.destroy();
-        chartFluxo = new Chart(ctxF, { type: 'line', data: { labels: ultimos7Dias.map(d => d.split('/')[0] + '/' + d.split('/')[1]), datasets: [{ label: 'Entradas', data: entradasPorDia, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4, pointRadius: 0 }, { label: 'Saídas', data: saidasPorDia, borderColor: '#ff3e3e', backgroundColor: 'rgba(255, 62, 62, 0.1)', fill: true, tension: 0.4, pointRadius: 0 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 9 } } } } } });
+
+        // Loop separado nas movimentações totais para montar a visão histórica consolidada mensal (Ano Atual Completo)
+        todasMovimentacoes.forEach(mov => {
+            if(!mov.data) return;
+            const partes = mov.data.split('/');
+            const anoMov = partes[2];
+            const mesMov = partes[1];
+            if(anoMov === anoAtualStr) {
+                const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
+                volumeMensal[mesMov] = (volumeMensal[mesMov] || 0) + qtdAbsoluta;
+            }
+        });
+
+        // 2. RENDERIZAR TABELA HISTÓRICA CONSOLIDADA COMPLETA
+        const tbodyHist = document.getElementById('table-historico-consolidado');
+        tbodyHist.innerHTML = '';
+        dados.forEach(m => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${m.data}</td>
+                <td>${m.hora}</td>
+                <td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td>
+                <td><b>${m.material}</b></td>
+                <td>${buscarDescricaoLocal(m.material)}</td>
+                <td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td>
+                <td><b>${m.quantidade}</b></td>
+                <td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
+            tbodyHist.appendChild(tr);
+        });
+
+        // 3. TABELA RANKING MATERIAIS MAIS MOVIMENTADOS (Top 10)
+        const tbodyMat = document.getElementById('table-ranking-materiais');
+        tbodyMat.innerHTML = '';
+        Object.entries(rankingMateriais).sort((a,b) => b[1] - a[1]).slice(0, 10).forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><b>${item[0]}</b></td><td>${buscarDescricaoLocal(item[0])}</td><td><span style="color:var(--primary); font-weight:900;">${item[1]} PL</span></td>`;
+            tbodyMat.appendChild(tr);
+        });
+
+        // 5. TABELA COLABORADOR QUE MAIS MOVIMENTOU
+        const tbodyOp = document.getElementById('table-ranking-operadores');
+        tbodyOp.innerHTML = '';
+        Object.entries(rankingOperadores).sort((a,b) => b[1] - a[1]).forEach((op, index) => {
+            const medalha = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${medalha}<b>${op[0]}</b></td><td><span style="color:var(--verde); font-weight:800;">${op[1]} Paletes</span></td>`;
+            tbodyOp.appendChild(tr);
+        });
+
+        // ATUALIZAÇÃO DOS GRÁFICOS UTILIZANDO CHART.JS
+        // Gráfico Diário (Linha)
+        const labelsDias = Object.keys(volumeDiario).sort((a, b) => {
+            const strChaveA = a.split('/').reverse().join('-');
+            const strChaveB = b.split('/').reverse().join('-');
+            return new Date(strChaveA) - new Date(strChaveB);
+        });
+        const dadosDias = labelsDias.map(lbl => volumeDiario[lbl]);
+
+        const ctxD = document.getElementById('chart-fluxo-diario').getContext('2d');
+        if (chartDiarioInst) chartDiarioInst.destroy();
+        chartDiarioInst = new Chart(ctxD, {
+            type: 'bar',
+            data: { labels: labelsDias, datasets: [{ label: 'Qtd Total Movimentada', data: dadosDias, backgroundColor: '#6366f1' }] },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }, x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 9 } } } } }
+        });
+
+        // Gráfico Mensal Acumulado (Barras)
+        const mesesAnoLista = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+        const mesesLabelsReduzidos = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        const dadosMeses = mesesAnoLista.map(m => volumeMensal[m] || 0);
+
+        const ctxM = document.getElementById('chart-fluxo-mensal').getContext('2d');
+        if (chartMensalInst) chartMensalInst.destroy();
+        chartMensalInst = new Chart(ctxM, {
+            type: 'line',
+            data: { labels: mesesLabelsReduzidos, datasets: [{ label: 'Volume Mensal', data: dadosMeses, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3 }] },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } }, x: { ticks: { color: '#64748b' } } } }
+        });
+
+        // Gráficos de Setor (Mensal e Diário)
+        const ctxSM = document.getElementById('chart-setor-mensal').getContext('2d');
+        if (chartSetorMInst) chartSetorMInst.destroy();
+        chartSetorMInst = new Chart(ctxSM, {
+            type: 'doughnut',
+            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorMensalAcumulado[s]), backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'] }] },
+            options: { responsive: true, plugins: { legend: { position: 'right', labels: { color: '#64748b', font: { size: 10 } } } } }
+        });
+
+        const ctxSD = document.getElementById('chart-setor-diario').getContext('2d');
+        if (chartSetorDInst) chartSetorDInst.destroy();
+        chartSetorDInst = new Chart(ctxSD, {
+            type: 'bar',
+            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorDiarioAcumulado[s]), backgroundColor: 'rgba(255,255,255,0.08)', borderColor: '#fff', borderWidth: 1 }] },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#64748b' } }, x: { ticks: { color: '#64748b' } } } }
+        });
+
+        // Atualiza Gráfico de Rosca de Saúde Fixo do Inventário Geral
         const statusData = [estoqueCompleto.filter(i => i.dias > 60).length, estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length, estoqueCompleto.filter(i => i.dias <= 30).length];
         const ctxS = document.getElementById('chart-status').getContext('2d');
         if (chartStatus) chartStatus.destroy();
-        chartStatus = new Chart(ctxS, { type: 'doughnut', data: { labels: ['Boa', 'Crítica', 'Retida'], datasets: [{ data: statusData, backgroundColor: ['#10b981', '#fbbf24', '#f87171'], borderWidth: 0, hoverOffset: 15 }] }, options: { responsive: true, cutout: '80%', plugins: { legend: { position: 'bottom', labels: { color: '#64748b', padding: 15, font: { size: 10, weight: '800' } } } } } });
-        renderRanking('ranking-materiais', matsMovimentados);
+        chartStatus = new Chart(ctxS, { 
+            type: 'doughnut', 
+            data: { labels: ['Boa', 'Crítica', 'Retida'], datasets: [{ data: statusData, backgroundColor: ['#10b981', '#fbbf24', '#f87171'], borderWidth: 0, hoverOffset: 15 }] }, 
+            options: { responsive: true, cutout: '80%', plugins: { legend: { position: 'bottom', labels: { color: '#64748b', padding: 15, font: { size: 10, weight: '800' } } } } } 
+        });
     }
 
-    function renderRanking(id, obj) {
-        const el = document.getElementById(id);
-        if(!el) return;
-        const sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 5);
-        el.innerHTML = sorted.map(s => `<div class="ranking-item"><div class="ranking-avatar">${s[0].toString().charAt(0)}</div><div class="ranking-info"><span>${s[0]}</span><small>Frequência de Movimentação</small></div><div class="ranking-value">${s[1]}</div></div>`).join('') || '<p style="font-size:11px; color:var(--text-secondary); padding:20px; text-align:center;">Sem giro registrado hoje.</p>';
+    function carregarDadosDashboard() {
+        processarFiltragemHistorica();
     }
 
     function renderizarEstoque() {
@@ -584,7 +819,7 @@
     }
 
     document.addEventListener('click', e => { if (e.target.id !== 'eb-mat') { const l = document.getElementById('eb-mat-list'); if(l) l.innerHTML = ''; } });
-
+    
     function retirarMaterial(id, qtdAtual, mat, ender, val) {
         itemParaRetirar = { id, qtdAtual, mat, ender, val };
         document.getElementById('modal-titulo').innerText = mat;
@@ -654,7 +889,38 @@
 
     async function registrarMovimentacao(ender, mat, val, qtd, fluxo) {
         const agora = new Date();
-        await db.collection("movimentacoes_wms").add({ endereco: ender, material: mat, validade: val, quantidade: qtd, fluxo, login: usuarioLogado.email, data: agora.toLocaleDateString('pt-BR'), hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora });
+        await db.collection("movimentacoes_wms").add({ 
+            endereco: ender, 
+            material: mat, 
+            validade: val, 
+            quantidade: qtd, 
+            fluxo, 
+            login: usuarioLogado.email, 
+            data: agora.toLocaleDateString('pt-BR'), 
+            hora: agora.toLocaleTimeString('pt-BR'), 
+            timestamp: agora 
+        });
+    }
+
+    // Exportação Direcionada da Tabela Atual com base nos Filtros Selecionados
+    function exportarRelatorioFiltradoExcel() {
+        if(movimentacoesFiltradas.length === 0) return alert("Não existem dados no período filtrado para exportar.");
+        
+        const dadosPlanilha = movimentacoesFiltradas.map(m => ({
+            "Data": m.data,
+            "Horário": m.hora,
+            "Fluxo / Ação": m.fluxo,
+            "Código Material": m.material,
+            "Descrição": buscarDescricaoLocal(m.material),
+            "Setor Logístico": buscarSetorLocal(m.material),
+            "Quantidade (PL)": m.quantidade,
+            "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Relatório_Filtrado");
+        XLSX.writeFile(wb, `WMS_Relatorio_Consolidado_${new Date().getTime()}.xlsx`);
     }
 
     async function exportarHistoricoExcel() {
@@ -663,7 +929,7 @@
         const ws = XLSX.utils.json_to_sheet(dados);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Infinity_Log");
-        XLSX.writeFile(wb, `Infinity_WMS_Log_${new Date().getTime()}.xlsx`);
+        XLSX.writeFile(wb, `Infinity_WMS_Log_Completo_${new Date().getTime()}.xlsx`);
     }
 
     async function importarCSV(event) {
@@ -735,212 +1001,6 @@
             btn.style.color = 'var(--text-secondary)';
         }
         input.focus();
-    }
-
-    async function carregarDadosDashboardMovimentacoes() {
-        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
-        if (!isAdmin) return;
-
-        const snapshot = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-        const movimentacoes = snapshot.docs.map(doc => doc.data());
-
-        const paletesPorDia = {};
-        movimentacoes.forEach(mov => {
-            const data = mov.data;
-            paletesPorDia[data] = (paletesPorDia[data] || 0) + mov.quantidade;
-        });
-        renderChartPaletesPorDia(paletesPorDia);
-
-        const paletesPorMes = {};
-        movimentacoes.forEach(mov => {
-            const [dia, mes, ano] = mov.data.split('/');
-            const mesAno = `${mes}/${ano}`;
-            paletesPorMes[mesAno] = (paletesPorMes[mesAno] || 0) + mov.quantidade;
-        });
-        renderChartPaletesPorMes(paletesPorMes);
-
-        const materiaisMovimentados = {};
-        movimentacoes.forEach(mov => {
-            const materialKey = `${mov.material} - ${mov.desc}`;
-            materiaisMovimentados[materialKey] = (materiaisMovimentados[materialKey] || 0) + mov.quantidade;
-        });
-        renderRankingMateriaisMov(materiaisMovimentados);
-
-        const colaboradoresMovimentacoes = {};
-        movimentacoes.forEach(mov => {
-            colaboradoresMovimentacoes[mov.login] = (colaboradoresMovimentacoes[mov.login] || 0) + mov.quantidade;
-        });
-        renderRankingColaboradores(colaboradoresMovimentacoes);
-
-        const setoresMensal = {};
-        const setoresDiario = {};
-        const baseMateriaisSnapshot = await db.collection("base_materiais").get();
-        const baseMateriaisMap = {};
-        baseMateriaisSnapshot.docs.forEach(doc => {
-            baseMateriaisMap[doc.id] = doc.data();
-        });
-
-        movimentacoes.forEach(mov => {
-            const materialInfo = baseMateriaisMap[mov.material];
-            if (materialInfo && materialInfo.categoria) {
-                const [dia, mes, ano] = mov.data.split('/');
-                const mesAno = `${mes}/${ano}`;
-
-                setoresMensal[mesAno] = setoresMensal[mesAno] || {};
-                setoresMensal[mesAno][materialInfo.categoria] = (setoresMensal[mesAno][materialInfo.categoria] || 0) + mov.quantidade;
-
-                setoresDiario[mov.data] = setoresDiario[mov.data] || {};
-                setoresDiario[mov.data][materialInfo.categoria] = (setoresDiario[mov.data][materialInfo.categoria] || 0) + mov.quantidade;
-            }
-        });
-        renderChartSetorMensal(setoresMensal);
-        renderChartSetorDiario(setoresDiario);
-    }
-
-    function renderChartPaletesPorDia(data) {
-        const labels = Object.keys(data).sort();
-        const values = labels.map(label => data[label]);
-        const ctx = document.getElementById('chart-paletes-dia').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Paletes Movimentados',
-                    data: values,
-                    backgroundColor: 'rgba(99, 102, 241, 0.5)',
-                    borderColor: 'rgba(99, 102, 241, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-        let tableHtml = '<table class="data-table-styled"><thead><tr><th>Dia</th><th>Quantidade de Paletes</th></tr></thead><tbody>';
-        labels.forEach(label => { tableHtml += `<tr><td>${label}</td><td>${data[label]}</td></tr>`; });
-        tableHtml += '</tbody></table>';
-        document.getElementById('table-paletes-dia').innerHTML = tableHtml;
-    }
-
-    function renderChartPaletesPorMes(data) {
-        const labels = Object.keys(data).sort();
-        const values = labels.map(label => data[label]);
-        const ctx = document.getElementById('chart-paletes-mes').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Paletes Acumulados',
-                    data: values,
-                    backgroundColor: 'rgba(255, 62, 62, 0.5)',
-                    borderColor: 'rgba(255, 62, 62, 1)',
-                    borderWidth: 1,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-        let tableHtml = '<table class="data-table-styled"><thead><tr><th>Mês/Ano</th><th>Quantidade Acumulada</th></tr></thead><tbody>';
-        labels.forEach(label => { tableHtml += `<tr><td>${label}</td><td>${data[label]}</td></tr>`; });
-        tableHtml += '</tbody></table>';
-        document.getElementById('table-paletes-mes').innerHTML = tableHtml;
-    }
-
-    function renderRankingMateriaisMov(data) {
-        const rankingList = document.getElementById('ranking-materiais-mov');
-        if(!rankingList) return;
-        let html = '';
-        Object.entries(data)
-            .sort(([, a], [, b]) => b - a)
-            .forEach(([material, qtd]) => {
-                html += `<div class="ranking-item">
-                            <div class="ranking-avatar">📦</div>
-                            <div><div style="font-weight: 700;">${material}</div></div>
-                            <div class="ranking-value">${qtd}</div>
-                        </div>`;
-            });
-        rankingList.innerHTML = html;
-    }
-
-    function renderRankingColaboradores(data) {
-        const rankingList = document.getElementById('ranking-colaboradores');
-        if(!rankingList) return;
-        let html = '';
-        Object.entries(data)
-            .sort(([, a], [, b]) => b - a)
-            .forEach(([colaborador, qtd]) => {
-                html += `<div class="ranking-item">
-                            <div class="ranking-avatar">👨‍🏭</div>
-                            <div><div style="font-weight: 700;">${colaborador}</div></div>
-                            <div class="ranking-value">${qtd}</div>
-                        </div>`;
-            });
-        rankingList.innerHTML = html;
-    }
-
-    function renderChartSetorMensal(data) {
-        const labels = Object.keys(data).sort();
-        const datasets = {};
-        labels.forEach(mesAno => {
-            for (const setor in data[mesAno]) {
-                datasets[setor] = datasets[setor] || { label: setor, data: [], backgroundColor: getRandomColor(), borderWidth: 1 };
-            }
-        });
-        labels.forEach(mesAno => {
-            for (const setor in datasets) {
-                datasets[setor].data.push(data[mesAno][setor] || 0);
-            }
-        });
-        const ctx = document.getElementById('chart-setor-mensal').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: { labels: labels, datasets: Object.values(datasets) },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
-            }
-        });
-    }
-
-    function renderChartSetorDiario(data) {
-        const labels = Object.keys(data).sort();
-        const datasets = {};
-        labels.forEach(dia => {
-            for (const setor in data[dia]) {
-                datasets[setor] = datasets[setor] || { label: setor, data: [], backgroundColor: getRandomColor(), borderWidth: 1 };
-            }
-        });
-        labels.forEach(dia => {
-            for (const setor in datasets) {
-                datasets[setor].data.push(data[dia][setor] || 0);
-            }
-        });
-        const ctx = document.getElementById('chart-setor-diario').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: { labels: labels, datasets: Object.values(datasets) },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
-            }
-        });
-    }
-
-    function getRandomColor() {
-        const letters = '0123456789ABCDEF';
-        let color = '#';
-        for (let i = 0; i < 6; i++) { color += letters[Math.floor(Math.random() * 16)]; }
-        return color;
     }
 
     window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
