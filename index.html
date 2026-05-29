@@ -83,14 +83,12 @@
         .stat-card h5 { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 800; }
         .stat-card p { font-size: 30px; font-weight: 900; color: #fff; letter-spacing: -1px; }
 
-        /* Nova Grid e Elementos dos Gráficos Modernos */
         .dashboard-row-modern { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 24px; margin-bottom: 24px; }
         @media (max-width: 600px) { .dashboard-row-modern { grid-template-columns: 1fr; } }
 
         .chart-card-modern { border-radius: 20px; padding: 24px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.3s ease; position: relative; }
         .chart-card-modern:hover { transform: translateY(-4px); border-color: rgba(255, 255, 255, 0.15); }
 
-        /* Cores de Fundo Modernas para Gráficos */
         .gradient-blue { background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9)); }
         .gradient-purple { background: linear-gradient(135deg, rgba(24, 18, 43, 0.95), rgba(46, 34, 74, 0.9)); }
         .gradient-orange { background: linear-gradient(135deg, rgba(28, 20, 15, 0.95), rgba(59, 39, 25, 0.9)); }
@@ -107,7 +105,6 @@
 
         .chart-wrapper-modern { position: relative; width: 100%; height: 260px; }
 
-        /* Estilo para Lista de Ranking Dinâmica */
         .ranking-list-modern { display: flex; flex-direction: column; gap: 10px; max-height: 260px; overflow-y: auto; padding-right: 5px; }
         .ranking-item-modern { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.04); padding: 12px 16px; border-radius: 12px; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.02); transition: 0.2s; }
         .ranking-item-modern:hover { background: rgba(255, 255, 255, 0.08); }
@@ -116,7 +113,6 @@
         .ranking-val-modern { background: rgba(255, 255, 255, 0.1); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; border: 1px solid rgba(255,255,255,0.05); }
 
         .dashboard-row { display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; margin-bottom: 24px; }
-        .dashboard-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px; }
         .dashboard-fullrow { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 24px; }
         @media (max-width: 900px) { .dashboard-row { grid-template-columns: 1fr; } }
 
@@ -242,7 +238,7 @@
                 <div class="stat-card glass-card"><h5>GIRO HOJE</h5><p id="st-mov" style="color: var(--verde);">0</p></div>
             </div>
 
-            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
+            <div class="glass-card" style="padding: 25px; margin-bottom: 24px;">
                 <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">Filtros de Pesquisa do Histórico e Painéis Operacionais</h4>
                 <div class="filter-panel">
                     <div class="form-group">
@@ -363,14 +359,13 @@
                             <option value="hoje">Hoje</option>
                         </select>
                     </div>
-                    <div class="ranking-list-modern" id="modern-ranking-container">
-                        </div>
+                    <div class="ranking-list-modern" id="modern-ranking-container"></div>
                 </div>
             </div>
 
             <div class="dashboard-row">
                 <div class="chart-box glass-card">
-                    <div class="chart-title">🏆 Materiais Mais Movimentados <span style="color:var(--accent);">Top 10</span></div>
+                    <div class="chart-title">📋 Materiais Mais Movimentados <span style="color:var(--accent);">Top 10</span></div>
                     <div class="wms-table-container">
                         <table class="wms-table">
                             <thead>
@@ -380,15 +375,10 @@
                         </table>
                     </div>
                 </div>
-                <div class="chart-box glass-card" style="display:none;">
-                    <div class="chart-title">👥 Produtividade Antiga <span style="color:var(--verde);">Ranking</span></div>
-                    <div class="wms-table-container">
-                        <table class="wms-table">
-                            <thead>
-                                <tr><th>Colaborador</th><th>Paletes Movimentados</th></tr>
-                            </thead>
-                            <tbody id="table-ranking-operadores"></tbody>
-                        </table>
+                <div class="chart-box glass-card">
+                    <div class="chart-title">📊 Saúde Geral do Inventário</div>
+                    <div class="chart-wrapper-modern" style="height: 220px;">
+                        <canvas id="chart-status-saude"></canvas>
                     </div>
                 </div>
             </div>
@@ -410,15 +400,10 @@
                 </div>
             </div>
 
-            <div class="dashboard-row">
+            <div class="dashboard-fullrow">
                 <div class="chart-box glass-card">
                     <div class="chart-title">⚡ Monitor de Atividades em Tempo Real (Controle FEFO)</div>
                     <div id="activity-feed" class="activity-feed"></div>
-                </div>
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGraficoModerno('chart-status', 'Saúde Geral do Inventário')">Expandir ⛶</button>
-                    <div class="chart-title">📊 Saúde Geral do Inventário</div>
-                    <canvas id="chart-status" style="max-height: 250px;"></canvas>
                 </div>
             </div>
 
@@ -533,23 +518,29 @@
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
 
-    // Instâncias de Gráficos atualizadas
     let chartDiarioInst = null;
     let chartMensalInst = null;
     let chartSetorMInst = null;
     let chartSetorDInst = null;
     let chartDestinosInst = null;
-    let chartStatus = null;
+    let chartStatusSaudeInst = null;
     let chartExpandidoInst = null;
 
     const SETORES_LISTA = ["ALCOÓLICO", "AVULSO", "LATA", "PET", "SUCO", "VIDRO"];
 
     setInterval(() => { 
-        document.getElementById('current-time').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); 
+        const elTime = document.getElementById('current-time');
+        if (elTime) elTime.innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); 
     }, 1000);
 
-    window.addEventListener('online', () => document.getElementById('network-status').style.display = 'none');
-    window.addEventListener('offline', () => document.getElementById('network-status').style.display = 'block');
+    window.addEventListener('online', () => {
+        const net = document.getElementById('network-status');
+        if (net) net.style.display = 'none';
+    });
+    window.addEventListener('offline', () => {
+        const net = document.getElementById('network-status');
+        if (net) net.style.display = 'block';
+    });
 
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
     
@@ -577,7 +568,6 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-screen').style.display = 'block';
             
-            // Definição simples de permissão baseada no email/matrícula
             const isManager = user.email.includes("admin") || user.email.includes("1010") || user.email.includes("0000");
             document.getElementById('user-name').innerText = user.email.split("@")[0].toUpperCase();
             document.getElementById('role-label').innerText = isManager ? "COORDENAÇÃO / MASTER" : "OPERADOR LOGÍSTICO";
@@ -625,7 +615,7 @@
 
     function limparFiltrosHistoricos() {
         document.getElementById('filtro-tipo-tempo').value = 'mes';
-        document.getElementById('filtro-mes-valor').value = '';
+        document.getElementById('filtro-mes-valor').value = new Date().toISOString().substring(0, 7);
         document.getElementById('filtro-dia-valor').value = '';
         document.getElementById('filtro-de-valor').value = '';
         document.getElementById('filtro-ate-valor').value = '';
@@ -634,21 +624,18 @@
     }
 
     function inicializarEscutasDados() {
-        // Escuta tabela estoque completo
         db.collection("estoque_infinity").onSnapshot(snap => {
             estoqueCompleto = [];
             snap.forEach(doc => estoqueCompleto.push({id: doc.id, ...doc.data()}));
             processarIndicadoresInventario();
             renderizarEstoque();
-        });
+        }, () => {});
 
-        // Escuta base de materiais cadastrados
         db.collection("materiais_infinity").onSnapshot(snap => {
             baseMateriais = [];
             snap.forEach(doc => baseMateriais.push(doc.data()));
-        });
+        }, () => {});
 
-        // Escuta log histórico de transações
         db.collection("historico_infinity").orderBy("timestamp", "desc").onSnapshot(snap => {
             todasMovimentacoes = [];
             snap.forEach(doc => {
@@ -661,7 +648,7 @@
                 });
             });
             processarFiltragemHistorica();
-        });
+        }, () => {});
     }
 
     function processarIndicadoresInventario() {
@@ -676,9 +663,14 @@
                 else if (diff <= 60) critico += qtd;
             }
         });
-        document.getElementById('st-total').innerText = total.toFixed(1);
-        document.getElementById('st-critico').innerText = critico.toFixed(1);
-        document.getElementById('st-retido').innerText = retido.toFixed(1);
+        
+        const elT = document.getElementById('st-total');
+        const elC = document.getElementById('st-critico');
+        const elR = document.getElementById('st-retido');
+        
+        if(elT) elT.innerText = total.toFixed(1);
+        if(elC) elC.innerText = critico.toFixed(1);
+        if(elR) elR.innerText = retido.toFixed(1);
 
         renderizarGraficoSaudeGeral(critico, retido, Math.max(0, total - critico - retido));
     }
@@ -720,25 +712,24 @@
             return mat.includes(busca) || desc.includes(busca);
         });
 
-        // Contadores volumétricos de Giro Hoje
         const hojeYMD = new Date().toISOString().substring(0,10);
         let giroHoje = 0;
         todasMovimentacoes.forEach(m => {
             if(m.dataStr === hojeYMD) giroHoje += parseFloat(m.qtd) || 0;
         });
-        document.getElementById('st-mov').innerText = giroHoje.toFixed(1);
+        const elM = document.getElementById('st-mov');
+        if(elM) elM.innerText = giroHoje.toFixed(1);
 
         renderizarTabelaHistorico(dadosFinais);
         renderizarTopMateriais(dadosFinais);
         renderizarRankingColaboradoresModerno();
         renderizarFeedTempoReal(dadosFinais);
-        
-        // Atualizações dos novos layouts de gráficos estruturados
         atualizarGraficosAnaliticosModernos(dadosFinais);
     }
 
     function renderizarTabelaHistorico(lista) {
         const tbody = document.getElementById('table-historico-consolidado');
+        if(!tbody) return;
         tbody.innerHTML = '';
         lista.slice(0, 100).forEach(mov => {
             tbody.insertAdjacentHTML('beforeend', `
@@ -758,6 +749,7 @@
 
     function renderizarTopMateriais(lista) {
         const tbody = document.getElementById('table-ranking-materiais');
+        if(!tbody) return;
         tbody.innerHTML = '';
         let agrupar = {};
         lista.forEach(m => {
@@ -781,7 +773,6 @@
             });
     }
 
-    // REGRA DE NEGÓCIO DO RANKING: Não considerar movimentações do SISTEMA e do ADMIN no ranking
     function renderizarRankingColaboradoresModerno() {
         const container = document.getElementById('modern-ranking-container');
         if (!container) return;
@@ -798,12 +789,9 @@
         let contagem = {};
         dadosParaRanking.forEach(m => {
             let op = (m.operador || 'SISTEMA').trim().toUpperCase();
-            
-            // EXCLUSÃO COMPLETA SOLICITADA
             if (!op || op === 'SISTEMA' || op === 'ADMIN' || op === 'ADMINISTRADOR') {
                 return;
             }
-
             contagem[op] = (contagem[op] || 0) + (parseFloat(m.qtd) || 0);
         });
 
@@ -834,6 +822,7 @@
 
     function renderizarFeedTempoReal(lista) {
         const feed = document.getElementById('activity-feed');
+        if(!feed) return;
         feed.innerHTML = '';
         lista.slice(0, 15).forEach(m => {
             let corTag = 'var(--accent)';
@@ -855,7 +844,6 @@
         });
     }
 
-    // GESTÃO DOS COMPONENTES E GRÁFICOS DO CHART.JS
     function atualizarGraficosAnaliticosModernos(lista) {
         const configComum = {
             responsive: true,
@@ -876,155 +864,135 @@
             }
         };
 
-        // 1. Movimentação de Paletes Diária (Gráfico de coluna)
-        const limiteDias = parseInt(document.getElementById('filtro-mov-diaria').value) || 7;
-        let mapDias = {};
-        // Popular ultimos N dias ordenados
-        for(let i=limiteDias-1; i>=0; i--) {
-            let d = new Date();
-            d.setDate(d.getDate() - i);
-            mapDias[d.toISOString().substring(0,10)] = 0;
-        }
-        lista.forEach(m => { if(mapDias[m.dataStr] !== undefined) mapDias[m.dataStr] += parseFloat(m.qtd) || 0; });
-        
-        const labelsDiario = Object.keys(mapDias).map(k => k.substring(8,10) + "/" + k.substring(5,7));
-        const dadosDiario = Object.values(mapDias);
-
-        if(chartDiarioInst) chartDiarioInst.destroy();
-        chartDiarioInst = new Chart(document.getElementById('chart-fluxo-diario').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: labelsDiario,
-                datasets: [{
-                    data: dadosDiario,
-                    backgroundColor: '#00f2ff',
-                    borderRadius: 6
-                }]
-            },
-            options: configComum
-        });
-
-        // 2. Histórico Mensal Acumulado (Gráfico de Linha)
-        const limiteMeses = parseInt(document.getElementById('filtro-hist-mensal').value) || 6;
-        let mapMeses = {};
-        for(let i=limiteMeses-1; i>=0; i--) {
-            let d = new Date();
-            d.setMonth(d.getMonth() - i);
-            mapMeses[d.toISOString().substring(0,7)] = 0;
-        }
-        lista.forEach(m => {
-            const mKey = (m.dataStr || '').substring(0,7);
-            if(mapMeses[mKey] !== undefined) mapMeses[mKey] += parseFloat(m.qtd) || 0;
-        });
-
-        if(chartMensalInst) chartMensalInst.destroy();
-        chartMensalInst = new Chart(document.getElementById('chart-fluxo-mensal').getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: Object.keys(mapMeses),
-                datasets: [{
-                    data: Object.values(mapMeses),
-                    borderColor: '#6366f1',
-                    backgroundColor: 'rgba(99,102,241,0.1)',
-                    borderWidth: 3,
-                    tension: 0.3,
-                    fill: true,
-                    pointBackgroundColor: '#ff3e3e'
-                }]
-            },
-            options: {
-                ...configComum,
-                plugins: { ...configComum.plugins, legend: { display: false } }
+        // 1. Diária (Coluna)
+        const canvasDiario = document.getElementById('chart-fluxo-diario');
+        if (canvasDiario) {
+            const limiteDias = parseInt(document.getElementById('filtro-mov-diaria').value) || 7;
+            let mapDias = {};
+            for(let i=limiteDias-1; i>=0; i--) {
+                let d = new Date();
+                d.setDate(d.getDate() - i);
+                mapDias[d.toISOString().substring(0,10)] = 0;
             }
-        });
+            lista.forEach(m => { if(mapDias[m.dataStr] !== undefined) mapDias[m.dataStr] += parseFloat(m.qtd) || 0; });
+            const labelsDiario = Object.keys(mapDias).map(k => k.substring(8,10) + "/" + k.substring(5,7));
+            const dadosDiario = Object.values(mapDias);
 
-        // 3. Setores Abastecidos (Visão Mensal) (Gráfico de coluna)
-        const filtroSM = document.getElementById('filtro-setores-mensal').value;
-        let mapSetorM = {};
-        SETORES_LISTA.forEach(s => mapSetorM[s] = 0);
-        
-        const mesCorrenteYMD = new Date().toISOString().substring(0,7);
-        lista.forEach(m => {
-            if(filtroSM === 'atual' && m.dataStr.substring(0,7) !== mesCorrenteYMD) return;
-            let s = (m.setor || '').toUpperCase();
-            if(mapSetorM[s] !== undefined) mapSetorM[s] += parseFloat(m.qtd) || 0;
-        });
-
-        if(chartSetorMInst) chartSetorMInst.destroy();
-        chartSetorMInst = new Chart(document.getElementById('chart-setor-mensal').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: Object.keys(mapSetorM),
-                datasets: [{ data: Object.values(mapSetorM), backgroundColor: '#fbbf24', borderRadius: 6 }]
-            },
-            options: configComum
-        });
-
-        // 4. Setores Abastecidos (Visão Diária) (Gráfico de coluna)
-        const filtroSD = document.getElementById('filtro-setores-diaria').value;
-        let mapSetorD = {};
-        SETORES_LISTA.forEach(s => mapSetorD[s] = 0);
-
-        let alvoDia = new Date().toISOString().substring(0,10);
-        if(filtroSD === 'ontem') {
-            let ont = new Date(); ont.setDate(ont.getDate() - 1);
-            alvoDia = ont.toISOString().substring(0,10);
+            if(chartDiarioInst) chartDiarioInst.destroy();
+            chartDiarioInst = new Chart(canvasDiario.getContext('2d'), {
+                type: 'bar',
+                data: { labels: labelsDiario, datasets: [{ data: dadosDiario, backgroundColor: '#00f2ff', borderRadius: 6 }] },
+                options: configComum
+            });
         }
 
-        lista.forEach(m => {
-            if(m.dataStr === alvoDia) {
+        // 2. Histórico Mensal (Linha)
+        const canvasMensal = document.getElementById('chart-fluxo-mensal');
+        if (canvasMensal) {
+            const limiteMeses = parseInt(document.getElementById('filtro-hist-mensal').value) || 6;
+            let mapMeses = {};
+            for(let i=limiteMeses-1; i>=0; i--) {
+                let d = new Date();
+                d.setMonth(d.getMonth() - i);
+                mapMeses[d.toISOString().substring(0,7)] = 0;
+            }
+            lista.forEach(m => {
+                const mKey = (m.dataStr || '').substring(0,7);
+                if(mapMeses[mKey] !== undefined) mapMeses[mKey] += parseFloat(m.qtd) || 0;
+            });
+
+            if(chartMensalInst) chartMensalInst.destroy();
+            chartMensalInst = new Chart(canvasMensal.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: Object.keys(mapMeses),
+                    datasets: [{ data: Object.values(mapMeses), borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', borderWidth: 3, tension: 0.3, fill: true, pointBackgroundColor: '#ff3e3e' }]
+                },
+                options: configComum
+            });
+        }
+
+        // 3. Setores Mensal (Coluna)
+        const canvasSetorM = document.getElementById('chart-setor-mensal');
+        if (canvasSetorM) {
+            const filtroSM = document.getElementById('filtro-setores-mensal').value;
+            let mapSetorM = {};
+            SETORES_LISTA.forEach(s => mapSetorM[s] = 0);
+            const mesCorrenteYMD = new Date().toISOString().substring(0,7);
+            lista.forEach(m => {
+                if(filtroSM === 'atual' && m.dataStr.substring(0,7) !== mesCorrenteYMD) return;
                 let s = (m.setor || '').toUpperCase();
-                if(mapSetorD[s] !== undefined) mapSetorD[s] += parseFloat(m.qtd) || 0;
+                if(mapSetorM[s] !== undefined) mapSetorM[s] += parseFloat(m.qtd) || 0;
+            });
+
+            if(chartSetorMInst) chartSetorMInst.destroy();
+            chartSetorMInst = new Chart(canvasSetorM.getContext('2d'), {
+                type: 'bar',
+                data: { labels: Object.keys(mapSetorM), datasets: [{ data: Object.values(mapSetorM), backgroundColor: '#fbbf24', borderRadius: 6 }] },
+                options: configComum
+            });
+        }
+
+        // 4. Setores Diária (Coluna)
+        const canvasSetorD = document.getElementById('chart-setor-diario');
+        if (canvasSetorD) {
+            const filtroSD = document.getElementById('filtro-setores-diaria').value;
+            let mapSetorD = {};
+            SETORES_LISTA.forEach(s => mapSetorD[s] = 0);
+            let alvoDia = new Date().toISOString().substring(0,10);
+            if(filtroSD === 'ontem') {
+                let ont = new Date(); ont.setDate(ont.getDate() - 1);
+                alvoDia = ont.toISOString().substring(0,10);
             }
-        });
+            lista.forEach(m => {
+                if(m.dataStr === alvoDia) {
+                    let s = (m.setor || '').toUpperCase();
+                    if(mapSetorD[s] !== undefined) mapSetorD[s] += parseFloat(m.qtd) || 0;
+                }
+            });
 
-        if(chartSetorDInst) chartSetorDInst.destroy();
-        chartSetorDInst = new Chart(document.getElementById('chart-setor-diario').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: Object.keys(mapSetorD),
-                datasets: [{ data: Object.values(mapSetorD), backgroundColor: '#10b981', borderRadius: 6 }]
-            },
-            options: configComum
-        });
+            if(chartSetorDInst) chartSetorDInst.destroy();
+            chartSetorDInst = new Chart(canvasSetorD.getContext('2d'), {
+                type: 'bar',
+                data: { labels: Object.keys(mapSetorD), datasets: [{ data: Object.values(mapSetorD), backgroundColor: '#10b981', borderRadius: 6 }] },
+                options: configComum
+            });
+        }
 
-        // 5. Destino das Cargas / Fluxos de Saída (Gráfico de coluna)
-        const filtroDest = document.getElementById('filtro-destino-carga').value;
-        let mapDestinos = { "DRIVE IN": 0, "RECEBIMENTO": 0, "APANHA": 0, "SEPARAÇÃO": 0, "TRANSFERENCIA": 0 };
-        
-        lista.forEach(m => {
-            let f = (m.fluxo || m.destino || '').toUpperCase();
-            if(filtroDest === 'saida' && (f === 'RECEBIMENTO' || f === 'DRIVE IN')) return;
-            if(mapDestinos[f] !== undefined) mapDestinos[f] += parseFloat(m.qtd) || 0;
-        });
+        // 5. Destino das Cargas (Coluna)
+        const canvasDestinos = document.getElementById('chart-destinos-saida');
+        if (canvasDestinos) {
+            const filtroDest = document.getElementById('filtro-destino-carga').value;
+            let mapDestinos = { "DRIVE IN": 0, "RECEBIMENTO": 0, "APANHA": 0, "SEPARAÇÃO": 0, "TRANSFERENCIA": 0 };
+            lista.forEach(m => {
+                let f = (m.fluxo || m.destino || '').toUpperCase();
+                if(filtroDest === 'saida' && (f === 'RECEBIMENTO' || f === 'DRIVE IN')) return;
+                if(mapDestinos[f] !== undefined) mapDestinos[f] += parseFloat(m.qtd) || 0;
+            });
 
-        if(chartDestinosInst) chartDestinosInst.destroy();
-        chartDestinosInst = new Chart(document.getElementById('chart-destinos-saida').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: Object.keys(mapDestinos),
-                datasets: [{ data: Object.values(mapDestinos), backgroundColor: '#f87171', borderRadius: 6 }]
-            },
-            options: configComum
-        });
+            if(chartDestinosInst) chartDestinosInst.destroy();
+            chartDestinosInst = new Chart(canvasDestinos.getContext('2d'), {
+                type: 'bar',
+                data: { labels: Object.keys(mapDestinos), datasets: [{ data: Object.values(mapDestinos), backgroundColor: '#f87171', borderRadius: 6 }] },
+                options: configComum
+            });
+        }
     }
 
     function renderizarGraficoSaudeGeral(critico, retido, saudavel) {
-        if(chartStatus) chartStatus.destroy();
-        chartStatus = new Chart(document.getElementById('chart-status').getContext('2d'), {
+        const canvasSaude = document.getElementById('chart-status-saude');
+        if(!canvasSaude) return;
+        if(chartStatusSaudeInst) chartStatusSaudeInst.destroy();
+        chartStatusSaudeInst = new Chart(canvasSaude.getContext('2d'), {
             type: 'doughnut',
             data: {
                 labels: ['Crítico (30-60D)', 'Retido (<30D)', 'Saudável'],
-                datasets: [{
-                    data: [critico, retido, saudavel],
-                    backgroundColor: ['#fbbf24', '#f87171', '#10b981'],
-                    borderWidth: 0
-                }]
+                datasets: [{ data: [critico, retido, saudavel], backgroundColor: ['#fbbf24', '#f87171', '#10b981'], borderWidth: 0 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }, datalabels: { display: false } }
             }
         });
     }
@@ -1034,28 +1002,22 @@
         document.getElementById('modal-grafico-titulo').innerText = titulo;
         modal.style.display = 'flex';
 
-        const canvasAlvo = document.getElementById(canvasId);
         const ctxExpanded = document.getElementById('canvas-expanded-render').getContext('2d');
-        
         if (chartExpandidoInst) chartExpandidoInst.destroy();
         
-        // Clona a instância existente do gráfico correspondente para o modal ampliado
         let chartOrigem = null;
         if(canvasId === 'chart-fluxo-diario') chartOrigem = chartDiarioInst;
         if(canvasId === 'chart-fluxo-mensal') chartOrigem = chartMensalInst;
         if(canvasId === 'chart-setor-mensal') chartOrigem = chartSetorMInst;
         if(canvasId === 'chart-setor-diario') chartOrigem = chartSetorDInst;
         if(canvasId === 'chart-destinos-saida') chartOrigem = chartDestinosInst;
-        if(canvasId === 'chart-status') chartOrigem = chartStatus;
+        if(canvasId === 'chart-status-saude') chartOrigem = chartStatusSaudeInst;
 
         if(chartOrigem) {
             chartExpandidoInst = new Chart(ctxExpanded, {
                 type: chartOrigem.config.type,
                 data: chartOrigem.config.data,
-                options: {
-                    ...chartOrigem.config.options,
-                    maintainAspectRatio: false
-                }
+                options: { ...chartOrigem.config.options, maintainAspectRatio: false }
             });
         }
     }
@@ -1065,12 +1027,10 @@
         if (chartExpandidoInst) chartExpandidoInst.destroy();
     }
 
-    // SISTEMA OPERACIONAL DE MOVIMENTAÇÃO E ESTOQUE
     function renderizarEstoque() {
         const container = document.getElementById('lista-estoque');
         if(!container) return;
         container.innerHTML = '';
-        
         const busca = document.getElementById('search-input').value.trim().toLowerCase();
 
         let filtrado = estoqueCompleto.filter(item => {
@@ -1146,7 +1106,6 @@
             const agora = new Date();
             const logRef = db.collection("historico_infinity").doc();
             
-            // Salva log de transação
             await logRef.set({
                 material: itemParaRetirar.material,
                 desc: itemParaRetirar.desc || '',
@@ -1163,11 +1122,8 @@
             if(qtdRetirar === saldoAtual) {
                 await db.collection("estoque_infinity").doc(itemParaRetirar.id).delete();
             } else {
-                await db.collection("estoque_infinity").doc(itemParaRetirar.id).update({
-                    qtd: (saldoAtual - qtdRetirar).toFixed(1)
-                });
+                await db.collection("estoque_infinity").doc(itemParaRetirar.id).update({ qtd: (saldoAtual - qtdRetirar).toFixed(1) });
             }
-
             fecharModal();
         } catch(e) {
             alert("Erro ao realizar baixa no banco de dados.");
@@ -1225,18 +1181,12 @@
             return;
         }
 
-        // Procura setor correspondente na base de dados carregada
         const meta = baseMateriais.find(m => String(m.mat) === mat);
         const setorDefinido = meta ? (meta.categoria || 'GERAL').toUpperCase() : 'GERAL';
 
         try {
             const agora = new Date();
-            // Cria registro no estoque
-            await db.collection("estoque_infinity").add({
-                ender, material: mat, desc, qtd: qtd.toFixed(1), vencimento: venc, setor: setorDefinido
-            });
-
-            // Cria log de transação
+            await db.collection("estoque_infinity").add({ ender, material: mat, desc, qtd: qtd.toFixed(1), vencimento: venc, setor: setorDefinido });
             await db.collection("historico_infinity").add({
                 material: mat, desc, qtd, fluxo: "ENTRADA BLOCO", origem, setor: setorDefinido, ender,
                 usuario: usuarioLogado.email.split("@")[0].toUpperCase(),
@@ -1283,20 +1233,15 @@
 
         try {
             const agora = new Date();
-            
-            // Diminui ou deleta a origem
             if(qtdMover === saldoFisico) {
                 await db.collection("estoque_infinity").doc(itemOrigemAbertura.id).delete();
             } else {
                 await db.collection("estoque_infinity").doc(itemOrigemAbertura.id).update({ qtd: (saldoFisico - qtdMover).toFixed(1) });
             }
 
-            // Adiciona no destino ou incrementa caso já exista um SKU idêntico na mesma posição
             const existeDestino = estoqueCompleto.find(i => i.ender === destino && i.material === itemOrigemAbertura.material);
             if(existeDestino) {
-                await db.collection("estoque_infinity").doc(existeDestino.id).update({
-                    qtd: (parseFloat(existeDestino.qtd) + qtdMover).toFixed(1)
-                });
+                await db.collection("estoque_infinity").doc(existeDestino.id).update({ qtd: (parseFloat(existeDestino.qtd) + qtdMover).toFixed(1) });
             } else {
                 await db.collection("estoque_infinity").add({
                     ender: destino, material: itemOrigemAbertura.material, desc: itemOrigemAbertura.desc || '',
@@ -1304,7 +1249,6 @@
                 });
             }
 
-            // Grava log histórico da reacomodação
             await db.collection("historico_infinity").add({
                 material: itemOrigemAbertura.material, desc: itemOrigemAbertura.desc || '', qtd: qtdMover,
                 fluxo: "MOVIMENTAÇÃO INTERNA", ender: destino, origem: itemOrigemAbertura.ender, setor: itemOrigemAbertura.setor || 'GERAL',
@@ -1325,7 +1269,6 @@
         }
     }
 
-    // EXPORTADORES DE RELATÓRIOS EM FORMATO EXCEL
     function exportarRelatorioFiltradoExcel() {
         if(movimentacoesFiltradas.length === 0) { alert("Não existem dados no escopo de filtros atual para exportar!"); return; }
         let formatado = movimentacoesFiltradas.map(m => ({
@@ -1350,7 +1293,6 @@
         XLSX.writeFile(wb, `WMS_LOG_COMPLETO_${new Date().toISOString().substring(0,10)}.xlsx`);
     }
 
-    // SINCRONIZADORES EM MASSA (CSV / EXCEL BASE)
     function importarCSV(e) {
         const file = e.target.files[0];
         if(!file) return;
@@ -1361,7 +1303,6 @@
             let batch = db.batch();
             let count = 0;
 
-            // Alerta: Processa limpando inventário anterior caso precise sincronizar carga limpa (Opcional)
             for(let i=1; i<linhas.length; i++) {
                 const col = linhas[i].split(";");
                 if(col.length >= 4) {
