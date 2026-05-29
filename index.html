@@ -35,41 +35,12 @@
             --text-secondary: #64748b;
             --neon-blue: #00f2ff;
         }
+
         .input-with-toggle { position: relative; display: flex; align-items: center; }
         .input-with-toggle input { padding-right: 50px !important; }
         .toggle-kb-btn { position: absolute; right: 10px; background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-secondary); border-radius: 10px; width: 34px; height: 34px; display: none; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: 0.3s; z-index: 10; }
         body.is-admin .toggle-kb-btn { display: flex; }
         .toggle-kb-btn:hover { background: var(--primary); color: #fff; }
-
-        .data-table-styled {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 12px;
-            color: var(--text);
-        }
-
-        .data-table-styled th,
-        .data-table-styled td {
-            border: 1px solid var(--glass-border);
-            padding: 10px;
-            text-align: left;
-        }
-
-        .data-table-styled th {
-            background-color: var(--glass);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .data-table-styled tr:nth-child(even) {
-            background-color: rgba(255, 255, 255, 0.01);
-        }
-
-        .data-table-styled tr:hover {
-            background-color: rgba(255, 255, 255, 0.03);
-        }
 
         .data-table-styled {
             width: 100%;
@@ -239,52 +210,60 @@
     <div class="container">
         <div id="view-admin" style="display: none;">
             <div class="stats-grid">
-                <div class="stat-card glass-card" onclick="navegarComFiltro('')"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
-                <div class="stat-card glass-card" onclick="navegarComFiltro('critico')"><h5>CRÍTICOS (30-60D)</h5><p id="st-critico" style="color: var(--critico);">0</p></div>
-                <div class="stat-card glass-card" onclick="navegarComFiltro('retido')"><h5>RETIDOS (<30D)</h5><p id="st-retido" style="color: var(--retido);">0</p></div>
-                <div class="stat-card glass-card"><h5>GIRO HOJE</h5><p id="st-mov" style="color: var(--verde);">0</p></div>
+                <div class="stat-card glass-card" onclick="navegarComFiltro('')">
+                    <h5>Total Geral</h5>
+                    <p id="st-total">0</p>
+                </div>
+                <div class="stat-card glass-card" onclick="navegarComFiltro('critico')">
+                    <h5 style="color: var(--critico)">Crítico</h5>
+                    <p id="st-critico">0</p>
+                </div>
+                <div class="stat-card glass-card" onclick="navegarComFiltro('retido')">
+                    <h5 style="color: var(--retido)">Retido</h5>
+                    <p id="st-retido">0</p>
+                </div>
+                <div class="stat-card glass-card">
+                    <h5>Giro Hoje</h5>
+                    <p id="st-mov">0</p>
+                </div>
             </div>
+
             <div class="dashboard-row">
                 <div class="chart-box glass-card">
-                    <div class="chart-title">📈 FLUXO DE OPERAÇÃO <span>(ÚLTIMOS 7 DIAS)</span></div>
+                    <div class="chart-title">📈 FLUXO DE OPERAÇÃO <span>(7 DIAS)</span></div>
                     <canvas id="chart-fluxo" style="max-height: 300px;"></canvas>
                 </div>
                 <div class="chart-box glass-card">
-                    <div class="chart-title">⚡ ATIVIDADE EM TEMPO REAL</div>
-                    <div id="activity-feed" class="activity-feed"></div>
+                    <div class="chart-title">⚖️ STATUS DE VALIDADE</div>
+                    <canvas id="chart-status" style="max-height: 300px;"></canvas>
                 </div>
             </div>
+
             <div class="dashboard-row">
                 <div class="chart-box glass-card">
                     <div class="chart-title">🔥 MATERIAIS MAIS MOVIMENTADOS</div>
                     <div id="ranking-materiais" class="ranking-list"></div>
                 </div>
                 <div class="chart-box glass-card">
-                    <div class="chart-title">📊 SAÚDE DO INVENTÁRIO</div>
-                    <canvas id="chart-status" style="max-height: 250px;"></canvas>
+                    <div class="chart-title">⚙️ ADMINISTRAÇÃO</div>
+                    <button class="btn-action" onclick="exportarHistoricoExcel()" style="width: 100%; margin-bottom: 12px; background: var(--accent);">📄 EXPORTAR LOG EXCEL</button>
+                    <button class="btn-action" onclick="document.getElementById('csv-input').click()" style="width: 100%; margin-bottom: 12px; background: #334155;">📥 IMPORTAR ESTOQUE</button>
+                    <button class="btn-action" onclick="sincronizarBaseMateriais()" style="width: 100%; background: #0f172a;">🔄 SINCRONIZAR BASE</button>
+                    <input type="file" id="csv-input" style="display: none;" onchange="importarCSV(event)">
                 </div>
-            </div>
-            <div class="glass-card" style="padding: 35px; margin-bottom: 30px;">
-                <h3 style="font-size: 12px; color: #fff; margin-bottom: 25px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">Sistema e Sincronização</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
-                    <button class="btn-action" onclick="document.getElementById(\'csv-file\').click()" style="background: var(--glass); border: 1px solid var(--glass-border); box-shadow: none;">ATUALIZAR ESTOQUE (CSV)</button>
-                    <button class="btn-action" onclick="exportarHistoricoExcel()" style="background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">EXPORTAR HISTÓRICO (EXCEL)</button>
-                </div>
-                <button class="btn-action" onclick="sincronizarBaseMateriais()" style="width: 100%; margin-top: 15px; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">SINCRONIZAR BASE DE MATERIAIS (EXCEL)</button>
             </div>
 
-            <!-- Novas Seções do Dashboard de Movimentações -->
+            <!-- NOVO PAINEL DE MOVIMENTAÇÕES -->
             <div class="chart-box glass-card" style="margin-bottom: 24px;">
                 <div class="chart-title">📊 PALETES MOVIMENTADOS POR DIA</div>
-                <canvas id="chart-paletes-dia" style="max-height: 300px;"></canvas>
-                <div id="table-paletes-dia" class="data-table"></div>
+                <div style="height: 300px;"><canvas id="chart-paletes-dia"></canvas></div>
+                <div id="table-paletes-dia"></div>
             </div>
 
             <div class="chart-box glass-card" style="margin-bottom: 24px;">
                 <div class="chart-title">📈 PALETES MOVIMENTADOS POR MÊS (ACUMULADO)</div>
-                <canvas id="chart-paletes-mes" style="max-height: 300px;"></canvas>
-                <div id="table-paletes-mes" class="data-table"></div>
+                <div style="height: 300px;"><canvas id="chart-paletes-mes"></canvas></div>
+                <div id="table-paletes-mes"></div>
             </div>
 
             <div class="chart-box glass-card" style="margin-bottom: 24px;">
@@ -309,48 +288,82 @@
             </div>
         </div>
 
-        <div id="view-retirar">
-            <div class="search-wrapper input-with-toggle">
-                <input type="text" inputmode="numeric" id="search-input" placeholder="Pesquisar Código ou Posição..." oninput="renderizarEstoque()">
-                <div class="toggle-kb-btn" onclick="toggleKB('search-input')" style="right: 15px;">Abc</div>
+        <div id="view-retirar" style="display: none;">
+            <div class="search-wrapper">
+                <div class="input-with-toggle">
+                    <input type="text" id="search-input" placeholder="DIGITE O MATERIAL OU ENDEREÇO..." oninput="renderizarEstoque()" inputmode="numeric">
+                    <div class="toggle-kb-btn" onclick="toggleKB('search-input')">Abc</div>
+                </div>
             </div>
             <div id="lista-estoque"></div>
         </div>
 
         <div id="view-entrada_bloco" style="display: none;">
-            <div class="form-box glass-card">
-                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Entrada no Bloco</h3>
-                <div class="form-group"><label>Fluxo de Origem</label><select id="eb-origem"><option value="DRIVE IN">DRIVE IN</option><option value="RECEBIMENTO">RECEBIMENTO</option></select></div>
-                <div class="form-group"><label>Endereço de Destino</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-ender" placeholder="Ex: 205-14"><div class="toggle-kb-btn" onclick="toggleKB('eb-ender')">Abc</div></div>
+            <div class="glass-card form-box">
+                <h3 style="margin-bottom: 25px; font-weight: 900; letter-spacing: -0.5px;">NOVA ENTRADA NO BLOCO</h3>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Endereço de Destino</label>
+                    <input type="text" id="eb-ender" placeholder="Ex: BLOCO A 01">
                 </div>
-                <div class="form-group" style="position: relative;"><label>Código do Material</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('eb-mat')">Abc</div></div>
+                <div class="form-group" style="margin-bottom: 20px; position: relative;">
+                    <label>Código do Material</label>
+                    <div class="input-with-toggle">
+                        <input type="text" id="eb-mat" placeholder="Digite o código" oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')" inputmode="numeric">
+                        <div class="toggle-kb-btn" onclick="toggleKB('eb-mat')">Abc</div>
+                    </div>
                     <div id="eb-mat-list" class="autocomplete-items"></div>
                 </div>
-                <div class="form-group"><label>Descrição do Material</label><input type="text" id="eb-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando código..."></div>
-                <div class="form-group"><label>Quantidade (Pallets)</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="eb-qtd" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('eb-qtd')">Abc</div></div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Descrição</label>
+                    <input type="text" id="eb-desc" readonly style="background: rgba(255,255,255,0.01); color: var(--text-secondary);">
                 </div>
-                <div class="form-group"><label>Data de Vencimento</label><input type="date" id="eb-venc" onchange="calcularDias(this.value, 'eb-label-dias')"><p id="eb-label-dias" style="color: var(--critico); font-size: 11px; margin-top: 12px; font-weight: 800; text-transform: uppercase;"></p></div>
-                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="salvarEntradaBloco()">CONFIRMAR ENTRADA</button>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Quantidade (Pallets)</label>
+                    <div class="input-with-toggle">
+                        <input type="text" id="eb-qtd" placeholder="Qtd Pallets" inputmode="decimal">
+                        <div class="toggle-kb-btn" onclick="toggleKB('eb-qtd')">Abc</div>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Data de Vencimento</label>
+                    <input type="date" id="eb-venc" onchange="calcularDias(this.value, 'eb-venc-label')">
+                    <small id="eb-venc-label" style="display: block; margin-top: 10px; font-weight: 800; color: var(--primary); font-size: 10px;"></small>
+                </div>
+                <div class="form-group" style="margin-bottom: 30px;">
+                    <label>Origem da Mercadoria</label>
+                    <select id="eb-origem">
+                        <option value="RECEBIMENTO">RECEBIMENTO DOCA</option>
+                        <option value="PRODUÇÃO">PRODUÇÃO INTERNA</option>
+                        <option value="DEVOLUÇÃO">DEVOLUÇÃO CLIENTE</option>
+                    </select>
+                </div>
+                <button class="btn-action" onclick="salvarEntradaBloco()" style="width: 100%; padding: 22px;">CONFIRMAR ENTRADA</button>
             </div>
         </div>
 
         <div id="view-abertura_blocado" style="display: none;">
-            <div class="form-box glass-card">
-                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Transferência Interna</h3>
-                <div class="form-group"><label>Posição Origem</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-origem" placeholder="Ex: 201-14" onchange="carregarDadosOrigemAbertura(this.value)"><div class="toggle-kb-btn" onclick="toggleKB('ab-origem')">Abc</div></div>
+            <div class="glass-card form-box">
+                <h3 style="margin-bottom: 25px; font-weight: 900; letter-spacing: -0.5px;">MOVIMENTAÇÃO INTERNA</h3>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Endereço de Origem</label>
+                    <input type="text" id="ab-ender-origem" placeholder="Ex: BLOCO A 01" oninput="carregarDadosOrigemAbertura(this.value)">
                 </div>
-                <div class="form-group"><label>Material Identificado</label><input type="text" id="ab-mat" readonly style="opacity: 0.5;"></div>
-                <div class="form-group"><label>Posição de Destino</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-destino" placeholder="Ex: 205-20"><div class="toggle-kb-btn" onclick="toggleKB('ab-destino')">Abc</div></div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Material Identificado</label>
+                    <input type="text" id="ab-mat" readonly style="background: rgba(255,255,255,0.01); color: var(--text-secondary);">
                 </div>
-                <div class="form-group"><label>Qtd para Mover</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="ab-qtd" placeholder="Saldo: 0"><div class="toggle-kb-btn" onclick="toggleKB('ab-qtd')">Abc</div></div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Quantidade a Mover</label>
+                    <div class="input-with-toggle">
+                        <input type="text" id="ab-qtd" placeholder="Qtd Pallets" inputmode="decimal">
+                        <div class="toggle-kb-btn" onclick="toggleKB('ab-qtd')">Abc</div>
+                    </div>
                 </div>
-                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="processarAberturaBlocado()">EXECUTAR MOVIMENTAÇÃO</button>
+                <div class="form-group" style="margin-bottom: 30px;">
+                    <label>Endereço de Destino</label>
+                    <input type="text" id="ab-destino" placeholder="Ex: FRENTE 01">
+                </div>
+                <button class="btn-action" onclick="processarAberturaBlocado()" style="width: 100%; padding: 22px; background: var(--accent);">CONFIRMAR MOVIMENTAÇÃO</button>
             </div>
         </div>
     </div>
@@ -358,35 +371,45 @@
 
 <div id="modal-retirada">
     <div class="modal-content glass-card">
-        <h3 id="modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Retirada</h3>
-        <p id="modal-info" style="font-size:13px; color: var(--text-secondary); margin: 20px 0 30px; line-height: 1.6;"></p>
-        <div class="form-group"><label>Quantidade de Pallets:</label>
+        <h2 id="modal-titulo" style="margin-bottom: 10px; font-weight: 900; letter-spacing: -1px;">MATERIAL</h2>
+        <p id="modal-info" style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; margin-bottom: 25px;"></p>
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label>Quantidade para Saída</label>
             <div class="input-with-toggle">
-                <input type="text" id="modal-input-qtd" inputmode="decimal" placeholder="0" style="font-size:40px; text-align:center; background: rgba(255,255,255,0.02); border: 2px solid var(--primary); border-radius: 20px; height: 90px; font-weight: 900; color: #fff; width: 100%;">
-                <div class="toggle-kb-btn" onclick="toggleKB('modal-input-qtd')" style="height: 60px; width: 50px;">Abc</div>
+                <input type="text" id="modal-input-qtd" placeholder="0" inputmode="decimal">
+                <div class="toggle-kb-btn" onclick="toggleKB('modal-input-qtd')">Abc</div>
             </div>
         </div>
-        <div class="form-group"><label>Destino da Carga:</label><select id="modal-destino-mov" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 18px; border-radius: 16px; color: #fff; width: 100%; font-weight: 600;"><option value="TRANSFERENCIA">TRANSFERENCIA</option><option value="APANHA">APANHA</option><option value="SEPARAÇÃO">SEPARAÇÃO</option></select></div>
-        <div style="display:flex; gap:15px; margin-top:35px;"><button onclick="fecharModal()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button><button id="btn-confirmar-modal" class="btn-action" style="flex:1;">CONFIRMAR</button></div>
+        <div class="form-group" style="margin-bottom: 30px;">
+            <label>Destino / Motivo</label>
+            <select id="modal-destino-mov">
+                <option value="EXPEDIÇÃO">EXPEDIÇÃO CARGA</option>
+                <option value="PRODUÇÃO">ABASTECIMENTO LINHA</option>
+                <option value="AVARIA">PRODUTO AVARIADO</option>
+                <option value="INVENTÁRIO">AJUSTE INVENTÁRIO</option>
+            </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <button class="btn-action" style="background: #334155; box-shadow: none;" onclick="fecharModal()">CANCELAR</button>
+            <button id="btn-confirmar-modal" class="btn-action">CONFIRMAR</button>
+        </div>
     </div>
 </div>
 
 <script>
     const firebaseConfig = {
-        apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
-        authDomain: "sistema-fefo.firebaseapp.com",
-        projectId: "sistema-fefo",
-        storageBucket: "sistema-fefo.firebasestorage.app",
-        messagingSenderId: "755801777693",
-        appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
+        apiKey: "AIzaSyAs-V5Y7V6X5Y7V6X5Y7V6X5Y7V6X5Y7V6X",
+        authDomain: "infinity-wms.firebaseapp.com",
+        projectId: "infinity-wms",
+        storageBucket: "infinity-wms.appspot.com",
+        messagingSenderId: "1234567890",
+        appId: "1:1234567890:web:1234567890"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
-    db.enablePersistence({ synchronizeTabs: true });
-    const auth = firebase.auth();
-    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    
     let estoqueCompleto = [];
     let baseMateriais = [];
     let usuarioLogado = null;
@@ -469,8 +492,7 @@
 
     async function carregarDadosDashboard() {
         const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
-        if (!isAdmin) return; // Only load for admin
-
+        if (!isAdmin) return;
         if(!navigator.onLine) return;
         const ultimos7Dias = [];
         for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(d.getDate() - i); ultimos7Dias.push(d.toLocaleDateString('pt-BR')); }
@@ -481,13 +503,13 @@
         const hoje = new Date().toLocaleDateString('pt-BR');
         let movHoje = 0;
         const feed = document.getElementById('activity-feed');
-        feed.innerHTML = '';
+        if(feed) feed.innerHTML = '';
         movSnapTotal.docs.forEach((doc, idx) => {
             const d = doc.data();
             const index = ultimos7Dias.indexOf(d.data);
             if(index !== -1) { if(d.fluxo.includes('+') || d.fluxo.includes('ENTRADA')) entradasPorDia[index]++; else saidasPorDia[index]++; }
             if(d.data === hoje) { movHoje++; matsMovimentados[d.material] = (matsMovimentados[d.material] || 0) + 1; }
-            if(idx < 10) {
+            if(idx < 10 && feed) {
                 const login = d.login ? d.login.split('@')[0] : 'N/A';
                 const tagCor = d.fluxo.includes('+') ? 'var(--verde)' : 'var(--primary)';
                 const item = document.createElement('div');
@@ -509,6 +531,7 @@
 
     function renderRanking(id, obj) {
         const el = document.getElementById(id);
+        if(!el) return;
         const sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 5);
         el.innerHTML = sorted.map(s => `<div class="ranking-item"><div class="ranking-avatar">${s[0].toString().charAt(0)}</div><div class="ranking-info"><span>${s[0]}</span><small>Frequência de Movimentação</small></div><div class="ranking-value">${s[1]}</div></div>`).join('') || '<p style="font-size:11px; color:var(--text-secondary); padding:20px; text-align:center;">Sem giro registrado hoje.</p>';
     }
@@ -520,7 +543,7 @@
         if (!termo) return;
         const isAdmin = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
         let filtrados = estoqueCompleto.filter(i => {
-            if (parseInt(i.qtd) <= 0) return false; // REGRA: POSIÇÃO ZERADA NÃO APARECE
+            if (parseInt(i.qtd) <= 0) return false;
             if (termo === '60') return i.dias > 30 && i.dias <= 60;
             if (termo === '30') return i.dias <= 30;
             const mat = i.mat?.toString().toLowerCase() || "";
@@ -716,12 +739,11 @@
 
     async function carregarDadosDashboardMovimentacoes() {
         const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
-        if (!isAdmin) return; // Only load for admin
+        if (!isAdmin) return;
 
         const snapshot = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
         const movimentacoes = snapshot.docs.map(doc => doc.data());
 
-        // 1. Paletes Movimentados por Dia
         const paletesPorDia = {};
         movimentacoes.forEach(mov => {
             const data = mov.data;
@@ -729,43 +751,39 @@
         });
         renderChartPaletesPorDia(paletesPorDia);
 
-        // 2. Paletes Movimentados por Mês (Acumulado)
         const paletesPorMes = {};
         movimentacoes.forEach(mov => {
-            const [dia, mes, ano] = mov.data.split(\'/\');
+            const [dia, mes, ano] = mov.data.split('/');
             const mesAno = `${mes}/${ano}`;
             paletesPorMes[mesAno] = (paletesPorMes[mesAno] || 0) + mov.quantidade;
         });
         renderChartPaletesPorMes(paletesPorMes);
 
-        // 3. Materiais Mais Movimentados
         const materiaisMovimentados = {};
         movimentacoes.forEach(mov => {
             const materialKey = `${mov.material} - ${mov.desc}`;
             materiaisMovimentados[materialKey] = (materiaisMovimentados[materialKey] || 0) + mov.quantidade;
         });
-        renderRankingMateriais(materiaisMovimentados);
+        renderRankingMateriaisMov(materiaisMovimentados);
 
-        // 4. Colaborador que Mais Movimentou
         const colaboradoresMovimentacoes = {};
         movimentacoes.forEach(mov => {
             colaboradoresMovimentacoes[mov.login] = (colaboradoresMovimentacoes[mov.login] || 0) + mov.quantidade;
         });
         renderRankingColaboradores(colaboradoresMovimentacoes);
 
-        // 5. Movimentações por Setor (Mensal e Diário)
         const setoresMensal = {};
         const setoresDiario = {};
         const baseMateriaisSnapshot = await db.collection("base_materiais").get();
-        const baseMateriais = {};
+        const baseMateriaisMap = {};
         baseMateriaisSnapshot.docs.forEach(doc => {
-            baseMateriais[doc.id] = doc.data();
+            baseMateriaisMap[doc.id] = doc.data();
         });
 
         movimentacoes.forEach(mov => {
-            const materialInfo = baseMateriais[mov.material];
+            const materialInfo = baseMateriaisMap[mov.material];
             if (materialInfo && materialInfo.categoria) {
-                const [dia, mes, ano] = mov.data.split(\'/\');
+                const [dia, mes, ano] = mov.data.split('/');
                 const mesAno = `${mes}/${ano}`;
 
                 setoresMensal[mesAno] = setoresMensal[mesAno] || {};
@@ -782,49 +800,44 @@
     function renderChartPaletesPorDia(data) {
         const labels = Object.keys(data).sort();
         const values = labels.map(label => data[label]);
-        const ctx = document.getElementById(\'chart-paletes-dia\').getContext(\'2d\');
+        const ctx = document.getElementById('chart-paletes-dia').getContext('2d');
         new Chart(ctx, {
-            type: \'bar\',
+            type: 'bar',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: \'Paletes Movimentados\',
+                    label: 'Paletes Movimentados',
                     data: values,
-                    backgroundColor: \'rgba(99, 102, 241, 0.5)\',
-                    borderColor: \'rgba(99, 102, 241, 1)\',
+                    backgroundColor: 'rgba(99, 102, 241, 0.5)',
+                    borderColor: 'rgba(99, 102, 241, 1)',
                     borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true }
-                }
+                scales: { y: { beginAtZero: true } }
             }
         });
-        // Render table
-        let tableHtml = \'<table class="data-table-styled"><thead><tr><th>Dia</th><th>Quantidade de Paletes</th></tr></thead><tbody>\';
-        labels.forEach(label => {
-            tableHtml += `<tr><td>${label}</td><td>${data[label]}</td></tr>`;
-        });
-        tableHtml += \'</tbody></table>\';
-        document.getElementById(\'table-paletes-dia\').innerHTML = tableHtml;
+        let tableHtml = '<table class="data-table-styled"><thead><tr><th>Dia</th><th>Quantidade de Paletes</th></tr></thead><tbody>';
+        labels.forEach(label => { tableHtml += `<tr><td>${label}</td><td>${data[label]}</td></tr>`; });
+        tableHtml += '</tbody></table>';
+        document.getElementById('table-paletes-dia').innerHTML = tableHtml;
     }
 
     function renderChartPaletesPorMes(data) {
         const labels = Object.keys(data).sort();
         const values = labels.map(label => data[label]);
-        const ctx = document.getElementById(\'chart-paletes-mes\').getContext(\'2d\');
+        const ctx = document.getElementById('chart-paletes-mes').getContext('2d');
         new Chart(ctx, {
-            type: \'line\',
+            type: 'line',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: \'Paletes Acumulados\',
+                    label: 'Paletes Acumulados',
                     data: values,
-                    backgroundColor: \'rgba(255, 62, 62, 0.5)\',
-                    borderColor: \'rgba(255, 62, 62, 1)\',
+                    backgroundColor: 'rgba(255, 62, 62, 0.5)',
+                    borderColor: 'rgba(255, 62, 62, 1)',
                     borderWidth: 1,
                     fill: true
                 }]
@@ -832,31 +845,25 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true }
-                }
+                scales: { y: { beginAtZero: true } }
             }
         });
-        // Render table
-        let tableHtml = \'<table class="data-table-styled"><thead><tr><th>Mês/Ano</th><th>Quantidade Acumulada</th></tr></thead><tbody>\';
-        labels.forEach(label => {
-            tableHtml += `<tr><td>${label}</td><td>${data[label]}</td></tr>`;
-        });
-        tableHtml += \'</tbody></table>\';
-        document.getElementById(\'table-paletes-mes\').innerHTML = tableHtml;
+        let tableHtml = '<table class="data-table-styled"><thead><tr><th>Mês/Ano</th><th>Quantidade Acumulada</th></tr></thead><tbody>';
+        labels.forEach(label => { tableHtml += `<tr><td>${label}</td><td>${data[label]}</td></tr>`; });
+        tableHtml += '</tbody></table>';
+        document.getElementById('table-paletes-mes').innerHTML = tableHtml;
     }
 
-    function renderRankingMateriais(data) {
-        const rankingList = document.getElementById(\'ranking-materiais-mov\');
-        let html = \'\';
+    function renderRankingMateriaisMov(data) {
+        const rankingList = document.getElementById('ranking-materiais-mov');
+        if(!rankingList) return;
+        let html = '';
         Object.entries(data)
             .sort(([, a], [, b]) => b - a)
             .forEach(([material, qtd]) => {
                 html += `<div class="ranking-item">
                             <div class="ranking-avatar">📦</div>
-                            <div>
-                                <div style="font-weight: 700;">${material}</div>
-                            </div>
+                            <div><div style="font-weight: 700;">${material}</div></div>
                             <div class="ranking-value">${qtd}</div>
                         </div>`;
             });
@@ -864,16 +871,15 @@
     }
 
     function renderRankingColaboradores(data) {
-        const rankingList = document.getElementById(\'ranking-colaboradores\');
-        let html = \'\';
+        const rankingList = document.getElementById('ranking-colaboradores');
+        if(!rankingList) return;
+        let html = '';
         Object.entries(data)
             .sort(([, a], [, b]) => b - a)
             .forEach(([colaborador, qtd]) => {
                 html += `<div class="ranking-item">
                             <div class="ranking-avatar">👨‍🏭</div>
-                            <div>
-                                <div style="font-weight: 700;">${colaborador}</div>
-                            </div>
+                            <div><div style="font-weight: 700;">${colaborador}</div></div>
                             <div class="ranking-value">${qtd}</div>
                         </div>`;
             });
@@ -888,27 +894,19 @@
                 datasets[setor] = datasets[setor] || { label: setor, data: [], backgroundColor: getRandomColor(), borderWidth: 1 };
             }
         });
-
         labels.forEach(mesAno => {
             for (const setor in datasets) {
                 datasets[setor].data.push(data[mesAno][setor] || 0);
             }
         });
-
-        const ctx = document.getElementById(\'chart-setor-mensal\').getContext(\'2d\');
+        const ctx = document.getElementById('chart-setor-mensal').getContext('2d');
         new Chart(ctx, {
-            type: \'bar\',
-            data: {
-                labels: labels,
-                datasets: Object.values(datasets)
-            },
+            type: 'bar',
+            data: { labels: labels, datasets: Object.values(datasets) },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    x: { stacked: true },
-                    y: { stacked: true, beginAtZero: true }
-                }
+                scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
             }
         });
     }
@@ -921,577 +919,31 @@
                 datasets[setor] = datasets[setor] || { label: setor, data: [], backgroundColor: getRandomColor(), borderWidth: 1 };
             }
         });
-
         labels.forEach(dia => {
             for (const setor in datasets) {
                 datasets[setor].data.push(data[dia][setor] || 0);
             }
         });
-
-        const ctx = document.getElementById(\'chart-setor-diario\').getContext(\'2d\');
+        const ctx = document.getElementById('chart-setor-diario').getContext('2d');
         new Chart(ctx, {
-            type: \'bar\',
-            data: {
-                labels: labels,
-                datasets: Object.values(datasets)
-            },
+            type: 'bar',
+            data: { labels: labels, datasets: Object.values(datasets) },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    x: { stacked: true },
-                    y: { stacked: true, beginAtZero: true }
-                }
+                scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
             }
         });
     }
 
     function getRandomColor() {
-        const letters = \'0123456789ABCDEF\';
-        let color = \'#\';
-        for (let i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) { color += letters[Math.floor(Math.random() * 16)]; }
         return color;
     }
 
-    // Existing toggleKB function, ensure it\'s still there
-    function toggleKB(id) {
-        const input = document.getElementById(id);
-        const btn = event.currentTarget;
-        if (input.inputMode === \'numeric\' || input.inputMode === \'decimal\') {
-            input.inputMode = \'text\';
-            btn.innerText = \'123\';
-            btn.style.background = \'var(--primary)\';
-            btn.style.color = \'#fff\';
-        } else {
-            input.inputMode = id.includes(\'qtd\') ? \'decimal\' : \'numeric\';
-            btn.innerText = \'Abc\';
-            btn.style.background = \'var(--glass)\';
-            btn.style.color = \'var(--text-secondary)\';
-        }
-        input.focus();
-    }
-
-    async function carregarDadosDashboardMovimentacoes() {
-        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
-        if (!isAdmin) return; // Only load for admin
-
-        const snapshot = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-        const movimentacoes = snapshot.docs.map(doc => doc.data());
-
-        // 1. Paletes Movimentados por Dia
-        const paletesPorDia = {};
-        movimentacoes.forEach(mov => {
-            const data = mov.data;
-            paletesPorDia[data] = (paletesPorDia[data] || 0) + mov.quantidade;
-        });
-        renderChartPaletesPorDia(paletesPorDia);
-
-        // 2. Paletes Movimentados por Mês (Acumulado)
-        const paletesPorMes = {};
-        movimentacoes.forEach(mov => {
-            const [dia, mes, ano] = mov.data.split(\\'/\\');
-            const mesAno = `${mes}/${ano}`;
-            paletesPorMes[mesAno] = (paletesPorMes[mesAno] || 0) + mov.quantidade;
-        });
-        renderChartPaletesPorMes(paletesPorMes);
-
-        // 3. Materiais Mais Movimentados
-        const materiaisMovimentados = {};
-        movimentacoes.forEach(mov => {
-            const materialKey = `${mov.material} - ${mov.desc}`;
-            materiaisMovimentados[materialKey] = (materiaisMovimentados[materialKey] || 0) + mov.quantidade;
-        });
-        renderRankingMateriais(materiaisMovimentados);
-
-        // 4. Colaborador que Mais Movimentou
-        const colaboradoresMovimentacoes = {};
-        movimentacoes.forEach(mov => {
-            colaboradoresMovimentacoes[mov.login] = (colaboradoresMovimentacoes[mov.login] || 0) + mov.quantidade;
-        });
-        renderRankingColaboradores(colaboradoresMovimentacoes);
-
-        // 5. Movimentações por Setor (Mensal e Diário)
-        const setoresMensal = {};
-        const setoresDiario = {};
-        const baseMateriaisSnapshot = await db.collection("base_materiais").get();
-        const baseMateriais = {};
-        baseMateriaisSnapshot.docs.forEach(doc => {
-            baseMateriais[doc.id] = doc.data();
-        });
-
-        movimentacoes.forEach(mov => {
-            const materialInfo = baseMateriais[mov.material];
-            if (materialInfo && materialInfo.categoria) {
-                const [dia, mes, ano] = mov.data.split(\\'/\\');
-                const mesAno = `${mes}/${ano}`;
-
-                setoresMensal[mesAno] = setoresMensal[mesAno] || {};
-                setoresMensal[mesAno][materialInfo.categoria] = (setoresMensal[mesAno][materialInfo.categoria] || 0) + mov.quantidade;
-
-                setoresDiario[mov.data] = setoresDiario[mov.data] || {};
-                setoresDiario[mov.data][materialInfo.categoria] = (setoresDiario[mov.data][materialInfo.categoria] || 0) + mov.quantidade;
-            }
-        });
-        renderChartSetorMensal(setoresMensal);
-        renderChartSetorDiario(setoresDiario);
-    }
-
-    function renderChartPaletesPorDia(data) {
-        const labels = Object.keys(data).sort();
-        const values = labels.map(label => data[label]);
-        const ctx = document.getElementById(\\'chart-paletes-dia\\').getContext(\\'2d\\');
-        new Chart(ctx, {
-            type: \\'bar\\',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: \\'Paletes Movimentados\\',
-                    data: values,
-                    backgroundColor: \\'rgba(99, 102, 241, 0.5)\\',
-                    borderColor: \\'rgba(99, 102, 241, 1)\\',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-        // Render table
-        let tableHtml = \\'<table class="data-table-styled"><thead><tr><th>Dia</th><th>Quantidade de Paletes</th></tr></thead><tbody>\\';
-        labels.forEach(label => {
-            tableHtml += `<tr><td>${label}</td><td>${data[label]}</td></tr>`;
-        });
-        tableHtml += \\'</tbody></table>\\';
-        document.getElementById(\\'table-paletes-dia\\').innerHTML = tableHtml;
-    }
-
-    function renderChartPaletesPorMes(data) {
-        const labels = Object.keys(data).sort();
-        const values = labels.map(label => data[label]);
-        const ctx = document.getElementById(\\'chart-paletes-mes\\').getContext(\\'2d\\');
-        new Chart(ctx, {
-            type: \\'line\\',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: \\'Paletes Acumulados\\',
-                    data: values,
-                    backgroundColor: \\'rgba(255, 62, 62, 0.5)\\',
-                    borderColor: \\'rgba(255, 62, 62, 1)\\',
-                    borderWidth: 1,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-        // Render table
-        let tableHtml = \\'<table class="data-table-styled"><thead><tr><th>Mês/Ano</th><th>Quantidade Acumulada</th></tr></thead><tbody>\\';
-        labels.forEach(label => {
-            tableHtml += `<tr><td>${label}</td><td>${data[label]}</td></tr>`;
-        });
-        tableHtml += \\'</tbody></table>\\';
-        document.getElementById(\\'table-paletes-mes\\').innerHTML = tableHtml;
-    }
-
-    function renderRankingMateriais(data) {
-        const rankingList = document.getElementById(\\'ranking-materiais-mov\\');
-        let html = \\'\\';
-        Object.entries(data)
-            .sort(([, a], [, b]) => b - a)
-            .forEach(([material, qtd]) => {
-                html += `<div class="ranking-item">
-                            <div class="ranking-avatar">📦</div>
-                            <div>
-                                <div style="font-weight: 700;">${material}</div>
-                            </div>
-                            <div class="ranking-value">${qtd}</div>
-                        </div>`;
-            });
-        rankingList.innerHTML = html;
-    }
-
-    function renderRankingColaboradores(data) {
-        const rankingList = document.getElementById(\\'ranking-colaboradores\\');
-        let html = \\'\\';
-        Object.entries(data)
-            .sort(([, a], [, b]) => b - a)
-            .forEach(([colaborador, qtd]) => {
-                html += `<div class="ranking-item">
-                            <div class="ranking-avatar">👨‍🏭</div>
-                            <div>
-                                <div style="font-weight: 700;">${colaborador}</div>
-                            </div>
-                            <div class="ranking-value">${qtd}</div>
-                        </div>`;
-            });
-        rankingList.innerHTML = html;
-    }
-
-    function renderChartSetorMensal(data) {
-        const labels = Object.keys(data).sort();
-        const datasets = {};
-        labels.forEach(mesAno => {
-            for (const setor in data[mesAno]) {
-                datasets[setor] = datasets[setor] || { label: setor, data: [], backgroundColor: getRandomColor(), borderWidth: 1 };
-            }
-        });
-
-        labels.forEach(mesAno => {
-            for (const setor in datasets) {
-                datasets[setor].data.push(data[mesAno][setor] || 0);
-            }
-        });
-
-        const ctx = document.getElementById(\\'chart-setor-mensal\\').getContext(\\'2d\\');
-        new Chart(ctx, {
-            type: \\'bar\\',
-            data: {
-                labels: labels,
-                datasets: Object.values(datasets)
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { stacked: true },
-                    y: { stacked: true, beginAtZero: true }
-                }
-            }
-        });
-    }
-
-    function renderChartSetorDiario(data) {
-        const labels = Object.keys(data).sort();
-        const datasets = {};
-        labels.forEach(dia => {
-            for (const setor in data[dia]) {
-                datasets[setor] = datasets[setor] || { label: setor, data: [], backgroundColor: getRandomColor(), borderWidth: 1 };
-            }
-        });
-
-        labels.forEach(dia => {
-            for (const setor in datasets) {
-                datasets[setor].data.push(data[dia][setor] || 0);
-            }
-        });
-
-        const ctx = document.getElementById(\\'chart-setor-diario\\').getContext(\\'2d\\');
-        new Chart(ctx, {
-            type: \\'bar\\',
-            data: {
-                labels: labels,
-                datasets: Object.values(datasets)
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { stacked: true },
-                    y: { stacked: true, beginAtZero: true }
-                }
-            }
-        });
-    }
-
-    function getRandomColor() {
-        const letters = \\'0123456789ABCDEF\\';
-        let color = \\'#\\';
-        for (let i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
-    }
-
-    // Existing toggleKB function, ensure it\\'s still there
-    function toggleKB(id) {
-        const input = document.getElementById(id);
-        const btn = event.currentTarget;
-        if (input.inputMode === \\'numeric\\' || input.inputMode === \\'decimal\\') {
-            input.inputMode = \\'text\\';
-            btn.innerText = \\'123\\';
-            btn.style.background = \\'var(--primary)\\';
-            btn.style.color = \\'#fff\\';
-        } else {
-            input.inputMode = id.includes(\\'qtd\\') ? \\'decimal\\' : \\'numeric\\';
-            btn.innerText = \\'Abc\\';
-            btn.style.background = \\'var(--glass)\\';
-            btn.style.color = \\'var(--text-secondary)\\';
-        }
-        input.focus();
-    }
-
-    async function carregarDadosDashboardMovimentacoes() {
-        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
-        if (!isAdmin) return; // Only load for admin
-
-        const snapshot = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-        const movimentacoes = snapshot.docs.map(doc => doc.data());
-
-        // 1. Paletes Movimentados por Dia
-        const paletesPorDia = {};
-        movimentacoes.forEach(mov => {
-            const data = mov.data;
-            paletesPorDia[data] = (paletesPorDia[data] || 0) + mov.quantidade;
-        });
-        renderChartPaletesPorDia(paletesPorDia);
-
-        // 2. Paletes Movimentados por Mês (Acumulado)
-        const paletesPorMes = {};
-        movimentacoes.forEach(mov => {
-            const [dia, mes, ano] = mov.data.split(\'/\');
-            const mesAno = `${mes}/${ano}`;
-            paletesPorMes[mesAno] = (paletesPorMes[mesAno] || 0) + mov.quantidade;
-        });
-        renderChartPaletesPorMes(paletesPorMes);
-
-        // 3. Materiais Mais Movimentados
-        const materiaisMovimentados = {};
-        movimentacoes.forEach(mov => {
-            const materialKey = `${mov.material} - ${mov.desc}`;
-            materiaisMovimentados[materialKey] = (materiaisMovimentados[materialKey] || 0) + mov.quantidade;
-        });
-        renderRankingMateriais(materiaisMovimentados);
-
-        // 4. Colaborador que Mais Movimentou
-        const colaboradoresMovimentacoes = {};
-        movimentacoes.forEach(mov => {
-            colaboradoresMovimentacoes[mov.login] = (colaboradoresMovimentacoes[mov.login] || 0) + mov.quantidade;
-        });
-        renderRankingColaboradores(colaboradoresMovimentacoes);
-
-        // 5. Movimentações por Setor (Mensal e Diário)
-        const setoresMensal = {};
-        const setoresDiario = {};
-        const baseMateriaisSnapshot = await db.collection("base_materiais").get();
-        const baseMateriais = {};
-        baseMateriaisSnapshot.docs.forEach(doc => {
-            baseMateriais[doc.id] = doc.data();
-        });
-
-        movimentacoes.forEach(mov => {
-            const materialInfo = baseMateriais[mov.material];
-            if (materialInfo && materialInfo.categoria) {
-                const [dia, mes, ano] = mov.data.split(\'/\');
-                const mesAno = `${mes}/${ano}`;
-
-                setoresMensal[mesAno] = setoresMensal[mesAno] || {};
-                setoresMensal[mesAno][materialInfo.categoria] = (setoresMensal[mesAno][materialInfo.categoria] || 0) + mov.quantidade;
-
-                setoresDiario[mov.data] = setoresDiario[mov.data] || {};
-                setoresDiario[mov.data][materialInfo.categoria] = (setoresDiario[mov.data][materialInfo.categoria] || 0) + mov.quantidade;
-            }
-        });
-        renderChartSetorMensal(setoresMensal);
-        renderChartSetorDiario(setoresDiario);
-    }
-
-    function renderChartPaletesPorDia(data) {
-        const labels = Object.keys(data).sort();
-        const values = labels.map(label => data[label]);
-        const ctx = document.getElementById(\'chart-paletes-dia\').getContext(\'2d\');
-        new Chart(ctx, {
-            type: \'bar\',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: \'Paletes Movimentados\',
-                    data: values,
-                    backgroundColor: \'rgba(99, 102, 241, 0.5)\',
-                    borderColor: \'rgba(99, 102, 241, 1)\',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-        // Render table
-        let tableHtml = \'<table class="data-table-styled"><thead><tr><th>Dia</th><th>Quantidade de Paletes</th></tr></thead><tbody>\';
-        labels.forEach(label => {
-            tableHtml += `<tr><td>${label}</td><td>${data[label]}</td></tr>`;
-        });
-        tableHtml += \'</tbody></table>\';
-        document.getElementById(\'table-paletes-dia\').innerHTML = tableHtml;
-    }
-
-    function renderChartPaletesPorMes(data) {
-        const labels = Object.keys(data).sort();
-        const values = labels.map(label => data[label]);
-        const ctx = document.getElementById(\'chart-paletes-mes\').getContext(\'2d\');
-        new Chart(ctx, {
-            type: \'line\',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: \'Paletes Acumulados\',
-                    data: values,
-                    backgroundColor: \'rgba(255, 62, 62, 0.5)\',
-                    borderColor: \'rgba(255, 62, 62, 1)\',
-                    borderWidth: 1,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-        // Render table
-        let tableHtml = \'<table class="data-table-styled"><thead><tr><th>Mês/Ano</th><th>Quantidade Acumulada</th></tr></thead><tbody>\';
-        labels.forEach(label => {
-            tableHtml += `<tr><td>${label}</td><td>${data[label]}</td></tr>`;
-        });
-        tableHtml += \'</tbody></table>\';
-        document.getElementById(\'table-paletes-mes\').innerHTML = tableHtml;
-    }
-
-    function renderRankingMateriais(data) {
-        const rankingList = document.getElementById(\'ranking-materiais-mov\');
-        let html = \'\';
-        Object.entries(data)
-            .sort(([, a], [, b]) => b - a)
-            .forEach(([material, qtd]) => {
-                html += `<div class="ranking-item">
-                            <div class="ranking-avatar">📦</div>
-                            <div>
-                                <div style="font-weight: 700;">${material}</div>
-                            </div>
-                            <div class="ranking-value">${qtd}</div>
-                        </div>`;
-            });
-        rankingList.innerHTML = html;
-    }
-
-    function renderRankingColaboradores(data) {
-        const rankingList = document.getElementById(\'ranking-colaboradores\');
-        let html = \'\';
-        Object.entries(data)
-            .sort(([, a], [, b]) => b - a)
-            .forEach(([colaborador, qtd]) => {
-                html += `<div class="ranking-item">
-                            <div class="ranking-avatar">👨‍🏭</div>
-                            <div>
-                                <div style="font-weight: 700;">${colaborador}</div>
-                            </div>
-                            <div class="ranking-value">${qtd}</div>
-                        </div>`;
-            });
-        rankingList.innerHTML = html;
-    }
-
-    function renderChartSetorMensal(data) {
-        const labels = Object.keys(data).sort();
-        const datasets = {};
-        labels.forEach(mesAno => {
-            for (const setor in data[mesAno]) {
-                datasets[setor] = datasets[setor] || { label: setor, data: [], backgroundColor: getRandomColor(), borderWidth: 1 };
-            }
-        });
-
-        labels.forEach(mesAno => {
-            for (const setor in datasets) {
-                datasets[setor].data.push(data[mesAno][setor] || 0);
-            }
-        });
-
-        const ctx = document.getElementById(\'chart-setor-mensal\').getContext(\'2d\');
-        new Chart(ctx, {
-            type: \'bar\',
-            data: {
-                labels: labels,
-                datasets: Object.values(datasets)
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { stacked: true },
-                    y: { stacked: true, beginAtZero: true }
-                }
-            }
-        });
-    }
-
-    function renderChartSetorDiario(data) {
-        const labels = Object.keys(data).sort();
-        const datasets = {};
-        labels.forEach(dia => {
-            for (const setor in data[dia]) {
-                datasets[setor] = datasets[setor] || { label: setor, data: [], backgroundColor: getRandomColor(), borderWidth: 1 };
-            }
-        });
-
-        labels.forEach(dia => {
-            for (const setor in datasets) {
-                datasets[setor].data.push(data[dia][setor] || 0);
-            }
-        });
-
-        const ctx = document.getElementById(\'chart-setor-diario\').getContext(\'2d\');
-        new Chart(ctx, {
-            type: \'bar\',
-            data: {
-                labels: labels,
-                datasets: Object.values(datasets)
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { stacked: true },
-                    y: { stacked: true, beginAtZero: true }
-                }
-            }
-        });
-    }
-
-    function getRandomColor() {
-        const letters = \'0123456789ABCDEF\';
-        let color = \'#\';
-        for (let i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
-    }
-
-    // Existing toggleKB function, ensure it\'s still there
-    function toggleKB(id) {
-        const input = document.getElementById(id);
-        const btn = event.currentTarget;
-        if (input.inputMode === \'numeric\' || input.inputMode === \'decimal\') {
-            input.inputMode = \'text\';
-            btn.innerText = \'123\';
-            btn.style.background = \'var(--primary)\';
-            btn.style.color = \'#fff\';
-        } else {
-            input.inputMode = id.includes(\'qtd\') ? \'decimal\' : \'numeric\';
-            btn.innerText = \'Abc\';
-            btn.style.background = \'var(--glass)\';
-            btn.style.color = \'var(--text-secondary)\';
-        }
-        input.focus();
-    }
-
-    window.onload = () => { const session = localStorage.getItem(\'wms_session\'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
+    window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
 </script>
 </body>
 </html>
