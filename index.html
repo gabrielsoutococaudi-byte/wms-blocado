@@ -18,7 +18,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    
+   
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
     <style>
@@ -66,6 +66,23 @@
         }
         .glass-card:hover { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); }
 
+        /* Estilização Moderna Avançada para os Fundos dos Gráficos */
+        .chart-box-modern {
+            padding: 28px;
+            position: relative;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.01) 0%, rgba(255, 255, 255, 0.03) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+        }
+        .chart-box-modern:hover {
+            border-color: rgba(0, 242, 255, 0.3);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 242, 255, 0.05);
+        }
+
         #network-status { display: none; background: var(--critico); color: #000; text-align: center; padding: 8px; font-size: 10px; font-weight: 900; position: sticky; top: 0; z-index: 2000; text-transform: uppercase; letter-spacing: 2px; }
         
         .sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100dvh; background: rgba(5, 5, 5, 0.98); backdrop-filter: blur(20px); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1500; padding-top: calc(60px + env(safe-area-inset-top)); border-right: 1px solid var(--glass-border); }
@@ -88,15 +105,30 @@
         .dashboard-fullrow { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 24px; }
         @media (max-width: 900px) { .dashboard-row { grid-template-columns: 1fr; } }
 
-        .chart-box { padding: 28px; position: relative; }
-        .chart-title { font-size: 12px; font-weight: 900; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); padding-right: 40px; }
-        .chart-title span { color: var(--primary); }
+        .chart-header-actions { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; position: relative; z-index: 15; width: 100%; justify-content: space-between; }
+        .chart-title { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px; }
+        .chart-title span { color: var(--primary); font-size: 10px; }
+        
+        /* Selectores de Filtro Internos nos Gráficos */
+        .chart-filter-select {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 6px 12px;
+            font-size: 11px;
+            border-radius: 8px;
+            font-weight: 700;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .chart-filter-select:hover {
+            border-color: var(--neon-blue);
+        }
 
-        /* Botão de Expansão */
-        .expand-btn { position: absolute; top: 22px; right: 22px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; font-weight: 700; transition: 0.2s; z-index: 10; }
+        .expand-btn { background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; font-weight: 700; transition: 0.2s; }
         .expand-btn:hover { background: var(--accent); border-color: var(--accent); }
 
-        /* Modal do Gráfico Expandido */
         .chart-fullscreen-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2,2,2,0.98); z-index: 5000; padding: 40px; flex-direction: column; }
         .chart-fullscreen-modal .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; }
         .chart-fullscreen-modal .canvas-container { flex-grow: 1; position: relative; width: 100%; height: 80%; display: flex; align-items: center; justify-content: center; }
@@ -250,39 +282,82 @@
             </div>
 
             <div class="dashboard-row">
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-fluxo-diario', '1. Movimentação de Paletes Diária')">Expandir ⛶</button>
-                    <div class="chart-title">📈 1. Movimentação de Paletes Diária <span>(Período Selecionado)</span></div>
+                <div class="chart-box-modern">
+                    <div class="chart-header-actions">
+                        <div class="chart-title">📈 Movimentação de Paletes Diária <span>(Período Selecionado)</span></div>
+                        <div style="display: flex; gap: 8px;">
+                            <select id="filter-fluxo-diario" class="chart-filter-select" onchange="reaplicarFiltroEspecifico('diario')">
+                                <option value="TODOS">Todos Fluxos</option>
+                                <option value="ENTRADA">Apenas Entradas</option>
+                                <option value="SAÍDA">Apenas Saídas</option>
+                                <option value="TRANSFERÊNCIA">Apenas Transf.</option>
+                            </select>
+                            <button class="expand-btn" onclick="expandirGrafico('chart-fluxo-diario', 'Movimentação de Paletes Diária')">⛶</button>
+                        </div>
+                    </div>
                     <canvas id="chart-fluxo-diario" style="max-height: 250px;"></canvas>
                 </div>
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-fluxo-mensal', '2. Histórico Mensal Acumulado')">Expandir ⛶</button>
-                    <div class="chart-title">🗓️ 2. Histórico Mensal Acumulado <span>(Giro Anual)</span></div>
+                <div class="chart-box-modern">
+                    <div class="chart-header-actions">
+                        <div class="chart-title">🗓️ Histórico Mensal Acumulado <span>(Giro Anual)</span></div>
+                        <div style="display: flex; gap: 8px;">
+                            <select id="filter-fluxo-mensal" class="chart-filter-select" onchange="reaplicarFiltroEspecifico('mensal')">
+                                <option value="TODOS">Todos Fluxos</option>
+                                <option value="ENTRADA">Entradas</option>
+                                <option value="SAÍDA">Saídas</option>
+                            </select>
+                            <button class="expand-btn" onclick="expandirGrafico('chart-fluxo-mensal', 'Histórico Mensal Acumulado')">⛶</button>
+                        </div>
+                    </div>
                     <canvas id="chart-fluxo-mensal" style="max-height: 250px;"></canvas>
                 </div>
             </div>
 
             <div class="dashboard-grid-3">
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-setor-mensal', '6.1 Setores Abastecidos (Visão Mensal)')">Expandir ⛶</button>
-                    <div class="chart-title">🧱 6.1 Setores Abastecidos (Visão Mensal)</div>
+                <div class="chart-box-modern">
+                    <div class="chart-header-actions">
+                        <div class="chart-title">🧱 Setores Abastecidos (Visão Mensal)</div>
+                        <div style="display: flex; gap: 8px;">
+                            <select id="filter-setor-mensal" class="chart-filter-select" onchange="reaplicarFiltroEspecifico('setorMensal')">
+                                <option value="TODOS">Todos Setores</option>
+                                <option value="MAIORES">Apenas > 50 PL</option>
+                            </select>
+                            <button class="expand-btn" onclick="expandirGrafico('chart-setor-mensal', 'Setores Abastecidos (Visão Mensal)')">⛶</button>
+                        </div>
+                    </div>
                     <canvas id="chart-setor-mensal" style="max-height: 230px;"></canvas>
                 </div>
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-setor-diario', '6.2 Setores Abastecidos (Visão Diária)')">Expandir ⛶</button>
-                    <div class="chart-title">⚡ 6.2 Setores Abastecidos (Visão Diária)</div>
+                <div class="chart-box-modern">
+                    <div class="chart-header-actions">
+                        <div class="chart-title">⚡ Setores Abastecidos (Visão Diária)</div>
+                        <div style="display: flex; gap: 8px;">
+                            <select id="filter-setor-diario" class="chart-filter-select" onchange="reaplicarFiltroEspecifico('setorDiario')">
+                                <option value="TODOS">Todos Setores</option>
+                                <option value="HOJE">Apenas Giro do Dia</option>
+                            </select>
+                            <button class="expand-btn" onclick="expandirGrafico('chart-setor-diario', 'Setores Abastecidos (Visão Diária)')">⛶</button>
+                        </div>
+                    </div>
                     <canvas id="chart-setor-diario" style="max-height: 230px;"></canvas>
                 </div>
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-destinos-saida', 'Destino dos Fluxos de Saída')">Expandir ⛶</button>
-                    <div class="chart-title">🔄 Destino das Cargas (Fluxos de Saída)</div>
+                <div class="chart-box-modern">
+                    <div class="chart-header-actions">
+                        <div class="chart-title">🔄 Destino das Cargas (Fluxos de Saída)</div>
+                        <div style="display: flex; gap: 8px;">
+                            <select id="filter-destinos-saida" class="chart-filter-select" onchange="reaplicarFiltroEspecifico('destinos')">
+                                <option value="TODOS">Todos Destinos</option>
+                                <option value="PRODUCAO">Cargas Operacionais</option>
+                            </select>
+                            <button class="expand-btn" onclick="expandirGrafico('chart-destinos-saida', 'Destino das Cargas (Fluxos de Saída)')">⛶</button>
+                        </div>
+                    </div>
                     <canvas id="chart-destinos-saida" style="max-height: 230px;"></canvas>
                 </div>
             </div>
 
             <div class="dashboard-row">
                 <div class="chart-box glass-card">
-                    <div class="chart-title">🏆 3. Materiais Mais Movimentados <span style="color:var(--accent);">Top 10</span></div>
+                    <div class="chart-title">🏆 Materiais Mais Movimentados <span style="color:var(--accent);">Top 10</span></div>
                     <div class="wms-table-container">
                         <table class="wms-table">
                             <thead>
@@ -293,7 +368,7 @@
                     </div>
                 </div>
                 <div class="chart-box glass-card">
-                    <div class="chart-title">👥 5. Produtividade por Colaborador <span style="color:var(--verde);">Ranking</span></div>
+                    <div class="chart-title">👥 Produtividade por Colaborador <span style="color:var(--verde);">Ranking</span></div>
                     <div class="wms-table-container">
                         <table class="wms-table">
                             <thead>
@@ -324,12 +399,14 @@
 
             <div class="dashboard-row">
                 <div class="chart-box glass-card">
-                    <div class="chart-title">⚡ 4. Monitor de Atividades em Tempo Real (Controle FEFO)</div>
+                    <div class="chart-title">⚡ Monitor de Atividades em Tempo Real (Controle FEFO)</div>
                     <div id="activity-feed" class="activity-feed"></div>
                 </div>
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-status', 'Saúde Geral do Inventário')">Expandir ⛶</button>
-                    <div class="chart-title">📊 Saúde Geral do Inventário</div>
+                <div class="chart-box-modern">
+                    <div class="chart-header-actions">
+                        <div class="chart-title">📊 Saúde Geral do Inventário</div>
+                        <button class="expand-btn" onclick="expandirGrafico('chart-status', 'Saúde Geral do Inventário')">⛶</button>
+                    </div>
                     <canvas id="chart-status" style="max-height: 250px;"></canvas>
                 </div>
             </div>
@@ -408,24 +485,14 @@
 </div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
-        authDomain: "sistema-fefo.firebaseapp.com",
-        projectId: "sistema-fefo",
-        storageBucket: "sistema-fefo.firebasestorage.app",
-        messagingSenderId: "755801777693",
-        appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
-    };
+    const firebaseConfig = { apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A", authDomain: "sistema-fefo.firebaseapp.com", projectId: "sistema-fefo", storageBucket: "sistema-fefo.firebasestorage.app", messagingSenderId: "755801777693", appId: "1:755801777693:web:a8a72a2fd483445a2d88f4" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
     db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
     const auth = firebase.auth();
-
-    // Registrar globalmente o plugin de rótulos do Chart.js
+    
     Chart.register(ChartDataLabels);
-
-    // Configuração de Estilos de Fonte Padrão para os Textos Internos dos Gráficos
     Chart.defaults.color = '#64748b';
     Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
     Chart.defaults.font.weight = '700';
@@ -439,134 +506,391 @@
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
 
-    // Instâncias Globais de Gráficos
     let chartDiarioInst = null;
     let chartMensalInst = null;
     let chartSetorMInst = null;
     let chartSetorDInst = null;
     let chartDestinosInst = null;
-    let chartStatus = null;
-    let chartExpandidoInst = null; // Instância temporária do modal de ampliação
+    let chartStatusInst = null;
+    let chartExpandidoInst = null;
 
     const SETORES_LISTA = ["ALCOÓLICO", "AVULSO", "LATA", "PET", "SUCO", "VIDRO"];
 
-    setInterval(() => { document.getElementById('current-time').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }, 1000);
+    setInterval(() => { 
+        document.getElementById('current-time').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); 
+    }, 1000);
+
     window.addEventListener('online', () => document.getElementById('network-status').style.display = 'none');
     window.addEventListener('offline', () => document.getElementById('network-status').style.display = 'block');
 
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
-    function logout() { auth.signOut().then(() => { localStorage.removeItem('wms_session'); location.reload(); }); }
-
-    async function tentarLogin() {
-        const mat = document.getElementById('login-mat').value.trim();
-        const senha = document.getElementById('login-senha').value.trim();
-        const email = mat.toLowerCase() + "@alb.com";
-        try {
-            await auth.signInWithEmailAndPassword(email, senha);
-            const doc = await db.collection("usuarios_wms").doc(email).get();
-            usuarioLogado = doc.exists ? { ...doc.data(), email } : { nome: mat, perfil: "OPERADOR", email };
-            localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
-            iniciarApp();
-        } catch (e) { alert("Credenciais incorretas."); }
-    }
-
-    function iniciarApp() {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-screen').style.display = 'block';
-        document.getElementById('user-name').innerText = usuarioLogado.nome;
-        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
-        document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
-        document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
-        
-        const hoje = new Date();
-        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
-        document.getElementById('filtro-dia-valor').value = hoje.toISOString().substring(0, 10);
-        document.getElementById('filtro-de-valor').value = hoje.toISOString().substring(0, 10);
-        document.getElementById('filtro-ate-valor').value = hoje.toISOString().substring(0, 10);
-
-        conectarFirebase();
-        carregarBaseMateriais();
-        navegar(isAdmin ? 'admin' : 'retirar');
-    }
+    function fecharMenu() { document.getElementById('sidebar').classList.remove('active'); }
 
     function navegar(tela) {
-        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
-        document.getElementById('view-' + tela).style.display = 'block';
-        document.getElementById('sidebar').classList.remove('active');
-        if(tela === 'admin') carregarDadosDashboard();
+        fecharMenu();
+        document.getElementById('view-admin').style.display = tela === 'admin' ? 'block' : 'none';
+        document.getElementById('view-retirar').style.display = tela === 'retirar' ? 'block' : 'none';
+        document.getElementById('view-entrada_bloco').style.display = tela === 'entrada_bloco' ? 'block' : 'none';
+        document.getElementById('view-abertura_blocado').style.display = tela === 'abertura_blocado' ? 'block' : 'none';
+        if(tela === 'admin') { setTimeout(() => { renderizarTodosGraficos(); }, 150); }
     }
 
-    function navegarComFiltro(tipo) {
-        navegar('retirar');
-        const input = document.getElementById('search-input');
-        input.value = tipo === 'critico' ? '60' : (tipo === 'retido' ? '30' : '');
-        renderizarEstoque();
+    // Lógica inteligente para reaplicar filtros individuais por gráfico
+    function reaplicarFiltroEspecifico(tipoGrafico) {
+        if (!todasMovimentacoes || todasMovimentacoes.length === 0) return;
+        renderizarTodosGraficos();
     }
 
-    function alternarCamposData() {
-        const tipo = document.getElementById('filtro-tipo-tempo').value;
-        document.getElementById('container-filtro-mes').style.display = tipo === 'mes' ? 'block' : 'none';
-        document.getElementById('container-filtro-dia').style.display = tipo === 'dia' ? 'block' : 'none';
-        document.getElementById('container-filtro-de').style.display = tipo === 'periodo' ? 'block' : 'none';
-        document.getElementById('container-filtro-ate').style.display = tipo === 'periodo' ? 'block' : 'none';
-        processarFiltragemHistorica();
+    function renderizarTodosGraficos() {
+        processarDadosGraficos();
     }
 
-    function conectarFirebase() {
-        db.collection("estoque_blocado").onSnapshot(snap => {
-            estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if(usuarioLogado?.perfil?.toUpperCase() === "ADMIN") { atualizarEstatisticas(); carregarDadosDashboard(); }
-            renderizarEstoque();
-        });
+    function processarDadosGraficos() {
+        // Agrupamento Diário
+        const fluxoDiarioData = {};
+        // Agrupamento Mensal
+        const fluxoMensalData = {};
+        // Setores Mensal e Diário
+        const setoresMData = {};
+        const setoresDData = {};
+        // Destinos de Saída
+        const destinosData = {};
+        // Operadores (Ranking)
+        const operadorData = {};
+        // Materiais Ranking
+        const materialData = {};
 
-        db.collection("movimentacoes_wms").orderBy("timestamp", "desc").onSnapshot(snap => {
-            todasMovimentacoes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            processarFiltragemHistorica();
-        });
-    }
+        // Iniciar Estruturas vazias para os setores padrão
+        SETORES_LISTA.forEach(s => { setoresMData[s] = 0; setoresDData[s] = 0; });
 
-    async function carregarBaseMateriais() {
-        const cache = localStorage.getItem('base_materiais');
-        if (cache) baseMateriais = JSON.parse(cache);
-        if (navigator.onLine) {
-            const snap = await db.collection("base_materiais").get();
-            if (!snap.empty) { 
-                baseMateriais = snap.docs.map(doc => doc.data()); 
-                localStorage.setItem('base_materiais', JSON.stringify(baseMateriais));
+        const filtroDiarioSelect = document.getElementById('filter-fluxo-diario').value;
+        const filtroMensalSelect = document.getElementById('filter-fluxo-mensal').value;
+        const filtroSetorMSelect = document.getElementById('filter-setor-mensal').value;
+        const filtroDestinoSelect = document.getElementById('filter-destinos-saida').value;
+
+        movimentacoesFiltradas.forEach(mov => {
+            const dataStr = mov.data || '';
+            const mesStr = dataStr.substring(0, 7); // YYYY-MM
+            const qtd = parseFloat(mov.qtd) || 0;
+            const tipo = (mov.tipo || '').toUpperCase();
+            const setor = (mov.categoria || mov.setor || '').toUpperCase();
+            const destino = (mov.destino || 'NÃO INFORMADO').toUpperCase();
+            const op = (mov.operador || 'SISTEMA').toUpperCase();
+            const matCod = mov.mat || 'S/C';
+            const matDesc = mov.desc || 'SEM DESCRIÇÃO';
+
+            // 1. Filtro Individual Movimentação Diária
+            if (filtroDiarioSelect === 'TODOS' || tipo.includes(filtroDiarioSelect)) {
+                fluxoDiarioData[dataStr] = (fluxoDiarioData[dataStr] || 0) + qtd;
             }
+
+            // 2. Filtro Individual Histórico Mensal
+            if (filtroMensalSelect === 'TODOS' || tipo.includes(filtroMensalSelect)) {
+                fluxoMensalData[mesStr] = (fluxoMensalData[mesStr] || 0) + qtd;
+            }
+
+            // Setores Mensal (Todo o Período selecionado agrupado por Setor)
+            if (SETORES_LISTA.includes(setor)) {
+                if (filtroSetorMSelect === 'TODOS' || (filtroSetorMSelect === 'MAIORES' && qtd > 0)) {
+                    setoresMData[setor] += qtd;
+                }
+            }
+
+            // Setores Diário (Giro específico do dia corrente se houver)
+            const hojeStr = new Date().toISOString().split('T')[0];
+            if (dataStr === hojeStr && SETORES_LISTA.includes(setor)) {
+                setoresDData[setor] += qtd;
+            }
+
+            // Destino Cargas (Saída)
+            if (tipo.includes('SAÍDA') || tipo.includes('RETIRADA')) {
+                if (filtroDestinoSelect === 'TODOS' || destino !== '') {
+                    destinosData[destino] = (destinosData[destino] || 0) + qtd;
+                }
+            }
+
+            // Coleta de Produtividade do Operador
+            // CORREÇÃO SOLICITADA: Não considerar movimentações do SISTEMA e do ADMIN no ranking
+            if (op !== 'SISTEMA' && op !== 'ADMIN' && op.trim() !== '') {
+                operadorData[op] = (operadorData[op] || 0) + qtd;
+            }
+
+            // Coleta Ranking Materiais
+            const chaveMat = `${matCod} - ${matDesc}`;
+            materialData[chaveMat] = (materialData[chaveMat] || 0) + qtd;
+        });
+
+        // Renderizadores dos Gráficos com Estilo Moderno
+        renderizarGraficoColunas('chart-fluxo-diario', fluxoDiarioData, 'Paletes', '#ff3e3e', chartDiarioInst, instance => chartDiarioInst = instance);
+        renderizarGraficoLinha('chart-fluxo-mensal', fluxoMensalData, 'Acumulado', '#6366f1', chartMensalInst, instance => chartMensalInst = instance);
+        renderizarGraficoColunas('chart-setor-mensal', setoresMData, 'Mensal (PL)', '#00f2ff', chartSetorMInst, instance => chartSetorMInst = instance);
+        renderizarGraficoColunas('chart-setor-diario', setoresDData, 'Diário (PL)', '#fbbf24', chartSetorDInst, instance => chartSetorDInst = instance);
+        renderizarGraficoColunas('chart-destinos-saida', destinosData, 'Fluxo de Saída', '#10b981', chartDestinosInst, instance => chartDestinosInst = instance);
+
+        // Renderizar Tabelas de Ranking
+        renderizarRankingOperadores(operadorData);
+        renderizarRankingMateriais(materialData);
+        renderizarSaudeInventario();
+    }
+
+    function renderizarGraficoColunas(canvasId, dicionarioDados, labelName, corHex, instanciaAnterior, setInstanciaGlobal) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        if (instanciaAnterior) instanciaAnterior.destroy();
+
+        const labels = Object.keys(dicionarioDados).sort();
+        const dados = labels.map(l => dicionarioDados[l]);
+
+        // Gradiente moderno para o preenchimento das colunas
+        const gradiente = ctx.createLinearGradient(0, 0, 0, 300);
+        gradiente.addColorStop(0, corHex);
+        gradiente.addColorStop(1, 'rgba(0,0,0,0.4)');
+
+        const novaInstancia = new Chart(ctx, {
+            type: 'bar', // Forçado Gráfico de Coluna conforme solicitado
+            data: {
+                labels: labels.map(l => l.includes('-') && l.length > 7 ? l.split('-')[2]+'/'+l.split('-')[1] : l),
+                datasets: [{
+                    label: labelName,
+                    data: dados,
+                    backgroundColor: gradiente,
+                    borderColor: corHex,
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        color: '#fff',
+                        font: { size: 10, weight: '800' },
+                        formatter: Math.round
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#64748b' } },
+                    y: { display: false, grid: { display: false } }
+                }
+            }
+        });
+        setInstanciaGlobal(novaInstancia);
+    }
+
+    function renderizarGraficoLinha(canvasId, dicionarioDados, labelName, corHex, instanciaAnterior, setInstanciaGlobal) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        if (instanciaAnterior) instanciaAnterior.destroy();
+
+        const labels = Object.keys(dicionarioDados).sort();
+        const dados = labels.map(l => dicionarioDados[l]);
+
+        const gradienteLinha = ctx.createLinearGradient(0, 0, 0, 300);
+        gradienteLinha.addColorStop(0, 'rgba(99, 102, 241, 0.2)');
+        gradienteLinha.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+        const novaInstancia = new Chart(ctx, {
+            type: 'line', // Mantido linha para o mensal acumulado histórico
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: labelName,
+                    data: dados,
+                    borderColor: corHex,
+                    backgroundColor: gradienteLinha,
+                    borderWidth: 4,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: corHex,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    datalabels: { anchor: 'end', align: 'top', color: '#f8fafc', font: { size: 10, weight: 'bold' } }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { display: false }
+                }
+            }
+        });
+        setInstanciaGlobal(novaInstancia);
+    }
+
+    function renderizarRankingOperadores(operadorData) {
+        const tbody = document.getElementById('table-ranking-operadores');
+        tbody.innerHTML = '';
+        
+        // Ordenar operadores por paletes movimentados decrescente
+        const ranking = Object.entries(operadorData).sort((a, b) => b[1] - a[1]);
+        
+        ranking.forEach(([operador, total]) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight:700; color:#fff;">👤 ${operador}</td>
+                <td style="font-weight:800; color:var(--verde); text-align:right;">${total.toFixed(1)} PL</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        if(ranking.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--text-secondary);">Nenhuma movimentação qualificada</td></tr>';
         }
     }
 
-    function atualizarEstatisticas() {
-        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
-        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length;
-        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
+    function renderizarRankingMateriais(materialData) {
+        const tbody = document.getElementById('table-ranking-materiais');
+        tbody.innerHTML = '';
+        const ranking = Object.entries(materialData).sort((a,b) => b[1] - a[1]).slice(0, 10);
+        ranking.forEach(([chave, total]) => {
+            const parts = chave.split(' - ');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span class="badge badge-ender">${parts[0]}</span></td>
+                <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${parts[1] || ''}</td>
+                <td style="font-weight:800; text-align:right; color:var(--accent);">${total.toFixed(1)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderizarSaudeInventario() {
+        const ctx = document.getElementById('chart-status').getContext('2d');
+        if (chartStatusInst) chartStatusInst.destroy();
+
+        let ok = 0, critico = 0, retido = 0;
+        estoqueCompleto.forEach(item => {
+            const q = parseFloat(item.qtd) || 0;
+            const d = parseInt(item.dias) || 0;
+            if (d > 60) ok += q;
+            else if (d >= 30) critico += q;
+            else retido += q;
+        });
+
+        chartStatusInst = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Regular (>60d)', 'Crítico (30-60d)', 'Retido (<30d)'],
+                datasets: [{
+                    data: [ok, critico, retido],
+                    backgroundColor: ['#10b981', '#fbbf24', '#f87171'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { position: 'bottom', labels: { color: '#fff', font: { size: 10 } } },
+                    datalabels: { color: '#000', font: { weight: '900', size: 11 }, formatter: val => val > 0 ? Math.round(val) + ' PL' : '' }
+                }
+            }
+        });
+    }
+
+    // Função de Expansão e Ampliação de Gráficos em Tela Cheia
+    function expandirGrafico(idCanvasOriginal, titulo) {
+        document.getElementById('modal-grafico-titulo').innerText = titulo;
+        document.getElementById('modal-grafico-expandido').style.display = 'flex';
+        
+        const ctxOriginal = document.getElementById(idCanvasOriginal);
+        const chartOriginal = Chart.getChart(ctxOriginal);
+        const ctxExpanded = document.getElementById('canvas-expanded-render').getContext('2d');
+        
+        if (chartExpandidoInst) chartExpandidoInst.destroy();
+        
+        chartExpandidoInst = new Chart(ctxExpanded, {
+            type: chartOriginal.config.type,
+            data: JSON.parse(JSON.stringify(chartOriginal.config.data)),
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, labels: { color: '#fff', font: { size: 14 } } },
+                    datalabels: { color: '#fff', font: { size: 13, weight: '900' } }
+                },
+                scales: chartOriginal.config.options.scales
+            }
+        });
+        
+        // Corrigir referências de cores perdidas na serialização JSON do clone
+        chartExpandidoInst.data.datasets[0].backgroundColor = chartOriginal.data.datasets[0].backgroundColor;
+        chartExpandidoInst.data.datasets[0].borderColor = chartOriginal.data.datasets[0].borderColor;
+        chartExpandidoInst.update();
+    }
+
+    function fecharGraficoExpandido() {
+        document.getElementById('modal-grafico-expandido').style.display = 'none';
+        if (chartExpandidoInst) chartExpandidoInst.destroy();
+    }
+
+    // Sincronização e Busca de Dados do Firebase Firestore
+    async function carregarTodosDadosFirebase() {
+        // Escuta Estoque Atual
+        db.collection("estoque_blocado").onSnapshot(snap => {
+            estoqueCompleto = [];
+            let total = 0, crit = 0, ret = 0;
+            snap.forEach(doc => {
+                const item = doc.data();
+                item.id = doc.id;
+                estoqueCompleto.push(item);
+                const q = parseFloat(item.qtd) || 0;
+                const d = parseInt(item.dias) || 0;
+                total += q;
+                if (d < 30) ret += q;
+                else if (d <= 60) crit += q;
+            });
+            document.getElementById('st-total').innerText = Math.round(total);
+            document.getElementById('st-critico').innerText = Math.round(crit);
+            document.getElementById('st-retido').innerText = Math.round(ret);
+            renderizarEstoque();
+            if(document.getElementById('view-admin').style.display === 'block') { renderSaudeInventario(); }
+        });
+
+        // Histórico de Movimentações (Logs Gerais)
+        db.collection("historico_fefo").orderBy("timestamp", "desc").limit(2500).onSnapshot(snap => {
+            todasMovimentacoes = [];
+            let giroHoje = 0;
+            const hojeStr = new Date().toISOString().split('T')[0];
+            
+            snap.forEach(doc => {
+                const data = doc.data();
+                todasMovimentacoes.push(data);
+                if(data.data === hojeStr) { giroHoje += (parseFloat(data.qtd) || 0); }
+            });
+            
+            document.getElementById('st-mov').innerText = Math.round(giroHoje);
+            processarFiltragemHistorica();
+        });
+
+        // Carregar Base de Códigos de Materiais
+        db.collection("base_materiais").get().then(snap => {
+            baseMateriais = []; snap.forEach(doc => baseMateriais.push(doc.data()));
+        });
     }
 
     function processarFiltragemHistorica() {
-        if (todasMovimentacoes.length === 0) return;
-
         const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
-        const filtroMes = document.getElementById('filtro-mes-valor').value; 
-        const filtroDia = document.getElementById('filtro-dia-valor').value; 
-        const filtroDe = document.getElementById('filtro-de-valor').value;
-        const filtroAte = document.getElementById('filtro-ate-valor').value;
+        const mesVal = document.getElementById('filtro-mes-valor').value;
+        const diaVal = document.getElementById('filtro-dia-valor').value;
+        const deVal = document.getElementById('filtro-de-valor').value;
+        const ateVal = document.getElementById('filtro-ate-valor').value;
 
         movimentacoesFiltradas = todasMovimentacoes.filter(mov => {
             if (!mov.data) return false;
-            const partes = mov.data.split('/');
-            const dataMov = new Date(partes[2], partes[1] - 1, partes[0]);
-            
-            if (tipoTempo === 'mes' && filtroMes) {
-                const [ano, mes] = filtroMes.split('-');
-                return dataMov.getFullYear() === parseInt(ano) && (dataMov.getMonth() + 1) === parseInt(mes);
-            } else if (tipoTempo === 'dia' && filtroDia) {
-                const [ano, mes, dia] = filtroDia.split('-');
-                return dataMov.getFullYear() === parseInt(ano) && (dataMov.getMonth() + 1) === parseInt(mes) && dataMov.getDate() === parseInt(dia);
-            } else if (tipoTempo === 'periodo' && filtroDe && filtroAte) {
-                const dInit = new Date(filtroDe + "T00:00:00");
-                const dEnd = new Date(filtroAte + "T23:59:59");
-                return dataMov >= dInit && dataMov <= dEnd;
+            if (tipoTempo === 'mes' && mesVal) { return mov.data.startsWith(mesVal); }
+            if (tipoTempo === 'dia' && diaVal) { return mov.data === diaVal; }
+            if (tipoTempo === 'periodo') {
+                let s = true;
+                if(deVal) s = s && (mov.data >= deVal);
+                if(ateVal) s = s && (mov.data <= ateVal);
+                return s;
             }
             return true;
         });
@@ -574,522 +898,435 @@
         filtrarTabelasEDados();
     }
 
+    function alternarCamposData() {
+        const t = document.getElementById('filtro-tipo-tempo').value;
+        document.getElementById('container-filtro-mes').style.display = t === 'mes' ? 'block' : 'none';
+        document.getElementById('container-filtro-dia').style.display = t === 'dia' ? 'block' : 'none';
+        document.getElementById('container-filtro-de').style.display = t === 'periodo' ? 'block' : 'none';
+        document.getElementById('container-filtro-ate').style.display = t === 'periodo' ? 'block' : 'none';
+        processarFiltragemHistorica();
+    }
+
     function limparFiltrosHistoricos() {
-        document.getElementById('filtro-tipo-tempo').value = 'mes';
+        document.getElementById('filtro-mes-valor').value = '';
+        document.getElementById('filtro-dia-valor').value = '';
+        document.getElementById('filtro-de-valor').value = '';
+        document.getElementById('filtro-ate-valor').value = '';
         document.getElementById('filtro-material').value = '';
-        const hoje = new Date();
-        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
-        alternarCamposData();
+        processarFiltragemHistorica();
     }
 
     function filtrarTabelasEDados() {
-        const queryMat = document.getElementById('filtro-material').value.toLowerCase().trim();
-        
-        let dadosExibicao = movimentacoesFiltradas;
-        if (queryMat) {
-            dadosExibicao = movimentacoesFiltradas.filter(m => {
-                const materialCod = m.material ? m.material.toString().toLowerCase() : "";
-                const descMat = buscarDescricaoLocal(m.material).toLowerCase();
-                return materialCod.includes(queryMat) || descMat.includes(queryMat);
-            });
+        const busca = document.getElementById('filtro-material').value.toLowerCase().trim();
+        let logsExibidos = movimentacoesFiltradas;
+
+        if (busca !== '') {
+            logsExibidos = movimentacoesFiltradas.filter(m => 
+                (m.mat || '').toLowerCase().includes(busca) || 
+                (m.desc || '').toLowerCase().includes(busca) ||
+                (m.operador || '').toLowerCase().includes(busca)
+            );
         }
 
-        renderizarPaineisEGraticos(dadosExibicao);
-    }
-
-    function buscarDescricaoLocal(cod) {
-        const match = baseMateriais.find(m => m.mat.toString() === cod?.toString());
-        return match ? match.desc : "N/A";
-    }
-
-    function buscarSetorLocal(cod) {
-        const match = baseMateriais.find(m => m.mat.toString() === cod?.toString());
-        return match && match.categoria ? match.categoria.toUpperCase() : "AVULSO";
-    }
-
-    // COMANDO PARA EXPANDIR GRÁFICOS (MODAL FULLSCREEN)
-    function expandirGrafico(chartId, titulo) {
-        const modal = document.getElementById('modal-grafico-expandido');
-        document.getElementById('modal-grafico-titulo').innerText = titulo;
-        modal.style.display = 'flex';
-
-        // Captura a instância original do gráfico ativo
-        let graficoOriginal = null;
-        if (chartId === 'chart-fluxo-diario') graficoOriginal = chartDiarioInst;
-        if (chartId === 'chart-fluxo-mensal') graficoOriginal = chartMensalInst;
-        if (chartId === 'chart-setor-mensal') graficoOriginal = chartSetorMInst;
-        if (chartId === 'chart-setor-diario') graficoOriginal = chartSetorDInst;
-        if (chartId === 'chart-destinos-saida') graficoOriginal = chartDestinosInst;
-        if (chartId === 'chart-status') graficoOriginal = chartStatus;
-
-        if (!graficoOriginal) return;
-
-        const ctxExpanded = document.getElementById('canvas-expanded-render').getContext('2d');
-        if (chartExpandidoInst) chartExpandidoInst.destroy();
-
-        // Clona a estrutura do gráfico com escala e fontes maiores para exibição em TV
-        chartExpandidoInst = new Chart(ctxExpanded, {
-            type: graficoOriginal.config.type,
-            data: JSON.parse(JSON.stringify(graficoOriginal.config.data)),
-            options: {
-                ...graficoOriginal.config.options,
-                maintainAspectRatio: false,
-                plugins: {
-                    ...graficoOriginal.config.options.plugins,
-                    legend: {
-                        display: graficoOriginal.config.options.plugins?.legend?.display !== false,
-                        position: 'bottom',
-                        labels: { color: '#fff', font: { size: 16, weight: '800' } }
-                    },
-                    datalabels: {
-                        color: '#fff',
-                        font: { size: 16, weight: '900' },
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        borderRadius: 6,
-                        padding: 8,
-                        formatter: (val, ctx) => {
-                            let label = ctx.chart.data.labels[ctx.dataIndex] || '';
-                            return graficoOriginal.config.type === 'doughnut' ? `${label}: ${val}` : val;
-                        }
-                    }
-                }
-            }
+        // Popular Tabela Detalhada do Histórico
+        const tbody = document.getElementById('table-historico-consolidated') || document.getElementById('table-historico-consolidado');
+        tbody.innerHTML = '';
+        logsExibidos.slice(0, 150).forEach(m => {
+            const tr = document.createElement('tr');
+            let cFluxo = m.tipo === 'ENTRADA' ? 'var(--verde)' : m.tipo === 'SAÍDA' ? 'var(--retido)' : 'var(--accent)';
+            tr.innerHTML = `
+                <td>${m.data.split('-').reverse().join('/')}</td>
+                <td>${m.hora || '00:00'}</td>
+                <td style="color:${cFluxo}; font-weight:900;">${m.tipo}</td>
+                <td><span class="badge badge-ender">${m.mat}</span></td>
+                <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${m.desc}</td>
+                <td>${m.ender || m.setor || 'BLOCO'}</td>
+                <td style="font-weight:800;">${m.qtd}</td>
+                <td>${m.operador || 'SISTEMA'}</td>
+            `;
+            tbody.appendChild(tr);
         });
-    }
 
-    function fecharGraficoExpandido() {
-        document.getElementById('modal-grafico-expandido').style.display = 'none';
-        if (chartExpandidoInst) { chartExpandidoInst.destroy(); chartExpandidoInst = null; }
-    }
-
-    function renderizarPaineisEGraticos(dados) {
-        const hojeStr = new Date().toLocaleDateString('pt-BR');
-        let movHojeContagem = todasMovimentacoes.filter(m => m.data === hojeStr).length;
-        document.getElementById('st-mov').innerText = movHojeContagem;
-
-        // FEED TEMPO REAL
+        // Popular Feed em Tempo Real
         const feed = document.getElementById('activity-feed');
         feed.innerHTML = '';
-        todasMovimentacoes.slice(0, 15).forEach(d => {
-            const loginLimpo = d.login ? d.login.split('@')[0].toUpperCase() : 'SISTEMA';
-            const tagCor = (d.quantidade && d.quantidade.toString().includes('+')) ? 'var(--verde)' : 'var(--primary)';
-            const desc = buscarDescricaoLocal(d.material);
-            const estCorrespondente = estoqueCompleto.find(e => e.mat === d.material && e.ender === d.endereco);
-            const validadeInfo = estCorrespondente ? estCorrespondente.valFrente : (d.validade || "Não Informada");
-
+        logsExibidos.slice(0, 20).forEach(m => {
             const item = document.createElement('div');
             item.className = 'activity-item';
+            let icon = m.tipo === 'ENTRADA' ? '📥' : m.tipo === 'SAÍDA' ? '📤' : '🔄';
             item.innerHTML = `
-                <div class="activity-icon-box" style="color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? '📥' : '📤'}</div>
+                <div class="activity-icon-box">${icon}</div>
                 <div class="activity-content">
-                    <span class="activity-tag" style="background: ${tagCor}20; color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? 'Entrada' : 'Saída'}</span>
-                    <br>Op: <b>${loginLimpo}</b> | Material: <b>${d.material} - ${desc}</b>
-                    <br>Endereço: <b>${d.endereco || 'N/A'}</b> | Vol: <b>${d.quantidade || '0'}</b>
-                    <span class="activity-time">Vencimento (FEFO): <span style="color:var(--critico); font-weight:700;">${validadeInfo}</span> às ${d.hora || '00:00'} - ${d.data}</span>
-                </div>`;
+                    <b>${m.operador || 'OP'}</b> realizou ${m.tipo} de <b>${m.qtd} PL</b> de ${m.desc} (${m.mat}) no endereço ${m.ender || 'Bloco'}.
+                    <span class="activity-time">📅 ${m.data.split('-').reverse().join('/')} às ${m.hora || '00:00'}</span>
+                </div>
+            `;
             feed.appendChild(item);
         });
 
-        // ESTRUTURAÇÃO DE DADOS DOS GRAFICOS
-        const volumeDiario = {};
-        const volumeMensal = {};
-        const rankingMateriais = {};
-        const rankingOperadores = {};
-        
-        const setorMensalAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
-        const setorDiarioAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
-        
-        // Objeto para controle do novo gráfico de saídas solicitadas
-        const fluxosDestinoAcumulado = { "TRANSFERENCIA": 0, "APANHA": 0, "SEPARAÇÃO": 0 };
-
-        const dataAtualObjeto = new Date();
-        const anoAtualStr = dataAtualObjeto.getFullYear().toString();
-
-        dados.forEach(mov => {
-            const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
-            const dataMov = mov.data; 
-            if (!dataMov) return;
-
-            const partes = dataMov.split('/');
-
-            volumeDiario[dataMov] = (volumeDiario[dataMov] || 0) + qtdAbsoluta;
-            rankingMateriais[mov.material] = (rankingMateriais[mov.material] || 0) + qtdAbsoluta;
-            const operadorChave = mov.login ? mov.login.split('@')[0].toUpperCase() : "SISTEMA";
-            rankingOperadores[operadorChave] = (rankingOperadores[operadorChave] || 0) + qtdAbsoluta;
-
-            const setorMat = buscarSetorLocal(mov.material);
-            if (setorMensalAcumulado[setorMat] !== undefined) {
-                setorMensalAcumulado[setorMat] += qtdAbsoluta;
-            }
-
-            // Alimentação do Novo Gráfico de Destinos de Carga (Apenas Fluxos de Saída)
-            const fluxoNormalizado = mov.fluxo ? mov.fluxo.toUpperCase().trim() : "";
-            if (fluxosDestinoAcumulado[fluxoNormalizado] !== undefined) {
-                fluxosDestinoAcumulado[fluxoNormalizado] += qtdAbsoluta;
-            }
-
-            const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
-            const filtroDiaSel = document.getElementById('filtro-dia-valor').value;
-            let diaAlvoStr = new Date().toISOString().substring(0,10);
-            if(tipoTempo === 'dia' && filtroDiaSel) diaAlvoStr = filtroDiaSel;
-            
-            const [aA, mM, dD] = diaAlvoStr.split('-');
-            const dataFormatadaComp = `${dD}/${mM}/${aA}`;
-
-            if(dataMov === dataFormatadaComp) {
-                if (setorDiarioAcumulado[setorMat] !== undefined) {
-                    setorDiarioAcumulado[setorMat] += qtdAbsoluta;
-                }
-            }
-        });
-
-        todasMovimentacoes.forEach(mov => {
-            if(!mov.data) return;
-            const partes = mov.data.split('/');
-            if(partes[2] === anoAtualStr) {
-                const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
-                volumeMensal[partes[1]] = (volumeMensal[partes[1]] || 0) + qtdAbsoluta;
-            }
-        });
-
-        // CONFIGURAÇÃO DOS PLUGINS DE LABELS VISUAIS DIRETOS NOS GRÁFICOS
-        const padraoDatalabelsBarra = {
-            anchor: 'end',
-            align: 'top',
-            color: '#fff',
-            font: { weight: '800', size: 10 },
-            formatter: (val) => val > 0 ? val : ''
-        };
-
-        const padraoDatalabelsRosca = {
-            color: '#fff',
-            font: { weight: '900', size: 11 },
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            borderRadius: 4,
-            padding: 4,
-            formatter: (val, ctx) => {
-                return val > 0 ? `${ctx.chart.data.labels[ctx.dataIndex]}\n${val} PL` : '';
-            }
-        };
-
-        // 1. RENDER GRÁFICO DIÁRIO
-        const labelsDias = Object.keys(volumeDiario).sort((a, b) => new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-')));
-        const ctxD = document.getElementById('chart-fluxo-diario').getContext('2d');
-        if (chartDiarioInst) chartDiarioInst.destroy();
-        chartDiarioInst = new Chart(ctxD, {
-            type: 'bar',
-            data: { labels: labelsDias, datasets: [{ label: 'Paletes', data: labelsDias.map(lbl => volumeDiario[lbl]), backgroundColor: '#6366f1' }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra }, scales: { y: { grid: { color: 'rgba(255,255,255,0.03)' } } } }
-        });
-
-        // 2. RENDER GRÁFICO MENSAL ACUMULADO
-        const mesesLabelsReduzidos = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-        const ctxM = document.getElementById('chart-fluxo-mensal').getContext('2d');
-        if (chartMensalInst) chartMensalInst.destroy();
-        chartMensalInst = new Chart(ctxM, {
-            type: 'line',
-            data: { labels: mesesLabelsReduzidos, datasets: [{ data: ["01","02","03","04","05","06","07","08","09","10","11","12"].map(m => volumeMensal[m] || 0), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', fill: true, tension: 0.2 }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: { ...padraoDatalabelsBarra, align: 'right' } } }
-        });
-
-        // 6.1 GRÁFICO SETOR MENSAL
-        const ctxSM = document.getElementById('chart-setor-mensal').getContext('2d');
-        if (chartSetorMInst) chartSetorMInst.destroy();
-        chartSetorMInst = new Chart(ctxSM, {
-            type: 'doughnut',
-            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorMensalAcumulado[s]), backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'] }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } }
-        });
-
-        // 6.2 GRÁFICO SETOR DIÁRIO
-        const ctxSD = document.getElementById('chart-setor-diario').getContext('2d');
-        if (chartSetorDInst) chartSetorDInst.destroy();
-        chartSetorDInst = new Chart(ctxSD, {
-            type: 'bar',
-            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorDiarioAcumulado[s]), backgroundColor: 'rgba(255, 62, 62, 0.4)', borderColor: '#ff3e3e', borderWidth: 1 }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra } }
-        });
-
-        // NOVO GRÁFICO: DESTINO DAS CARGAS (TRANSFERENCIA, APANHA, SEPARAÇÃO)
-        const ctxDest = document.getElementById('chart-destinos-saida').getContext('2d');
-        if (chartDestinosInst) chartDestinosInst.destroy();
-        chartDestinosInst = new Chart(ctxDest, {
-            type: 'doughnut',
-            data: { 
-                labels: ["TRANSFERENCIA", "APANHA", "SEPARAÇÃO"], 
-                datasets: [{ 
-                    data: [fluxosDestinoAcumulado["TRANSFERENCIA"], fluxosDestinoAcumulado["APANHA"], fluxosDestinoAcumulado["SEPARAÇÃO"]], 
-                    backgroundColor: ['#00f2ff', '#fbbf24', '#6366f1'] 
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                plugins: { 
-                    legend: { display: false }, 
-                    datalabels: padraoDatalabelsRosca 
-                } 
-            }
-        });
-
-        // GRÁFICO DE SAÚDE INVENTÁRIO
-        const ctxS = document.getElementById('chart-status').getContext('2d');
-        if (chartStatus) chartStatus.destroy();
-        chartStatus = new Chart(ctxS, { 
-            type: 'doughnut', 
-            data: { labels: ['Boa', 'Crítica', 'Retida'], datasets: [{ data: [estoqueCompleto.filter(i => i.dias > 60).length, estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length, estoqueCompleto.filter(i => i.dias <= 30).length], backgroundColor: ['#10b981', '#fbbf24', '#f87171'] }] }, 
-            options: { responsive: true, cutout: '75%', plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } } 
-        });
-
-        // RENDERIZAR TABELAS OPERACIONAIS
-        const tbodyHist = document.getElementById('table-historico-consolidado');
-        tbodyHist.innerHTML = '';
-        dados.forEach(m => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
-            tbodyHist.appendChild(tr);
-        });
-
-        const tbodyMat = document.getElementById('table-ranking-materiais');
-        tbodyMat.innerHTML = '';
-        Object.entries(rankingMateriais).sort((a,b) => b[1] - a[1]).slice(0, 10).forEach(item => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><b>${item[0]}</b></td><td>${buscarDescricaoLocal(item[0])}</td><td><span style="color:var(--primary); font-weight:900;">${item[1]} PL</span></td>`;
-            tbodyMat.appendChild(tr);
-        });
-
-        const tbodyOp = document.getElementById('table-ranking-operadores');
-        tbodyOp.innerHTML = '';
-        Object.entries(rankingOperadores).sort((a,b) => b[1] - a[1]).forEach((op, index) => {
-            const medalha = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${medalha}<b>${op[0]}</b></td><td><span style="color:var(--verde); font-weight:800;">${op[1]} Paletes</span></td>`;
-            tbodyOp.appendChild(tr);
-        });
+        renderizarTodosGraficos();
     }
 
-    function carregarDadosDashboard() { processarFiltragemHistorica(); }
+    // Funcionalidades de Autocomplete e Controle de Interface de Teclado
+    function toggleKB(id) {
+        const input = document.getElementById(id);
+        if (input.inputMode === 'numeric' || input.inputMode === 'decimal') {
+            input.inputMode = 'text';
+        } else {
+            input.inputMode = id.includes('qtd') ? 'decimal' : 'numeric';
+        }
+        input.focus();
+    }
+
+    function puxarDescricaoObrigatoria(val, idDesc, idList) {
+        const listContainer = document.getElementById(idList);
+        listContainer.innerHTML = '';
+        if(!val) { document.getElementById(idDesc).value = ''; return; }
+        
+        const sugeridos = baseMateriais.filter(m => String(m.mat).startsWith(val));
+        if(sugeridos.length > 0) {
+            document.getElementById(idDesc).value = sugeridos[0]['Descrição'] || sugeridos[0].desc || '';
+            sugeridos.slice(0,5).forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                div.innerText = `${s.mat} - ${s['Descrição'] || s.desc}`;
+                div.onclick = () => {
+                    document.getElementById(idList).previousElementSibling.querySelector('input').value = s.mat;
+                    document.getElementById(idDesc).value = s['Descrição'] || s.desc;
+                    listContainer.innerHTML = '';
+                };
+                listContainer.appendChild(div);
+            });
+        }
+    }
+
+    function calcularDias(dataVenc, idLabel) {
+        if(!dataVenc) return;
+        const diffTime = new Date(dataVenc) - new Date();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        diasCalculados = diffDays;
+        const lbl = document.getElementById(idLabel);
+        lbl.innerText = `Vida útil FEFO: ${diffDays} Dias Restantes`;
+        lbl.style.color = diffDays < 30 ? 'var(--retido)' : diffDays <= 60 ? 'var(--critico)' : 'var(--verde)';
+    }
+
+    // Regras de Negócio: Movimentações do Sistema (Entrada/Saída/Transferência)
+    async function salvarEntradaBloco() {
+        const origem = document.getElementById('eb-origem').value;
+        const ender = document.getElementById('eb-ender').value.trim().toUpperCase();
+        const mat = document.getElementById('eb-mat').value.trim();
+        const desc = document.getElementById('eb-desc').value;
+        const qtd = parseFloat(document.getElementById('eb-qtd').value);
+        const venc = document.getElementById('eb-venc').value;
+
+        if(!ender || !mat || isNaN(qtd) || !venc) { alert("Preencha todos os campos obrigatórios!"); return; }
+
+        const quebras = ender.split('-');
+        const rua = partsEnd(quebras[0]);
+        let categoria = "AVULSO";
+        const matEncontrado = baseMateriais.find(m => String(m.mat) === String(mat));
+        if (matEncontrado) { categoria = matEncontrado['Categoria'] || 'AVULSO'; }
+
+        const t = new Date();
+        const nLog = {
+            data: t.toISOString().split('T')[0],
+            hora: t.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+            tipo: "ENTRADA",
+            mat, desc, qtd, ender, categoria,
+            operador: usuarioLogado ? usuarioLogado.nome : "SISTEMA",
+            origem: origem, destino: "BLOCO",
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        const idEstoque = `${ender}_${mat}`;
+        const refEstoque = db.collection("estoque_blocado").document(idEstoque);
+        
+        const docE = await refEstoque.get();
+        if(docE.exists) {
+            await refEstoque.update({ qtd: firebase.firestore.FieldValue.increment(qtd), dias: diasCalculados, vencimento: venc });
+        } else {
+            await refEstoque.set({ ender, mat, desc, qtd, vencimento: venc, dias: diasCalculados, categoria, rua });
+        }
+
+        await db.collection("historico_fefo").add(nLog);
+        alert("Entrada Registrada com Sucesso!");
+        document.getElementById('eb-ender').value = '';
+        document.getElementById('eb-mat').value = '';
+        document.getElementById('eb-desc').value = '';
+        document.getElementById('eb-qtd').value = '';
+        document.getElementById('eb-venc').value = '';
+    }
+
+    function partsEnd(txt) {
+        if(!txt) return 0;
+        let num = txt.replace(/[^0-9]/g, '');
+        return parseInt(num) || 0;
+    }
 
     function renderizarEstoque() {
-        const termo = document.getElementById('search-input').value.toLowerCase().trim();
-        const lista = document.getElementById('lista-estoque');
-        lista.innerHTML = '';
-        if (!termo) return;
-        const isAdmin = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
-        let filtrados = estoqueCompleto.filter(i => {
-            if (parseInt(i.qtd) <= 0) return false;
-            if (termo === '60') return i.dias > 30 && i.dias <= 60;
-            if (termo === '30') return i.dias <= 30;
-            const mat = i.mat?.toString().toLowerCase() || "";
-            const ender = i.ender?.toString().toLowerCase() || "";
-            return /^\d+$/.test(termo) ? mat === termo : ender.includes(termo);
-        });
-        if (!isAdmin) filtrados = filtrados.filter(item => item.dias > 30);
-        if (filtrados.length === 0) return;
-        filtrados.sort((a, b) => (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0));
-        if (/^\d+$/.test(termo) && termo !== '60' && termo !== '30') filtrados = [filtrados[0]];
-        filtrados.forEach(item => {
-            let status = item.dias <= 30 ? "RETIDO" : (item.dias <= 60 ? "CRÍTICO" : "DATA BOA");
-            let cor = item.dias <= 30 ? "var(--retido)" : (item.dias <= 60 ? "var(--critico)" : "var(--verde)");
+        const busca = document.getElementById('search-input').value.toLowerCase().trim();
+        const container = document.getElementById('lista-estoque');
+        container.innerHTML = '';
+
+        let filtrado = estoqueCompleto;
+        if(busca) {
+            filtrado = estoqueCompleto.filter(i => i.mat.toLowerCase().includes(busca) || i.ender.toLowerCase().includes(busca) || i.desc.toLowerCase().includes(busca));
+        }
+
+        filtrado.sort((a,b) => a.dias - b.dias).forEach(i => {
+            if(i.qtd <= 0) return;
             const card = document.createElement('div');
-            card.className = `item-card`;
-            card.style.borderLeft = `8px solid ${cor}`;
-            card.innerHTML = `<div><span class="badge badge-ender">${item.ender}</span><span class="badge" style="background: ${cor}20; color: ${cor}; border: 1px solid ${cor}40; margin-left: 5px;">${status}</span><div style="font-weight:900; font-size:24px; margin-top:15px; letter-spacing:-1px; color: #fff;">${item.mat}</div><div style="font-size:12px; color:var(--text-secondary); margin-top:5px; font-weight:600;">${item.desc || "---"}</div><div style="font-size:10px; margin-top:15px; color: var(--text-secondary); font-weight: 800;">VALIDADE: <b style="color: ${cor}">${item.dias} DIAS</b></div></div><div style="text-align: right;"><div style="font-size:32px; font-weight:900; margin-bottom:15px; color: #fff;">${item.qtd}<span style="font-size:12px; color:var(--text-secondary); margin-left:5px;">PL</span></div><button class="btn-action" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button></div>`;
-            lista.appendChild(card);
+            card.className = 'item-card';
+            let cDias = i.dias < 30 ? 'var(--retido)' : i.dias <= 60 ? 'var(--critico)' : 'var(--verde)';
+            card.innerHTML = `
+                <div>
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+                        <span class="badge" style="background:${cDias}; color:#000;">${i.dias} DIAS</span>
+                        <span class="badge badge-ender">📍 ${i.ender}</span>
+                        <span class="badge" style="background:rgba(255,255,255,0.05); color:var(--text-secondary);">${i.categoria}</span>
+                    </div>
+                    <h4 style="color:#fff; font-weight:800; font-size:15px; margin-bottom:4px;">${i.desc}</h4>
+                    <p style="color:var(--text-secondary); font-size:11px; font-weight:700;">CÓDIGO: ${i.mat} | VENC: ${i.vencimento.split('-').reverse().join('/')}</p>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:28px; font-weight:900; color:#fff; letter-spacing:-1px;">${i.qtd}<span style="font-size:12px; color:var(--text-secondary); font-weight:600; margin-left:4px;">PL</span></div>
+                    <button class="btn-action" style="padding:8px 16px; font-size:10px; margin-top:8px;" onclick="abrirModalRetirada('${i.id}')">RETIRAR</button>
+                </div>
+            `;
+            container.appendChild(card);
         });
     }
 
-    function puxarDescricaoObrigatoria(val, inputDescId, listId) {
-        const list = document.getElementById(listId);
-        const descInput = document.getElementById(inputDescId);
-        list.innerHTML = '';
-        if (!val) { descInput.value = ''; return; }
-        const matches = baseMateriais.filter(m => m.mat.toString().startsWith(val)).slice(0, 5);
-        matches.forEach(m => {
-            const div = document.createElement('div');
-            div.className = 'autocomplete-item';
-            div.innerHTML = `<strong>${m.mat}</strong> - ${m.desc}`;
-            div.onclick = () => { document.getElementById('eb-mat').value = m.mat; descInput.value = m.desc; list.innerHTML = ''; };
-            list.appendChild(div);
-        });
-        const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
-        if (exact) { descInput.value = exact.desc; descInput.style.color = "var(--verde)"; } 
-        else { descInput.value = "MATERIAL NÃO CADASTRADO"; descInput.style.color = "var(--retido)"; }
-    }
-
-    document.addEventListener('click', e => { if (e.target.id !== 'eb-mat') { const l = document.getElementById('eb-mat-list'); if(l) l.innerHTML = ''; } });
-    
-    function retirarMaterial(id, qtdAtual, mat, ender, val) {
-        itemParaRetirar = { id, qtdAtual, mat, ender, val };
-        document.getElementById('modal-titulo').innerText = mat;
-        document.getElementById('modal-info').innerHTML = `Posição: <b>${ender}</b><br>Saldo Atual: <b>${qtdAtual} Pallets</b>`;
-        document.getElementById('modal-input-qtd').value = '';
+    function abrirModalRetirada(id) {
+        itemParaRetirar = estoqueCompleto.find(i => i.id === id);
+        if(!itemParaRetirar) return;
+        document.getElementById('modal-titulo').innerText = `Baixa de Estoque`;
+        document.getElementById('modal-info').innerHTML = `📍 Posição: <b>${itemParaRetirar.ender}</b><br>📦 Produto: <b>${itemParaRetirar.desc}</b><br>🔢 Saldo Atual: <b>${itemParaRetirar.qtd} PL</b>`;
+        document.getElementById('modal-input-qtd').value = itemParaRetirar.qtd;
+        document.getElementById('btn-confirmar-modal').onclick = executarRetiradaEstoque;
         document.getElementById('modal-retirada').style.display = 'flex';
-        setTimeout(() => document.getElementById('modal-input-qtd').focus(), 150);
-        document.getElementById('btn-confirmar-modal').onclick = processarRetirada;
     }
 
     function fecharModal() { document.getElementById('modal-retirada').style.display = 'none'; }
 
-    async function processarRetirada() {
-        const v = parseInt(document.getElementById('modal-input-qtd').value);
-        if (isNaN(v) || v <= 0 || v > itemParaRetirar.qtdAtual) return alert("Quantidade inválida.");
-        try {
-            if (v === itemParaRetirar.qtdAtual) { await db.collection("estoque_blocado").doc(itemParaRetirar.id).delete(); } 
-            else { await db.collection("estoque_blocado").doc(itemParaRetirar.id).update({ qtd: itemParaRetirar.qtdAtual - v }); }
-            registrarMovimentacao(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, `-${v} PL`, document.getElementById('modal-destino-mov').value);
-            fecharModal();
-        } catch (e) { alert("Erro ao processar retirada."); }
+    async function executarRetiradaEstoque() {
+        const qtdBaixa = parseFloat(document.getElementById('modal-input-qtd').value);
+        const destino = document.getElementById('modal-destino-mov').value;
+        if(isNaN(qtdBaixa) || qtdBaixa <= 0 || qtdBaixa > itemParaRetirar.qtd) { alert("Quantidade inválida ou superior ao saldo!"); return; }
+
+        const t = new Date();
+        const nLog = {
+            data: t.toISOString().split('T')[0],
+            hora: t.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+            tipo: "SAÍDA",
+            mat: itemParaRetirar.mat, desc: itemParaRetirar.desc, qtd: qtdBaixa, ender: itemParaRetirar.ender, categoria: itemParaRetirar.categoria,
+            operador: usuarioLogado ? usuarioLogado.nome : "SISTEMA",
+            origem: "BLOCO", destino: destino,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        const refE = db.collection("estoque_blocado").document(itemParaRetirar.id);
+        if(qtdBaixa === itemParaRetirar.qtd) { await refE.delete(); }
+        else { await refE.update({ qtd: firebase.firestore.FieldValue.increment(-qtdBaixa) }); }
+
+        await db.collection("historico_fefo").add(nLog);
+        fecharModal();
+        alert("Baixa Processada com sucesso!");
     }
 
-    async function salvarEntradaBloco() {
-        const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
-        const mat = document.getElementById('eb-mat').value.trim();
-        const desc = document.getElementById('eb-desc').value;
-        const qtd = parseInt(document.getElementById('eb-qtd').value);
-        const inputVenc = document.getElementById('eb-venc').value;
-        if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos.");
-        if(desc === "MATERIAL NÃO CADASTRADO") return alert("Código não cadastrado na base.");
-        const val = inputVenc.split('-').reverse().join('/');
-        const ocupante = estoqueCompleto.find(i => i.ender === ender);
-        if (ocupante && ocupante.mat !== mat) return alert("Posição ocupada por outro material.");
-        if (ocupante) { await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd }); } 
-        else { await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: val, desc: desc }); }
-        registrarMovimentacao(ender, mat, val, `+${qtd} PL`, `ENTRADA VIA ${document.getElementById('eb-origem').value}`);
-        ['eb-ender', 'eb-mat', 'eb-desc', 'eb-qtd', 'eb-venc'].forEach(id => document.getElementById(id).value = '');
-        navegar('retirar');
-    }
-
-    function carregarDadosOrigemAbertura(ender) {
-        const item = estoqueCompleto.find(i => i.ender.toLowerCase() === ender.toLowerCase().trim());
-        if (item) { itemOrigemAbertura = item; document.getElementById('ab-mat').value = item.mat; document.getElementById('ab-qtd').placeholder = `Max: ${item.qtd}`; } 
-        else { itemOrigemAbertura = null; document.getElementById('ab-mat').value = ''; }
+    async function carregarDadosOrigemAbertura(pos) {
+        pos = pos.trim().toUpperCase();
+        const match = estoqueCompleto.find(i => i.ender === pos && i.qtd > 0);
+        if(match) {
+            itemOrigemAbertura = match;
+            document.getElementById('ab-mat').value = `${match.mat} - ${match.desc}`;
+            document.getElementById('ab-qtd').placeholder = `Saldo: ${match.qtd}`;
+            document.getElementById('ab-qtd').value = match.qtd;
+        } else {
+            itemOrigemAbertura = null;
+            document.getElementById('ab-mat').value = 'Nenhum material encontrado nessa posição!';
+        }
     }
 
     async function processarAberturaBlocado() {
-        const dest = document.getElementById('ab-destino').value.toUpperCase().trim();
-        const qtd = parseInt(document.getElementById('ab-qtd').value);
-        if(!itemOrigemAbertura || isNaN(qtd) || qtd <= 0 || qtd > itemOrigemAbertura.qtd || !dest) return alert("Dados inválidos.");
-        const ocup = estoqueCompleto.find(i => i.ender === dest);
-        if (ocup && ocup.mat !== itemOrigemAbertura.mat) return alert("Destino ocupado.");
-        if (qtd === itemOrigemAbertura.qtd) { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete(); } 
-        else { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtd }); }
-        if (ocup) { await db.collection("estoque_blocado").doc(ocup.id).update({ qtd: ocup.qtd + qtd }); } 
-        else { await db.collection("estoque_blocado").add({ ender: dest, mat: itemOrigemAbertura.mat, desc: itemOrigemAbertura.desc, qtd, dias: itemOrigemAbertura.dias, valFrente: itemOrigemAbertura.valFrente }); }
-        registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtd} PL`, `PARA ${dest}`);
-        registrarMovimentacao(dest, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtd} PL`, `DE ${itemOrigemAbertura.ender}`);
-        navegar('retirar');
-    }
+        const dest = document.getElementById('ab-destino').value.trim().toUpperCase();
+        const qtdMover = parseFloat(document.getElementById('ab-qtd').value);
 
-    function calcularDias(data, labelId) {
-        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
-        document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
-    }
+        if(!itemOrigemAbertura || !dest || isNaN(qtdMover) || qtdMover <= 0 || qtdMover > itemOrigemAbertura.qtd) {
+            alert("Verifique os dados da transferência interna!"); return;
+        }
 
-    async function registrarMovimentacao(ender, mat, val, qtd, fluxo) {
-        const agora = new Date();
-        await db.collection("movimentacoes_wms").add({ 
-            endereco: ender, 
-            material: mat, 
-            validade: val, 
-            quantidade: qtd, 
-            fluxo, 
-            login: usuarioLogado.email, 
-            data: agora.toLocaleDateString('pt-BR'), 
-            hora: agora.toLocaleTimeString('pt-BR'), 
-            timestamp: agora 
-        });
-    }
-
-    function exportarRelatorioFiltradoExcel() {
-        if(movimentacoesFiltradas.length === 0) return alert("Não existem dados no período filtrado para exportar.");
-        const dadosPlanilha = movimentacoesFiltradas.map(m => ({ "Data": m.data, "Horário": m.hora, "Fluxo / Ação": m.fluxo, "Código Material": m.material, "Descrição": buscarDescricaoLocal(m.material), "Setor Logístico": buscarSetorLocal(m.material), "Quantidade (PL)": m.quantidade, "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A' }));
-        const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Relatório_Filtrado");
-        XLSX.writeFile(wb, `WMS_Relatorio_Consolidado_${new Date().getTime()}.xlsx`);
-    }
-
-    async function exportarHistoricoExcel() {
-        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-        const dados = snap.docs.map(doc => { const d = doc.data(); return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora }; });
-        const ws = XLSX.utils.json_to_sheet(dados);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Infinity_Log");
-        XLSX.writeFile(wb, `Infinity_WMS_Log_Completo_${new Date().getTime()}.xlsx`);
-    }
-
-    async function importarCSV(event) {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
-            if (!confirm(`Confirmar reset de estoque para ${linhas.length} itens?`)) return;
-            const snapshot = await db.collection("estoque_blocado").get();
-            if (!snapshot.empty) {
-                let batchDel = db.batch();
-                snapshot.docs.forEach((doc, idx) => { batchDel.delete(doc.ref); if ((idx + 1) % 400 === 0) { batchDel.commit(); batchDel = db.batch(); } });
-                await batchDel.commit();
-            }
-            let batch = db.batch();
-            linhas.forEach((linha, i) => {
-                const c = linha.split(";");
-                if (c.length >= 6) {
-                    batch.set(db.collection("estoque_blocado").doc(), { ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(), valFrente: c[3].trim(), qtd: parseInt(c[5].replace(/\D/g, '')) || 0, dias: parseInt(c[7].replace(/\D/g, '')) || 0 });
-                    if((i+1)%400===0) { batch.commit(); batch = db.batch(); }
-                }
-            });
-            await batch.commit();
-            alert("Estoque Infinity Updated!");
+        const t = new Date();
+        const nLog = {
+            data: t.toISOString().split('T')[0],
+            hora: t.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+            tipo: "TRANSFERÊNCIA",
+            mat: itemOrigemAbertura.mat, desc: itemOrigemAbertura.desc, qtd: qtdMover, ender: `${itemOrigemAbertura.ender} ➔ ${dest}`, categoria: itemOrigemAbertura.categoria,
+            operador: usuarioLogado ? usuarioLogado.nome : "SISTEMA",
+            origem: itemOrigemAbertura.ender, destino: dest,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
-        reader.readAsText(event.target.files[0]);
+
+        const refO = db.collection("estoque_blocado").document(itemOrigemAbertura.id);
+        if(qtdMover === itemOrigemAbertura.qtd) { await refO.delete(); }
+        else { await refO.update({ qtd: firebase.firestore.FieldValue.increment(-qtdMover) }); }
+
+        const idDest = `${dest}_${itemOrigemAbertura.mat}`;
+        const refD = db.collection("estoque_blocado").document(idDest);
+        const docD = await refD.get();
+        if(docD.exists) {
+            await refD.update({ qtd: firebase.firestore.FieldValue.increment(qtdMover) });
+        } else {
+            await refD.set({
+                ender: dest, mat: itemOrigemAbertura.mat, desc: itemOrigemAbertura.desc,
+                qtd: qtdMover, vencimento: itemOrigemAbertura.vencimento, dias: itemOrigemAbertura.dias,
+                categoria: itemOrigemAbertura.categoria, rua: partsEnd(dest.split('-')[0])
+            });
+        }
+
+        await db.collection("historico_fefo").add(nLog);
+        alert("Transferência Interna Finalizada!");
+        document.getElementById('ab-origem').value = '';
+        document.getElementById('ab-mat').value = '';
+        document.getElementById('ab-destino').value = '';
+        document.getElementById('ab-qtd').value = '';
     }
 
-    async function sincronizarBaseMateriais() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.xlsx, .xls';
-        input.onchange = async (e) => {
+    // Exportadores Avançados e Sincronizadores locais
+    function exportarRelatorioFiltradoExcel() {
+        if(movimentacoesFiltradas.length === 0) { alert("Sem dados filtrados para exportar!"); return; }
+        const dadosFormatados = movimentacoesFiltradas.map(m => ({
+            "Data": m.data, "Hora": m.hora, "Ação": m.tipo, "Código": m.mat, "Descrição": m.desc, "Setor": m.categoria, "Qtd": m.qtd, "Operador": m.operador, "Origem": m.origem || '', "Destino": m.destino || ''
+        }));
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(dadosFormatados);
+        XLSX.utils.book_append_sheet(wb, ws, "Histórico Filtrado");
+        XLSX.writeFile(wb, `WMS_Relatorio_Filtrado_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    function exportarHistoricoExcel() {
+        if(todasMovimentacoes.length === 0) { alert("Sem dados históricos para exportar!"); return; }
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(todasMovimentacoes);
+        XLSX.utils.book_append_sheet(wb, ws, "Log Geral Auditoria");
+        XLSX.writeFile(wb, "Log_Auditoria_Completo.xlsx");
+    }
+
+    function sincronizarBaseMateriais() {
+        const input = document.createElement('input'); input.type = 'file'; input.accept = '.xlsx, .xls';
+        input.onchange = e => {
             const reader = new FileReader();
-            reader.onload = async (ev) => {
-                const data = new Uint8Array(ev.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                let batch = db.batch();
-                let count = 0;
-                for(const item of json) {
-                    const mat = item['Cód. Material'];
+            reader.onload = async event => {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(sheet);
+                
+                let batch = db.batch(); let count = 0;
+                for(let item of json) {
+                    let mat = item['Material'] || item['Código'] || item['mat'];
                     if(mat) {
-                        batch.set(db.collection("base_materiais").doc(mat.toString()), { mat, desc: item['Descrição'] || '', qtd_base: item['Quantidade'] || 0, categoria: item['Categoria'] || '', vasilhame: item['Vasilhame'] || '', lastro: item['Lastro'] || null, camada: item['Camada'] || null });
+                        let ref = db.collection("base_materials").doc(mat.toString());
+                        batch.set(ref, { mat, desc: item['Descrição'] || '', qtd_base: item['Quantidade'] || 0, categoria: item['Categoria'] || '', vasilhame: item['Vasilhame'] || '', lastro: item['Lastro'] || null, camada: item['Camada'] || null });
                         count++;
                         if(count % 400 === 0) { await batch.commit(); batch = db.batch(); }
                     }
                 }
                 await batch.commit();
                 alert("Base de Dados Infinity Sincronizada!");
-                carregarBaseMateriais();
             };
             reader.readAsArrayBuffer(e.target.files[0]);
         };
         input.click();
     }
 
-    function toggleKB(id) {
-        const input = document.getElementById(id);
-        const btn = event.currentTarget;
-        if (input.inputMode === 'numeric' || input.inputMode === 'decimal') {
-            input.inputMode = 'text';
-            btn.innerText = '123';
-            btn.style.background = 'var(--primary)';
-            btn.style.color = '#fff';
-        } else {
-            input.inputMode = id.includes('qtd') ? 'decimal' : 'numeric';
-            btn.innerText = 'Abc';
-            btn.style.background = 'var(--glass)';
-            btn.style.color = 'var(--text-secondary)';
-        }
-        input.focus();
+    function importarCSV(e) {
+        const file = e.target.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = async evt => {
+            const text = evt.target.result;
+            const lines = text.split('\n');
+            let batch = db.batch(); let count = 0;
+
+            // Limpeza prévia do estoque antigo se necessário
+            for(let i=1; i<lines.length; i++) {
+                const cols = lines[i].split(';');
+                if(cols.length >= 5) {
+                    const ender = cols[0].trim().toUpperCase();
+                    const mat = cols[1].trim();
+                    const desc = cols[2].trim();
+                    const qtd = parseFloat(cols[3]) || 0;
+                    const venc = cols[4].trim();
+
+                    if(ender && mat && qtd > 0) {
+                        const id = `${ender}_${mat}`;
+                        const ref = db.collection("estoque_blocado").document(id);
+                        
+                        const partsV = venc.split('/');
+                        let vencFormato = venc;
+                        if(partsV.length === 3) vencFormato = `${partsV[2]}-${partsV[1]}-${partsV[0]}`;
+                        
+                        const diffTime = new Date(vencFormato) - new Date();
+                        const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        let cat = "AVULSO";
+                        const fM = baseMateriais.find(m => String(m.mat) === String(mat));
+                        if(fM) cat = fM['Categoria'] || 'AVULSO';
+
+                        batch.set(ref, { ender, mat, desc, qtd, vencimento: vencFormato, dias, categoria: cat, rua: partsEnd(ender.split('-')[0]) });
+                        count++;
+                        if(count % 400 === 0) { await batch.commit(); batch = db.batch(); }
+                    }
+                }
+            }
+            await batch.commit(); alert("Estoque Atualizado via CSV!");
+        };
+        reader.readAsText(file);
     }
 
-    window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
+    // Autenticação e Entrada no Sistema
+    function tentarLogin() {
+        const mat = document.getElementById('login-mat').value.trim();
+        const senha = document.getElementById('login-senha').value;
+
+        if(!mat || !senha) { alert("Preencha as credenciais!"); return; }
+
+        db.collection("usuarios_wms").where("matricula", "==", mat).get().then(snap => {
+            if(snap.empty) { alert("Usuário não cadastrado!"); return; }
+            let user = null; snap.forEach(d => user = d.data());
+            if(user.senha === senha) {
+                usuarioLogado = user;
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-screen').style.display = 'block';
+                document.getElementById('user-name').innerText = user.nome.toUpperCase();
+                document.getElementById('role-label').innerText = user.perfil.toUpperCase();
+                
+                if(user.perfil === 'ADMIN' || user.perfil === 'MASTER') {
+                    document.getElementById('btn-nav-admin').style.display = 'flex';
+                    navegar('admin');
+                } else {
+                    document.getElementById('btn-nav-admin').style.display = 'none';
+                    navegar('retirar');
+                }
+                carregarTodosDadosFirebase();
+            } else { alert("Senha Incorreta!"); }
+        });
+    }
+
+    function logout() {
+        usuarioLogado = null;
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('app-screen').style.display = 'none';
+        document.getElementById('login-mat').value = '';
+        document.getElementById('login-senha').value = '';
+    }
+
+    window.onload = () => {
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        document.getElementById('filtro-mes-valor').value = `${ano}-${mes}`;
+    };
 </script>
 </body>
 </html>
