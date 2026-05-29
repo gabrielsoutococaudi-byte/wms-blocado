@@ -17,1009 +17,1079 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
     <style>
-        :root {
-            --bg-main: #0B0F19;
-            --bg-card: rgba(22, 30, 49, 0.7);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --primary: #3B82F6;
-            --primary-glow: rgba(59, 130, 246, 0.3);
-            --success: #10B981;
-            --success-glow: rgba(16, 185, 129, 0.2);
-            --warning: #F59E0B;
-            --danger: #EF4444;
-            --text-main: #F3F4F6;
-            --text-secondary: #9CA3AF;
-            --glass: rgba(255, 255, 255, 0.03);
-            --glass-hover: rgba(255, 255, 255, 0.07);
-            --sidebar-width: 280px;
-            --radius-lg: 16px;
-            --radius-md: 12px;
-            --font-main: 'Hubot Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        :root { 
+            --bg: #020202;
+            --glass: rgba(255, 255, 255, 0.02);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --primary: #ff3e3e; 
+            --primary-glow: rgba(255, 62, 62, 0.2);
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --critico: #fbbf24; 
+            --retido: #f87171; 
+            --verde: #10b981; 
+            --text: #f8fafc; 
+            --text-secondary: #64748b;
+            --neon-blue: #00f2ff;
         }
+        .input-with-toggle { position: relative; display: flex; align-items: center; }
+        .input-with-toggle input { padding-right: 50px !important; }
+        .toggle-kb-btn { position: absolute; right: 10px; background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-secondary); border-radius: 10px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: 0.3s; z-index: 10; }
+        .toggle-kb-btn:hover { background: var(--primary); color: #fff; }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: var(--font-main);
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg); 
+            color: var(--text); 
+            padding-bottom: env(safe-area-inset-bottom, 40px); 
+            -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
             background-image: 
-                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.03) 0%, transparent 40%);
-            background-attachment: fixed;
+                radial-gradient(circle at 0% 0%, rgba(255, 62, 62, 0.05) 0%, transparent 30%),
+                radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 30%);
         }
 
-        /* SIDEBAR COMPONENT */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: rgba(11, 15, 25, 0.6);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            z-index: 100;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .sidebar-brand {
-            padding: 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .brand-logo {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--primary), #1D4ED8);
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 20px var(--primary-glow);
-        }
-
-        .brand-logo i {
-            font-size: 20px;
-            color: #fff;
-        }
-
-        .brand-text h1 {
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            background: linear-gradient(180deg, #FFF 0%, #9CA3AF 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .brand-text span {
-            font-size: 11px;
-            color: var(--primary);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .sidebar-menu {
-            padding: 24px 16px;
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .menu-item a {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 12px 16px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            border-radius: var(--radius-md);
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .menu-item a i {
-            font-size: 18px;
-            width: 24px;
-            text-align: center;
-        }
-
-        .menu-item.active a, .menu-item a:hover {
-            color: #fff;
-            background: var(--glass-hover);
-        }
-
-        .menu-item.active a {
-            background: linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0) 100%);
-            border-left: 3px solid var(--primary);
-            padding-left: 13px;
-        }
-
-        /* MAIN CONTENT AREA */
-        .main-content {
-            margin-left: var(--sidebar-width);
-            flex: 1;
-            padding: 40px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            gap: 32px;
-            max-width: 1600px;
-            width: calc(100% - var(--sidebar-width));
-        }
-
-        /* HEADER */
-        .main-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-title h2 {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .header-title p {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        /* UTILITIES & BUTTONS */
-        .btn {
-            padding: 12px 20px;
-            border-radius: var(--radius-md);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 14px var(--primary-glow);
-        }
-
-        .btn-primary:hover {
-            background: #2563EB;
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
+        .glass-card { 
             background: var(--glass);
-            color: var(--text-main);
-            border-color: var(--border-color);
+            backdrop-filter: blur(15px); 
+            -webkit-backdrop-filter: blur(15px); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 24px; 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .glass-card:hover { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); }
 
-        .btn-secondary:hover {
-            background: var(--glass-hover);
-        }
+        #network-status { display: none; background: var(--critico); color: #000; text-align: center; padding: 8px; font-size: 10px; font-weight: 900; position: sticky; top: 0; z-index: 2000; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100dvh; background: rgba(5, 5, 5, 0.98); backdrop-filter: blur(20px); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1500; padding-top: calc(60px + env(safe-area-inset-top)); border-right: 1px solid var(--glass-border); }
+        .sidebar.active { left: 0; }
+        .sidebar button { width: 85%; padding: 16px 20px; background: transparent; border: none; color: var(--text-secondary); text-align: left; cursor: pointer; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 12px; margin: 8px auto; border-radius: 14px; transition: 0.3s; }
+        .sidebar button:hover { background: var(--glass); color: var(--text); transform: translateX(8px); }
 
-        /* CARDS / CONTAINERS */
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
+        .header { padding: calc(20px + env(safe-area-inset-top)) 24px 20px 24px; display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 900; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); }
+        .menu-btn { background: var(--glass); border: 1px solid var(--glass-border); padding: 10px; border-radius: 14px; color: white; font-size: 20px; display: flex; width: 46px; height: 46px; align-items: center; justify-content: center; }
+        
+        .container { width: 100%; max-width: 1200px; margin: auto; padding: 0 20px; }
 
-        /* KPI GRID */
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-        }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px; margin-top: 20px; }
+        .stat-card { padding: 24px; position: relative; overflow: hidden; cursor: pointer; border-bottom: 2px solid transparent; }
+        .stat-card h5 { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 800; }
+        .stat-card p { font-size: 30px; font-weight: 900; color: #fff; letter-spacing: -1px; }
 
-        .kpi-card {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
+        .dashboard-row { display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; margin-bottom: 24px; }
+        .dashboard-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        .dashboard-fullrow { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 24px; }
+        @media (max-width: 900px) { .dashboard-row { grid-template-columns: 1fr; } }
 
-        .kpi-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        }
+        .chart-box { padding: 28px; position: relative; }
+        .chart-title { font-size: 12px; font-weight: 900; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); padding-right: 40px; }
+        .chart-title span { color: var(--primary); }
 
-        .kpi-icon.blue { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
-        .kpi-icon.green { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .kpi-icon.orange { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-        .kpi-icon.purple { background: rgba(139, 92, 246, 0.1); color: #8B5CF6; }
+        /* Botão de Expansão */
+        .expand-btn { position: absolute; top: 22px; right: 22px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; font-weight: 700; transition: 0.2s; z-index: 10; }
+        .expand-btn:hover { background: var(--accent); border-color: var(--accent); }
 
-        .kpi-info p {
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        /* Modal do Gráfico Expandido */
+        .chart-fullscreen-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2,2,2,0.98); z-index: 5000; padding: 40px; flex-direction: column; }
+        .chart-fullscreen-modal .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; }
+        .chart-fullscreen-modal .canvas-container { flex-grow: 1; position: relative; width: 100%; height: 80%; display: flex; align-items: center; justify-content: center; }
 
-        .kpi-info h3 {
-            font-size: 24px;
-            font-weight: 700;
-        }
+        .activity-feed { max-height: 450px; overflow-y: auto; padding-right: 5px; }
+        .activity-item { display: flex; gap: 16px; margin-bottom: 24px; padding: 12px; border-radius: 16px; transition: 0.3s; }
+        .activity-icon-box { width: 40px; height: 40px; border-radius: 12px; background: var(--glass); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .activity-content { font-size: 12px; line-height: 1.5; }
+        .activity-content b { color: #fff; font-weight: 700; }
+        .activity-tag { font-size: 9px; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; font-weight: 900; margin-bottom: 6px; display: inline-block; }
+        .activity-time { font-size: 10px; color: var(--text-secondary); margin-top: 6px; display: block; }
 
-        /* GRID SYSTEM FOR CHARTS / CONTENT */
-        .content-grid {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 24px;
-        }
+        .search-wrapper { margin-bottom: 24px; position: relative; margin-top: 20px; }
+        .search-wrapper input { background: var(--glass); border: 1px solid var(--glass-border); padding: 20px 28px; border-radius: 20px; color: white; font-size: 16px; width: 100%; transition: 0.4s; outline: none; font-weight: 500; }
+        .search-wrapper input:focus { border-color: var(--accent); box-shadow: 0 0 30px var(--accent-glow); background: rgba(255,255,255,0.05); }
 
-        .col-12 { grid-column: span 12; }
-        .col-8 { grid-column: span 8; }
-        .col-6 { grid-column: span 6; }
-        .col-4 { grid-column: span 4; }
+        .item-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 24px; padding: 24px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .item-card:hover { transform: scale(1.02); border-color: var(--primary); }
+        
+        .badge { padding: 6px 12px; border-radius: 10px; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        .badge-ender { background: #fff; color: #000; }
 
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
+        .btn-action { background: var(--primary); color: #fff; border: none; padding: 16px 28px; border-radius: 16px; font-weight: 900; cursor: pointer; font-size: 13px; box-shadow: 0 10px 20px var(--primary-glow); transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-action:active { transform: scale(0.96); }
 
-        .card-header h4 {
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .form-box { padding: 35px; margin-bottom: 30px; margin-top: 20px; }
+        .form-group label { display: block; font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 800; letter-spacing: 1.5px; }
+        .form-group input, .form-group select { width: 100%; padding: 18px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: #fff; outline: none; font-size: 15px; transition: 0.3s; }
+        
+        #modal-retirada { display:none; position:fixed; top:0; left:0; width:100%; height:100dvh; background:rgba(0,0,0,0.95); z-index:3000; align-items:center; justify-content:center; backdrop-filter: blur(20px); padding: 20px; }
+        .modal-content { padding: 40px; width:100%; max-width:440px; border: 1px solid var(--primary); }
 
-        /* FORMS & INPUTS */
-        .form-group {
-            margin-bottom: 16px;
-        }
+        .autocomplete-items { position: absolute; border: 1px solid var(--glass-border); border-top: none; z-index: 99; top: 100%; left: 0; right: 0; background: #080808; max-height: 250px; overflow-y: auto; border-radius: 0 0 20px 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
+        .autocomplete-item { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid var(--glass-border); font-size: 13px; }
+        .autocomplete-item:hover { background-color: var(--primary); color: #fff; }
 
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
-            font-weight: 500;
-        }
+        .wms-table-container { width: 100%; overflow-x: auto; margin-top: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid var(--glass-border); }
+        .wms-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+        .wms-table th { background: rgba(255,255,255,0.05); padding: 14px 16px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; font-size: 10px; letter-spacing: 1px; }
+        .wms-table td { padding: 14px 16px; border-bottom: 1px solid var(--glass-border); color: var(--text); }
+        .wms-table tr:hover { background: rgba(255,255,255,0.01); }
 
-        .input-control {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            color: white;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
+        .filter-panel { background: rgba(255,255,255,0.01); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
 
-        .input-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-        }
-
-        .input-group {
-            display: flex;
-            gap: 8px;
-        }
-
-        /* TABLES */
-        .table-responsive {
-            overflow-x: auto;
-            width: 100%;
-        }
-
-        .custom-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 14px;
-        }
-
-        .custom-table th {
-            padding: 16px;
-            color: var(--text-secondary);
-            font-weight: 600;
-            border-bottom: 1px solid var(--border-color);
-            background: rgba(255, 255, 255, 0.01);
-        }
-
-        .custom-table td {
-            padding: 16px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-main);
-        }
-
-        .custom-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .custom-table tr:hover td {
-            background: rgba(255, 255, 255, 0.01);
-        }
-
-        /* BADGES */
-        .badge {
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-        }
-        .badge-success { background: rgba(16, 185, 129, 0.15); color: #34D399; }
-        .badge-warning { background: rgba(245, 158, 11, 0.15); color: #FBBF24; }
-        .badge-danger { background: rgba(239, 68, 68, 0.15); color: #F87171; }
-
-        /* FLOATING ACTION ACTION FOR MOBILE VIEW TOGGLE */
-        .menu-toggle {
-            display: none;
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
-            z-index: 1000;
-            border: none;
-            cursor: pointer;
-        }
-
-        /* PAGE VISIBILITY */
-        .page-content {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .page-content.active {
-            display: flex;
-            flex-direction: column;
-            gap: 32px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* RESPONSIVE DESIGN */
-        @media (max-width: 1024px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-                padding: 24px;
-            }
-            .menu-toggle {
-                display: flex;
-            }
-            .col-8, .col-6, .col-4 {
-                grid-column: span 12;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .main-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
-            }
-            .header-actions {
-                width: 100%;
-            }
-            .header-actions .btn {
-                flex: 1;
-                justify-content: center;
-            }
-        }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+<div id="network-status">⚠️ MODO OFFLINE ATIVO</div>
 
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <div class="brand-logo"><i class="fas fa-cubes"></i></div>
-            <div class="brand-text">
-                <h1>WMS INFINITY</h1>
-                <span>Flow Control</span>
+<div id="modal-grafico-expandido" class="chart-fullscreen-modal">
+    <div class="modal-header">
+        <h2 id="modal-grafico-titulo" style="font-weight:900; letter-spacing:-1px;">Gráfico Expandido</h2>
+        <button class="btn-action" style="padding:10px 20px; background:var(--primary);" onclick="fecharGraficoExpandido()">Fechar Voltar ✕</button>
+    </div>
+    <div class="canvas-container">
+        <canvas id="canvas-expanded-render"></canvas>
+    </div>
+</div>
+
+<div id="sidebar" class="sidebar">
+    <div style="padding: 30px; font-weight: 900; color: #fff; font-size: 22px; letter-spacing: -1.5px; display: flex; align-items: center; gap: 10px;">
+        <div style="width: 12px; height: 12px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 10px var(--primary);"></div>
+        INFINITY WMS
+    </div>
+    <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ANALYTICS</button>
+    <button onclick="navegar('retirar')">📦 PESQUISAR ESTOQUE</button>
+    <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
+    <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
+    
+    <button onclick="logout()" style="color: var(--retido); margin-top: 40px; border-top: 1px solid var(--glass-border); border-radius: 0; width: 100%; opacity: 0.7;">🚪 ENCERRAR SESSÃO</button>
+</div>
+
+<div id="login-screen">
+    <div style="height: 100dvh; display: flex; justify-content: center; align-items: center; padding: 20px;">
+        <div class="login-box glass-card" style="width: 100%; max-width: 380px; padding: 50px; text-align: center;">
+            <div style="width: 60px; height: 60px; background: var(--primary); border-radius: 20px; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 15px 30px var(--primary-glow);">W</div>
+            <h2 style="color: #fff; margin-bottom: 10px; font-weight: 900; font-size: 26px; letter-spacing: -1px;">WMS INFINITY</h2>
+            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 35px; text-transform: uppercase; letter-spacing: 1px;">Acesse sua conta</p>
+            <div class="form-group">
+                <div class="input-with-toggle" style="margin-bottom:15px;">
+                    <input type="text" inputmode="numeric" id="login-mat" placeholder="Matrícula" style="text-align: center;">
+                    <div class="toggle-kb-btn" onclick="toggleKB('login-mat')">Abc</div>
+                </div>
+                <input type="password" id="login-senha" placeholder="Senha" style="text-align: center;">
             </div>
+            <button onclick="tentarLogin()" class="btn-action" style="width: 100%; padding: 20px; font-size: 15px; margin-top: 10px;">INICIAR OPERAÇÃO</button>
         </div>
-        <ul class="sidebar-menu">
-            <li class="menu-item active" id="nav-dash" onclick="switchPage('dash')"><a href="#"><i class="fas fa-chart-pie"></i>Dashboard</a></li>
-            <li class="menu-item" id="nav-flow" onclick="switchPage('flow')"><a href="#"><i class="fas fa-exchange-alt"></i>Fluxo de Carga</a></li>
-            <li class="menu-item" id="nav-db" onclick="switchPage('db')"><a href="#"><i class="fas fa-database"></i>Base de Materiais</a></li>
-            <li class="menu-item" id="nav-rel" onclick="switchPage('rel')"><a href="#"><i class="fas fa-file-invoice"></i>Relatórios de Giro</a></li>
-        </ul>
-    </aside>
+    </div>
+</div>
 
-    <main class="main-content">
-        
-        <div id="page-dash" class="page-content active">
-            <div class="main-header">
-                <div class="header-title">
-                    <h2>Dashboard Comercial & Operacional</h2>
-                    <p>Indicadores em tempo real integrados ao Firestore</p>
-                </div>
-            </div>
-
-            <div class="kpi-grid">
-                <div class="card kpi-card">
-                    <div class="kpi-icon blue"><i class="fas fa-boxes"></i></div>
-                    <div class="kpi-info"><p>Total SKU Base</p><h3 id="kpi-total-sku">0</h3></div>
-                </div>
-                <div class="card kpi-card">
-                    <div class="kpi-icon green"><i class="fas fa-arrow-down"></i></div>
-                    <div class="kpi-info"><p>Entradas (Mês)</p><h3 id="kpi-entradas-mes">0</h3></div>
-                </div>
-                <div class="card kpi-card">
-                    <div class="kpi-icon orange"><i class="fas fa-arrow-up"></i></div>
-                    <div class="kpi-info"><p>Saídas (Mês)</p><h3 id="kpi-saidas-mes">0</h3></div>
-                </div>
-                <div class="card kpi-card">
-                    <div class="kpi-icon purple"><i class="fas fa-truck-loading"></i></div>
-                    <div class="kpi-info"><p>Giro de Estoque</p><h3 id="kpi-giro-geral">0%</h3></div>
-                </div>
-            </div>
-
-            <div class="content-grid">
-                <div class="card col-6"><div class="card-header"><h4><i class="fas fa-chart-line"></i> 1. Histórico de Movimentação (Volume Mensal)</h4></div><canvas id="chart-historico" height="220"></canvas></div>
-                <div class="card col-6"><div class="card-header"><h4><i class="fas fa-pie-chart"></i> 2. Top 10 Materiais Mais Movimentados</h4></div><canvas id="chart-top-materiais" height="220"></canvas></div>
-                <div class="card col-6"><div class="card-header"><h4><i class="fas fa-percentage"></i> 3. Representatividade por Categoria de Produto</h4></div><canvas id="chart-categorias" height="220"></canvas></div>
-                <div class="card col-6"><div class="card-header"><h4><i class="fas fa-box-open"></i> 4. Distribuição por Tipo de Vasilhame</h4></div><canvas id="chart-vasilhame" height="220"></canvas></div>
-                <div class="card col-6"><div class="card-header"><h4><i class="fas fa-layer-group"></i> 5. Ocupação de Paletização (Média Lastro x Camada)</h4></div><canvas id="chart-paletizacao" height="220"></canvas></div>
-                <div class="card col-6"><div class="card-header"><h4><i class="fas fa-industry"></i> 6.1 Setores Abastecidos (Visão Mensal)</h4></div><canvas id="chart-setores" height="220"></canvas></div>
-                <div class="card col-6"><div class="card-header"><h4><i class="fas fa-route"></i> 6.2 Destino das Cargas (Fluxos de Saída)</h4></div><canvas id="chart-destinos" height="220"></canvas></div>
-                <div class="card col-6"><div class="card-header"><h4><i class="fas fa-clock"></i> 7. Evolução Temporal da Produtividade (Entradas x Saídas)</h4></div><canvas id="chart-temporal" height="220"></canvas></div>
-                <div class="card col-12"><div class="card-header"><h4><i class="fas fa-sync"></i> 8. Giro Crítico de Estoque (Alerta de Obsoleto/Sem Giro)</h4></div><canvas id="chart-giro-critico" height="120"></canvas></div>
-            </div>
+<div id="app-screen" style="display: none;">
+    <div class="header">
+        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+        <div style="flex-grow: 1;">
+            <div id="user-name" style="font-weight: 900; font-size: 18px; letter-spacing: -0.5px; color: #fff;"></div>
+            <div id="role-label" style="font-size: 9px; color: var(--primary); font-weight: 900; letter-spacing: 2px; text-transform: uppercase;"></div>
         </div>
+        <div style="text-align: right;">
+            <div id="current-time" style="font-size: 12px; font-weight: 800;">00:00</div>
+            <div style="font-size: 9px; color: var(--text-secondary); text-transform: uppercase;">Online</div>
+        </div>
+    </div>
 
-        <div id="page-flow" class="page-content">
-            <div class="main-header">
-                <div class="header-title">
-                    <h2>Fluxo de Carga</h2>
-                    <p>Registro de Entradas, Saídas e Destinos operacionais</p>
-                </div>
+    <div class="container">
+        <div id="view-admin" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card glass-card" onclick="navegarComFiltro('')"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
+                <div class="stat-card glass-card" onclick="navegarComFiltro('critico')"><h5>CRÍTICOS (30-60D)</h5><p id="st-critico" style="color: var(--critico);">0</p></div>
+                <div class="stat-card glass-card" onclick="navegarComFiltro('retido')"><h5>RETIDOS (&lt;30D)</h5><p id="st-retido" style="color: var(--retido);">0</p></div>
+                <div class="stat-card glass-card"><h5>GIRO HOJE</h5><p id="st-mov" style="color: var(--verde);">0</p></div>
             </div>
-            <div class="content-grid">
-                <div class="card col-4">
-                    <div class="card-header"><h4>Registrar Movimentação</h4></div>
+
+            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
+                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">Filtros de Pesquisa do Histórico e Painéis Operacionais</h4>
+                <div class="filter-panel">
                     <div class="form-group">
-                        <label>Tipo de Operação</label>
-                        <select id="flow-tipo" class="input-control" onchange="toggleFlowFields()">
-                            <option value="Entrada">Entrada</option>
-                            <option value="Saída">Saída</option>
+                        <label>Tipo de Filtro Temporal</label>
+                        <select id="filtro-tipo-tempo" onchange="alternarCamposData()">
+                            <option value="mes">Por Mês Atual / Específico</option>
+                            <option value="dia">Por Dia Específico</option>
+                            <option value="periodo">Período Customizado</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Material / SKU</label>
-                        <div class="input-group">
-                            <input type="text" id="flow-mat" class="input-control" placeholder="Código SKU" onblur="buscarDescricaoFluxo()">
-                            <button class="btn btn-secondary" onclick="toggleKB('flow-mat')">123</button>
-                        </div>
+                    <div class="form-group" id="container-filtro-mes">
+                        <label>Mês / Ano de Análise</label>
+                        <input type="month" id="filtro-mes-valor" onchange="processarFiltragemHistorica()">
+                    </div>
+                    <div class="form-group" id="container-filtro-dia" style="display:none;">
+                        <label>Dia de Análise</label>
+                        <input type="date" id="filtro-dia-valor" onchange="processarFiltragemHistorica()">
+                    </div>
+                    <div class="form-group" id="container-filtro-de" style="display:none;">
+                        <label>Data Inicial</label>
+                        <input type="date" id="filtro-de-valor" onchange="processarFiltragemHistorica()">
+                    </div>
+                    <div class="form-group" id="container-filtro-ate" style="display:none;">
+                        <label>Data Final</label>
+                        <input type="date" id="filtro-ate-valor" onchange="processarFiltragemHistorica()">
                     </div>
                     <div class="form-group">
-                        <label>Descrição</label>
-                        <input type="text" id="flow-desc" class="input-control" readonly style="opacity: 0.6;">
+                        <label>Buscar Material (Código/Nome)</label>
+                        <input type="text" id="filtro-material" placeholder="Filtrar tabela/ranking..." oninput="filtrarTabelasEDados()">
                     </div>
-                    <div class="form-group">
-                        <label>Quantidade Movimentada</label>
-                        <div class="input-group">
-                            <input type="number" id="flow-qtd" class="input-control" placeholder="0">
-                            <button class="btn btn-secondary" onclick="toggleKB('flow-qtd')">123</button>
-                        </div>
-                    </div>
-                    <div class="form-group" id="group-setor">
-                        <label>Setor Destino / Abastecido</label>
-                        <input type="text" id="flow-setor" class="input-control" placeholder="Ex: Setor A">
-                    </div>
-                    <div class="form-group" id="group-destino" style="display: none;">
-                        <label>Destino da Carga</label>
-                        <input type="text" id="flow-destino" class="input-control" placeholder="Ex: Cliente X / Filial Y">
-                    </div>
-                    <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="salvarMovimentacao()"><i class="fas fa-save"></i> Salvar Registro</button>
                 </div>
-                <div class="card col-8">
-                    <div class="card-header"><h4>Últimos Registros</h4></div>
-                    <div class="table-responsive">
-                        <table class="custom-table">
+                <div style="display:flex; justify-content: flex-end;">
+                    <button class="btn-action" style="padding: 12px 24px; font-size:11px; background:var(--accent); box-shadow:0 5px 15px var(--accent-glow);" onclick="limparFiltrosHistoricos()">Limpar Filtros</button>
+                </div>
+            </div>
+
+            <div class="dashboard-row">
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-fluxo-diario', '1. Movimentação de Paletes Diária')">Expandir ⛶</button>
+                    <div class="chart-title">📈 1. Movimentação de Paletes Diária <span>(Período Selecionado)</span></div>
+                    <canvas id="chart-fluxo-diario" style="max-height: 250px;"></canvas>
+                </div>
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-fluxo-mensal', '2. Histórico Mensal Acumulado')">Expandir ⛶</button>
+                    <div class="chart-title">🗓️ 2. Histórico Mensal Acumulado <span>(Giro Anual)</span></div>
+                    <canvas id="chart-fluxo-mensal" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-grid-3">
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-setor-mensal', '6.1 Setores Abastecidos (Visão Mensal)')">Expandir ⛶</button>
+                    <div class="chart-title">🧱 6.1 Setores Abastecidos (Visão Mensal)</div>
+                    <canvas id="chart-setor-mensal" style="max-height: 230px;"></canvas>
+                </div>
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-setor-diario', '6.2 Setores Abastecidos (Visão Diária)')">Expandir ⛶</button>
+                    <div class="chart-title">⚡ 6.2 Setores Abastecidos (Visão Diária)</div>
+                    <canvas id="chart-setor-diario" style="max-height: 230px;"></canvas>
+                </div>
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-destinos-saida', 'Destino dos Fluxos de Saída')">Expandir ⛶</button>
+                    <div class="chart-title">🔄 Destino das Cargas (Fluxos de Saída)</div>
+                    <canvas id="chart-destinos-saida" style="max-height: 230px;"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-row">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🏆 3. Materiais Mais Movimentados <span style="color:var(--accent);">Top 10</span></div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
                             <thead>
-                                <tr>
-                                    <th>Data/Hora</th>
-                                    <th>Tipo</th>
-                                    <th>Material</th>
-                                    <th>Qtd</th>
-                                    <th>Setor/Destino</th>
-                                    <th>Ações</th>
-                                </tr>
+                                <tr><th>Código</th><th>Descrição</th><th>Qtd Movimentada (PL)</th></tr>
                             </thead>
-                            <tbody id="table-fluxo-corpo"></tbody>
+                            <tbody id="table-ranking-materiais"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="chart-box glass-card">
+                    <div class="chart-title">👥 5. Produtividade por Colaborador <span style="color:var(--verde);">Ranking</span></div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead>
+                                <tr><th>Colaborador</th><th>Paletes Movimentados</th></tr>
+                            </thead>
+                            <tbody id="table-ranking-operadores"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div id="page-db" class="page-content">
-            <div class="main-header">
-                <div class="header-title">
-                    <h2>Base de Materiais</h2>
-                    <p>Sincronização de catálogo via Excel estruturado</p>
-                </div>
-                <div class="header-actions">
-                    <button class="btn btn-primary" onclick="importarPlanilha()"><i class="fas fa-file-upload"></i> Importar Excel</button>
-                </div>
-            </div>
-            <div class="card col-12">
-                <div class="card-header"><h4>Catálogo Sincronizado</h4></div>
-                <div class="table-responsive">
-                    <table class="custom-table">
-                        <thead>
-                            <tr>
-                                <th>Material</th>
-                                <th>Descrição</th>
-                                <th>Qtd Base</th>
-                                <th>Categoria</th>
-                                <th>Vasilhame</th>
-                                <th>Lastro/Camada</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-materiais-corpo"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="page-rel" class="page-content">
-            <div class="main-header">
-                <div class="header-title">
-                    <h2>Relatórios de Giro</h2>
-                    <p>Análise de Performance Comercial, Cobertura de Estoque e Curva ABC</p>
-                </div>
-            </div>
-            <div class="content-grid">
-                <div class="card col-12">
-                    <div class="card-header"><h4>Análise de Cobertura e Curva ABC</h4></div>
-                    <div class="table-responsive">
-                        <table class="custom-table">
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">
+                        <div>📋 Histórico Detalhado Consolidação Fluxos</div>
+                        <button class="btn-action" onclick="exportarRelatorioFiltradoExcel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">Exportar Planilha Filtrada</button>
+                    </div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
                             <thead>
-                                <tr>
-                                    <th>SKU</th>
-                                    <th>Descrição</th>
-                                    <th>Est. Atual</th>
-                                    <th>Consumo Médio</th>
-                                    <th>Dias de Cobertura</th>
-                                    <th>Classificação ABC</th>
-                                    <th>Status de Giro</th>
-                                </tr>
+                                <tr><th>Data</th><th>Hora</th><th>Fluxo/Ação</th><th>Material</th><th>Descrição</th><th>Setor</th><th>Qtd</th><th>Operador</th></tr>
                             </thead>
-                            <tbody id="table-relatorio-corpo"></tbody>
+                            <tbody id="table-historico-consolidado"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
+
+            <div class="dashboard-row">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">⚡ 4. Monitor de Atividades em Tempo Real (Controle FEFO)</div>
+                    <div id="activity-feed" class="activity-feed"></div>
+                </div>
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-status', 'Saúde Geral do Inventário')">Expandir ⛶</button>
+                    <div class="chart-title">📊 Saúde Geral do Inventário</div>
+                    <canvas id="chart-status" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-card" style="padding: 35px; margin-bottom: 30px;">
+                <h3 style="font-size: 12px; color: #fff; margin-bottom: 25px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">Sistema e Sincronização</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
+                    <button class="btn-action" onclick="document.getElementById('csv-file').click()" style="background: var(--glass); border: 1px solid var(--glass-border); box-shadow: none;">ATUALIZAR ESTOQUE (CSV)</button>
+                    <button class="btn-action" onclick="exportarHistoricoExcel()" style="background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">EXPORTAR LOG COMPLETO DE AUDITORIA</button>
+                </div>
+                <button class="btn-action" onclick="sincronizarBaseMateriais()" style="width: 100%; margin-top: 15px; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">SINCRONIZAR BASE DE MATERIAIS (EXCEL)</button>
+            </div>
         </div>
 
-    </main>
+        <div id="view-retirar">
+            <div class="search-wrapper input-with-toggle">
+                <input type="text" inputmode="numeric" id="search-input" placeholder="Pesquisar Código ou Posição..." oninput="renderizarEstoque()">
+                <div class="toggle-kb-btn" onclick="toggleKB('search-input')" style="right: 15px;">Abc</div>
+            </div>
+            <div id="lista-estoque"></div>
+        </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAs8384f8hfhFH838fhdksjdhfiuehf8",
-            authDomain: "wms-infinity-pro.firebaseapp.com",
-            projectId: "wms-infinity-pro",
-            storageBucket: "wms-infinity-pro.appspot.com",
-            messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:abcdef123456"
-        };
+        <div id="view-entrada_bloco" style="display: none;">
+            <div class="form-box glass-card">
+                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Entrada no Bloco</h3>
+                <div class="form-group"><label>Fluxo de Origem</label><select id="eb-origem"><option value="DRIVE IN">DRIVE IN</option><option value="RECEBIMENTO">RECEBIMENTO</option></select></div>
+                <div class="form-group"><label>Endereço de Destino</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-ender" placeholder="Ex: 205-14"><div class="toggle-kb-btn" onclick="toggleKB('eb-ender')">Abc</div></div>
+                </div>
+                <div class="form-group" style="position: relative;"><label>Código do Material</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('eb-mat')">Abc</div></div>
+                    <div id="eb-mat-list" class="autocomplete-items"></div>
+                </div>
+                <div class="form-group"><label>Descrição do Material</label><input type="text" id="eb-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando código..."></div>
+                <div class="form-group"><label>Quantidade (Pallets)</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="eb-qtd" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('eb-qtd')">Abc</div></div>
+                </div>
+                <div class="form-group"><label>Data de Vencimento</label><input type="date" id="eb-venc" onchange="calcularDias(this.value, 'eb-label-dias')"><p id="eb-label-dias" style="color: var(--critico); font-size: 11px; margin-top: 12px; font-weight: 800; text-transform: uppercase;"></p></div>
+                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="salvarEntradaBloco()">CONFIRMAR ENTRADA</button>
+            </div>
+        </div>
+
+        <div id="view-abertura_blocado" style="display: none;">
+            <div class="form-box glass-card">
+                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Transferência Interna</h3>
+                <div class="form-group"><label>Posição Origem</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-origem" placeholder="Ex: 201-14" onchange="carregarDadosOrigemAbertura(this.value)"><div class="toggle-kb-btn" onclick="toggleKB('ab-origem')">Abc</div></div>
+                </div>
+                <div class="form-group"><label>Material Identificado</label><input type="text" id="ab-mat" readonly style="opacity: 0.5;"></div>
+                <div class="form-group"><label>Posição de Destino</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-destino" placeholder="Ex: 205-20"><div class="toggle-kb-btn" onclick="toggleKB('ab-destino')">Abc</div></div>
+                </div>
+                <div class="form-group"><label>Qtd para Mover</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="ab-qtd" placeholder="Saldo: 0"><div class="toggle-kb-btn" onclick="toggleKB('ab-qtd')">Abc</div></div>
+                </div>
+                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="processarAberturaBlocado()">EXECUTAR MOVIMENTAÇÃO</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-retirada">
+    <div class="modal-content glass-card">
+        <h3 id="modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Retirada</h3>
+        <p id="modal-info" style="font-size:13px; color: var(--text-secondary); margin: 20px 0 30px; line-height: 1.6;"></p>
+        <div class="form-group"><label>Quantidade de Pallets:</label>
+            <div class="input-with-toggle">
+                <input type="text" id="modal-input-qtd" inputmode="decimal" placeholder="0" style="font-size:40px; text-align:center; background: rgba(255,255,255,0.02); border: 2px solid var(--primary); border-radius: 20px; height: 90px; font-weight: 900; color: #fff; width: 100%;">
+                <div class="toggle-kb-btn" onclick="toggleKB('modal-input-qtd')" style="height: 60px; width: 50px;">Abc</div>
+            </div>
+        </div>
+        <div class="form-group"><label>Destino da Carga:</label><select id="modal-destino-mov" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 18px; border-radius: 16px; color: #fff; width: 100%; font-weight: 600;"><option value="TRANSFERENCIA">TRANSFERENCIA</option><option value="APANHA">APANHA</option><option value="SEPARAÇÃO">SEPARAÇÃO</option></select></div>
+        <div style="display:flex; gap:15px; margin-top:35px;"><button onclick="fecharModal()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button><button id="btn-confirmar-modal" class="btn-action" style="flex:1;">CONFIRMAR</button></div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
+        authDomain: "sistema-fefo.firebaseapp.com",
+        projectId: "sistema-fefo",
+        storageBucket: "sistema-fefo.firebasestorage.app",
+        messagingSenderId: "755801777693",
+        appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
+    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+    const auth = firebase.auth();
+
+    // Registrar globalmente o plugin de rótulos do Chart.js
+    Chart.register(ChartDataLabels);
+
+    // Configuração de Estilos de Fonte Padrão para os Textos Internos dos Gráficos
+    Chart.defaults.color = '#64748b';
+    Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+    Chart.defaults.font.weight = '700';
+
+    let estoqueCompleto = [];
+    let baseMateriais = [];
+    let todasMovimentacoes = [];
+    let movimentacoesFiltradas = [];
+    let usuarioLogado = null;
+    let diasCalculados = 0;
+    let itemParaRetirar = null;
+    let itemOrigemAbertura = null;
+
+    // Instâncias Globais de Gráficos
+    let chartDiarioInst = null;
+    let chartMensalInst = null;
+    let chartSetorMInst = null;
+    let chartSetorDInst = null;
+    let chartDestinosInst = null;
+    let chartStatus = null;
+    let chartExpandidoInst = null; // Instância temporária do modal de ampliação
+
+    const SETORES_LISTA = ["ALCOÓLICO", "AVULSO", "LATA", "PET", "SUCO", "VIDRO"];
+
+    setInterval(() => { document.getElementById('current-time').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }, 1000);
+    window.addEventListener('online', () => document.getElementById('network-status').style.display = 'none');
+    window.addEventListener('offline', () => document.getElementById('network-status').style.display = 'block');
+
+    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
+    function logout() { auth.signOut().then(() => { localStorage.removeItem('wms_session'); location.reload(); }); }
+
+    async function tentarLogin() {
+        const mat = document.getElementById('login-mat').value.trim();
+        const senha = document.getElementById('login-senha').value.trim();
+        const email = mat.toLowerCase() + "@alb.com";
+        try {
+            await auth.signInWithEmailAndPassword(email, senha);
+            const doc = await db.collection("usuarios_wms").doc(email).get();
+            usuarioLogado = doc.exists ? { ...doc.data(), email } : { nome: mat, perfil: "OPERADOR", email };
+            localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
+            iniciarApp();
+        } catch (e) { alert("Credenciais incorretas."); }
+    }
+
+    function iniciarApp() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'block';
+        document.getElementById('user-name').innerText = usuarioLogado.nome;
+        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
+        document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
+        document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
         
-        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-        const db = firebase.firestore();
+        const hoje = new Date();
+        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
+        document.getElementById('filtro-dia-valor').value = hoje.toISOString().substring(0, 10);
+        document.getElementById('filtro-de-valor').value = hoje.toISOString().substring(0, 10);
+        document.getElementById('filtro-ate-valor').value = hoje.toISOString().substring(0, 10);
 
-        let instHistorico, instTopMateriais, instCategorias, instVasilhame, instPaletizacao, instSetores, instDestinos, instTemporal, instGiroCritico;
+        conectarFirebase();
+        carregarBaseMateriais();
+        navegar(isAdmin ? 'admin' : 'retirar');
+    }
 
-        function switchPage(pageId) {
-            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.sidebar-menu .menu-item').forEach(m => m.classList.remove('active'));
-            document.getElementById(`page-${pageId}`).classList.add('active');
-            document.getElementById(`nav-${pageId}`).classList.add('active');
-            if(window.innerWidth <= 1024) toggleSidebar();
-        }
+    function navegar(tela) {
+        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
+        document.getElementById('view-' + tela).style.display = 'block';
+        document.getElementById('sidebar').classList.remove('active');
+        if(tela === 'admin') carregarDadosDashboard();
+    }
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-        }
+    function navegarComFiltro(tipo) {
+        navegar('retirar');
+        const input = document.getElementById('search-input');
+        input.value = tipo === 'critico' ? '60' : (tipo === 'retido' ? '30' : '');
+        renderizarEstoque();
+    }
 
-        function toggleFlowFields() {
-            const tipo = document.getElementById('flow-tipo').value;
-            if(tipo === 'Entrada') {
-                document.getElementById('group-setor').style.display = 'block';
-                document.getElementById('group-destino').style.display = 'none';
-            } else {
-                document.getElementById('group-setor').style.display = 'none';
-                document.getElementById('group-destino').style.display = 'block';
+    function alternarCamposData() {
+        const tipo = document.getElementById('filtro-tipo-tempo').value;
+        document.getElementById('container-filtro-mes').style.display = tipo === 'mes' ? 'block' : 'none';
+        document.getElementById('container-filtro-dia').style.display = tipo === 'dia' ? 'block' : 'none';
+        document.getElementById('container-filtro-de').style.display = tipo === 'periodo' ? 'block' : 'none';
+        document.getElementById('container-filtro-ate').style.display = tipo === 'periodo' ? 'block' : 'none';
+        processarFiltragemHistorica();
+    }
+
+    function conectarFirebase() {
+        db.collection("estoque_blocado").onSnapshot(snap => {
+            estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if(usuarioLogado?.perfil?.toUpperCase() === "ADMIN") { atualizarEstatisticas(); carregarDadosDashboard(); }
+            renderizarEstoque();
+        });
+
+        db.collection("movimentacoes_wms").orderBy("timestamp", "desc").onSnapshot(snap => {
+            todasMovimentacoes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            processarFiltragemHistorica();
+        });
+    }
+
+    async function carregarBaseMateriais() {
+        const cache = localStorage.getItem('base_materiais');
+        if (cache) baseMateriais = JSON.parse(cache);
+        if (navigator.onLine) {
+            const snap = await db.collection("base_materiais").get();
+            if (!snap.empty) { 
+                baseMateriais = snap.docs.map(doc => doc.data()); 
+                localStorage.setItem('base_materiais', JSON.stringify(baseMateriais));
             }
         }
+    }
 
-        async function buscarDescricaoFluxo() {
-            const mat = document.getElementById('flow-mat').value.trim();
-            if(!mat) return;
-            const doc = await db.collection('base_materiais').doc(mat).get();
-            if(doc.exists) {
-                document.getElementById('flow-desc').value = doc.data().desc || '';
-            } else {
-                document.getElementById('flow-desc').value = 'Material não cadastrado';
-            }
-        }
+    function atualizarEstatisticas() {
+        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
+        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length;
+        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
+    }
 
-        async function salvarMovimentacao() {
-            const tipo = document.getElementById('flow-tipo').value;
-            const mat = document.getElementById('flow-mat').value.trim();
-            const desc = document.getElementById('flow-desc').value;
-            const qtd = parseFloat(document.getElementById('flow-qtd').value) || 0;
-            const setor = document.getElementById('flow-setor').value.trim();
-            const destino = document.getElementById('flow-destino').value.trim();
+    function processarFiltragemHistorica() {
+        if (todasMovimentacoes.length === 0) return;
 
-            if(!mat || qtd <= 0 || (tipo === 'Entrada' && !setor) || (tipo === 'Saída' && !destino)) {
-                alert('Preencha todos os campos obrigatórios.');
-                return;
-            }
+        const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
+        const filtroMes = document.getElementById('filtro-mes-valor').value; 
+        const filtroDia = document.getElementById('filtro-dia-valor').value; 
+        const filtroDe = document.getElementById('filtro-de-valor').value;
+        const filtroAte = document.getElementById('filtro-ate-valor').value;
 
-            await db.collection('movimentacoes').add({
-                tipo, mat, desc, qtd,
-                localizacao: tipo === 'Entrada' ? setor : destino,
-                data: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            document.getElementById('flow-mat').value = '';
-            document.getElementById('flow-desc').value = '';
-            document.getElementById('flow-qtd').value = '';
-            document.getElementById('flow-setor').value = '';
-            document.getElementById('flow-destino').value = '';
-
-            alert('Movimentação registrada!');
-            carregarFluxo();
-            renderizarDash();
-        }
-
-        async function carregarFluxo() {
-            const snap = await db.collection('movimentacoes').orderBy('data', 'desc').limit(20).get();
-            const tbody = document.getElementById('table-fluxo-corpo');
-            tbody.innerHTML = '';
-            snap.forEach(doc => {
-                const d = doc.data();
-                const dataFormatada = d.data ? d.data.toDate().toLocaleString('pt-BR') : 'Agora';
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${dataFormatada}</td>
-                        <td><span class="badge ${d.tipo === 'Entrada' ? 'badge-success' : 'badge-danger'}">${d.tipo}</span></td>
-                        <td><strong>${d.mat}</strong> - ${d.desc}</td>
-                        <td>${d.qtd}</td>
-                        <td>${d.localizacao || ''}</td>
-                        <td><button class="btn btn-secondary" style="padding: 6px 12px;" onclick="deletarMov('${doc.id}')"><i class="fas fa-trash"></i></button></td>
-                    </tr>
-                `;
-            });
-        }
-
-        async function deletarMov(id) {
-            if(confirm('Excluir este registro?')) {
-                await db.collection('movimentacoes').doc(id).delete();
-                carregarFluxo();
-                renderizarDash();
-            }
-        }
-
-        async function carregarBaseMateriais() {
-            const snap = await db.collection('base_materiais').limit(100).get();
-            const tbody = document.getElementById('table-materiais-corpo');
-            tbody.innerHTML = '';
-            snap.forEach(doc => {
-                const d = doc.data();
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${d.mat}</strong></td>
-                        <td>${d.desc}</td>
-                        <td>${d.qtd_base}</td>
-                        <td>${d.categoria}</td>
-                        <td>${d.vasilhame}</td>
-                        <td>${d.lastro || 0} x ${d.camada || 0}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        async function renderizarDash() {
-            const snapMat = await db.collection('base_materiais').get();
-            const snapMov = await db.collection('movimentacoes').get();
-
-            const totalSku = snapMat.size;
-            document.getElementById('kpi-total-sku').innerText = totalSku;
-
-            let qtdEntradas = 0, qtdSaidas = 0;
-            let mHistorico = {}, mTopMat = {}, mCat = {}, mVas = {}, mPal = {}, mSetores = {}, mDestinos = {}, mTemp = {}, mGiro = {};
-
-            snapMov.forEach(doc => {
-                const d = doc.data();
-                const q = d.qtd || 0;
-                
-                if(d.tipo === 'Entrada') {
-                    qtdEntradas += q;
-                    mSetores[d.localizacao] = (mSetores[d.localizacao] || 0) + q;
-                } else {
-                    qtdSaidas += q;
-                    mDestinos[d.localizacao] = (mDestinos[d.localizacao] || 0) + q;
-                }
-
-                mTopMat[d.desc || d.mat] = (mTopMat[d.desc || d.mat] || 0) + q;
-            });
-
-            snapMat.forEach(doc => {
-                const d = doc.data();
-                mCat[d.categoria || 'Outros'] = (mCat[d.categoria || 'Outros'] || 0) + 1;
-                mVas[d.vasilhame || 'N/A'] = (mVas[d.vasilhame || 'N/A'] || 0) + 1;
-                
-                const l = parseFloat(d.lastro) || 0;
-                const c = parseFloat(d.camada) || 0;
-                if(l && c) mPal[d.desc || d.mat] = l * c;
-            });
-
-            document.getElementById('kpi-entradas-mes').innerText = qtdEntradas.toLocaleString();
-            document.getElementById('kpi-saidas-mes').innerText = qtdSaidas.toLocaleString();
-            document.getElementById('kpi-giro-geral').innerText = totalSku ? ((qtdSaidas / (totalSku * 100)) * 100).toFixed(1) + '%' : '0%';
-
-            initCharts(mTopMat, mCat, mVas, mPal, mSetores, mDestinos);
-            carregarRelatorio(snapMat, snapMov);
-        }
-
-        function carregarRelatorio(snapMat, snapMov) {
-            const tbody = document.getElementById('table-relatorio-corpo');
-            tbody.innerHTML = '';
+        movimentacoesFiltradas = todasMovimentacoes.filter(mov => {
+            if (!mov.data) return false;
+            const partes = mov.data.split('/');
+            const dataMov = new Date(partes[2], partes[1] - 1, partes[0]);
             
-            let consumos = {};
-            snapMov.forEach(doc => {
-                const d = doc.data();
-                if(d.tipo === 'Saída') {
-                    consumos[d.mat] = (consumos[d.mat] || 0) + (d.qtd || 0);
-                }
-            });
+            if (tipoTempo === 'mes' && filtroMes) {
+                const [ano, mes] = filtroMes.split('-');
+                return dataMov.getFullYear() === parseInt(ano) && (dataMov.getMonth() + 1) === parseInt(mes);
+            } else if (tipoTempo === 'dia' && filtroDia) {
+                const [ano, mes, dia] = filtroDia.split('-');
+                return dataMov.getFullYear() === parseInt(ano) && (dataMov.getMonth() + 1) === parseInt(mes) && dataMov.getDate() === parseInt(dia);
+            } else if (tipoTempo === 'periodo' && filtroDe && filtroAte) {
+                const dInit = new Date(filtroDe + "T00:00:00");
+                const dEnd = new Date(filtroAte + "T23:59:59");
+                return dataMov >= dInit && dataMov <= dEnd;
+            }
+            return true;
+        });
 
-            let list = [];
-            snapMat.forEach(doc => {
-                const d = doc.data();
-                const mat = d.mat;
-                const desc = d.desc || '';
-                const estAtual = d.qtd_base || 0;
-                const consMed = (consumos[mat] || 0) / 30;
-                const cobertura = consMed > 0 ? (estAtual / consMed).toFixed(0) : '999+';
-                const valorGiro = (consumos[mat] || 0);
+        filtrarTabelasEDados();
+    }
 
-                list.push({ mat, desc, estAtual, consMed, cobertura, valorGiro });
-            });
+    function limparFiltrosHistoricos() {
+        document.getElementById('filtro-tipo-tempo').value = 'mes';
+        document.getElementById('filtro-material').value = '';
+        const hoje = new Date();
+        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
+        alternarCamposData();
+    }
 
-            list.sort((a,b) => b.valorGiro - a.valorGiro);
-            let totalAcumulado = list.reduce((acc, curr) => acc + curr.valorGiro, 0);
-            let somaAtual = 0;
-
-            list.forEach(item => {
-                somaAtual += item.valorGiro;
-                let perc = totalAcumulado > 0 ? (somaAtual / totalAcumulado) * 100 : 0;
-                let classe = 'C';
-                if(perc <= 70) classe = 'A';
-                else if(perc <= 90) classe = 'B';
-
-                let statusGiro = 'Estável';
-                if(item.cobertura === '999+') statusGiro = 'Sem Giro';
-                else if(item.cobertura < 7) statusGiro = 'Risco de Ruptura';
-                else if(item.cobertura > 60) statusGiro = 'Superestocado';
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${item.mat}</strong></td>
-                        <td>${item.desc}</td>
-                        <td>${item.estAtual}</td>
-                        <td>${(item.consMed * 30).toFixed(0)}/mês</td>
-                        <td><span class="badge ${item.cobertura < 7 ? 'badge-danger' : 'badge-success'}">${item.cobertura} dias</span></td>
-                        <td><span class="badge ${classe === 'A' ? 'badge-success' : classe === 'B' ? 'badge-warning' : 'badge-danger'}">Classe ${classe}</span></td>
-                        <td>${statusGiro}</td>
-                    </tr>
-                `;
+    function filtrarTabelasEDados() {
+        const queryMat = document.getElementById('filtro-material').value.toLowerCase().trim();
+        
+        let dadosExibicao = movimentacoesFiltradas;
+        if (queryMat) {
+            dadosExibicao = movimentacoesFiltradas.filter(m => {
+                const materialCod = m.material ? m.material.toString().toLowerCase() : "";
+                const descMat = buscarDescricaoLocal(m.material).toLowerCase();
+                return materialCod.includes(queryMat) || descMat.includes(queryMat);
             });
         }
 
-        function initCharts(mTopMat, mCat, mVas, mPal, mSetores, mDestinos) {
-            const optBase = {
-                responsive: true,
+        renderizarPaineisEGraticos(dadosExibicao);
+    }
+
+    function buscarDescricaoLocal(cod) {
+        const match = baseMateriais.find(m => m.mat.toString() === cod?.toString());
+        return match ? match.desc : "N/A";
+    }
+
+    function buscarSetorLocal(cod) {
+        const match = baseMateriais.find(m => m.mat.toString() === cod?.toString());
+        return match && match.categoria ? match.categoria.toUpperCase() : "AVULSO";
+    }
+
+    // COMANDO PARA EXPANDIR GRÁFICOS (MODAL FULLSCREEN)
+    function expandirGrafico(chartId, titulo) {
+        const modal = document.getElementById('modal-grafico-expandido');
+        document.getElementById('modal-grafico-titulo').innerText = titulo;
+        modal.style.display = 'flex';
+
+        // Captura a instância original do gráfico ativo
+        let graficoOriginal = null;
+        if (chartId === 'chart-fluxo-diario') graficoOriginal = chartDiarioInst;
+        if (chartId === 'chart-fluxo-mensal') graficoOriginal = chartMensalInst;
+        if (chartId === 'chart-setor-mensal') graficoOriginal = chartSetorMInst;
+        if (chartId === 'chart-setor-diario') graficoOriginal = chartSetorDInst;
+        if (chartId === 'chart-destinos-saida') graficoOriginal = chartDestinosInst;
+        if (chartId === 'chart-status') graficoOriginal = chartStatus;
+
+        if (!graficoOriginal) return;
+
+        const ctxExpanded = document.getElementById('canvas-expanded-render').getContext('2d');
+        if (chartExpandidoInst) chartExpandidoInst.destroy();
+
+        // Clona a estrutura do gráfico com escala e fontes maiores para exibição em TV
+        chartExpandidoInst = new Chart(ctxExpanded, {
+            type: graficoOriginal.config.type,
+            data: JSON.parse(JSON.stringify(graficoOriginal.config.data)),
+            options: {
+                ...graficoOriginal.config.options,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { labels: { color: '#9CA3AF', font: { family: 'Hubot Sans' } } },
-                    datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: Math.round }
-                },
-                scales: {
-                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9CA3AF' } },
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9CA3AF' } }
-                }
-            };
-
-            if(instHistorico) instHistorico.destroy();
-            instHistorico = new Chart(document.getElementById('chart-historico'), {
-                type: 'line',
-                data: { labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai'], datasets: [{ label: 'Entradas', data: [1200, 1900, 3200, 5000, 6100], borderColor: '#10B981', tension: 0.4 }, { label: 'Saídas', data: [900, 1400, 2100, 4100, 5600], borderColor: '#3B82F6', tension: 0.4 }] },
-                options: optBase
-            });
-
-            if(instTopMateriais) instTopMateriais.destroy();
-            instTopMateriais = new Chart(document.getElementById('chart-top-materiais'), {
-                type: 'bar',
-                data: { labels: Object.keys(mTopMat).slice(0,10), datasets: [{ label: 'Vol. Movimentado', data: Object.values(mTopMat).slice(0,10), backgroundColor: '#3B82F6' }] },
-                options: { ...optBase, indexAxis: 'y' }
-            });
-
-            if(instCategorias) instCategorias.destroy();
-            instCategorias = new Chart(document.getElementById('chart-categorias'), {
-                type: 'doughnut',
-                data: { labels: Object.keys(mCat), datasets: [{ data: Object.values(mCat), backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'] }] },
-                options: optBase
-            });
-
-            if(instVasilhame) instVasilhame.destroy();
-            instVasilhame = new Chart(document.getElementById('chart-vasilhame'), {
-                type: 'polarArea',
-                data: { labels: Object.keys(mVas), datasets: [{ data: Object.values(mVas), backgroundColor: ['rgba(59, 130, 246, 0.5)', 'rgba(16, 185, 129, 0.5)', 'rgba(245, 158, 11, 0.5)'] }] },
-                options: optBase
-            });
-
-            if(instPaletizacao) instPaletizacao.destroy();
-            instPaletizacao = new Chart(document.getElementById('chart-paletizacao'), {
-                type: 'radar',
-                data: { labels: Object.keys(mPal).slice(0,6), datasets: [{ label: 'Capacidade Palete', data: Object.values(mPal).slice(0,6), borderColor: '#8B5CF6', backgroundColor: 'rgba(139, 92, 246, 0.2)' }] },
-                options: optBase
-            });
-
-            // MODIFICADO: Alterado para gráfico de coluna (barra vertical)
-            if(instSetores) instSetores.destroy();
-            instSetores = new Chart(document.getElementById('chart-setores'), {
-                type: 'bar',
-                data: { labels: Object.keys(mSetores), datasets: [{ label: 'Volume Abastecido', data: Object.values(mSetores), backgroundColor: '#F59E0B' }] },
-                options: { ...optBase, indexAxis: 'x' }
-            });
-
-            // MODIFICADO: Alterado para gráfico de coluna (barra vertical)
-            if(instDestinos) instDestinos.destroy();
-            instDestinos = new Chart(document.getElementById('chart-destinos'), {
-                type: 'bar',
-                data: { labels: Object.keys(mDestinos), datasets: [{ label: 'Fluxo Despachado', data: Object.values(mDestinos), backgroundColor: '#10B981' }] },
-                options: { ...optBase, indexAxis: 'x' }
-            });
-
-            if(instTemporal) instTemporal.destroy();
-            instTemporal = new Chart(document.getElementById('chart-temporal'), {
-                type: 'line',
-                data: { labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'], datasets: [{ label: 'Eficiência', data: [85, 89, 92, 95], borderColor: '#10B981' }] },
-                options: optBase
-            });
-
-            if(instGiroCritico) instGiroCritico.destroy();
-            instGiroCritico = new Chart(document.getElementById('chart-giro-critico'), {
-                type: 'bar',
-                data: { labels: ['Sem Giro', 'Ruptura', 'Superestocado'], datasets: [{ label: 'Materiais', data: [5, 2, 8], backgroundColor: '#EF4444' }] },
-                options: optBase
-            });
-        }
-
-        function importarPlanilha() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.xlsx, .xls';
-            input.onchange = e => {
-                const reader = new FileReader();
-                reader.onload = async (event) => {
-                    const data = new Uint8Array(event.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(sheet);
-                    
-                    let batch = db.batch();
-                    let count = 0;
-                    
-                    for(let item of json) {
-                        const mat = item['Material'] || item['SKU'] || item['Código'];
-                        if(mat) {
-                            const ref = db.collection('base_materiais').doc(mat.toString());
-                            batch.set(ref, { mat, desc: item['Descrição'] || '', qtd_base: item['Quantidade'] || 0, categoria: item['Categoria'] || '', vasilhame: item['Vasilhame'] || '', lastro: item['Lastro'] || null, camada: item['Camada'] || null });
-                            count++;
-                            if(count % 400 === 0) { await batch.commit(); batch = db.batch(); }
+                    ...graficoOriginal.config.options.plugins,
+                    legend: {
+                        display: graficoOriginal.config.options.plugins?.legend?.display !== false,
+                        position: 'bottom',
+                        labels: { color: '#fff', font: { size: 16, weight: '800' } }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: { size: 16, weight: '900' },
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        borderRadius: 6,
+                        padding: 8,
+                        formatter: (val, ctx) => {
+                            let label = ctx.chart.data.labels[ctx.dataIndex] || '';
+                            return graficoOriginal.config.type === 'doughnut' ? `${label}: ${val}` : val;
                         }
                     }
-                    await batch.commit();
-                    alert("Base de Dados Infinity Sincronizada!");
-                    carregarBaseMateriais();
-                };
-                reader.readAsArrayBuffer(e.target.files[0]);
-            };
-            input.click();
-        }
-
-        function toggleKB(id) {
-            const input = document.getElementById(id);
-            const btn = event.currentTarget;
-            if (input.inputMode === 'numeric' || input.inputMode === 'decimal') {
-                input.inputMode = 'text';
-                btn.innerText = '123';
-                btn.style.background = 'var(--primary)';
-                btn.style.color = '#fff';
-            } else {
-                input.inputMode = id.includes('qtd') ? 'decimal' : 'numeric';
-                btn.innerText = 'Abc';
-                btn.style.background = 'var(--glass)';
-                btn.style.color = 'var(--text-secondary)';
+                }
             }
-            input.focus();
-        }
+        });
+    }
 
-        window.onload = () => {
-            carregarFluxo();
-            carregarBaseMateriais();
-            renderizarDash();
-            setInterval(renderizarDash, 30000);
+    function fecharGraficoExpandido() {
+        document.getElementById('modal-grafico-expandido').style.display = 'none';
+        if (chartExpandidoInst) { chartExpandidoInst.destroy(); chartExpandidoInst = null; }
+    }
+
+    function renderizarPaineisEGraticos(dados) {
+        const hojeStr = new Date().toLocaleDateString('pt-BR');
+        let movHojeContagem = todasMovimentacoes.filter(m => m.data === hojeStr).length;
+        document.getElementById('st-mov').innerText = movHojeContagem;
+
+        // FEED TEMPO REAL
+        const feed = document.getElementById('activity-feed');
+        feed.innerHTML = '';
+        todasMovimentacoes.slice(0, 15).forEach(d => {
+            const loginLimpo = d.login ? d.login.split('@')[0].toUpperCase() : 'SISTEMA';
+            const tagCor = (d.quantidade && d.quantidade.toString().includes('+')) ? 'var(--verde)' : 'var(--primary)';
+            const desc = buscarDescricaoLocal(d.material);
+            const estCorrespondente = estoqueCompleto.find(e => e.mat === d.material && e.ender === d.endereco);
+            const validadeInfo = estCorrespondente ? estCorrespondente.valFrente : (d.validade || "Não Informada");
+
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            item.innerHTML = `
+                <div class="activity-icon-box" style="color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? '📥' : '📤'}</div>
+                <div class="activity-content">
+                    <span class="activity-tag" style="background: ${tagCor}20; color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? 'Entrada' : 'Saída'}</span>
+                    <br>Op: <b>${loginLimpo}</b> | Material: <b>${d.material} - ${desc}</b>
+                    <br>Endereço: <b>${d.endereco || 'N/A'}</b> | Vol: <b>${d.quantidade || '0'}</b>
+                    <span class="activity-time">Vencimento (FEFO): <span style="color:var(--critico); font-weight:700;">${validadeInfo}</span> às ${d.hora || '00:00'} - ${d.data}</span>
+                </div>`;
+            feed.appendChild(item);
+        });
+
+        // ESTRUTURAÇÃO DE DADOS DOS GRAFICOS
+        const volumeDiario = {};
+        const volumeMensal = {};
+        const rankingMateriais = {};
+        const rankingOperadores = {};
+        
+        const setorMensalAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
+        const setorDiarioAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
+        
+        // Objeto para controle do novo gráfico de saídas solicitadas
+        const fluxosDestinoAcumulado = { "TRANSFERENCIA": 0, "APANHA": 0, "SEPARAÇÃO": 0 };
+
+        const dataAtualObjeto = new Date();
+        const anoAtualStr = dataAtualObjeto.getFullYear().toString();
+
+        dados.forEach(mov => {
+            const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
+            const dataMov = mov.data; 
+            if (!dataMov) return;
+
+            const partes = dataMov.split('/');
+
+            volumeDiario[dataMov] = (volumeDiario[dataMov] || 0) + qtdAbsoluta;
+            rankingMateriais[mov.material] = (rankingMateriais[mov.material] || 0) + qtdAbsoluta;
+            const operadorChave = mov.login ? mov.login.split('@')[0].toUpperCase() : "SISTEMA";
+            rankingOperadores[operadorChave] = (rankingOperadores[operadorChave] || 0) + qtdAbsoluta;
+
+            const setorMat = buscarSetorLocal(mov.material);
+            if (setorMensalAcumulado[setorMat] !== undefined) {
+                setorMensalAcumulado[setorMat] += qtdAbsoluta;
+            }
+
+            // Alimentação do Novo Gráfico de Destinos de Carga (Apenas Fluxos de Saída)
+            const fluxoNormalizado = mov.fluxo ? mov.fluxo.toUpperCase().trim() : "";
+            if (fluxosDestinoAcumulado[fluxoNormalizado] !== undefined) {
+                fluxosDestinoAcumulado[fluxoNormalizado] += qtdAbsoluta;
+            }
+
+            const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
+            const filtroDiaSel = document.getElementById('filtro-dia-valor').value;
+            let diaAlvoStr = new Date().toISOString().substring(0,10);
+            if(tipoTempo === 'dia' && filtroDiaSel) diaAlvoStr = filtroDiaSel;
+            
+            const [aA, mM, dD] = diaAlvoStr.split('-');
+            const dataFormatadaComp = `${dD}/${mM}/${aA}`;
+
+            if(dataMov === dataFormatadaComp) {
+                if (setorDiarioAcumulado[setorMat] !== undefined) {
+                    setorDiarioAcumulado[setorMat] += qtdAbsoluta;
+                }
+            }
+        });
+
+        todasMovimentacoes.forEach(mov => {
+            if(!mov.data) return;
+            const partes = mov.data.split('/');
+            if(partes[2] === anoAtualStr) {
+                const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
+                volumeMensal[partes[1]] = (volumeMensal[partes[1]] || 0) + qtdAbsoluta;
+            }
+        });
+
+        // CONFIGURAÇÃO DOS PLUGINS DE LABELS VISUAIS DIRETOS NOS GRÁFICOS
+        const padraoDatalabelsBarra = {
+            anchor: 'end',
+            align: 'top',
+            color: '#fff',
+            font: { weight: '800', size: 10 },
+            formatter: (val) => val > 0 ? val : ''
         };
-    </script>
+
+        const padraoDatalabelsRosca = {
+            color: '#fff',
+            font: { weight: '900', size: 11 },
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            borderRadius: 4,
+            padding: 4,
+            formatter: (val, ctx) => {
+                return val > 0 ? `${ctx.chart.data.labels[ctx.dataIndex]}\n${val} PL` : '';
+            }
+        };
+
+        // 1. RENDER GRÁFICO DIÁRIO
+        const labelsDias = Object.keys(volumeDiario).sort((a, b) => new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-')));
+        const ctxD = document.getElementById('chart-fluxo-diario').getContext('2d');
+        if (chartDiarioInst) chartDiarioInst.destroy();
+        chartDiarioInst = new Chart(ctxD, {
+            type: 'bar',
+            data: { labels: labelsDias, datasets: [{ label: 'Paletes', data: labelsDias.map(lbl => volumeDiario[lbl]), backgroundColor: '#6366f1' }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra }, scales: { y: { grid: { color: 'rgba(255,255,255,0.03)' } } } }
+        });
+
+        // 2. RENDER GRÁFICO MENSAL ACUMULADO
+        const mesesLabelsReduzidos = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        const ctxM = document.getElementById('chart-fluxo-mensal').getContext('2d');
+        if (chartMensalInst) chartMensalInst.destroy();
+        chartMensalInst = new Chart(ctxM, {
+            type: 'line',
+            data: { labels: mesesLabelsReduzidos, datasets: [{ data: ["01","02","03","04","05","06","07","08","09","10","11","12"].map(m => volumeMensal[m] || 0), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', fill: true, tension: 0.2 }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: { ...padraoDatalabelsBarra, align: 'right' } } }
+        });
+
+        // 6.1 GRÁFICO SETOR MENSAL
+        const ctxSM = document.getElementById('chart-setor-mensal').getContext('2d');
+        if (chartSetorMInst) chartSetorMInst.destroy();
+        chartSetorMInst = new Chart(ctxSM, {
+            type: 'doughnut',
+            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorMensalAcumulado[s]), backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'] }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } }
+        });
+
+        // 6.2 GRÁFICO SETOR DIÁRIO
+        const ctxSD = document.getElementById('chart-setor-diario').getContext('2d');
+        if (chartSetorDInst) chartSetorDInst.destroy();
+        chartSetorDInst = new Chart(ctxSD, {
+            type: 'bar',
+            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorDiarioAcumulado[s]), backgroundColor: 'rgba(255, 62, 62, 0.4)', borderColor: '#ff3e3e', borderWidth: 1 }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra } }
+        });
+
+        // NOVO GRÁFICO: DESTINO DAS CARGAS (TRANSFERENCIA, APANHA, SEPARAÇÃO)
+        const ctxDest = document.getElementById('chart-destinos-saida').getContext('2d');
+        if (chartDestinosInst) chartDestinosInst.destroy();
+        chartDestinosInst = new Chart(ctxDest, {
+            type: 'doughnut',
+            data: { 
+                labels: ["TRANSFERENCIA", "APANHA", "SEPARAÇÃO"], 
+                datasets: [{ 
+                    data: [fluxosDestinoAcumulado["TRANSFERENCIA"], fluxosDestinoAcumulado["APANHA"], fluxosDestinoAcumulado["SEPARAÇÃO"]], 
+                    backgroundColor: ['#00f2ff', '#fbbf24', '#6366f1'] 
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                plugins: { 
+                    legend: { display: false }, 
+                    datalabels: padraoDatalabelsRosca 
+                } 
+            }
+        });
+
+        // GRÁFICO DE SAÚDE INVENTÁRIO
+        const ctxS = document.getElementById('chart-status').getContext('2d');
+        if (chartStatus) chartStatus.destroy();
+        chartStatus = new Chart(ctxS, { 
+            type: 'doughnut', 
+            data: { labels: ['Boa', 'Crítica', 'Retida'], datasets: [{ data: [estoqueCompleto.filter(i => i.dias > 60).length, estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length, estoqueCompleto.filter(i => i.dias <= 30).length], backgroundColor: ['#10b981', '#fbbf24', '#f87171'] }] }, 
+            options: { responsive: true, cutout: '75%', plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } } 
+        });
+
+        // RENDERIZAR TABELAS OPERACIONAIS
+        const tbodyHist = document.getElementById('table-historico-consolidado');
+        tbodyHist.innerHTML = '';
+        dados.forEach(m => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
+            tbodyHist.appendChild(tr);
+        });
+
+        const tbodyMat = document.getElementById('table-ranking-materiais');
+        tbodyMat.innerHTML = '';
+        Object.entries(rankingMateriais).sort((a,b) => b[1] - a[1]).slice(0, 10).forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><b>${item[0]}</b></td><td>${buscarDescricaoLocal(item[0])}</td><td><span style="color:var(--primary); font-weight:900;">${item[1]} PL</span></td>`;
+            tbodyMat.appendChild(tr);
+        });
+
+        const tbodyOp = document.getElementById('table-ranking-operadores');
+        tbodyOp.innerHTML = '';
+        Object.entries(rankingOperadores).sort((a,b) => b[1] - a[1]).forEach((op, index) => {
+            const medalha = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${medalha}<b>${op[0]}</b></td><td><span style="color:var(--verde); font-weight:800;">${op[1]} Paletes</span></td>`;
+            tbodyOp.appendChild(tr);
+        });
+    }
+
+    function carregarDadosDashboard() { processarFiltragemHistorica(); }
+
+    function renderizarEstoque() {
+        const termo = document.getElementById('search-input').value.toLowerCase().trim();
+        const lista = document.getElementById('lista-estoque');
+        lista.innerHTML = '';
+        if (!termo) return;
+        const isAdmin = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
+        let filtrados = estoqueCompleto.filter(i => {
+            if (parseInt(i.qtd) <= 0) return false;
+            if (termo === '60') return i.dias > 30 && i.dias <= 60;
+            if (termo === '30') return i.dias <= 30;
+            const mat = i.mat?.toString().toLowerCase() || "";
+            const ender = i.ender?.toString().toLowerCase() || "";
+            return /^\d+$/.test(termo) ? mat === termo : ender.includes(termo);
+        });
+        if (!isAdmin) filtrados = filtrados.filter(item => item.dias > 30);
+        if (filtrados.length === 0) return;
+        filtrados.sort((a, b) => (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0));
+        if (/^\d+$/.test(termo) && termo !== '60' && termo !== '30') filtrados = [filtrados[0]];
+        filtrados.forEach(item => {
+            let status = item.dias <= 30 ? "RETIDO" : (item.dias <= 60 ? "CRÍTICO" : "DATA BOA");
+            let cor = item.dias <= 30 ? "var(--retido)" : (item.dias <= 60 ? "var(--critico)" : "var(--verde)");
+            const card = document.createElement('div');
+            card.className = `item-card`;
+            card.style.borderLeft = `8px solid ${cor}`;
+            card.innerHTML = `<div><span class="badge badge-ender">${item.ender}</span><span class="badge" style="background: ${cor}20; color: ${cor}; border: 1px solid ${cor}40; margin-left: 5px;">${status}</span><div style="font-weight:900; font-size:24px; margin-top:15px; letter-spacing:-1px; color: #fff;">${item.mat}</div><div style="font-size:12px; color:var(--text-secondary); margin-top:5px; font-weight:600;">${item.desc || "---"}</div><div style="font-size:10px; margin-top:15px; color: var(--text-secondary); font-weight: 800;">VALIDADE: <b style="color: ${cor}">${item.dias} DIAS</b></div></div><div style="text-align: right;"><div style="font-size:32px; font-weight:900; margin-bottom:15px; color: #fff;">${item.qtd}<span style="font-size:12px; color:var(--text-secondary); margin-left:5px;">PL</span></div><button class="btn-action" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button></div>`;
+            lista.appendChild(card);
+        });
+    }
+
+    function puxarDescricaoObrigatoria(val, inputDescId, listId) {
+        const list = document.getElementById(listId);
+        const descInput = document.getElementById(inputDescId);
+        list.innerHTML = '';
+        if (!val) { descInput.value = ''; return; }
+        const matches = baseMateriais.filter(m => m.mat.toString().startsWith(val)).slice(0, 5);
+        matches.forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-item';
+            div.innerHTML = `<strong>${m.mat}</strong> - ${m.desc}`;
+            div.onclick = () => { document.getElementById('eb-mat').value = m.mat; descInput.value = m.desc; list.innerHTML = ''; };
+            list.appendChild(div);
+        });
+        const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
+        if (exact) { descInput.value = exact.desc; descInput.style.color = "var(--verde)"; } 
+        else { descInput.value = "MATERIAL NÃO CADASTRADO"; descInput.style.color = "var(--retido)"; }
+    }
+
+    document.addEventListener('click', e => { if (e.target.id !== 'eb-mat') { const l = document.getElementById('eb-mat-list'); if(l) l.innerHTML = ''; } });
+    
+    function retirarMaterial(id, qtdAtual, mat, ender, val) {
+        itemParaRetirar = { id, qtdAtual, mat, ender, val };
+        document.getElementById('modal-titulo').innerText = mat;
+        document.getElementById('modal-info').innerHTML = `Posição: <b>${ender}</b><br>Saldo Atual: <b>${qtdAtual} Pallets</b>`;
+        document.getElementById('modal-input-qtd').value = '';
+        document.getElementById('modal-retirada').style.display = 'flex';
+        setTimeout(() => document.getElementById('modal-input-qtd').focus(), 150);
+        document.getElementById('btn-confirmar-modal').onclick = processarRetirada;
+    }
+
+    function fecharModal() { document.getElementById('modal-retirada').style.display = 'none'; }
+
+    async function processarRetirada() {
+        const v = parseInt(document.getElementById('modal-input-qtd').value);
+        if (isNaN(v) || v <= 0 || v > itemParaRetirar.qtdAtual) return alert("Quantidade inválida.");
+        try {
+            if (v === itemParaRetirar.qtdAtual) { await db.collection("estoque_blocado").doc(itemParaRetirar.id).delete(); } 
+            else { await db.collection("estoque_blocado").doc(itemParaRetirar.id).update({ qtd: itemParaRetirar.qtdAtual - v }); }
+            registrarMovimentacao(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, `-${v} PL`, document.getElementById('modal-destino-mov').value);
+            fecharModal();
+        } catch (e) { alert("Erro ao processar retirada."); }
+    }
+
+    async function salvarEntradaBloco() {
+        const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
+        const mat = document.getElementById('eb-mat').value.trim();
+        const desc = document.getElementById('eb-desc').value;
+        const qtd = parseInt(document.getElementById('eb-qtd').value);
+        const inputVenc = document.getElementById('eb-venc').value;
+        if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos.");
+        if(desc === "MATERIAL NÃO CADASTRADO") return alert("Código não cadastrado na base.");
+        const val = inputVenc.split('-').reverse().join('/');
+        const ocupante = estoqueCompleto.find(i => i.ender === ender);
+        if (ocupante && ocupante.mat !== mat) return alert("Posição ocupada por outro material.");
+        if (ocupante) { await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd }); } 
+        else { await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: val, desc: desc }); }
+        registrarMovimentacao(ender, mat, val, `+${qtd} PL`, `ENTRADA VIA ${document.getElementById('eb-origem').value}`);
+        ['eb-ender', 'eb-mat', 'eb-desc', 'eb-qtd', 'eb-venc'].forEach(id => document.getElementById(id).value = '');
+        navegar('retirar');
+    }
+
+    function carregarDadosOrigemAbertura(ender) {
+        const item = estoqueCompleto.find(i => i.ender.toLowerCase() === ender.toLowerCase().trim());
+        if (item) { itemOrigemAbertura = item; document.getElementById('ab-mat').value = item.mat; document.getElementById('ab-qtd').placeholder = `Max: ${item.qtd}`; } 
+        else { itemOrigemAbertura = null; document.getElementById('ab-mat').value = ''; }
+    }
+
+    async function processarAberturaBlocado() {
+        const dest = document.getElementById('ab-destino').value.toUpperCase().trim();
+        const qtd = parseInt(document.getElementById('ab-qtd').value);
+        if(!itemOrigemAbertura || isNaN(qtd) || qtd <= 0 || qtd > itemOrigemAbertura.qtd || !dest) return alert("Dados inválidos.");
+        const ocup = estoqueCompleto.find(i => i.ender === dest);
+        if (ocup && ocup.mat !== itemOrigemAbertura.mat) return alert("Destino ocupado.");
+        if (qtd === itemOrigemAbertura.qtd) { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete(); } 
+        else { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtd }); }
+        if (ocup) { await db.collection("estoque_blocado").doc(ocup.id).update({ qtd: ocup.qtd + qtd }); } 
+        else { await db.collection("estoque_blocado").add({ ender: dest, mat: itemOrigemAbertura.mat, desc: itemOrigemAbertura.desc, qtd, dias: itemOrigemAbertura.dias, valFrente: itemOrigemAbertura.valFrente }); }
+        registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtd} PL`, `PARA ${dest}`);
+        registrarMovimentacao(dest, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtd} PL`, `DE ${itemOrigemAbertura.ender}`);
+        navegar('retirar');
+    }
+
+    function calcularDias(data, labelId) {
+        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
+        document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
+    }
+
+    async function registrarMovimentacao(ender, mat, val, qtd, fluxo) {
+        const agora = new Date();
+        await db.collection("movimentacoes_wms").add({ 
+            endereco: ender, 
+            material: mat, 
+            validade: val, 
+            quantidade: qtd, 
+            fluxo, 
+            login: usuarioLogado.email, 
+            data: agora.toLocaleDateString('pt-BR'), 
+            hora: agora.toLocaleTimeString('pt-BR'), 
+            timestamp: agora 
+        });
+    }
+
+    function exportarRelatorioFiltradoExcel() {
+        if(movimentacoesFiltradas.length === 0) return alert("Não existem dados no período filtrado para exportar.");
+        const dadosPlanilha = movimentacoesFiltradas.map(m => ({ "Data": m.data, "Horário": m.hora, "Fluxo / Ação": m.fluxo, "Código Material": m.material, "Descrição": buscarDescricaoLocal(m.material), "Setor Logístico": buscarSetorLocal(m.material), "Quantidade (PL)": m.quantidade, "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A' }));
+        const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Relatório_Filtrado");
+        XLSX.writeFile(wb, `WMS_Relatorio_Consolidado_${new Date().getTime()}.xlsx`);
+    }
+
+    async function exportarHistoricoExcel() {
+        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
+        const dados = snap.docs.map(doc => { const d = doc.data(); return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora }; });
+        const ws = XLSX.utils.json_to_sheet(dados);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Infinity_Log");
+        XLSX.writeFile(wb, `Infinity_WMS_Log_Completo_${new Date().getTime()}.xlsx`);
+    }
+
+    async function importarCSV(event) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
+            if (!confirm(`Confirmar reset de estoque para ${linhas.length} itens?`)) return;
+            const snapshot = await db.collection("estoque_blocado").get();
+            if (!snapshot.empty) {
+                let batchDel = db.batch();
+                snapshot.docs.forEach((doc, idx) => { batchDel.delete(doc.ref); if ((idx + 1) % 400 === 0) { batchDel.commit(); batchDel = db.batch(); } });
+                await batchDel.commit();
+            }
+            let batch = db.batch();
+            linhas.forEach((linha, i) => {
+                const c = linha.split(";");
+                if (c.length >= 6) {
+                    batch.set(db.collection("estoque_blocado").doc(), { ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(), valFrente: c[3].trim(), qtd: parseInt(c[5].replace(/\D/g, '')) || 0, dias: parseInt(c[7].replace(/\D/g, '')) || 0 });
+                    if((i+1)%400===0) { batch.commit(); batch = db.batch(); }
+                }
+            });
+            await batch.commit();
+            alert("Estoque Infinity Updated!");
+        };
+        reader.readAsText(event.target.files[0]);
+    }
+
+    async function sincronizarBaseMateriais() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.xlsx, .xls';
+        input.onchange = async (e) => {
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                const data = new Uint8Array(ev.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                let batch = db.batch();
+                let count = 0;
+                for(const item of json) {
+                    const mat = item['Cód. Material'];
+                    if(mat) {
+                        batch.set(db.collection("base_materiais").doc(mat.toString()), { mat, desc: item['Descrição'] || '', qtd_base: item['Quantidade'] || 0, categoria: item['Categoria'] || '', vasilhame: item['Vasilhame'] || '', lastro: item['Lastro'] || null, camada: item['Camada'] || null });
+                        count++;
+                        if(count % 400 === 0) { await batch.commit(); batch = db.batch(); }
+                    }
+                }
+                await batch.commit();
+                alert("Base de Dados Infinity Sincronizada!");
+                carregarBaseMateriais();
+            };
+            reader.readAsArrayBuffer(e.target.files[0]);
+        };
+        input.click();
+    }
+
+    function toggleKB(id) {
+        const input = document.getElementById(id);
+        const btn = event.currentTarget;
+        if (input.inputMode === 'numeric' || input.inputMode === 'decimal') {
+            input.inputMode = 'text';
+            btn.innerText = '123';
+            btn.style.background = 'var(--primary)';
+            btn.style.color = '#fff';
+        } else {
+            input.inputMode = id.includes('qtd') ? 'decimal' : 'numeric';
+            btn.innerText = 'Abc';
+            btn.style.background = 'var(--glass)';
+            btn.style.color = 'var(--text-secondary)';
+        }
+        input.focus();
+    }
+
+    window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
+</script>
 </body>
 </html>
