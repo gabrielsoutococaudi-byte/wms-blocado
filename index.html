@@ -15,7 +15,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
@@ -82,12 +84,22 @@
         .stat-card p { font-size: 30px; font-weight: 900; color: #fff; letter-spacing: -1px; }
 
         .dashboard-row { display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; margin-bottom: 24px; }
+        .dashboard-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px; }
         .dashboard-fullrow { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 24px; }
         @media (max-width: 900px) { .dashboard-row { grid-template-columns: 1fr; } }
 
-        .chart-box { padding: 28px; }
-        .chart-title { font-size: 12px; font-weight: 900; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); }
+        .chart-box { padding: 28px; position: relative; }
+        .chart-title { font-size: 12px; font-weight: 900; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); padding-right: 40px; }
         .chart-title span { color: var(--primary); }
+
+        /* Botão de Expansão */
+        .expand-btn { position: absolute; top: 22px; right: 22px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; font-weight: 700; transition: 0.2s; z-index: 10; }
+        .expand-btn:hover { background: var(--accent); border-color: var(--accent); }
+
+        /* Modal do Gráfico Expandido */
+        .chart-fullscreen-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2,2,2,0.98); z-index: 5000; padding: 40px; flex-direction: column; }
+        .chart-fullscreen-modal .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; }
+        .chart-fullscreen-modal .canvas-container { flex-grow: 1; position: relative; width: 100%; height: 80%; display: flex; align-items: center; justify-content: center; }
 
         .activity-feed { max-height: 450px; overflow-y: auto; padding-right: 5px; }
         .activity-item { display: flex; gap: 16px; margin-bottom: 24px; padding: 12px; border-radius: 16px; transition: 0.3s; }
@@ -110,10 +122,6 @@
         .btn-action { background: var(--primary); color: #fff; border: none; padding: 16px 28px; border-radius: 16px; font-weight: 900; cursor: pointer; font-size: 13px; box-shadow: 0 10px 20px var(--primary-glow); transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
         .btn-action:active { transform: scale(0.96); }
 
-        .ranking-item { display: flex; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--glass-border); }
-        .ranking-avatar { width: 42px; height: 42px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 900; margin-right: 15px; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .ranking-value { font-weight: 900; font-size: 18px; color: var(--primary); margin-left: auto; }
-
         .form-box { padding: 35px; margin-bottom: 30px; margin-top: 20px; }
         .form-group label { display: block; font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 800; letter-spacing: 1.5px; }
         .form-group input, .form-group select { width: 100%; padding: 18px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: #fff; outline: none; font-size: 15px; transition: 0.3s; }
@@ -125,7 +133,6 @@
         .autocomplete-item { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid var(--glass-border); font-size: 13px; }
         .autocomplete-item:hover { background-color: var(--primary); color: #fff; }
 
-        /* Estilos da Tabela Operacional */
         .wms-table-container { width: 100%; overflow-x: auto; margin-top: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid var(--glass-border); }
         .wms-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
         .wms-table th { background: rgba(255,255,255,0.05); padding: 14px 16px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; font-size: 10px; letter-spacing: 1px; }
@@ -141,6 +148,16 @@
 <body>
 
 <div id="network-status">⚠️ MODO OFFLINE ATIVO</div>
+
+<div id="modal-grafico-expandido" class="chart-fullscreen-modal">
+    <div class="modal-header">
+        <h2 id="modal-grafico-titulo" style="font-weight:900; letter-spacing:-1px;">Gráfico Expandido</h2>
+        <button class="btn-action" style="padding:10px 20px; background:var(--primary);" onclick="fecharGraficoExpandido()">Fechar Voltar ✕</button>
+    </div>
+    <div class="canvas-container">
+        <canvas id="canvas-expanded-render"></canvas>
+    </div>
+</div>
 
 <div id="sidebar" class="sidebar">
     <div style="padding: 30px; font-weight: 900; color: #fff; font-size: 22px; letter-spacing: -1.5px; display: flex; align-items: center; gap: 10px;">
@@ -234,23 +251,32 @@
 
             <div class="dashboard-row">
                 <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-fluxo-diario', '1. Movimentação de Paletes Diária')">Expandir ⛶</button>
                     <div class="chart-title">📈 1. Movimentação de Paletes Diária <span>(Período Selecionado)</span></div>
                     <canvas id="chart-fluxo-diario" style="max-height: 250px;"></canvas>
                 </div>
                 <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-fluxo-mensal', '2. Histórico Mensal Acumulado')">Expandir ⛶</button>
                     <div class="chart-title">🗓️ 2. Histórico Mensal Acumulado <span>(Giro Anual)</span></div>
                     <canvas id="chart-fluxo-mensal" style="max-height: 250px;"></canvas>
                 </div>
             </div>
 
-            <div class="dashboard-row">
+            <div class="dashboard-grid-3">
                 <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-setor-mensal', '6.1 Setores Abastecidos (Visão Mensal)')">Expandir ⛶</button>
                     <div class="chart-title">🧱 6.1 Setores Abastecidos (Visão Mensal)</div>
                     <canvas id="chart-setor-mensal" style="max-height: 230px;"></canvas>
                 </div>
                 <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-setor-diario', '6.2 Setores Abastecidos (Visão Diária)')">Expandir ⛶</button>
                     <div class="chart-title">⚡ 6.2 Setores Abastecidos (Visão Diária)</div>
                     <canvas id="chart-setor-diario" style="max-height: 230px;"></canvas>
+                </div>
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-destinos-saida', 'Destino dos Fluxos de Saída')">Expandir ⛶</button>
+                    <div class="chart-title">🔄 Destino das Cargas (Fluxos de Saída)</div>
+                    <canvas id="chart-destinos-saida" style="max-height: 230px;"></canvas>
                 </div>
             </div>
 
@@ -302,6 +328,7 @@
                     <div id="activity-feed" class="activity-feed"></div>
                 </div>
                 <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-status', 'Saúde Geral do Inventário')">Expandir ⛶</button>
                     <div class="chart-title">📊 Saúde Geral do Inventário</div>
                     <canvas id="chart-status" style="max-height: 250px;"></canvas>
                 </div>
@@ -394,7 +421,14 @@
     db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
     db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
     const auth = firebase.auth();
-    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+    // Registrar globalmente o plugin de rótulos do Chart.js
+    Chart.register(ChartDataLabels);
+
+    // Configuração de Estilos de Fonte Padrão para os Textos Internos dos Gráficos
+    Chart.defaults.color = '#64748b';
+    Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+    Chart.defaults.font.weight = '700';
 
     let estoqueCompleto = [];
     let baseMateriais = [];
@@ -405,14 +439,15 @@
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
 
-    // Instâncias Globais de Gráficos (ChartJS)
+    // Instâncias Globais de Gráficos
     let chartDiarioInst = null;
     let chartMensalInst = null;
     let chartSetorMInst = null;
     let chartSetorDInst = null;
+    let chartDestinosInst = null;
     let chartStatus = null;
+    let chartExpandidoInst = null; // Instância temporária do modal de ampliação
 
-    // Definição dos Setores Padrão requisitados
     const SETORES_LISTA = ["ALCOÓLICO", "AVULSO", "LATA", "PET", "SUCO", "VIDRO"];
 
     setInterval(() => { document.getElementById('current-time').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }, 1000);
@@ -443,7 +478,6 @@
         document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
         
-        // Define data atual padrão nos inputs de filtro
         const hoje = new Date();
         document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
         document.getElementById('filtro-dia-valor').value = hoje.toISOString().substring(0, 10);
@@ -485,7 +519,6 @@
             renderizarEstoque();
         });
 
-        // Escuta em tempo real do histórico completo (Requisito 4)
         db.collection("movimentacoes_wms").orderBy("timestamp", "desc").onSnapshot(snap => {
             todasMovimentacoes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             processarFiltragemHistorica();
@@ -510,19 +543,17 @@
         document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
     }
 
-    // Processamento centralizado com base em todo o histórico armazenado e filtros aplicados
     function processarFiltragemHistorica() {
         if (todasMovimentacoes.length === 0) return;
 
         const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
-        const filtroMes = document.getElementById('filtro-mes-valor').value; // YYYY-MM
-        const filtroDia = document.getElementById('filtro-dia-valor').value; // YYYY-MM-DD
+        const filtroMes = document.getElementById('filtro-mes-valor').value; 
+        const filtroDia = document.getElementById('filtro-dia-valor').value; 
         const filtroDe = document.getElementById('filtro-de-valor').value;
         const filtroAte = document.getElementById('filtro-ate-valor').value;
 
         movimentacoesFiltradas = todasMovimentacoes.filter(mov => {
             if (!mov.data) return false;
-            // Conversão de data formato pt-BR (DD/MM/YYYY) para objeto data comparável
             const partes = mov.data.split('/');
             const dataMov = new Date(partes[2], partes[1] - 1, partes[0]);
             
@@ -554,7 +585,6 @@
     function filtrarTabelasEDados() {
         const queryMat = document.getElementById('filtro-material').value.toLowerCase().trim();
         
-        // Aplica filtro de texto adicional do material se inserido
         let dadosExibicao = movimentacoesFiltradas;
         if (queryMat) {
             dadosExibicao = movimentacoesFiltradas.filter(m => {
@@ -577,22 +607,73 @@
         return match && match.categoria ? match.categoria.toUpperCase() : "AVULSO";
     }
 
+    // COMANDO PARA EXPANDIR GRÁFICOS (MODAL FULLSCREEN)
+    function expandirGrafico(chartId, titulo) {
+        const modal = document.getElementById('modal-grafico-expandido');
+        document.getElementById('modal-grafico-titulo').innerText = titulo;
+        modal.style.display = 'flex';
+
+        // Captura a instância original do gráfico ativo
+        let graficoOriginal = null;
+        if (chartId === 'chart-fluxo-diario') graficoOriginal = chartDiarioInst;
+        if (chartId === 'chart-fluxo-mensal') graficoOriginal = chartMensalInst;
+        if (chartId === 'chart-setor-mensal') graficoOriginal = chartSetorMInst;
+        if (chartId === 'chart-setor-diario') graficoOriginal = chartSetorDInst;
+        if (chartId === 'chart-destinos-saida') graficoOriginal = chartDestinosInst;
+        if (chartId === 'chart-status') graficoOriginal = chartStatus;
+
+        if (!graficoOriginal) return;
+
+        const ctxExpanded = document.getElementById('canvas-expanded-render').getContext('2d');
+        if (chartExpandidoInst) chartExpandidoInst.destroy();
+
+        // Clona a estrutura do gráfico com escala e fontes maiores para exibição em TV
+        chartExpandidoInst = new Chart(ctxExpanded, {
+            type: graficoOriginal.config.type,
+            data: JSON.parse(JSON.stringify(graficoOriginal.config.data)),
+            options: {
+                ...graficoOriginal.config.options,
+                maintainAspectRatio: false,
+                plugins: {
+                    ...graficoOriginal.config.options.plugins,
+                    legend: {
+                        display: graficoOriginal.config.options.plugins?.legend?.display !== false,
+                        position: 'bottom',
+                        labels: { color: '#fff', font: { size: 16, weight: '800' } }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: { size: 16, weight: '900' },
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        borderRadius: 6,
+                        padding: 8,
+                        formatter: (val, ctx) => {
+                            let label = ctx.chart.data.labels[ctx.dataIndex] || '';
+                            return graficoOriginal.config.type === 'doughnut' ? `${label}: ${val}` : val;
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function fecharGraficoExpandido() {
+        document.getElementById('modal-grafico-expandido').style.display = 'none';
+        if (chartExpandidoInst) { chartExpandidoInst.destroy(); chartExpandidoInst = null; }
+    }
+
     function renderizarPaineisEGraticos(dados) {
         const hojeStr = new Date().toLocaleDateString('pt-BR');
         let movHojeContagem = todasMovimentacoes.filter(m => m.data === hojeStr).length;
         document.getElementById('st-mov').innerText = movHojeContagem;
 
-        // 1. DADOS DE ATIVIDADES EM TEMPO REAL (Controle FEFO atualizado)
+        // FEED TEMPO REAL
         const feed = document.getElementById('activity-feed');
         feed.innerHTML = '';
-        
-        // Pega as últimas 15 movimentações gerais para o Feed
         todasMovimentacoes.slice(0, 15).forEach(d => {
             const loginLimpo = d.login ? d.login.split('@')[0].toUpperCase() : 'SISTEMA';
             const tagCor = (d.quantidade && d.quantidade.toString().includes('+')) ? 'var(--verde)' : 'var(--primary)';
             const desc = buscarDescricaoLocal(d.material);
-            
-            // Busca data de vencimento correspondente na base do estoque atual se houver, visando FEFO
             const estCorrespondente = estoqueCompleto.find(e => e.mat === d.material && e.ender === d.endereco);
             const validadeInfo = estCorrespondente ? estCorrespondente.valFrente : (d.validade || "Não Informada");
 
@@ -609,7 +690,7 @@
             feed.appendChild(item);
         });
 
-        // ESTRUTURAS DE MAPS PARA ACUMULADOS DOS GRÁFICOS E RANKINGS
+        // ESTRUTURAÇÃO DE DADOS DOS GRAFICOS
         const volumeDiario = {};
         const volumeMensal = {};
         const rankingMateriais = {};
@@ -617,35 +698,36 @@
         
         const setorMensalAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
         const setorDiarioAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
+        
+        // Objeto para controle do novo gráfico de saídas solicitadas
+        const fluxosDestinoAcumulado = { "TRANSFERENCIA": 0, "APANHA": 0, "SEPARAÇÃO": 0 };
 
         const dataAtualObjeto = new Date();
         const anoAtualStr = dataAtualObjeto.getFullYear().toString();
-        const mesAtualZero = String(dataAtualObjeto.getMonth() + 1).padStart(2, '0');
 
-        // Processa todo histórico filtrado selecionado
         dados.forEach(mov => {
             const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
-            const dataMov = mov.data; // DD/MM/YYYY
+            const dataMov = mov.data; 
             if (!dataMov) return;
 
             const partes = dataMov.split('/');
-            const mesAnoChave = `${partes[1]}/${partes[2]}`; // MM/YYYY
 
-            // Acumulado Diário do Período Selecionado
             volumeDiario[dataMov] = (volumeDiario[dataMov] || 0) + qtdAbsoluta;
-
-            // Rankings
             rankingMateriais[mov.material] = (rankingMateriais[mov.material] || 0) + qtdAbsoluta;
             const operadorChave = mov.login ? mov.login.split('@')[0].toUpperCase() : "SISTEMA";
             rankingOperadores[operadorChave] = (rankingOperadores[operadorChave] || 0) + qtdAbsoluta;
 
-            // Classificação e compilação por Setor cadastrado
             const setorMat = buscarSetorLocal(mov.material);
             if (setorMensalAcumulado[setorMat] !== undefined) {
                 setorMensalAcumulado[setorMat] += qtdAbsoluta;
             }
 
-            // Visão Diária de Setor se corresponder ao dia filtrado ou ao dia atual
+            // Alimentação do Novo Gráfico de Destinos de Carga (Apenas Fluxos de Saída)
+            const fluxoNormalizado = mov.fluxo ? mov.fluxo.toUpperCase().trim() : "";
+            if (fluxosDestinoAcumulado[fluxoNormalizado] !== undefined) {
+                fluxosDestinoAcumulado[fluxoNormalizado] += qtdAbsoluta;
+            }
+
             const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
             const filtroDiaSel = document.getElementById('filtro-dia-valor').value;
             let diaAlvoStr = new Date().toISOString().substring(0,10);
@@ -661,36 +743,112 @@
             }
         });
 
-        // Loop separado nas movimentações totais para montar a visão histórica consolidada mensal (Ano Atual Completo)
         todasMovimentacoes.forEach(mov => {
             if(!mov.data) return;
             const partes = mov.data.split('/');
-            const anoMov = partes[2];
-            const mesMov = partes[1];
-            if(anoMov === anoAtualStr) {
+            if(partes[2] === anoAtualStr) {
                 const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
-                volumeMensal[mesMov] = (volumeMensal[mesMov] || 0) + qtdAbsoluta;
+                volumeMensal[partes[1]] = (volumeMensal[partes[1]] || 0) + qtdAbsoluta;
             }
         });
 
-        // 2. RENDERIZAR TABELA HISTÓRICA CONSOLIDADA COMPLETA
+        // CONFIGURAÇÃO DOS PLUGINS DE LABELS VISUAIS DIRETOS NOS GRÁFICOS
+        const padraoDatalabelsBarra = {
+            anchor: 'end',
+            align: 'top',
+            color: '#fff',
+            font: { weight: '800', size: 10 },
+            formatter: (val) => val > 0 ? val : ''
+        };
+
+        const padraoDatalabelsRosca = {
+            color: '#fff',
+            font: { weight: '900', size: 11 },
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            borderRadius: 4,
+            padding: 4,
+            formatter: (val, ctx) => {
+                return val > 0 ? `${ctx.chart.data.labels[ctx.dataIndex]}\n${val} PL` : '';
+            }
+        };
+
+        // 1. RENDER GRÁFICO DIÁRIO
+        const labelsDias = Object.keys(volumeDiario).sort((a, b) => new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-')));
+        const ctxD = document.getElementById('chart-fluxo-diario').getContext('2d');
+        if (chartDiarioInst) chartDiarioInst.destroy();
+        chartDiarioInst = new Chart(ctxD, {
+            type: 'bar',
+            data: { labels: labelsDias, datasets: [{ label: 'Paletes', data: labelsDias.map(lbl => volumeDiario[lbl]), backgroundColor: '#6366f1' }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra }, scales: { y: { grid: { color: 'rgba(255,255,255,0.03)' } } } }
+        });
+
+        // 2. RENDER GRÁFICO MENSAL ACUMULADO
+        const mesesLabelsReduzidos = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        const ctxM = document.getElementById('chart-fluxo-mensal').getContext('2d');
+        if (chartMensalInst) chartMensalInst.destroy();
+        chartMensalInst = new Chart(ctxM, {
+            type: 'line',
+            data: { labels: mesesLabelsReduzidos, datasets: [{ data: ["01","02","03","04","05","06","07","08","09","10","11","12"].map(m => volumeMensal[m] || 0), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', fill: true, tension: 0.2 }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: { ...padraoDatalabelsBarra, align: 'right' } } }
+        });
+
+        // 6.1 GRÁFICO SETOR MENSAL
+        const ctxSM = document.getElementById('chart-setor-mensal').getContext('2d');
+        if (chartSetorMInst) chartSetorMInst.destroy();
+        chartSetorMInst = new Chart(ctxSM, {
+            type: 'doughnut',
+            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorMensalAcumulado[s]), backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'] }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } }
+        });
+
+        // 6.2 GRÁFICO SETOR DIÁRIO
+        const ctxSD = document.getElementById('chart-setor-diario').getContext('2d');
+        if (chartSetorDInst) chartSetorDInst.destroy();
+        chartSetorDInst = new Chart(ctxSD, {
+            type: 'bar',
+            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorDiarioAcumulado[s]), backgroundColor: 'rgba(255, 62, 62, 0.4)', borderColor: '#ff3e3e', borderWidth: 1 }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra } }
+        });
+
+        // NOVO GRÁFICO: DESTINO DAS CARGAS (TRANSFERENCIA, APANHA, SEPARAÇÃO)
+        const ctxDest = document.getElementById('chart-destinos-saida').getContext('2d');
+        if (chartDestinosInst) chartDestinosInst.destroy();
+        chartDestinosInst = new Chart(ctxDest, {
+            type: 'doughnut',
+            data: { 
+                labels: ["TRANSFERENCIA", "APANHA", "SEPARAÇÃO"], 
+                datasets: [{ 
+                    data: [fluxosDestinoAcumulado["TRANSFERENCIA"], fluxosDestinoAcumulado["APANHA"], fluxosDestinoAcumulado["SEPARAÇÃO"]], 
+                    backgroundColor: ['#00f2ff', '#fbbf24', '#6366f1'] 
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                plugins: { 
+                    legend: { display: false }, 
+                    datalabels: padraoDatalabelsRosca 
+                } 
+            }
+        });
+
+        // GRÁFICO DE SAÚDE INVENTÁRIO
+        const ctxS = document.getElementById('chart-status').getContext('2d');
+        if (chartStatus) chartStatus.destroy();
+        chartStatus = new Chart(ctxS, { 
+            type: 'doughnut', 
+            data: { labels: ['Boa', 'Crítica', 'Retida'], datasets: [{ data: [estoqueCompleto.filter(i => i.dias > 60).length, estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length, estoqueCompleto.filter(i => i.dias <= 30).length], backgroundColor: ['#10b981', '#fbbf24', '#f87171'] }] }, 
+            options: { responsive: true, cutout: '75%', plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } } 
+        });
+
+        // RENDERIZAR TABELAS OPERACIONAIS
         const tbodyHist = document.getElementById('table-historico-consolidado');
         tbodyHist.innerHTML = '';
         dados.forEach(m => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${m.data}</td>
-                <td>${m.hora}</td>
-                <td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td>
-                <td><b>${m.material}</b></td>
-                <td>${buscarDescricaoLocal(m.material)}</td>
-                <td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td>
-                <td><b>${m.quantidade}</b></td>
-                <td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
+            tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
             tbodyHist.appendChild(tr);
         });
 
-        // 3. TABELA RANKING MATERIAIS MAIS MOVIMENTADOS (Top 10)
         const tbodyMat = document.getElementById('table-ranking-materiais');
         tbodyMat.innerHTML = '';
         Object.entries(rankingMateriais).sort((a,b) => b[1] - a[1]).slice(0, 10).forEach(item => {
@@ -699,7 +857,6 @@
             tbodyMat.appendChild(tr);
         });
 
-        // 5. TABELA COLABORADOR QUE MAIS MOVIMENTOU
         const tbodyOp = document.getElementById('table-ranking-operadores');
         tbodyOp.innerHTML = '';
         Object.entries(rankingOperadores).sort((a,b) => b[1] - a[1]).forEach((op, index) => {
@@ -708,68 +865,9 @@
             tr.innerHTML = `<td>${medalha}<b>${op[0]}</b></td><td><span style="color:var(--verde); font-weight:800;">${op[1]} Paletes</span></td>`;
             tbodyOp.appendChild(tr);
         });
-
-        // ATUALIZAÇÃO DOS GRÁFICOS UTILIZANDO CHART.JS
-        // Gráfico Diário (Linha)
-        const labelsDias = Object.keys(volumeDiario).sort((a, b) => {
-            const strChaveA = a.split('/').reverse().join('-');
-            const strChaveB = b.split('/').reverse().join('-');
-            return new Date(strChaveA) - new Date(strChaveB);
-        });
-        const dadosDias = labelsDias.map(lbl => volumeDiario[lbl]);
-
-        const ctxD = document.getElementById('chart-fluxo-diario').getContext('2d');
-        if (chartDiarioInst) chartDiarioInst.destroy();
-        chartDiarioInst = new Chart(ctxD, {
-            type: 'bar',
-            data: { labels: labelsDias, datasets: [{ label: 'Qtd Total Movimentada', data: dadosDias, backgroundColor: '#6366f1' }] },
-            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }, x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 9 } } } } }
-        });
-
-        // Gráfico Mensal Acumulado (Barras)
-        const mesesAnoLista = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
-        const mesesLabelsReduzidos = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-        const dadosMeses = mesesAnoLista.map(m => volumeMensal[m] || 0);
-
-        const ctxM = document.getElementById('chart-fluxo-mensal').getContext('2d');
-        if (chartMensalInst) chartMensalInst.destroy();
-        chartMensalInst = new Chart(ctxM, {
-            type: 'line',
-            data: { labels: mesesLabelsReduzidos, datasets: [{ label: 'Volume Mensal', data: dadosMeses, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3 }] },
-            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } }, x: { ticks: { color: '#64748b' } } } }
-        });
-
-        // Gráficos de Setor (Mensal e Diário)
-        const ctxSM = document.getElementById('chart-setor-mensal').getContext('2d');
-        if (chartSetorMInst) chartSetorMInst.destroy();
-        chartSetorMInst = new Chart(ctxSM, {
-            type: 'doughnut',
-            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorMensalAcumulado[s]), backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'] }] },
-            options: { responsive: true, plugins: { legend: { position: 'right', labels: { color: '#64748b', font: { size: 10 } } } } }
-        });
-
-        const ctxSD = document.getElementById('chart-setor-diario').getContext('2d');
-        if (chartSetorDInst) chartSetorDInst.destroy();
-        chartSetorDInst = new Chart(ctxSD, {
-            type: 'bar',
-            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorDiarioAcumulado[s]), backgroundColor: 'rgba(255,255,255,0.08)', borderColor: '#fff', borderWidth: 1 }] },
-            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#64748b' } }, x: { ticks: { color: '#64748b' } } } }
-        });
-
-        // Atualiza Gráfico de Rosca de Saúde Fixo do Inventário Geral
-        const statusData = [estoqueCompleto.filter(i => i.dias > 60).length, estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length, estoqueCompleto.filter(i => i.dias <= 30).length];
-        const ctxS = document.getElementById('chart-status').getContext('2d');
-        if (chartStatus) chartStatus.destroy();
-        chartStatus = new Chart(ctxS, { 
-            type: 'doughnut', 
-            data: { labels: ['Boa', 'Crítica', 'Retida'], datasets: [{ data: statusData, backgroundColor: ['#10b981', '#fbbf24', '#f87171'], borderWidth: 0, hoverOffset: 15 }] }, 
-            options: { responsive: true, cutout: '80%', plugins: { legend: { position: 'bottom', labels: { color: '#64748b', padding: 15, font: { size: 10, weight: '800' } } } } } 
-        });
     }
 
-    function carregarDadosDashboard() {
-        processarFiltragemHistorica();
-    }
+    function carregarDadosDashboard() { processarFiltragemHistorica(); }
 
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
@@ -902,21 +1000,9 @@
         });
     }
 
-    // Exportação Direcionada da Tabela Atual com base nos Filtros Selecionados
     function exportarRelatorioFiltradoExcel() {
         if(movimentacoesFiltradas.length === 0) return alert("Não existem dados no período filtrado para exportar.");
-        
-        const dadosPlanilha = movimentacoesFiltradas.map(m => ({
-            "Data": m.data,
-            "Horário": m.hora,
-            "Fluxo / Ação": m.fluxo,
-            "Código Material": m.material,
-            "Descrição": buscarDescricaoLocal(m.material),
-            "Setor Logístico": buscarSetorLocal(m.material),
-            "Quantidade (PL)": m.quantidade,
-            "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'
-        }));
-
+        const dadosPlanilha = movimentacoesFiltradas.map(m => ({ "Data": m.data, "Horário": m.hora, "Fluxo / Ação": m.fluxo, "Código Material": m.material, "Descrição": buscarDescricaoLocal(m.material), "Setor Logístico": buscarSetorLocal(m.material), "Quantidade (PL)": m.quantidade, "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A' }));
         const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Relatório_Filtrado");
@@ -952,7 +1038,7 @@
                 }
             });
             await batch.commit();
-            alert("Estoque Infinity Atualizado!");
+            alert("Estoque Infinity Updated!");
         };
         reader.readAsText(event.target.files[0]);
     }
