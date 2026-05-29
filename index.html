@@ -645,6 +645,10 @@
             options: {
                 ...graficoOriginal.config.options,
                 maintainAspectRatio: false,
+                scales: {
+                    y: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "#fff", font: { size: 14, weight: "700" } } },
+                    x: { grid: { display: false }, ticks: { color: "#fff", font: { size: 14, weight: "800" } } }
+                },
                 plugins: {
                     ...graficoOriginal.config.options.plugins,
                     legend: {
@@ -852,6 +856,7 @@
         });
 
         
+        
         // 7. RENDER GRÁFICO APANHA POR SETOR
         const ctxApanha = document.getElementById('chart-apanha-setor').getContext('2d');
         if (chartApanhaSetorInst) chartApanhaSetorInst.destroy();
@@ -870,21 +875,31 @@
                 responsive: true, 
                 plugins: { 
                     legend: { display: false }, 
-                    datalabels: padraoDatalabelsBarra 
+                    datalabels: {
+                        anchor: 'center',
+                        align: 'center',
+                        color: '#fff',
+                        font: { weight: '900', size: 14 },
+                        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                        borderRadius: 4,
+                        padding: 4,
+                        formatter: (val) => val > 0 ? val : '0'
+                    }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.03)' },
-                        ticks: { color: 'var(--text-secondary)' }
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#ffffff', font: { weight: '600' } }
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { color: 'var(--text-secondary)', font: { weight: '700' } }
+                        ticks: { color: '#ffffff', font: { weight: '800', size: 11 } }
                     }
                 }
             }
         });
+
 
 
         // GRÁFICO DE SAÚDE INVENTÁRIO
