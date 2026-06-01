@@ -355,7 +355,6 @@
                     <button class="btn-action" onclick="exportarHistoricoExcel()" style="background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">EXPORTAR LOG COMPLETO DE AUDITORIA</button>
                 </div>
                 <button class="btn-action" onclick="sincronizarBaseMateriais()" style="width: 100%; margin-top: 15px; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">SINCRONIZAR BASE DE MATERIAIS (EXCEL)</button>
-                <button class="btn-action" onclick="corrigirFluxoHistorico()" style="width: 100%; margin-top: 15px; background: #b45309; box-shadow: 0 10px 20px rgba(180,83,9,0.3);">🔧 CORRIGIR HISTÓRICO: "ENTRADA DRIVE IN - DESTINO: APANHA" → "APANHA"</button>
             </div>
         </div>
 
@@ -1186,37 +1185,7 @@
         input.focus();
     }
 
-    async function corrigirFluxoHistorico() {
-        const confirmar = confirm("Isso vai atualizar TODOS os registros do Firestore que têm fluxo = 'ENTRADA DRIVE IN - DESTINO: APANHA' para 'APANHA'.\n\nDeseja continuar?");
-        if (!confirmar) return;
- 
-        try {
-            const snap = await db.collection("movimentacoes_wms")
-                .where("fluxo", "==", "ENTRADA DRIVE IN - DESTINO: APANHA")
-                .get();
- 
-            if (snap.empty) {
-                alert("Nenhum registro encontrado com esse fluxo. Histórico já está correto!");
-                return;
-            }
- 
-            let batch = db.batch();
-            let count = 0;
-            snap.docs.forEach((doc, idx) => {
-                batch.update(doc.ref, { fluxo: "APANHA" });
-                count++;
-                if ((idx + 1) % 400 === 0) { batch.commit(); batch = db.batch(); }
-            });
-            await batch.commit();
- 
-            alert(`✅ Correção concluída! ${count} registro(s) atualizado(s) para "APANHA".`);
-            processarFiltragemHistorica();
-        } catch (e) {
-            alert("Erro ao corrigir histórico: " + e.message);
-        }
-    }
- 
-
+    window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
 
     // SCREEN WAKE LOCK - Mantém a tela sempre ativa
     let wakeLock = null;
