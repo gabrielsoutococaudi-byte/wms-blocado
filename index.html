@@ -1290,7 +1290,7 @@
                 valFrente: val, 
                 desc: desc 
             });
-            registrarMovimentacao("DRIVE-IN", mat, val, `+${qtd} PL`, `ENTRADA DRIVE IN - DESTINO: ${destino}`);
+            registrarMovimentacao("DRIVE-IN", mat, val, `+${qtd} PL`, destino);
             alert("Movimentacao Drive In registrada com sucesso!");
             ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc', 'mdi-destino'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('mdi-destino').value = 'APANHA';
