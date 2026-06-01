@@ -167,7 +167,8 @@
     <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ANALYTICS</button>
     <button onclick="navegar('retirar')">📦 PESQUISAR ESTOQUE</button>
     <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
-    <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
+        <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
+    <button onclick="navegar('movimentacao_drive_in')">🚚 MOVIMENTAÇÃO DRIVE IN</button>
     
     <button onclick="logout()" style="color: var(--retido); margin-top: 40px; border-top: 1px solid var(--glass-border); border-radius: 0; width: 100%; opacity: 0.7;">🚪 ENCERRAR SESSÃO</button>
 </div>
@@ -398,6 +399,24 @@
                 <button class="btn-action" style="width: 100%; padding: 20px;" onclick="processarAberturaBlocado()">EXECUTAR MOVIMENTAÇÃO</button>
             </div>
         </div>
+
+        <div id="view-movimentacao_drive_in" style="display: none;">
+            <div class="form-box glass-card">
+                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Movimentacao Drive In</h3>
+                <div class="form-group"><label>Fluxo de Origem</label><select id="mdi-origem"><option value="DRIVE IN">DRIVE IN</option></select></div>
+                <div class="form-group" style="position: relative;"><label>Codigo do Material</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="mdi-mat" placeholder="Codigo..." oninput="puxarDescricaoMovDriveIn(this.value, 'mdi-desc', 'mdi-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('mdi-mat')">Abc</div></div>
+                    <div id="mdi-mat-list" class="autocomplete-items"></div>
+                </div>
+                <div class="form-group"><label>Descricao do Material</label><input type="text" id="mdi-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando codigo..."></div>
+                <div class="form-group"><label>Quantidade (Pallets)</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="mdi-qtd" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('mdi-qtd')">Abc</div></div>
+                </div>
+                <div class="form-group"><label>Data de Vencimento</label><input type="date" id="mdi-venc" onchange="calcularDiasMovDriveIn(this.value, 'mdi-label-dias')"><p id="mdi-label-dias" style="color: var(--critico); font-size: 11px; margin-top: 12px; font-weight: 800; text-transform: uppercase;"></p></div>
+                <div class="form-group"><label>Fluxo de Destino</label><select id="mdi-destino"><option value="APANHA">APANHA</option><option value="TRANSFERENCIA">TRANSFERENCIA</option></select></div>
+                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="salvarMovimentacaoDriveIn()">CONFIRMAR MOVIMENTACAO</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -500,7 +519,7 @@
     }
 
     function navegar(tela) {
-        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
+        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
         document.getElementById('view-' + tela).style.display = 'block';
         document.getElementById('sidebar').classList.remove('active');
         if(tela === 'admin') carregarDadosDashboard();
@@ -1161,6 +1180,63 @@
     }
 
     window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
+
+    function puxarDescricaoMovDriveIn(val, inputDescId, listId) {
+        const list = document.getElementById(listId);
+        const descInput = document.getElementById(inputDescId);
+        list.innerHTML = '';
+        if (!val) { descInput.value = ''; return; }
+        const matches = baseMateriais.filter(m => m.mat.toString().startsWith(val)).slice(0, 5);
+        matches.forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-item';
+            div.innerHTML = `<strong>${m.mat}</strong> - ${m.desc}`;
+            div.onclick = () => { document.getElementById('mdi-mat').value = m.mat; descInput.value = m.desc; list.innerHTML = ''; };
+            list.appendChild(div);
+        });
+        const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
+        if (exact) { descInput.value = exact.desc; descInput.style.color = "var(--verde)"; } 
+        else { descInput.value = "MATERIAL NAO CADASTRADO"; descInput.style.color = "var(--retido)"; }
+    }
+
+    document.addEventListener('click', e => { if (e.target.id !== 'mdi-mat') { const l = document.getElementById('mdi-mat-list'); if(l) l.innerHTML = ''; } });
+
+    function calcularDiasMovDriveIn(data, labelId) {
+        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
+        document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
+    }
+
+    async function salvarMovimentacaoDriveIn() {
+        const origem = document.getElementById('mdi-origem').value;
+        const mat = document.getElementById('mdi-mat').value.trim();
+        const desc = document.getElementById('mdi-desc').value;
+        const qtd = parseInt(document.getElementById('mdi-qtd').value);
+        const inputVenc = document.getElementById('mdi-venc').value;
+        const destino = document.getElementById('mdi-destino').value;
+        
+        if(!mat || isNaN(qtd) || !inputVenc || !destino) return alert("Preencha todos os campos.");
+        if(desc === "MATERIAL NAO CADASTRADO") return alert("Codigo nao cadastrado na base.");
+        
+        const val = inputVenc.split('-').reverse().join('/');
+        
+        try {
+            await db.collection("estoque_blocado").add({ 
+                ender: "DRIVE-IN", 
+                mat, 
+                qtd, 
+                dias: diasCalculados, 
+                valFrente: val, 
+                desc: desc 
+            });
+            registrarMovimentacao("DRIVE-IN", mat, val, `+${qtd} PL`, `ENTRADA DRIVE IN - DESTINO: ${destino}`);
+            alert("Movimentacao Drive In registrada com sucesso!");
+            ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc', 'mdi-destino'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('mdi-destino').value = 'APANHA';
+            navegar('retirar');
+        } catch (e) { 
+            alert("Erro ao registrar movimentacao: " + e.message); 
+        }
+    }
 </script>
 </body>
-</html>
+</html></html>
