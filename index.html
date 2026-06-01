@@ -172,7 +172,6 @@
     <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
         <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
     <button onclick="navegar('movimentacao_drive_in')">🚚 MOVIMENTAÇÃO DRIVE IN</button>
-    <button onclick="navegar('historico_drive_in')">📋 HISTÓRICO DRIVE IN</button>
     
     <button onclick="logout()" style="color: var(--retido); margin-top: 40px; border-top: 1px solid var(--glass-border); border-radius: 0; width: 100%; opacity: 0.7;">🚪 ENCERRAR SESSÃO</button>
 </div>
@@ -404,42 +403,7 @@
             </div>
         </div>
  
-        <div id="view-historico_drive_in" style="display: none;">
-    <div style="margin-top: 20px; margin-bottom: 20px;">
-        <h3 style="color: #fff; font-weight: 900; font-size: 22px; letter-spacing: -1px; margin-bottom: 20px;">📋 Histórico Drive In</h3>
- 
-        <div class="filter-panel glass-card" style="margin-bottom: 20px;">
-            <div class="form-group">
-                <label>Tipo de Filtro</label>
-                <select id="hdi-filtro-tipo" onchange="hdiAlternarCampos()">
-                    <option value="dia">Por Dia</option>
-                    <option value="mes">Por Mês</option>
-                    <option value="periodo">Período</option>
-                </select>
-            </div>
-            <div class="form-group" id="hdi-container-dia">
-                <label>Data</label>
-                <input type="date" id="hdi-filtro-dia" onchange="hdiCarregarHistorico()">
-            </div>
-            <div class="form-group" id="hdi-container-mes" style="display:none;">
-                <label>Mês / Ano</label>
-                <input type="month" id="hdi-filtro-mes" onchange="hdiCarregarHistorico()">
-            </div>
-            <div class="form-group" id="hdi-container-de" style="display:none;">
-                <label>Data Inicial</label>
-                <input type="date" id="hdi-filtro-de" onchange="hdiCarregarHistorico()">
-            </div>
-            <div class="form-group" id="hdi-container-ate" style="display:none;">
-                <label>Data Final</label>
-                <input type="date" id="hdi-filtro-ate" onchange="hdiCarregarHistorico()">
-            </div>
-            <div class="form-group">
-                <label>Buscar Material</label>
-                <input type="text" id="hdi-filtro-mat" placeholder="Código ou descrição..." oninput="hdiAplicarFiltroMaterial()">
-            </div>
-        </div>
- 
-        <div class="stats-grid" style="margin-bottom: 20px;">
+                <div class="stats-grid" style="margin-bottom: 20px;">
             <div class="stat-card glass-card"><h5>TOTAL PALETES</h5><p id="hdi-total-pl" style="color:#fff;">0</p></div>
             <div class="stat-card glass-card"><h5>REGISTROS</h5><p id="hdi-total-reg" style="color: var(--accent);">0</p></div>
             <div class="stat-card glass-card"><h5>MATERIAIS DISTINTOS</h5><p id="hdi-total-mat" style="color: var(--verde);">0</p></div>
@@ -591,11 +555,10 @@
     }
  
     function navegar(tela) {
-        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in', 'historico_drive_in'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
+        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
         document.getElementById('view-' + tela).style.display = 'block';
         document.getElementById('sidebar').classList.remove('active');
         if(tela === 'admin') carregarDadosDashboard();
-        if(tela === 'historico_drive_in') hdiInicializar();
     }
  
     function navegarComFiltro(tipo) {
@@ -1253,147 +1216,7 @@
     }
  
     
-    // =============================================
-    // MÓDULO: HISTÓRICO DRIVE IN
-    // =============================================
-    let hdiTodosRegistros = [];
-    let hdiFiltradosAtual = [];
-    let hdiListenerAtivo  = false;
- 
-    function hdiAlternarCampos() {
-        const tipo = document.getElementById('hdi-filtro-tipo').value;
-        document.getElementById('hdi-container-dia').style.display  = tipo === 'dia'     ? 'block' : 'none';
-        document.getElementById('hdi-container-mes').style.display  = tipo === 'mes'     ? 'block' : 'none';
-        document.getElementById('hdi-container-de').style.display   = tipo === 'periodo' ? 'block' : 'none';
-        document.getElementById('hdi-container-ate').style.display  = tipo === 'periodo' ? 'block' : 'none';
-        hdiCarregarHistorico();
-    }
- 
-    function hdiInicializar() {
-        const hoje = new Date().toISOString().substring(0, 10);
-        document.getElementById('hdi-filtro-dia').value = hoje;
-        document.getElementById('hdi-filtro-mes').value = hoje.substring(0, 7);
-        document.getElementById('hdi-filtro-de').value  = hoje;
-        document.getElementById('hdi-filtro-ate').value = hoje;
- 
-        if (!hdiListenerAtivo) {
-            hdiListenerAtivo = true;
-            db.collection("movimentacoes_drive_in")
-                .orderBy("timestamp", "desc")
-                .onSnapshot(snap => {
-                    hdiTodosRegistros = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    hdiCarregarHistorico();
-                });
-        } else {
-            hdiCarregarHistorico();
-        }
-    }
- 
-    function hdiCarregarHistorico() {
-        const tipo   = document.getElementById('hdi-filtro-tipo')?.value;
-        const valDia = document.getElementById('hdi-filtro-dia')?.value;
-        const valMes = document.getElementById('hdi-filtro-mes')?.value;
-        const valDe  = document.getElementById('hdi-filtro-de')?.value;
-        const valAte = document.getElementById('hdi-filtro-ate')?.value;
-        if (!tipo) return;
- 
-        hdiFiltradosAtual = hdiTodosRegistros.filter(mov => {
-            if (!mov.data) return false;
-            const partes  = mov.data.split('/');
-            const dataMov = new Date(partes[2], partes[1] - 1, partes[0]);
- 
-            if (tipo === 'dia' && valDia) {
-                const [a, m, d] = valDia.split('-');
-                return dataMov.getFullYear() === parseInt(a) &&
-                       (dataMov.getMonth() + 1) === parseInt(m) &&
-                       dataMov.getDate() === parseInt(d);
-            } else if (tipo === 'mes' && valMes) {
-                const [a, m] = valMes.split('-');
-                return dataMov.getFullYear() === parseInt(a) &&
-                       (dataMov.getMonth() + 1) === parseInt(m);
-            } else if (tipo === 'periodo' && valDe && valAte) {
-                return dataMov >= new Date(valDe + "T00:00:00") &&
-                       dataMov <= new Date(valAte + "T23:59:59");
-            }
-            return true;
-        });
- 
-        hdiAplicarFiltroMaterial();
-    }
- 
-    function hdiAplicarFiltroMaterial() {
-        const query = (document.getElementById('hdi-filtro-mat')?.value || '').toLowerCase().trim();
-        let exibir  = hdiFiltradosAtual;
-        if (query) {
-            exibir = hdiFiltradosAtual.filter(m => {
-                const cod  = (m.material || '').toString().toLowerCase();
-                const desc = buscarDescricaoLocal(m.material).toLowerCase();
-                return cod.includes(query) || desc.includes(query);
-            });
-        }
-        hdiRenderizarTabela(exibir);
-    }
- 
-    function hdiRenderizarTabela(dados) {
-        const tbody    = document.getElementById('hdi-table-body');
-        const emptyMsg = document.getElementById('hdi-empty-msg');
-        if (!tbody) return;
-        tbody.innerHTML = '';
- 
-        const totalPL = dados.reduce((a, m) => a + (parseInt(m.quantidade) || 0), 0);
-        const mats    = new Set(dados.map(m => m.material)).size;
-        const ops     = new Set(dados.map(m => m.login ? m.login.split('@')[0] : 'SISTEMA')).size;
- 
-        document.getElementById('hdi-total-pl').innerText  = totalPL;
-        document.getElementById('hdi-total-reg').innerText = dados.length;
-        document.getElementById('hdi-total-mat').innerText = mats;
-        document.getElementById('hdi-total-op').innerText  = ops;
- 
-        if (dados.length === 0) { emptyMsg.style.display = 'block'; return; }
-        emptyMsg.style.display = 'none';
- 
-        dados.forEach(m => {
-            const op      = m.login ? m.login.split('@')[0].toUpperCase() : 'SISTEMA';
-            const desc    = buscarDescricaoLocal(m.material);
-            const qtd     = parseInt(m.quantidade) || 0;
-            const destino = m.destino || m.fluxo || '—';
-            const tr      = document.createElement('tr');
-            tr.innerHTML  = `
-                <td>${m.data || '—'}</td>
-                <td>${m.hora || '—'}</td>
-                <td><b>${m.material || '—'}</b></td>
-                <td style="font-size:11px;">${desc}</td>
-                <td><b style="color:var(--verde);">+${qtd} PL</b></td>
-                <td style="color:var(--critico); font-weight:700;">${m.validade || '—'}</td>
-                <td><span class="badge" style="background:rgba(99,102,241,0.15); color:var(--accent); border:1px solid rgba(99,102,241,0.3);">${destino}</span></td>
-                <td style="font-size:11px;">${op}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
- 
-    function hdiExportarExcel() {
-        if (hdiFiltradosAtual.length === 0) { alert("Nenhum dado para exportar no período selecionado."); return; }
-        const planilha = hdiFiltradosAtual.map(m => ({
-            "Data":      m.data,
-            "Hora":      m.hora,
-            "Material":  m.material,
-            "Descrição": buscarDescricaoLocal(m.material),
-            "Qtd (PL)":  parseInt(m.quantidade) || 0,
-            "Validade":  m.validade || '',
-            "Destino":   m.destino || m.fluxo || '',
-            "Operador":  m.login ? m.login.split('@')[0].toUpperCase() : 'SISTEMA'
-        }));
-        const ws = XLSX.utils.json_to_sheet(planilha);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "HistDriveIn");
-        XLSX.writeFile(wb, `WMS_HistDriveIn_${new Date().getTime()}.xlsx`);
-    }
-    // =============================================
-    // FIM DO MÓDULO HISTÓRICO DRIVE IN
-    // =============================================
- 
-    window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
+window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
  
     // SCREEN WAKE LOCK - Mantém a tela sempre ativa
     let wakeLock = null;
@@ -1488,25 +1311,11 @@
         if (desc === "MATERIAL NAO CADASTRADO")
             return alert("Codigo nao cadastrado na base.");
  
-        const val   = inputVenc.split('-').reverse().join('/');
-        const agora = new Date();
+        const val = inputVenc.split('-').reverse().join('/');
  
         try {
-            // Apenas registra no histórico Drive In — NÃO alimenta o estoque
-            await db.collection("movimentacoes_drive_in").add({
-                material:   mat,
-                descricao:  desc,
-                quantidade: qtd,
-                validade:   val,
-                dias:       diasCalculados,
-                destino:    destino,
-                fluxo:      "ENTRADA DRIVE IN",
-                login:      usuarioLogado.email,
-                data:       agora.toLocaleDateString('pt-BR'),
-                hora:       agora.toLocaleTimeString('pt-BR'),
-                timestamp:  agora
-            });
- 
+            // Registra no histórico normal (movimentacoes_wms) — NÃO alimenta estoque
+            await registrarMovimentacao("DRIVE-IN", mat, val, `+${qtd} PL`, `ENTRADA DRIVE IN → ${destino}`);
             alert("Movimentacao Drive In registrada com sucesso!");
             ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('mdi-label-dias').innerText = '';
