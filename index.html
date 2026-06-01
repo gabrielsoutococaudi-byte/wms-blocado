@@ -8,6 +8,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WMS INFINITY">
+    <meta name="theme-color" content="#020202">
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22WMS%20INFINITY%22,%22short_name%22:%22WMS%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%23020202%22,%22theme_color%22:%22%23ff3e3e%22,%22orientation%22:%22portrait-primary%22,%22scope%22:%22/%22}">
+    <meta name="description" content="WMS INFINITY - Sistema de Gerenciamento de Armazem">
     
     <title>WMS FLOW PRO - Infinity Edition</title>
     
@@ -516,6 +519,9 @@
         conectarFirebase();
         carregarBaseMateriais();
         navegar(isAdmin ? 'admin' : 'retirar');
+        
+        // Ativar Screen Wake Lock
+        requestWakeLock();
     }
 
     function navegar(tela) {
@@ -1180,6 +1186,62 @@
     }
 
     window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
+
+    // SCREEN WAKE LOCK - Mantém a tela sempre ativa
+    let wakeLock = null;
+
+    async function requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log('Screen Wake Lock ativado com sucesso');
+                
+                // Reativar Wake Lock se o documento ficar visível novamente
+                document.addEventListener('visibilitychange', async () => {
+                    if (document.hidden) {
+                        if (wakeLock !== null) {
+                            wakeLock.release();
+                            wakeLock = null;
+                        }
+                    } else {
+                        try {
+                            wakeLock = await navigator.wakeLock.request('screen');
+                            console.log('Screen Wake Lock reativado');
+                        } catch (err) {
+                            console.error(`Erro ao reativar Wake Lock: ${err.name}, ${err.message}`);
+                        }
+                    }
+                });
+            } else {
+                console.warn('Screen Wake Lock API não suportada neste navegador');
+            }
+        } catch (err) {
+            console.error(`Erro ao solicitar Wake Lock: ${err.name}, ${err.message}`);
+        }
+    }
+
+    // Ativar Wake Lock quando o aplicativo iniciar
+    function iniciarAppComWakeLock() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'block';
+        document.getElementById('user-name').innerText = usuarioLogado.nome;
+        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
+        document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
+        document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
+        
+        const hoje = new Date();
+        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
+        document.getElementById('filtro-dia-valor').value = hoje.toISOString().substring(0, 10);
+        document.getElementById('filtro-de-valor').value = hoje.toISOString().substring(0, 10);
+        document.getElementById('filtro-ate-valor').value = hoje.toISOString().substring(0, 10);
+
+        conectarFirebase();
+        carregarBaseMateriais();
+        navegar(isAdmin ? 'admin' : 'retirar');
+        
+        // Ativar Screen Wake Lock
+        requestWakeLock();
+    }
 
     function puxarDescricaoMovDriveIn(val, inputDescId, listId) {
         const list = document.getElementById(listId);
