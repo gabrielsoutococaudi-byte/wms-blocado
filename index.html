@@ -1477,47 +1477,42 @@
     }
  
     async function salvarMovimentacaoDriveIn() {
-        const origem = document.getElementById('mdi-origem').value;
-        const mat = document.getElementById('mdi-mat').value.trim();
-        const desc = document.getElementById('mdi-desc').value;
-        const qtd = parseInt(document.getElementById('mdi-qtd').value);
+        const mat       = document.getElementById('mdi-mat').value.trim();
+        const desc      = document.getElementById('mdi-desc').value;
+        const qtd       = parseInt(document.getElementById('mdi-qtd').value);
         const inputVenc = document.getElementById('mdi-venc').value;
-        const destino = document.getElementById('mdi-destino').value;
-        
-        if(!mat || isNaN(qtd) || !inputVenc || !destino) return alert("Preencha todos os campos.");
-        if(desc === "MATERIAL NAO CADASTRADO") return alert("Codigo nao cadastrado na base.");
-        
-        const val = inputVenc.split('-').reverse().join('/');
-        
+        const destino   = document.getElementById('mdi-destino').value;
+ 
+        if (!mat || isNaN(qtd) || qtd <= 0 || !inputVenc || !destino)
+            return alert("Preencha todos os campos.");
+        if (desc === "MATERIAL NAO CADASTRADO")
+            return alert("Codigo nao cadastrado na base.");
+ 
+        const val   = inputVenc.split('-').reverse().join('/');
+        const agora = new Date();
+ 
         try {
-            await db.collection("estoque_blocado").add({ 
-                ender: "DRIVE-IN", 
-                mat, 
-                qtd, 
-                dias: diasCalculados, 
-                valFrente: val, 
-                desc: desc 
+            // Apenas registra no histórico Drive In — NÃO alimenta o estoque
+            await db.collection("movimentacoes_drive_in").add({
+                material:   mat,
+                descricao:  desc,
+                quantidade: qtd,
+                validade:   val,
+                dias:       diasCalculados,
+                destino:    destino,
+                fluxo:      "ENTRADA DRIVE IN",
+                login:      usuarioLogado.email,
+                data:       agora.toLocaleDateString('pt-BR'),
+                hora:       agora.toLocaleTimeString('pt-BR'),
+                timestamp:  agora
             });
-            // Salva no histórico Drive In (coleção separada, não alimenta estoque)
-        const agoraDriveIn = new Date();
-        await db.collection("movimentacoes_drive_in").add({
-            material:   mat,
-            quantidade: qtd,
-            validade:   val,
-            destino:    document.getElementById('mdi-destino').value,
-            fluxo:      "ENTRADA DRIVE IN",
-            login:      usuarioLogado.email,
-            data:       agoraDriveIn.toLocaleDateString('pt-BR'),
-            hora:       agoraDriveIn.toLocaleTimeString('pt-BR'),
-            timestamp:  agoraDriveIn
-        });
-        registrarMovimentacao("DRIVE-IN", mat, val, `+${qtd} PL`, destino);
+ 
             alert("Movimentacao Drive In registrada com sucesso!");
-            ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc', 'mdi-destino'].forEach(id => document.getElementById(id).value = '');
+            ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('mdi-label-dias').innerText = '';
             document.getElementById('mdi-destino').value = 'APANHA';
-            navegar('retirar');
-        } catch (e) { 
-            alert("Erro ao registrar movimentacao: " + e.message); 
+        } catch (e) {
+            alert("Erro ao registrar movimentacao: " + e.message);
         }
     }
 </script>
