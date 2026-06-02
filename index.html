@@ -982,7 +982,18 @@
         });
         if (!isAdmin) filtrados = filtrados.filter(item => item.dias > 30);
         if (filtrados.length === 0) return;
-        filtrados.sort((a, b) => (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0));
+        // Prioridade: CRÍTICO (31-60d) → RETIDO (≤30d) → DATA BOA (>60d)
+        function prioridade(dias) {
+            const d = parseInt(dias) || 0;
+            if (d > 30 && d <= 60) return 1;
+            if (d <= 30) return 2;
+            return 3;
+        }
+        filtrados.sort((a, b) => {
+            const pa = prioridade(a.dias), pb = prioridade(b.dias);
+            if (pa !== pb) return pa - pb;
+            return (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0);
+        });
         if (/^\d+$/.test(termo) && termo !== '60' && termo !== '30') filtrados = [filtrados[0]];
         filtrados.forEach(item => {
             let status = item.dias <= 30 ? "RETIDO" : (item.dias <= 60 ? "CRÍTICO" : "DATA BOA");
@@ -1285,8 +1296,8 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         const val = inputVenc.split('-').reverse().join('/');
  
         try {
-            // Registra saída do DRIVE IN: negativo, fluxo = destino (ex: APANHA ou TRANSFERENCIA)
-            await registrarMovimentacao("DRIVE-IN", mat, val, `-${qtd} PL`, destino);
+            // Registra no histórico normal (movimentacoes_wms) — NÃO alimenta estoque
+            await registrarMovimentacao("DRIVE-IN", mat, val, `+${qtd} PL`, `ENTRADA DRIVE IN → ${destino}`);
             alert("Movimentacao Drive In registrada com sucesso!");
             ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('mdi-label-dias').innerText = '';
