@@ -1296,8 +1296,8 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         const val = inputVenc.split('-').reverse().join('/');
  
         try {
-            // Registra no histórico normal (movimentacoes_wms) — NÃO alimenta estoque
-            await registrarMovimentacao("DRIVE-IN", mat, val, `+${qtd} PL`, `ENTRADA DRIVE IN → ${destino}`);
+            // Registra APENAS a saída do Drive In (valor negativo) — sem gerar entrada
+            await registrarMovimentacao("DRIVE-IN", mat, val, `-${qtd} PL`, destino);
             alert("Movimentacao Drive In registrada com sucesso!");
             ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('mdi-label-dias').innerText = '';
