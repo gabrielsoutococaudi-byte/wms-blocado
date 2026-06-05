@@ -940,7 +940,7 @@
         // RENDERIZAR TABELAS OPERACIONAIS
         const tbodyHist = document.getElementById('table-historico-consolidado');
         tbodyHist.innerHTML = '';
-        dados.forEach(m => {
+        dados.slice(0, 5).forEach(m => {
             const tr = document.createElement('tr');
             tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
             tbodyHist.appendChild(tr);
