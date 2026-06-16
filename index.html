@@ -39,15 +39,11 @@
             --text: #f8fafc; 
             --text-secondary: #64748b;
             --neon-blue: #00f2ff;
-            --primary-grad: linear-gradient(135deg, #ff5454 0%, #ff3e3e 55%, #e62929 100%);
-            --accent-grad: linear-gradient(135deg, #818cf8 0%, #6366f1 55%, #4f46e5 100%);
-            --shadow-elevate: 0 16px 32px rgba(0,0,0,0.4);
         }
         .input-with-toggle { position: relative; display: flex; align-items: center; }
         .input-with-toggle input { padding-right: 50px !important; }
-        .toggle-kb-btn { position: absolute; right: 10px; background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-secondary); border-radius: 10px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); z-index: 10; }
-        .toggle-kb-btn:hover { background: var(--primary-grad); color: #fff; border-color: transparent; transform: scale(1.08); box-shadow: 0 6px 16px var(--primary-glow); }
-        .toggle-kb-btn:active { transform: scale(0.92); }
+        .toggle-kb-btn { position: absolute; right: 10px; background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-secondary); border-radius: 10px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: 0.3s; z-index: 10; }
+        .toggle-kb-btn:hover { background: var(--primary); color: #fff; }
  
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
  
@@ -77,21 +73,16 @@
         
         .sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100dvh; background: rgba(5, 5, 5, 0.98); backdrop-filter: blur(20px); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1500; padding-top: calc(60px + env(safe-area-inset-top)); border-right: 1px solid var(--glass-border); }
         .sidebar.active { left: 0; }
-        .sidebar button { width: 85%; padding: 16px 20px; background: transparent; border: none; color: var(--text-secondary); text-align: left; cursor: pointer; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 12px; margin: 8px auto; border-radius: 14px; transition: all 0.35s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; }
-        .sidebar button::before { content:''; position:absolute; left:0; top:50%; bottom:50%; width:3px; background: var(--primary-grad); border-radius: 0 4px 4px 0; transition: top 0.3s ease, bottom 0.3s ease; }
-        .sidebar button:hover { background: rgba(255,255,255,0.04); color: var(--text); transform: translateX(8px); }
-        .sidebar button:hover::before { top: 18%; bottom: 18%; }
+        .sidebar button { width: 85%; padding: 16px 20px; background: transparent; border: none; color: var(--text-secondary); text-align: left; cursor: pointer; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 12px; margin: 8px auto; border-radius: 14px; transition: 0.3s; }
+        .sidebar button:hover { background: var(--glass); color: var(--text); transform: translateX(8px); }
  
         .header { padding: calc(20px + env(safe-area-inset-top)) 24px 20px 24px; display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 900; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); }
-        .menu-btn { background: var(--glass); border: 1px solid var(--glass-border); padding: 10px; border-radius: 14px; color: white; font-size: 20px; display: flex; width: 46px; height: 46px; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
-        .menu-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); transform: scale(1.06); }
-        .menu-btn:active { transform: scale(0.92); }
+        .menu-btn { background: var(--glass); border: 1px solid var(--glass-border); padding: 10px; border-radius: 14px; color: white; font-size: 20px; display: flex; width: 46px; height: 46px; align-items: center; justify-content: center; }
         
         .container { width: 100%; max-width: 1200px; margin: auto; padding: 0 20px; }
  
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px; margin-top: 20px; }
-        .stat-card { padding: 24px; position: relative; overflow: hidden; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .stat-card:hover { transform: translateY(-5px); border-bottom-color: var(--primary); box-shadow: var(--shadow-elevate); }
+        .stat-card { padding: 24px; position: relative; overflow: hidden; cursor: pointer; border-bottom: 2px solid transparent; }
         .stat-card h5 { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 800; }
         .stat-card p { font-size: 30px; font-weight: 900; color: #fff; letter-spacing: -1px; }
  
@@ -101,14 +92,12 @@
         @media (max-width: 900px) { .dashboard-row { grid-template-columns: 1fr; } }
  
         .chart-box { padding: 28px; position: relative; }
-        .chart-box.glass-card:hover { box-shadow: var(--shadow-elevate); }
         .chart-title { font-size: 12px; font-weight: 900; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); padding-right: 40px; }
         .chart-title span { color: var(--primary); }
  
         /* Botão de Expansão */
-        .expand-btn { position: absolute; top: 22px; right: 22px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text); border-radius: 30px; padding: 7px 14px; font-size: 10px; cursor: pointer; font-weight: 800; letter-spacing: 0.5px; transition: all 0.35s cubic-bezier(0.4,0,0.2,1); z-index: 10; }
-        .expand-btn:hover { background: var(--accent-grad); border-color: transparent; color: #fff; transform: scale(1.06); box-shadow: 0 10px 22px var(--accent-glow); }
-        .expand-btn:active { transform: scale(0.94); }
+        .expand-btn { position: absolute; top: 22px; right: 22px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; font-weight: 700; transition: 0.2s; z-index: 10; }
+        .expand-btn:hover { background: var(--accent); border-color: var(--accent); }
  
         /* Modal do Gráfico Expandido */
         .chart-fullscreen-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2,2,2,0.98); z-index: 5000; padding: 40px; flex-direction: column; }
@@ -128,32 +117,13 @@
         .search-wrapper input:focus { border-color: var(--accent); box-shadow: 0 0 30px var(--accent-glow); background: rgba(255,255,255,0.05); }
  
         .item-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 24px; padding: 24px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .item-card:hover { transform: scale(1.02); border-color: var(--primary); box-shadow: 0 14px 28px rgba(255,62,62,0.12); }
+        .item-card:hover { transform: scale(1.02); border-color: var(--primary); }
         
         .badge { padding: 6px 12px; border-radius: 10px; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
         .badge-ender { background: #fff; color: #000; }
  
-        .btn-action { 
-            background: var(--primary-grad); 
-            color: #fff; 
-            border: none; 
-            padding: 16px 28px; 
-            border-radius: 18px; 
-            font-weight: 900; 
-            cursor: pointer; 
-            font-size: 13px; 
-            box-shadow: 0 10px 24px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,0.18); 
-            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, filter 0.3s ease; 
-            text-transform: uppercase; 
-            letter-spacing: 1px; 
-            position: relative; 
-            overflow: hidden; 
-            isolation: isolate;
-        }
-        .btn-action::after { content:''; position:absolute; inset:0; background: linear-gradient(120deg, rgba(255,255,255,0.3), transparent 60%); opacity:0; transition: opacity 0.35s ease; pointer-events: none; }
-        .btn-action:hover { transform: translateY(-3px); box-shadow: 0 18px 32px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,0.25); filter: saturate(1.1); }
-        .btn-action:hover::after { opacity: 1; }
-        .btn-action:active { transform: scale(0.95) translateY(0); }
+        .btn-action { background: var(--primary); color: #fff; border: none; padding: 16px 28px; border-radius: 16px; font-weight: 900; cursor: pointer; font-size: 13px; box-shadow: 0 10px 20px var(--primary-glow); transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-action:active { transform: scale(0.96); }
  
         .form-box { padding: 35px; margin-bottom: 30px; margin-top: 20px; }
         .form-group label { display: block; font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 800; letter-spacing: 1.5px; }
@@ -488,65 +458,9 @@
     Chart.register(ChartDataLabels);
  
     // Configuração de Estilos de Fonte Padrão para os Textos Internos dos Gráficos
-    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.color = '#64748b';
     Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
     Chart.defaults.font.weight = '700';
-
-    // ===== TEMA MODERNO GLOBAL DOS GRÁFICOS =====
-    Chart.defaults.animation = { duration: 900, easing: 'easeOutQuart' };
-    Chart.defaults.elements.bar.borderRadius = 10;
-    Chart.defaults.elements.bar.borderSkipped = false;
-    Chart.defaults.elements.line.tension = 0.4;
-    Chart.defaults.elements.line.borderWidth = 3;
-    Chart.defaults.elements.point.radius = 4;
-    Chart.defaults.elements.point.hoverRadius = 7;
-    Chart.defaults.elements.point.borderWidth = 2;
-    Chart.defaults.elements.arc.borderWidth = 0;
-    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(8,8,14,0.96)';
-    Chart.defaults.plugins.tooltip.titleColor = '#ffffff';
-    Chart.defaults.plugins.tooltip.titleFont = { weight: '800', size: 12 };
-    Chart.defaults.plugins.tooltip.bodyColor = '#e2e8f0';
-    Chart.defaults.plugins.tooltip.bodyFont = { weight: '700', size: 12 };
-    Chart.defaults.plugins.tooltip.padding = 12;
-    Chart.defaults.plugins.tooltip.cornerRadius = 14;
-    Chart.defaults.plugins.tooltip.borderColor = 'rgba(255,255,255,0.08)';
-    Chart.defaults.plugins.tooltip.borderWidth = 1;
-    Chart.defaults.plugins.tooltip.boxPadding = 6;
-    Chart.defaults.plugins.tooltip.caretSize = 6;
-
-    // Gera um gradiente suave de cima para baixo, usado para preencher barras/linhas
-    function criarGradiente(ctx, chartArea, corInicio, corFim) {
-        if (!chartArea) return corInicio;
-        const gradiente = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-        gradiente.addColorStop(0, corInicio);
-        gradiente.addColorStop(1, corFim);
-        return gradiente;
-    }
-
-    // Plugin inteligente: exibe um indicador numérico central nos gráficos de rosca (donut)
-    const centerTextPlugin = {
-        id: 'centerTextPlugin',
-        afterDraw(chart) {
-            const cfg = chart.options?.centerText;
-            if (!cfg) return;
-            const { ctx, chartArea } = chart;
-            const cx = (chartArea.left + chartArea.right) / 2;
-            const cy = (chartArea.top + chartArea.bottom) / 2;
-            ctx.save();
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillStyle = cfg.color || '#fff';
-            ctx.font = `900 ${cfg.valueSize || 26}px 'Plus Jakarta Sans', sans-serif`;
-            ctx.fillText(cfg.value, cx, cy - (cfg.label ? 10 : 0));
-            if (cfg.label) {
-                ctx.font = "800 10px 'Plus Jakarta Sans', sans-serif";
-                ctx.fillStyle = cfg.labelColor || '#64748b';
-                ctx.fillText(cfg.label, cx, cy + 14);
-            }
-            ctx.restore();
-        }
-    };
-    Chart.register(centerTextPlugin);
  
     let estoqueCompleto = [];
     let baseMateriais = [];
@@ -914,14 +828,8 @@
         if (chartDiarioInst) chartDiarioInst.destroy();
         chartDiarioInst = new Chart(ctxD, {
             type: 'bar',
-            data: { labels: labelsDias, datasets: [{ 
-                label: 'Paletes', 
-                data: labelsDias.map(lbl => volumeDiario[lbl]), 
-                backgroundColor: (ctx) => criarGradiente(ctx.chart.ctx, ctx.chart.chartArea, '#8385f5', '#6366f1'),
-                hoverBackgroundColor: '#8b8dfb',
-                maxBarThickness: 46
-            }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra }, scales: { y: { grid: { color: 'rgba(255,255,255,0.03)' } }, x: { grid: { display: false } } } }
+            data: { labels: labelsDias, datasets: [{ label: 'Paletes', data: labelsDias.map(lbl => volumeDiario[lbl]), backgroundColor: '#6366f1' }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra }, scales: { y: { grid: { color: 'rgba(255,255,255,0.03)' } } } }
         });
  
         // 2. RENDER GRÁFICO MENSAL ACUMULADO
@@ -930,18 +838,8 @@
         if (chartMensalInst) chartMensalInst.destroy();
         chartMensalInst = new Chart(ctxM, {
             type: 'line',
-            data: { labels: mesesLabelsReduzidos, datasets: [{ 
-                data: ["01","02","03","04","05","06","07","08","09","10","11","12"].map(m => volumeMensal[m] || 0), 
-                borderColor: '#10b981', 
-                backgroundColor: (ctx) => criarGradiente(ctx.chart.ctx, ctx.chart.chartArea, 'rgba(16,185,129,0.35)', 'rgba(16,185,129,0)'), 
-                fill: true, 
-                tension: 0.4,
-                pointBackgroundColor: '#020202',
-                pointBorderColor: '#10b981',
-                pointHoverBackgroundColor: '#10b981',
-                pointHoverBorderColor: '#fff'
-            }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: { ...padraoDatalabelsBarra, align: 'right' } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.03)' } }, x: { grid: { display: false } } } }
+            data: { labels: mesesLabelsReduzidos, datasets: [{ data: ["01","02","03","04","05","06","07","08","09","10","11","12"].map(m => volumeMensal[m] || 0), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', fill: true, tension: 0.2 }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: { ...padraoDatalabelsBarra, align: 'right' } } }
         });
  
         // 6.1 GRÁFICO SETOR MENSAL
@@ -949,13 +847,8 @@
         if (chartSetorMInst) chartSetorMInst.destroy();
         chartSetorMInst = new Chart(ctxSM, {
             type: 'doughnut',
-            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorMensalAcumulado[s]), backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'], hoverOffset: 10, spacing: 3 }] },
-            options: { 
-                responsive: true, 
-                cutout: '70%',
-                plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca },
-                centerText: { value: SETORES_LISTA.reduce((a, s) => a + setorMensalAcumulado[s], 0), label: 'TOTAL PL', color: '#fff', labelColor: '#64748b' }
-            }
+            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorMensalAcumulado[s]), backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'] }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } }
         });
  
         // 6.2 GRÁFICO SETOR DIÁRIO
@@ -963,13 +856,8 @@
         if (chartSetorDInst) chartSetorDInst.destroy();
         chartSetorDInst = new Chart(ctxSD, {
             type: 'bar',
-            data: { labels: SETORES_LISTA, datasets: [{ 
-                data: SETORES_LISTA.map(s => setorDiarioAcumulado[s]), 
-                backgroundColor: (ctx) => criarGradiente(ctx.chart.ctx, ctx.chart.chartArea, '#ff6b5b', '#ff3e3e'),
-                hoverBackgroundColor: '#ff8273',
-                maxBarThickness: 40
-            }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra }, scales: { y: { grid: { color: 'rgba(255,255,255,0.03)' } }, x: { grid: { display: false } } } }
+            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorDiarioAcumulado[s]), backgroundColor: 'rgba(255, 62, 62, 0.4)', borderColor: '#ff3e3e', borderWidth: 1 }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra } }
         });
  
         // NOVO GRÁFICO: DESTINO DAS CARGAS (TRANSFERENCIA, APANHA, SEPARAÇÃO)
@@ -981,24 +869,15 @@
                 labels: ["TRANSFERENCIA", "APANHA", "SEPARAÇÃO"], 
                 datasets: [{ 
                     data: [fluxosDestinoAcumulado["TRANSFERENCIA"], fluxosDestinoAcumulado["APANHA"], fluxosDestinoAcumulado["SEPARAÇÃO"]], 
-                    backgroundColor: ['#00f2ff', '#fbbf24', '#6366f1'],
-                    hoverOffset: 10,
-                    spacing: 3
+                    backgroundColor: ['#00f2ff', '#fbbf24', '#6366f1'] 
                 }] 
             },
             options: { 
                 responsive: true, 
-                cutout: '70%',
                 plugins: { 
                     legend: { display: false }, 
                     datalabels: padraoDatalabelsRosca 
-                },
-                centerText: { 
-                    value: fluxosDestinoAcumulado["TRANSFERENCIA"] + fluxosDestinoAcumulado["APANHA"] + fluxosDestinoAcumulado["SEPARAÇÃO"], 
-                    label: 'TOTAL PL', 
-                    color: '#fff', 
-                    labelColor: '#64748b' 
-                }
+                } 
             }
         });
  
@@ -1015,9 +894,7 @@
                     label: 'Paletes Abastecidos',
                     data: SETORES_LISTA.map(s => apanhaSetorAcumulado[s]), 
                     backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'],
-                    hoverBackgroundColor: ['#ff6b5b','#818cf8','#fcd34d','#34d399','#5ff5ff','#f472b6'],
-                    borderRadius: 10,
-                    maxBarThickness: 60
+                    borderRadius: 8
                 }] 
             },
             options: { 
@@ -1054,25 +931,10 @@
         // GRÁFICO DE SAÚDE INVENTÁRIO
         const ctxS = document.getElementById('chart-status').getContext('2d');
         if (chartStatus) chartStatus.destroy();
-        const qtdBoa = estoqueCompleto.filter(i => i.dias > 60).length;
-        const qtdCritica = estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length;
-        const qtdRetida = estoqueCompleto.filter(i => i.dias <= 30).length;
-        const totalSaude = qtdBoa + qtdCritica + qtdRetida;
-        const indiceSaude = totalSaude > 0 ? Math.round((qtdBoa / totalSaude) * 100) : 0;
         chartStatus = new Chart(ctxS, { 
             type: 'doughnut', 
-            data: { labels: ['Boa', 'Crítica', 'Retida'], datasets: [{ data: [qtdBoa, qtdCritica, qtdRetida], backgroundColor: ['#10b981', '#fbbf24', '#f87171'], hoverOffset: 10, spacing: 3 }] }, 
-            options: { 
-                responsive: true, 
-                cutout: '75%', 
-                plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca },
-                centerText: { 
-                    value: indiceSaude + '%', 
-                    label: 'SAÚDE GERAL', 
-                    color: indiceSaude >= 60 ? '#10b981' : (indiceSaude >= 30 ? '#fbbf24' : '#f87171'), 
-                    labelColor: '#64748b' 
-                }
-            } 
+            data: { labels: ['Boa', 'Crítica', 'Retida'], datasets: [{ data: [estoqueCompleto.filter(i => i.dias > 60).length, estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length, estoqueCompleto.filter(i => i.dias <= 30).length], backgroundColor: ['#10b981', '#fbbf24', '#f87171'] }] }, 
+            options: { responsive: true, cutout: '75%', plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } } 
         });
  
         // RENDERIZAR TABELAS OPERACIONAIS
