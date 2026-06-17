@@ -292,7 +292,64 @@
                     <canvas id="chart-apanha-setor" style="max-height: 300px;"></canvas>
                 </div>
             </div>
- 
+
+            <div class="dashboard-row">
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-comparativo-mensal', '8. Comparativo Mensal por Categoria de Fluxo')">Expandir ⛶</button>
+                    <div class="chart-title">📊 8. Comparativo Mensal por Categoria <span>(Ano Atual)</span></div>
+                    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+                        <label style="display:flex;align-items:center;gap:8px;background:rgba(251,191,36,0.1);border:1px solid var(--critico);padding:8px 14px;border-radius:12px;font-size:11px;font-weight:800;color:#fff;cursor:pointer;">
+                            <input type="checkbox" id="chk-cat-apanha" checked onchange="toggleCategoriaComparativo('APANHA')" style="accent-color: var(--critico);"> APANHA
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;background:rgba(0,242,255,0.1);border:1px solid var(--neon-blue);padding:8px 14px;border-radius:12px;font-size:11px;font-weight:800;color:#fff;cursor:pointer;">
+                            <input type="checkbox" id="chk-cat-separacao" checked onchange="toggleCategoriaComparativo('SEPARAÇÃO')" style="accent-color: var(--neon-blue);"> SEPARAÇÃO
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;background:rgba(99,102,241,0.1);border:1px solid var(--accent);padding:8px 14px;border-radius:12px;font-size:11px;font-weight:800;color:#fff;cursor:pointer;">
+                            <input type="checkbox" id="chk-cat-transferencia" checked onchange="toggleCategoriaComparativo('TRANSFERENCIA')" style="accent-color: var(--accent);"> TRANSFERÊNCIA
+                        </label>
+                    </div>
+                    <canvas id="chart-comparativo-mensal" style="max-height: 260px;"></canvas>
+                </div>
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-pizza-status', '9. Classificação do Inventário')">Expandir ⛶</button>
+                    <div class="chart-title">🥧 9. Classificação do Inventário <span>(Críticos / Bons / Retidos)</span></div>
+                    <canvas id="chart-pizza-status" style="max-height: 260px;"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-picos', '10. Picos de Movimentação')">Expandir ⛶</button>
+                    <div class="chart-title">🔥 10. Picos de Movimentação <span>(Maior volume no período selecionado)</span></div>
+                    <div class="form-group" style="max-width: 280px; margin-bottom: 18px;">
+                        <label>Agrupar Análise Por</label>
+                        <select id="filtro-pico-agrupamento" onchange="renderizarGraficoPicos()">
+                            <option value="hora">Horário do Dia</option>
+                            <option value="diaSemana">Dia da Semana</option>
+                            <option value="mes">Mês</option>
+                        </select>
+                    </div>
+                    <canvas id="chart-picos" style="max-height: 280px;"></canvas>
+                    <p id="legenda-pico" style="margin-top: 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;"></p>
+                </div>
+            </div>
+
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-top10-criticos', '11. Top 10 Materiais Críticos')">Expandir ⛶</button>
+                    <div class="chart-title">🚨 11. Top 10 Materiais Críticos <span>(Mais próximos do vencimento)</span></div>
+                    <div class="form-group" style="max-width: 320px; margin-bottom: 18px;">
+                        <label>Filtrar por Status de Validade</label>
+                        <select id="filtro-top10-status" onchange="renderizarGraficoTop10Criticos()">
+                            <option value="todos">Todos os Críticos (até 60 dias)</option>
+                            <option value="critico">Somente Crítico (31-60 dias)</option>
+                            <option value="retido">Somente Retido (≤30 dias)</option>
+                        </select>
+                    </div>
+                    <canvas id="chart-top10-criticos" style="max-height: 320px;"></canvas>
+                </div>
+            </div>
+
             <div class="dashboard-row">
                 <div class="chart-box glass-card">
                     <div class="chart-title">🏆 3. Materiais Mais Movimentados <span style="color:var(--accent);">Top 10</span></div>
@@ -480,6 +537,13 @@
     let chartApanhaSetorInst = null;
     let chartStatus = null;
     let chartExpandidoInst = null; // Instância temporária do modal de ampliação
+
+    // --- Novas instâncias de gráficos solicitados (adição sem alteração do restante do app) ---
+    let chartComparativoMensalInst = null;
+    let chartPizzaStatusInst = null;
+    let chartPicosInst = null;
+    let chartTop10CriticosInst = null;
+    let ultimoDadosFiltrados = [];
  
     const SETORES_LISTA = ["ALCOÓLICO", "AVULSO", "LATA", "PET", "SUCO", "VIDRO"];
  
