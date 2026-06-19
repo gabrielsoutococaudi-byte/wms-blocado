@@ -17,6 +17,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -172,6 +173,7 @@
     <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
         <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
     <button onclick="navegar('movimentacao_drive_in')">🚚 MOVIMENTAÇÃO DRIVE IN</button>
+    <button id="btn-nav-historico-export" onclick="navegar('historico_exportacoes')" style="display: none;">🗂️ HISTÓRICO DE EXPORTAÇÕES</button>
     
     <button onclick="logout()" style="color: var(--retido); margin-top: 40px; border-top: 1px solid var(--glass-border); border-radius: 0; width: 100%; opacity: 0.7;">🚪 ENCERRAR SESSÃO</button>
 </div>
@@ -421,6 +423,59 @@
                 <button class="btn-action" style="width: 100%; padding: 20px;" onclick="salvarMovimentacaoDriveIn()">CONFIRMAR MOVIMENTACAO</button>
             </div>
         </div>
+
+        <div id="view-historico_exportacoes" style="display: none;">
+            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
+                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">Exportar Consolidado por Período</h4>
+                <div class="filter-panel">
+                    <div class="form-group">
+                        <label>Tipo de Período</label>
+                        <select id="hc-tipo-periodo" onchange="alternarCamposPeriodoConsolidado()">
+                            <option value="dia">Dia Específico</option>
+                            <option value="semana">Semana Atual</option>
+                            <option value="mes">Mês Específico</option>
+                            <option value="custom">Intervalo Personalizado</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="hc-container-dia">
+                        <label>Dia</label>
+                        <input type="date" id="hc-dia-valor">
+                    </div>
+                    <div class="form-group" id="hc-container-mes" style="display:none;">
+                        <label>Mês / Ano</label>
+                        <input type="month" id="hc-mes-valor">
+                    </div>
+                    <div class="form-group" id="hc-container-de" style="display:none;">
+                        <label>Data Inicial</label>
+                        <input type="date" id="hc-de-valor">
+                    </div>
+                    <div class="form-group" id="hc-container-ate" style="display:none;">
+                        <label>Data Final</label>
+                        <input type="date" id="hc-ate-valor">
+                    </div>
+                </div>
+                <div style="display:flex; justify-content: flex-end;">
+                    <button class="btn-action" style="padding: 12px 24px; font-size:11px; background:#107c41; box-shadow:none;" onclick="exportarConsolidadoPeriodo()">Exportar Consolidado</button>
+                </div>
+            </div>
+
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">
+                        <div>📁 Histórico de Exportações</div>
+                        <button class="btn-action" style="padding:10px 15px; font-size:10px; background:var(--accent); box-shadow:none;" onclick="carregarHistoricoExportacoes()">Atualizar Lista</button>
+                    </div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead>
+                                <tr><th>Data</th><th>Hora</th><th>Usuário</th><th>Arquivo</th><th>Período</th><th>Qtd Registros</th><th>Status</th><th>Ação</th></tr>
+                            </thead>
+                            <tbody id="table-historico-exportacoes"><tr><td colspan="8" style="text-align:center; opacity:0.6;">Carregando...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
  
@@ -453,6 +508,8 @@
     db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
     db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
     const auth = firebase.auth();
+    const storage = firebase.storage();
+    const HISTORICO_EXPORT_COLLECTION = "historico_exportacoes_wms";
  
     // Registrar globalmente o plugin de rótulos do Chart.js
     Chart.register(ChartDataLabels);
@@ -510,6 +567,7 @@
         const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
         document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('btn-nav-historico-export').style.display = isAdmin ? 'block' : 'none';
         
         const hoje = new Date();
         document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
@@ -526,10 +584,11 @@
     }
  
     function navegar(tela) {
-        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
+        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in', 'historico_exportacoes'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
         document.getElementById('view-' + tela).style.display = 'block';
         document.getElementById('sidebar').classList.remove('active');
         if(tela === 'admin') carregarDadosDashboard();
+        if(tela === 'historico_exportacoes') carregarHistoricoExportacoes();
     }
  
     function navegarComFiltro(tipo) {
@@ -1108,13 +1167,148 @@
         });
     }
  
+    // ===== HISTÓRICO DE EXPORTAÇÕES E ARQUIVO CONSOLIDADO (Funcionalidade Complementar ADMIN) =====
+
+    async function registrarEHospedarExportacao(wb, nomeArquivo, periodoDescricao, qtdRegistros) {
+        try {
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            const blob = new Blob([wbout], { type: 'application/octet-stream' });
+            const caminhoStorage = `exportacoes_wms/${Date.now()}_${nomeArquivo}`;
+            await storage.ref(caminhoStorage).put(blob);
+            const agora = new Date();
+            await db.collection(HISTORICO_EXPORT_COLLECTION).add({
+                nomeArquivo,
+                periodo: periodoDescricao,
+                qtdRegistros,
+                usuario: usuarioLogado?.email ? usuarioLogado.email.split('@')[0].toUpperCase() : 'N/A',
+                storagePath: caminhoStorage,
+                data: agora.toLocaleDateString('pt-BR'),
+                hora: agora.toLocaleTimeString('pt-BR'),
+                status: 'Sucesso',
+                timestamp: agora
+            });
+            if (document.getElementById('view-historico_exportacoes').style.display !== 'none') carregarHistoricoExportacoes();
+        } catch (e) {
+            console.warn('Não foi possível registrar o histórico de exportação:', e);
+        }
+    }
+
+    async function carregarHistoricoExportacoes() {
+        const tbody = document.getElementById('table-historico-exportacoes');
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; opacity:0.6;">Carregando...</td></tr>';
+        try {
+            const snap = await db.collection(HISTORICO_EXPORT_COLLECTION).orderBy("timestamp", "desc").limit(200).get();
+            if (snap.empty) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; opacity:0.6;">Nenhuma exportação registrada ainda.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = snap.docs.map(doc => {
+                const d = doc.data();
+                return `<tr>
+                    <td>${d.data || '-'}</td>
+                    <td>${d.hora || '-'}</td>
+                    <td>${d.usuario || '-'}</td>
+                    <td>${d.nomeArquivo || '-'}</td>
+                    <td>${d.periodo || '-'}</td>
+                    <td>${d.qtdRegistros ?? '-'}</td>
+                    <td>${d.status || '-'}</td>
+                    <td><button class="btn-action" style="padding:6px 12px; font-size:9px; background:var(--primary); box-shadow:none;" onclick="baixarArquivoHistorico('${d.storagePath}', '${(d.nomeArquivo || 'arquivo.xlsx').replace(/'/g, "")}')">Baixar Novamente</button></td>
+                </tr>`;
+            }).join('');
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--retido);">Erro ao carregar histórico.</td></tr>';
+        }
+    }
+
+    async function baixarArquivoHistorico(storagePath, nomeArquivo) {
+        try {
+            const url = await storage.ref(storagePath).getDownloadURL();
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = nomeArquivo;
+            a.target = '_blank';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } catch (e) {
+            alert('Não foi possível recuperar este arquivo. Ele pode ter sido removido do armazenamento.');
+        }
+    }
+
+    function alternarCamposPeriodoConsolidado() {
+        const tipo = document.getElementById('hc-tipo-periodo').value;
+        document.getElementById('hc-container-dia').style.display = tipo === 'dia' ? 'block' : 'none';
+        document.getElementById('hc-container-mes').style.display = tipo === 'mes' ? 'block' : 'none';
+        document.getElementById('hc-container-de').style.display = tipo === 'custom' ? 'block' : 'none';
+        document.getElementById('hc-container-ate').style.display = tipo === 'custom' ? 'block' : 'none';
+    }
+
+    function obterIntervaloConsolidado() {
+        const tipo = document.getElementById('hc-tipo-periodo').value;
+        const hoje = new Date();
+        let inicio, fim, descricao;
+
+        if (tipo === 'dia') {
+            const valor = document.getElementById('hc-dia-valor').value;
+            if (!valor) return null;
+            inicio = new Date(valor + "T00:00:00");
+            fim = new Date(valor + "T23:59:59");
+            descricao = `Dia ${valor.split('-').reverse().join('/')}`;
+        } else if (tipo === 'semana') {
+            const diaSemana = hoje.getDay();
+            inicio = new Date(hoje); inicio.setDate(hoje.getDate() - diaSemana); inicio.setHours(0,0,0,0);
+            fim = new Date(inicio); fim.setDate(inicio.getDate() + 6); fim.setHours(23,59,59,999);
+            descricao = `Semana de ${inicio.toLocaleDateString('pt-BR')} a ${fim.toLocaleDateString('pt-BR')}`;
+        } else if (tipo === 'mes') {
+            const valor = document.getElementById('hc-mes-valor').value;
+            if (!valor) return null;
+            const [ano, mes] = valor.split('-');
+            inicio = new Date(ano, mes - 1, 1, 0, 0, 0);
+            fim = new Date(ano, mes, 0, 23, 59, 59);
+            descricao = `Mês ${mes}/${ano}`;
+        } else {
+            const de = document.getElementById('hc-de-valor').value;
+            const ate = document.getElementById('hc-ate-valor').value;
+            if (!de || !ate) return null;
+            inicio = new Date(de + "T00:00:00");
+            fim = new Date(ate + "T23:59:59");
+            descricao = `${de.split('-').reverse().join('/')} a ${ate.split('-').reverse().join('/')}`;
+        }
+        return { inicio, fim, descricao };
+    }
+
+    async function exportarConsolidadoPeriodo() {
+        const intervalo = obterIntervaloConsolidado();
+        if (!intervalo) return alert("Selecione um período válido.");
+
+        const dadosPeriodo = todasMovimentacoes.filter(mov => {
+            if (!mov.data) return false;
+            const partes = mov.data.split('/');
+            const dataMov = new Date(partes[2], partes[1] - 1, partes[0]);
+            return dataMov >= intervalo.inicio && dataMov <= intervalo.fim;
+        });
+
+        if (dadosPeriodo.length === 0) return alert("Não existem exportações/movimentações no período selecionado.");
+
+        const dadosPlanilha = dadosPeriodo.map(m => ({ "Data": m.data, "Horário": m.hora, "Fluxo / Ação": m.fluxo, "Código Material": m.material, "Descrição": buscarDescricaoLocal(m.material), "Setor Logístico": buscarSetorLocal(m.material), "Quantidade (PL)": m.quantidade, "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A' }));
+        const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Consolidado");
+        const nomeArquivo = `WMS_Consolidado_${Date.now()}.xlsx`;
+
+        XLSX.writeFile(wb, nomeArquivo);
+        registrarEHospedarExportacao(wb, nomeArquivo, intervalo.descricao, dadosPeriodo.length);
+    }
+
     function exportarRelatorioFiltradoExcel() {
         if(movimentacoesFiltradas.length === 0) return alert("Não existem dados no período filtrado para exportar.");
         const dadosPlanilha = movimentacoesFiltradas.map(m => ({ "Data": m.data, "Horário": m.hora, "Fluxo / Ação": m.fluxo, "Código Material": m.material, "Descrição": buscarDescricaoLocal(m.material), "Setor Logístico": buscarSetorLocal(m.material), "Quantidade (PL)": m.quantidade, "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A' }));
         const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Relatório_Filtrado");
-        XLSX.writeFile(wb, `WMS_Relatorio_Consolidado_${new Date().getTime()}.xlsx`);
+        const nomeArquivo = `WMS_Relatorio_Consolidado_${new Date().getTime()}.xlsx`;
+        XLSX.writeFile(wb, nomeArquivo);
+        registrarEHospedarExportacao(wb, nomeArquivo, "Relatório Filtrado (Dashboard)", movimentacoesFiltradas.length);
     }
  
     async function exportarHistoricoExcel() {
@@ -1123,7 +1317,9 @@
         const ws = XLSX.utils.json_to_sheet(dados);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Infinity_Log");
-        XLSX.writeFile(wb, `Infinity_WMS_Log_Completo_${new Date().getTime()}.xlsx`);
+        const nomeArquivo = `Infinity_WMS_Log_Completo_${new Date().getTime()}.xlsx`;
+        XLSX.writeFile(wb, nomeArquivo);
+        registrarEHospedarExportacao(wb, nomeArquivo, "Log Completo de Auditoria", dados.length);
     }
  
     async function importarCSV(event) {
