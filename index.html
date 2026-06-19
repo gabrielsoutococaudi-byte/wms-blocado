@@ -12,967 +12,1300 @@
     <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22WMS%20INFINITY%22,%22short_name%22:%22WMS%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%23020202%22,%22theme_color%22:%22%23ff3e3e%22,%22orientation%22:%22portrait-primary%22,%22scope%22:%22/%22}">
     <meta name="description" content="WMS INFINITY - Sistema de Gerenciamento de Armazem">
     
-    <title>WMS INFINITY</title>
+    <title>WMS FLOW PRO - Infinity Edition</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
+        :root { 
+            --bg: #020202;
+            --glass: rgba(255, 255, 255, 0.02);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --primary: #ff3e3e; 
+            --primary-glow: rgba(255, 62, 62, 0.2);
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --critico: #fbbf24; 
+            --retido: #f87171; 
+            --verde: #10b981; 
+            --text: #f8fafc; 
+            --text-secondary: #64748b;
+            --neon-blue: #00f2ff;
         }
-        body {
-            background-color: #020202;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            padding-bottom: 30px;
+        .input-with-toggle { position: relative; display: flex; align-items: center; }
+        .input-with-toggle input { padding-right: 50px !important; }
+        .toggle-kb-btn { position: absolute; right: 10px; background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-secondary); border-radius: 10px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: 0.3s; z-index: 10; }
+        .toggle-kb-btn:hover { background: var(--primary); color: #fff; }
+ 
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+ 
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg); 
+            color: var(--text); 
+            padding-bottom: env(safe-area-inset-bottom, 40px); 
+            -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(255, 62, 62, 0.05) 0%, transparent 30%),
+                radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 30%);
         }
-        .header {
-            background-color: #0d0d0d;
-            border-bottom: 2px solid #ff3e3e;
-            padding: 15px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 999;
+ 
+        .glass-card { 
+            background: var(--glass);
+            backdrop-filter: blur(15px); 
+            -webkit-backdrop-filter: blur(15px); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 24px; 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .header h1 {
-            color: #ff3e3e;
-            font-size: 1.6rem;
-            letter-spacing: 2px;
-            font-weight: 900;
-            text-shadow: 0 0 10px rgba(255, 62, 62, 0.3);
-        }
-        .container {
-            padding: 15px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .card {
-            background-color: #0d0d0d;
-            border: 1px solid #1a1a1a;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        .card-title {
-            color: #ff3e3e;
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            border-left: 3px solid #ff3e3e;
-            padding-left: 8px;
-            text-transform: uppercase;
-        }
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 0.85rem;
-            color: #aaaaaa;
-            font-weight: 600;
-        }
-        input, select, button {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 12px;
-            border-radius: 6px;
-            border: 1px solid #222;
-            background-color: #121212;
-            color: #fff;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-        input:focus, select:focus {
-            border-color: #ff3e3e;
-            box-shadow: 0 0 8px rgba(255, 62, 62, 0.2);
-        }
-        input[type="file"] {
-            padding: 8px;
-        }
-        .btn {
-            background-color: #ff3e3e;
-            color: #ffffff;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-bottom: 0;
-            box-shadow: 0 4px 10px rgba(255, 62, 62, 0.2);
-        }
-        .btn:active {
-            transform: scale(0.98);
-            background-color: #d63030;
-        }
-        .menu-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .menu-btn {
-            background-color: #0d0d0d;
-            border: 1px solid #222;
-            padding: 15px 10px;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        .menu-btn:active {
-            background-color: #151515;
-            border-color: #ff3e3e;
-        }
-        .panel {
-            display: none;
-        }
-        .panel.active {
-            display: block;
-        }
-        .badge-vencimento {
-            display: block;
-            text-align: center;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: 800;
-            font-size: 0.9rem;
-            margin-bottom: 12px;
-            background-color: #121212;
-            border: 1px solid #222;
-        }
-        .vencido { color: #ff3e3e; border-color: rgba(255, 62, 62, 0.4); background-color: rgba(255, 62, 62, 0.05); }
-        .atencao { color: #ffa500; border-color: rgba(255, 165, 0, 0.4); background-color: rgba(255, 165, 0, 0.05); }
-        .normal { color: #2ecc71; border-color: rgba(46, 204, 113, 0.4); background-color: rgba(46, 204, 113, 0.05); }
+        .glass-card:hover { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); }
+ 
+        #network-status { display: none; background: var(--critico); color: #000; text-align: center; padding: 8px; font-size: 10px; font-weight: 900; position: sticky; top: 0; z-index: 2000; text-transform: uppercase; letter-spacing: 2px; }
         
-        .btn-voltar {
-            background-color: #111;
-            border: 1px solid #333;
-            color: #ccc;
-            font-size: 0.9rem;
-            padding: 10px;
-            font-weight: 600;
-            margin-top: 10px;
-        }
+        .sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100dvh; background: rgba(5, 5, 5, 0.98); backdrop-filter: blur(20px); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1500; padding-top: calc(60px + env(safe-area-inset-top)); border-right: 1px solid var(--glass-border); }
+        .sidebar.active { left: 0; }
+        .sidebar button { width: 85%; padding: 16px 20px; background: transparent; border: none; color: var(--text-secondary); text-align: left; cursor: pointer; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 12px; margin: 8px auto; border-radius: 14px; transition: 0.3s; }
+        .sidebar button:hover { background: var(--glass); color: var(--text); transform: translateX(8px); }
+ 
+        .header { padding: calc(20px + env(safe-area-inset-top)) 24px 20px 24px; display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 900; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); }
+        .menu-btn { background: var(--glass); border: 1px solid var(--glass-border); padding: 10px; border-radius: 14px; color: white; font-size: 20px; display: flex; width: 46px; height: 46px; align-items: center; justify-content: center; }
         
-        #login-screen {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-height: 80vh;
-        }
+        .container { width: 100%; max-width: 1200px; margin: auto; padding: 0 20px; }
+ 
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px; margin-top: 20px; }
+        .stat-card { padding: 24px; position: relative; overflow: hidden; cursor: pointer; border-bottom: 2px solid transparent; }
+        .stat-card h5 { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 800; }
+        .stat-card p { font-size: 30px; font-weight: 900; color: #fff; letter-spacing: -1px; }
+ 
+        .dashboard-row { display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; margin-bottom: 24px; }
+        .dashboard-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        .dashboard-fullrow { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 24px; }
+        @media (max-width: 900px) { .dashboard-row { grid-template-columns: 1fr; } }
+ 
+        .chart-box { padding: 28px; position: relative; }
+        .chart-title { font-size: 12px; font-weight: 900; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); padding-right: 40px; }
+        .chart-title span { color: var(--primary); }
+ 
+        /* Botão de Expansão */
+        .expand-btn { position: absolute; top: 22px; right: 22px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; font-weight: 700; transition: 0.2s; z-index: 10; }
+        .expand-btn:hover { background: var(--accent); border-color: var(--accent); }
+ 
+        /* Modal do Gráfico Expandido */
+        .chart-fullscreen-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2,2,2,0.98); z-index: 5000; padding: 40px; flex-direction: column; }
+        .chart-fullscreen-modal .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; }
+        .chart-fullscreen-modal .canvas-container { flex-grow: 1; position: relative; width: 100%; height: 80%; display: flex; align-items: center; justify-content: center; }
+ 
+        .activity-feed { max-height: 450px; overflow-y: auto; padding-right: 5px; }
+        .activity-item { display: flex; gap: 16px; margin-bottom: 24px; padding: 12px; border-radius: 16px; transition: 0.3s; }
+        .activity-icon-box { width: 40px; height: 40px; border-radius: 12px; background: var(--glass); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .activity-content { font-size: 12px; line-height: 1.5; }
+        .activity-content b { color: #fff; font-weight: 700; }
+        .activity-tag { font-size: 9px; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; font-weight: 900; margin-bottom: 6px; display: inline-block; }
+        .activity-time { font-size: 10px; color: var(--text-secondary); margin-top: 6px; display: block; }
+ 
+        .search-wrapper { margin-bottom: 24px; position: relative; margin-top: 20px; }
+        .search-wrapper input { background: var(--glass); border: 1px solid var(--glass-border); padding: 20px 28px; border-radius: 20px; color: white; font-size: 16px; width: 100%; transition: 0.4s; outline: none; font-weight: 500; }
+        .search-wrapper input:focus { border-color: var(--accent); box-shadow: 0 0 30px var(--accent-glow); background: rgba(255,255,255,0.05); }
+ 
+        .item-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 24px; padding: 24px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .item-card:hover { transform: scale(1.02); border-color: var(--primary); }
         
-        .info-label {
-            background-color: #121212;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #222;
-            margin-bottom: 12px;
-            font-size: 0.95rem;
-            color: #fff;
-            font-weight: 600;
-            min-height: 45px;
-        }
+        .badge { padding: 6px 12px; border-radius: 10px; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        .badge-ender { background: #fff; color: #000; }
+ 
+        .btn-action { background: var(--primary); color: #fff; border: none; padding: 16px 28px; border-radius: 16px; font-weight: 900; cursor: pointer; font-size: 13px; box-shadow: 0 10px 20px var(--primary-glow); transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-action:active { transform: scale(0.96); }
+ 
+        .form-box { padding: 35px; margin-bottom: 30px; margin-top: 20px; }
+        .form-group label { display: block; font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 800; letter-spacing: 1.5px; }
+        .form-group input, .form-group select { width: 100%; padding: 18px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: #fff; outline: none; font-size: 15px; transition: 0.3s; }
         
-        /* Estilos da tabela de estoque */
-        .table-container {
-            overflow-x: auto;
-            margin-top: 10px;
-            border: 1px solid #222;
-            border-radius: 6px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-            text-align: left;
-        }
-        th {
-            background-color: #0d0d0d;
-            color: #ff3e3e;
-            padding: 10px;
-            font-weight: 700;
-            border-bottom: 2px solid #222;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-        }
-        td {
-            padding: 10px;
-            border-bottom: 1px solid #151515;
-            color: #ddd;
-            background-color: #050505;
-        }
-        tr:nth-child(even) td {
-            background-color: #0b0b0b;
-        }
+        #modal-retirada { display:none; position:fixed; top:0; left:0; width:100%; height:100dvh; background:rgba(0,0,0,0.95); z-index:3000; align-items:center; justify-content:center; backdrop-filter: blur(20px); padding: 20px; }
+        .modal-content { padding: 40px; width:100%; max-width:440px; border: 1px solid var(--primary); }
+ 
+        .autocomplete-items { position: absolute; border: 1px solid var(--glass-border); border-top: none; z-index: 99; top: 100%; left: 0; right: 0; background: #080808; max-height: 250px; overflow-y: auto; border-radius: 0 0 20px 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
+        .autocomplete-item { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid var(--glass-border); font-size: 13px; }
+        .autocomplete-item:hover { background-color: var(--primary); color: #fff; }
+ 
+        .wms-table-container { width: 100%; overflow-x: auto; margin-top: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid var(--glass-border); }
+        .wms-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+        .wms-table th { background: rgba(255,255,255,0.05); padding: 14px 16px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; font-size: 10px; letter-spacing: 1px; }
+        .wms-table td { padding: 14px 16px; border-bottom: 1px solid var(--glass-border); color: var(--text); }
+        .wms-table tr:hover { background: rgba(255,255,255,0.01); }
+ 
+        .filter-panel { background: rgba(255,255,255,0.01); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+ 
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
     </style>
 </head>
 <body>
-
+ 
+<div id="network-status">⚠️ MODO OFFLINE ATIVO</div>
+ 
+<div id="modal-grafico-expandido" class="chart-fullscreen-modal">
+    <div class="modal-header">
+        <h2 id="modal-grafico-titulo" style="font-weight:900; letter-spacing:-1px;">Gráfico Expandido</h2>
+        <button class="btn-action" style="padding:10px 20px; background:var(--primary);" onclick="fecharGraficoExpandido()">Fechar Voltar ✕</button>
+    </div>
+    <div class="canvas-container">
+        <canvas id="canvas-expanded-render"></canvas>
+    </div>
+</div>
+ 
+<div id="sidebar" class="sidebar">
+    <div style="padding: 30px; font-weight: 900; color: #fff; font-size: 22px; letter-spacing: -1.5px; display: flex; align-items: center; gap: 10px;">
+        <div style="width: 12px; height: 12px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 10px var(--primary);"></div>
+        INFINITY WMS
+    </div>
+    <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ANALYTICS</button>
+    <button onclick="navegar('retirar')">📦 PESQUISAR ESTOQUE</button>
+    <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
+        <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
+    <button onclick="navegar('movimentacao_drive_in')">🚚 MOVIMENTAÇÃO DRIVE IN</button>
+    
+    <button onclick="logout()" style="color: var(--retido); margin-top: 40px; border-top: 1px solid var(--glass-border); border-radius: 0; width: 100%; opacity: 0.7;">🚪 ENCERRAR SESSÃO</button>
+</div>
+ 
+<div id="login-screen">
+    <div style="height: 100dvh; display: flex; justify-content: center; align-items: center; padding: 20px;">
+        <div class="login-box glass-card" style="width: 100%; max-width: 380px; padding: 50px; text-align: center;">
+            <div style="width: 60px; height: 60px; background: var(--primary); border-radius: 20px; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 15px 30px var(--primary-glow);">W</div>
+            <h2 style="color: #fff; margin-bottom: 10px; font-weight: 900; font-size: 26px; letter-spacing: -1px;">WMS INFINITY</h2>
+            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 35px; text-transform: uppercase; letter-spacing: 1px;">Acesse sua conta</p>
+            <div class="form-group">
+                <div class="input-with-toggle" style="margin-bottom:15px;">
+                    <input type="text" inputmode="numeric" id="login-mat" placeholder="Matrícula" style="text-align: center;">
+                    <div class="toggle-kb-btn" onclick="toggleKB('login-mat')">Abc</div>
+                </div>
+                <input type="password" id="login-senha" placeholder="Senha" style="text-align: center;">
+            </div>
+            <button onclick="tentarLogin()" class="btn-action" style="width: 100%; padding: 20px; font-size: 15px; margin-top: 10px;">INICIAR OPERAÇÃO</button>
+        </div>
+    </div>
+</div>
+ 
+<div id="app-screen" style="display: none;">
     <div class="header">
-        <h1>WMS INFINITY</h1>
+        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+        <div style="flex-grow: 1;">
+            <div id="user-name" style="font-weight: 900; font-size: 18px; letter-spacing: -0.5px; color: #fff;"></div>
+            <div id="role-label" style="font-size: 9px; color: var(--primary); font-weight: 900; letter-spacing: 2px; text-transform: uppercase;"></div>
+        </div>
+        <div style="text-align: right;">
+            <div id="current-time" style="font-size: 12px; font-weight: 800;">00:00</div>
+            <div style="font-size: 9px; color: var(--text-secondary); text-transform: uppercase;">Online</div>
+        </div>
     </div>
-
+ 
     <div class="container">
-
-        <div id="login-screen" class="panel active">
-            <div class="card">
-                <div class="card-title">Acesso ao Sistema</div>
-                <label>Selecione seu Perfil</label>
-                <select id="login-perfil">
-                    <option value="OPERADOR">OPERADOR</option>
-                    <option value="CONFERENTE">CONFERENTE</option>
-                    <option value="ADMIN">ADMINISTRADOR (ADMIN)</option>
-                </select>
-                <button class="btn" onclick="efetuarLogin()">ENTRAR</button>
+        <div id="view-admin" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card glass-card" onclick="navegarComFiltro('')"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
+                <div class="stat-card glass-card" onclick="navegarComFiltro('critico')"><h5>CRÍTICOS (30-60D)</h5><p id="st-critico" style="color: var(--critico);">0</p></div>
+                <div class="stat-card glass-card" onclick="navegarComFiltro('retido')"><h5>RETIDOS (&lt;30D)</h5><p id="st-retido" style="color: var(--retido);">0</p></div>
+                <div class="stat-card glass-card"><h5>GIRO HOJE</h5><p id="st-mov" style="color: var(--verde);">0</p></div>
             </div>
-        </div>
-
-        <div id="main-menu" class="panel">
-            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                <span id="txt-perfil-logado" style="font-weight: 800; color: #ff3e3e; font-size: 0.9rem; text-transform: uppercase;"></span>
-                <button onclick="logout()" style="width: auto; margin: 0; padding: 6px 12px; font-size: 0.8rem; background: #111; border: 1px solid #333; color: #aaa;">SAIR</button>
+ 
+            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
+                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">Filtros de Pesquisa do Histórico e Painéis Operacionais</h4>
+                <div class="filter-panel">
+                    <div class="form-group">
+                        <label>Tipo de Filtro Temporal</label>
+                        <select id="filtro-tipo-tempo" onchange="alternarCamposData()">
+                            <option value="mes">Por Mês Atual / Específico</option>
+                            <option value="dia">Por Dia Específico</option>
+                            <option value="periodo">Período Customizado</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="container-filtro-mes">
+                        <label>Mês / Ano de Análise</label>
+                        <input type="month" id="filtro-mes-valor" onchange="processarFiltragemHistorica()">
+                    </div>
+                    <div class="form-group" id="container-filtro-dia" style="display:none;">
+                        <label>Dia de Análise</label>
+                        <input type="date" id="filtro-dia-valor" onchange="processarFiltragemHistorica()">
+                    </div>
+                    <div class="form-group" id="container-filtro-de" style="display:none;">
+                        <label>Data Inicial</label>
+                        <input type="date" id="filtro-de-valor" onchange="processarFiltragemHistorica()">
+                    </div>
+                    <div class="form-group" id="container-filtro-ate" style="display:none;">
+                        <label>Data Final</label>
+                        <input type="date" id="filtro-ate-valor" onchange="processarFiltragemHistorica()">
+                    </div>
+                    <div class="form-group">
+                        <label>Buscar Material (Código/Nome)</label>
+                        <input type="text" id="filtro-material" placeholder="Filtrar tabela/ranking..." oninput="filtrarTabelasEDados()">
+                    </div>
+                </div>
+                <div style="display:flex; justify-content: flex-end;">
+                    <button class="btn-action" style="padding: 12px 24px; font-size:11px; background:var(--accent); box-shadow:0 5px 15px var(--accent-glow);" onclick="limparFiltrosHistoricos()">Limpar Filtros</button>
+                </div>
             </div>
+ 
+            <div class="dashboard-row">
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-fluxo-diario', '1. Movimentação de Paletes Diária')">Expandir ⛶</button>
+                    <div class="chart-title">📈 1. Movimentação de Paletes Diária <span>(Período Selecionado)</span></div>
+                    <canvas id="chart-fluxo-diario" style="max-height: 250px;"></canvas>
+                </div>
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-fluxo-mensal', '2. Histórico Mensal Acumulado')">Expandir ⛶</button>
+                    <div class="chart-title">🗓️ 2. Histórico Mensal Acumulado <span>(Giro Anual)</span></div>
+                    <canvas id="chart-fluxo-mensal" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+ 
+            <div class="dashboard-grid-3">
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-setor-mensal', '6.1 Setores Abastecidos (Visão Mensal)')">Expandir ⛶</button>
+                    <div class="chart-title">🧱 6.1 Setores Abastecidos (Visão Mensal)</div>
+                    <canvas id="chart-setor-mensal" style="max-height: 230px;"></canvas>
+                </div>
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-setor-diario', '6.2 Setores Abastecidos (Visão Diária)')">Expandir ⛶</button>
+                    <div class="chart-title">⚡ 6.2 Setores Abastecidos (Visão Diária)</div>
+                    <canvas id="chart-setor-diario" style="max-height: 230px;"></canvas>
+                </div>
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-destinos-saida', 'Destino dos Fluxos de Saída')">Expandir ⛶</button>
+                    <div class="chart-title">🔄 Destino das Cargas (Fluxos de Saída)</div>
+                    <canvas id="chart-destinos-saida" style="max-height: 230px;"></canvas>
+                </div>
+            </div>
+ 
             
-            <div class="menu-grid">
-                <button class="menu-btn" onclick="navegarPara('panel-entrada')">📥 ENTRADA</button>
-                <button class="menu-btn" onclick="navegarPara('panel-saida')">📤 SAÍDA</button>
-                <button class="menu-btn" onclick="navegarPara('panel-drivein')">🚗 DRIVE IN (SAÍDA)</button>
-                <button class="menu-btn" onclick="navegarPara('panel-consulta')">🔍 CONSULTAR ESTOQUE</button>
-                <button class="menu-btn" onclick="navegarPara('panel-historico-mov')">📜 HISTÓRICO MOV.</button>
-                <button id="btn-menu-admin" class="menu-btn" onclick="navegarPara('panel-admin')" style="display:none; border-color: #ff3e3e; color: #ff3e3e;">⚙️ PAINEL ADMIN</button>
-            </div>
-        </div>
-
-        <div id="panel-entrada" class="panel">
-            <div class="card">
-                <div class="card-title">Registrar Entrada</div>
-                
-                <label>Código do Material</label>
-                <input type="text" id="ent-mat" placeholder="Digite ou bip o código" oninput="buscarDescricao(this.value, 'ent-desc')">
-                
-                <label>Descrição</label>
-                <div id="ent-desc" class="info-label">---</div>
-                
-                <label>Quantidade (Paletes)</label>
-                <input type="number" id="ent-qtd" inputmode="numeric" placeholder="Ex: 2">
-                
-                <label>Data de Vencimento</label>
-                <input type="date" id="ent-venc" onchange="calcularDiasRestantes(this.value, 'ent-label-dias')">
-                
-                <span id="ent-label-dias" class="badge-vencimento"></span>
-                
-                <label>Endereço de Destino (Estrutura)</label>
-                <input type="text" id="ent-endereco" placeholder="Ex: A-01-02">
-                
-                <button class="btn" onclick="salvarEntrada()">CONFIRMAR ENTRADA</button>
-                <button class="btn btn-voltar" onclick="voltarAoMenu()">VOLTAR</button>
-            </div>
-        </div>
-
-        <div id="panel-saida" class="panel">
-            <div class="card">
-                <div class="card-title">Registrar Saída</div>
-                
-                <label>Código do Material</label>
-                <input type="text" id="sai-mat" placeholder="Digite ou bip o código" oninput="buscarDescricao(this.value, 'sai-desc')">
-                
-                <label>Descrição</label>
-                <div id="sai-desc" class="info-label">---</div>
-                
-                <label>Quantidade (Paletes)</label>
-                <input type="number" id="sai-qtd" inputmode="numeric" placeholder="Ex: 1">
-                
-                <label>Data de Vencimento</label>
-                <input type="date" id="sai-venc" onchange="calcularDiasRestantes(this.value, 'sai-label-dias')">
-                
-                <span id="sai-label-dias" class="badge-vencimento"></span>
-                
-                <label>Endereço de Origem (Onde está coletando)</label>
-                <input type="text" id="sai-endereco" placeholder="Ex: A-01-02">
-                
-                <label>Destino Final</label>
-                <select id="sai-destino">
-                    <option value="EXPEDICAO">EXPEDIÇÃO</option>
-                    <option value="PRODUCAO">PRODUÇÃO</option>
-                    <option value="AVARIAS">AVARIAS / REFUGO</option>
-                </select>
-                
-                <button class="btn" onclick="salvarSaida()">CONFIRMAR SAÍDA</button>
-                <button class="btn btn-voltar" onclick="voltarAoMenu()">VOLTAR</button>
-            </div>
-        </div>
-
-        <div id="panel-drivein" class="panel">
-            <div class="card">
-                <div class="card-title">Saída do Drive In</div>
-                <p style="font-size:0.75rem; color:#888; margin-bottom:12px; margin-top:-8px;">*Gera apenas movimentação de retirada física do Drive In.</p>
-                
-                <label>Código do Material</label>
-                <input type="text" id="mdi-mat" placeholder="Código do material" oninput="buscarDescricao(this.value, 'mdi-desc')">
-                
-                <label>Descrição</label>
-                <div id="mdi-desc" class="info-label">---</div>
-                
-                <label>Quantidade a Retirar (Paletes)</label>
-                <input type="number" id="mdi-qtd" inputmode="numeric" placeholder="Ex: 4">
-                
-                <label>Data de Vencimento</label>
-                <input type="date" id="mdi-venc" onchange="calcularDiasRestantes(this.value, 'mdi-label-dias')">
-                
-                <span id="mdi-label-dias" class="badge-vencimento"></span>
-                
-                <label>Destino da Retirada</label>
-                <select id="mdi-destino">
-                    <option value="APANHA">APANHA (PÁTIO / RUA)</option>
-                    <option value="EXPEDICAO">EXPEDIÇÃO DIRETA</option>
-                    <option value="PRODUCAO">PRODUÇÃO</option>
-                </select>
-                
-                <button class="btn" onclick="salvarMovimentacaoDriveIn()">REGISTRAR RETIRADA DRIVE-IN</button>
-                <button class="btn btn-voltar" onclick="voltarAoMenu()">VOLTAR</button>
-            </div>
-        </div>
-
-        <div id="panel-consulta" class="panel">
-            <div class="card">
-                <div class="card-title">Consulta de Posições</div>
-                
-                <label>Buscar por Código, Descrição ou Endereço</label>
-                <input type="text" id="busca-estoque" placeholder="Ex: 1010 ou A-01" oninput="filtrarEstoqueLocal(this.value)">
-                
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Mat</th>
-                                <th>Descrição</th>
-                                <th>Venc</th>
-                                <th>End/Local</th>
-                                <th style="text-align: center;">Qtd</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-estoque">
-                            </tbody>
-                    </table>
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-apanha-setor', '7. Abastecimento APANHA por Setor')">Expandir ⛶</button>
+                    <div class="chart-title">📦 7. Abastecimento APANHA por Setor <span>(Fluxo APANHA)</span></div>
+                    <canvas id="chart-apanha-setor" style="max-height: 300px;"></canvas>
                 </div>
-                
-                <button class="btn btn-voltar" onclick="voltarAoMenu()">VOLTAR</button>
+            </div>
+ 
+            <div class="dashboard-row">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🏆 3. Materiais Mais Movimentados <span style="color:var(--accent);">Top 10</span></div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead>
+                                <tr><th>Código</th><th>Descrição</th><th>Qtd Movimentada (PL)</th></tr>
+                            </thead>
+                            <tbody id="table-ranking-materiais"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="chart-box glass-card">
+                    <div class="chart-title">👥 5. Produtividade por Colaborador <span style="color:var(--verde);">Ranking</span></div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead>
+                                <tr><th>Colaborador</th><th>Paletes Movimentados</th></tr>
+                            </thead>
+                            <tbody id="table-ranking-operadores"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+ 
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">
+                        <div>📋 Histórico Detalhado Consolidação Fluxos</div>
+                        <button class="btn-action" onclick="exportarRelatorioFiltradoExcel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">Exportar Planilha Filtrada</button>
+                    </div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead>
+                                <tr><th>Data</th><th>Hora</th><th>Fluxo/Ação</th><th>Material</th><th>Descrição</th><th>Setor</th><th>Qtd</th><th>Operador</th></tr>
+                            </thead>
+                            <tbody id="table-historico-consolidado"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+ 
+            <div class="dashboard-row">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">⚡ 4. Monitor de Atividades em Tempo Real (Controle FEFO)</div>
+                    <div id="activity-feed" class="activity-feed"></div>
+                </div>
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-status', 'Saúde Geral do Inventário')">Expandir ⛶</button>
+                    <div class="chart-title">📊 Saúde Geral do Inventário</div>
+                    <canvas id="chart-status" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+ 
+            <div class="glass-card" style="padding: 35px; margin-bottom: 30px;">
+                <h3 style="font-size: 12px; color: #fff; margin-bottom: 25px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">Sistema e Sincronização</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
+                    <button class="btn-action" onclick="document.getElementById('csv-file').click()" style="background: var(--glass); border: 1px solid var(--glass-border); box-shadow: none;">ATUALIZAR ESTOQUE (CSV)</button>
+                    <button class="btn-action" onclick="exportarHistoricoExcel()" style="background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">EXPORTAR LOG COMPLETO DE AUDITORIA</button>
+                </div>
+                <button class="btn-action" onclick="sincronizarBaseMateriais()" style="width: 100%; margin-top: 15px; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">SINCRONIZAR BASE DE MATERIAIS (EXCEL)</button>
             </div>
         </div>
-
-        <div id="panel-historico-mov" class="panel">
-            <div class="card">
-                <div class="card-title">Últimas Movimentações</div>
-                
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Data/Hora</th>
-                                <th>Tipo</th>
-                                <th>Mat</th>
-                                <th>Qtd</th>
-                                <th>Local/Dest</th>
-                                <th>User</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-historico">
-                            </tbody>
-                    </table>
+ 
+        <div id="view-retirar">
+            <div class="search-wrapper input-with-toggle">
+                <input type="text" inputmode="numeric" id="search-input" placeholder="Pesquisar Código ou Posição..." oninput="renderizarEstoque()">
+                <div class="toggle-kb-btn" onclick="toggleKB('search-input')" style="right: 15px;">Abc</div>
+            </div>
+            <div id="lista-estoque"></div>
+        </div>
+ 
+        <div id="view-entrada_bloco" style="display: none;">
+            <div class="form-box glass-card">
+                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Entrada no Bloco</h3>
+                <div class="form-group"><label>Fluxo de Origem</label><select id="eb-origem"><option value="DRIVE IN">DRIVE IN</option><option value="RECEBIMENTO">RECEBIMENTO</option></select></div>
+                <div class="form-group"><label>Endereço de Destino</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-ender" placeholder="Ex: 205-14"><div class="toggle-kb-btn" onclick="toggleKB('eb-ender')">Abc</div></div>
                 </div>
-                
-                <button class="btn btn-voltar" onclick="voltarAoMenu()">VOLTAR</button>
+                <div class="form-group" style="position: relative;"><label>Código do Material</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('eb-mat')">Abc</div></div>
+                    <div id="eb-mat-list" class="autocomplete-items"></div>
+                </div>
+                <div class="form-group"><label>Descrição do Material</label><input type="text" id="eb-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando código..."></div>
+                <div class="form-group"><label>Quantidade (Pallets)</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="eb-qtd" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('eb-qtd')">Abc</div></div>
+                </div>
+                <div class="form-group"><label>Data de Vencimento</label><input type="date" id="eb-venc" onchange="calcularDias(this.value, 'eb-label-dias')"><p id="eb-label-dias" style="color: var(--critico); font-size: 11px; margin-top: 12px; font-weight: 800; text-transform: uppercase;"></p></div>
+                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="salvarEntradaBloco()">CONFIRMAR ENTRADA</button>
             </div>
         </div>
-
-        <div id="panel-admin" class="panel">
-            <div class="card">
-                <div class="card-title">Painel Administrativo</div>
-                
-                <div style="border: 1px solid #222; padding: 12px; border-radius: 6px; margin-bottom: 15px; background-color:#070707;">
-                    <div style="font-weight:700; font-size:0.85rem; color:#ff3e3e; margin-bottom:10px; text-transform:uppercase;">Atualizar Estoque Completo (CSV)</div>
-                    <label>Selecione o arquivo .csv gerado pelo ERP</label>
-                    <input type="file" id="csv-file" accept=".csv">
-                    <button class="btn" style="background-color: #27ae60;" onclick="atualizarEstoqueCSV()">ATUALIZAR ESTOQUE (CSV)</button>
-                    
-                    <button class="menu-btn" onclick="abrirHistoricoPlanilhas()" style="background-color: #2c3e50; color: white; font-weight: bold; margin-top: 10px; width: 100%; border: none;">
-                        📜 HISTÓRICO DE PLANILHAS
-                    </button>
+ 
+        <div id="view-abertura_blocado" style="display: none;">
+            <div class="form-box glass-card">
+                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Transferência Interna</h3>
+                <div class="form-group"><label>Posição Origem</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-origem" placeholder="Ex: 201-14" onchange="carregarDadosOrigemAbertura(this.value)"><div class="toggle-kb-btn" onclick="toggleKB('ab-origem')">Abc</div></div>
                 </div>
-
-                <div style="border: 1px solid #222; padding: 12px; border-radius: 6px; margin-bottom: 15px; background-color:#070707;">
-                    <div style="font-weight:700; font-size:0.85rem; color:#ff3e3e; margin-bottom:10px; text-transform:uppercase;">Cadastrar Novo Material na Base</div>
-                    <label>Código do Material</label>
-                    <input type="text" id="cad-mat" placeholder="Ex: 5050">
-                    <label>Descrição Completa</label>
-                    <input type="text" id="cad-desc" placeholder="Ex: CAIXA PRODUTO X 20UN">
-                    <button class="btn" onclick="cadastrarMaterialBase()">SALVAR MATERIAL</button>
+                <div class="form-group"><label>Material Identificado</label><input type="text" id="ab-mat" readonly style="opacity: 0.5;"></div>
+                <div class="form-group"><label>Posição de Destino</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-destino" placeholder="Ex: 205-20"><div class="toggle-kb-btn" onclick="toggleKB('ab-destino')">Abc</div></div>
                 </div>
-
-                <div style="border: 1px solid #222; padding: 12px; border-radius: 6px; background-color:#070707;">
-                    <div style="font-weight:700; font-size:0.85rem; color:#ff3e3e; margin-bottom:10px; text-transform:uppercase;">Zerar Base de Dados (Limpeza)</div>
-                    <p style="font-size:0.75rem; color:#888; margin-bottom:10px;">Atenção: Esta ação deleta todo o estoque e histórico salvos.</p>
-                    <button class="btn" style="background-color:#c0392b;" onclick="limparBancoDadosCompleto()">LIMPAR BASE GERAL</button>
+                <div class="form-group"><label>Qtd para Mover</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="ab-qtd" placeholder="Saldo: 0"><div class="toggle-kb-btn" onclick="toggleKB('ab-qtd')">Abc</div></div>
                 </div>
-                
-                <button class="btn btn-voltar" onclick="voltarAoMenu()">VOLTAR</button>
+                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="processarAberturaBlocado()">EXECUTAR MOVIMENTAÇÃO</button>
             </div>
         </div>
-
-    </div>
-
-    <div id="modal-historico-planilhas" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; overflow-y: auto; padding: 20px; box-sizing: border-box;">
-        <div style="background: #0d0d0d; border: 2px solid #ff3e3e; max-width: 900px; margin: 40px auto; padding: 20px; border-radius: 8px; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 20px;">
-                <h2 style="margin: 0; color: #ff3e3e; font-size: 1.3rem; text-transform: uppercase; letter-spacing: 1px;">Histórico de Planilhas Importadas</h2>
-                <button onclick="fecharHistoricoPlanilhas()" style="background: #ff3e3e; color: #fff; border: none; padding: 8px 16px; cursor: pointer; font-weight: bold; border-radius: 4px; width: auto; margin: 0;">FECHAR</button>
-            </div>
-            
-            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <label for="filtro-data-hist" style="font-size: 0.9rem; display: inline-block; margin: 0;">Filtrar por Data:</label>
-                <input type="date" id="filtro-data-hist" onchange="renderizarTabelaHistorico()" style="background: #121212; color: #fff; border: 1px solid #333; padding: 6px; border-radius: 4px; width: auto; margin: 0;">
-                <button onclick="limparFiltroHistorico()" style="background: #333; color: #fff; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 0.9rem; width: auto; margin: 0;">Limpar Filtro</button>
-            </div>
-
-            <div class="table-container">
-                <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                    <thead>
-                        <tr style="background: #121212;">
-                            <th style="padding: 10px; border: 1px solid #222;">Data / Hora</th>
-                            <th style="padding: 10px; border: 1px solid #222;">Usuário</th>
-                            <th style="padding: 10px; border: 1px solid #222;">Arquivo</th>
-                            <th style="padding: 10px; border: 1px solid #222; text-align: center;">Registros</th>
-                            <th style="padding: 10px; border: 1px solid #222; text-align: center;">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-historico-planilhas">
-                        </tbody>
-                </table>
+ 
+ 
+<div id="view-movimentacao_drive_in" style="display: none;">
+            <div class="form-box glass-card">
+                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Movimentacao Drive In</h3>
+                <div class="form-group"><label>Fluxo de Origem</label><select id="mdi-origem"><option value="DRIVE IN">DRIVE IN</option></select></div>
+                <div class="form-group" style="position: relative;"><label>Codigo do Material</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="mdi-mat" placeholder="Codigo..." oninput="puxarDescricaoMovDriveIn(this.value, 'mdi-desc', 'mdi-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('mdi-mat')">Abc</div></div>
+                    <div id="mdi-mat-list" class="autocomplete-items"></div>
+                </div>
+                <div class="form-group"><label>Descricao do Material</label><input type="text" id="mdi-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando codigo..."></div>
+                <div class="form-group"><label>Quantidade (Pallets)</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="mdi-qtd" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('mdi-qtd')">Abc</div></div>
+                </div>
+                <div class="form-group"><label>Data de Vencimento</label><input type="date" id="mdi-venc" onchange="calcularDiasMovDriveIn(this.value, 'mdi-label-dias')"><p id="mdi-label-dias" style="color: var(--critico); font-size: 11px; margin-top: 12px; font-weight: 800; text-transform: uppercase;"></p></div>
+                <div class="form-group"><label>Fluxo de Destino</label><select id="mdi-destino"><option value="APANHA">APANHA</option><option value="TRANSFERENCIA">TRANSFERENCIA</option></select></div>
+                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="salvarMovimentacaoDriveIn()">CONFIRMAR MOVIMENTACAO</button>
             </div>
         </div>
     </div>
-
-    <script>
-        // CONFIGURAÇÃO DO SEU FIREBASE REALTIME DATABASE
-        const firebaseConfig = {
-            databaseURL: "https://wms-infinity-default-rtdb.firebaseio.com/"
-        };
+</div>
+ 
+<div id="modal-retirada">
+    <div class="modal-content glass-card">
+        <h3 id="modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Retirada</h3>
+        <p id="modal-info" style="font-size:13px; color: var(--text-secondary); margin: 20px 0 30px; line-height: 1.6;"></p>
+        <div class="form-group"><label>Quantidade de Pallets:</label>
+            <div class="input-with-toggle">
+                <input type="text" id="modal-input-qtd" inputmode="decimal" placeholder="0" style="font-size:40px; text-align:center; background: rgba(255,255,255,0.02); border: 2px solid var(--primary); border-radius: 20px; height: 90px; font-weight: 900; color: #fff; width: 100%;">
+                <div class="toggle-kb-btn" onclick="toggleKB('modal-input-qtd')" style="height: 60px; width: 50px;">Abc</div>
+            </div>
+        </div>
+        <div class="form-group"><label>Destino da Carga:</label><select id="modal-destino-mov" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 18px; border-radius: 16px; color: #fff; width: 100%; font-weight: 600;"><option value="TRANSFERENCIA">TRANSFERENCIA</option><option value="APANHA">APANHA</option><option value="SEPARAÇÃO">SEPARAÇÃO</option></select></div>
+        <div style="display:flex; gap:15px; margin-top:35px;"><button onclick="fecharModal()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button><button id="btn-confirmar-modal" class="btn-action" style="flex:1;">CONFIRMAR</button></div>
+    </div>
+</div>
+ 
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
+        authDomain: "sistema-fefo.firebaseapp.com",
+        projectId: "sistema-fefo",
+        storageBucket: "sistema-fefo.firebasestorage.app",
+        messagingSenderId: "755801777693",
+        appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
+    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+    const auth = firebase.auth();
+ 
+    // Registrar globalmente o plugin de rótulos do Chart.js
+    Chart.register(ChartDataLabels);
+ 
+    // Configuração de Estilos de Fonte Padrão para os Textos Internos dos Gráficos
+    Chart.defaults.color = '#64748b';
+    Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+    Chart.defaults.font.weight = '700';
+ 
+    let estoqueCompleto = [];
+    let baseMateriais = [];
+    let todasMovimentacoes = [];
+    let movimentacoesFiltradas = [];
+    let usuarioLogado = null;
+    let diasCalculados = 0;
+    let itemParaRetirar = null;
+    let itemOrigemAbertura = null;
+ 
+    // Instâncias Globais de Gráficos
+    let chartDiarioInst = null;
+    let chartMensalInst = null;
+    let chartSetorMInst = null;
+    let chartSetorDInst = null;
+    let chartDestinosInst = null;
+    let chartApanhaSetorInst = null;
+    let chartStatus = null;
+    let chartExpandidoInst = null; // Instância temporária do modal de ampliação
+ 
+    const SETORES_LISTA = ["ALCOÓLICO", "AVULSO", "LATA", "PET", "SUCO", "VIDRO"];
+ 
+    setInterval(() => { document.getElementById('current-time').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }, 1000);
+    window.addEventListener('online', () => document.getElementById('network-status').style.display = 'none');
+    window.addEventListener('offline', () => document.getElementById('network-status').style.display = 'block');
+ 
+    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
+    function logout() { auth.signOut().then(() => { localStorage.removeItem('wms_session'); location.reload(); }); }
+ 
+    async function tentarLogin() {
+        const mat = document.getElementById('login-mat').value.trim();
+        const senha = document.getElementById('login-senha').value.trim();
+        const email = mat.toLowerCase() + "@alb.com";
+        try {
+            await auth.signInWithEmailAndPassword(email, senha);
+            const doc = await db.collection("usuarios_wms").doc(email).get();
+            usuarioLogado = doc.exists ? { ...doc.data(), email } : { nome: mat, perfil: "OPERADOR", email };
+            localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
+            iniciarApp();
+        } catch (e) { alert("Credenciais incorretas."); }
+    }
+ 
+    function iniciarApp() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'block';
+        document.getElementById('user-name').innerText = usuarioLogado.nome;
+        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
+        document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
+        document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
         
-        // Inicializa o Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const database = firebase.database();
-
-        // Variaveis de controle local
-        let baseMateriais = {};
-        let estoqueCompletoLocal = [];
-        let usuarioLogado = "OPERADOR";
-        let dadosHistoricoLocal = []; // Cache complementar para a busca de planilhas
-
-        // Sincronização em tempo real das tabelas básicas existentes
-        database.ref('materiais_base').on('value', snapshot => {
-            if(snapshot.exists()) baseMateriais = snapshot.val();
+        const hoje = new Date();
+        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
+        document.getElementById('filtro-dia-valor').value = hoje.toISOString().substring(0, 10);
+        document.getElementById('filtro-de-valor').value = hoje.toISOString().substring(0, 10);
+        document.getElementById('filtro-ate-valor').value = hoje.toISOString().substring(0, 10);
+ 
+        conectarFirebase();
+        carregarBaseMateriais();
+        navegar(isAdmin ? 'admin' : 'retirar');
+        
+        // Ativar Screen Wake Lock
+        requestWakeLock();
+    }
+ 
+    function navegar(tela) {
+        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
+        document.getElementById('view-' + tela).style.display = 'block';
+        document.getElementById('sidebar').classList.remove('active');
+        if(tela === 'admin') carregarDadosDashboard();
+    }
+ 
+    function navegarComFiltro(tipo) {
+        navegar('retirar');
+        const input = document.getElementById('search-input');
+        input.value = tipo === 'critico' ? '60' : (tipo === 'retido' ? '30' : '');
+        renderizarEstoque();
+    }
+ 
+    function alternarCamposData() {
+        const tipo = document.getElementById('filtro-tipo-tempo').value;
+        document.getElementById('container-filtro-mes').style.display = tipo === 'mes' ? 'block' : 'none';
+        document.getElementById('container-filtro-dia').style.display = tipo === 'dia' ? 'block' : 'none';
+        document.getElementById('container-filtro-de').style.display = tipo === 'periodo' ? 'block' : 'none';
+        document.getElementById('container-filtro-ate').style.display = tipo === 'periodo' ? 'block' : 'none';
+        processarFiltragemHistorica();
+    }
+ 
+    function conectarFirebase() {
+        db.collection("estoque_blocado").onSnapshot(snap => {
+            estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if(usuarioLogado?.perfil?.toUpperCase() === "ADMIN") { atualizarEstatisticas(); carregarDadosDashboard(); }
+            renderizarEstoque();
         });
-
-        database.ref('estoque_atual').on('value', snapshot => {
-            estoqueCompletoLocal = [];
-            if(snapshot.exists()) {
-                const dados = snapshot.val();
-                Object.keys(dados).forEach(key => {
-                    estoqueCompletoLocal.push({ idFirebase: key, ...dados[key] });
-                });
-            }
-            if(document.getElementById('panel-consulta').classList.contains('active')) {
-                renderizarEstoque(estoqueCompletoLocal);
-            }
+ 
+        db.collection("movimentacoes_wms").orderBy("timestamp", "desc").onSnapshot(snap => {
+            todasMovimentacoes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            processarFiltragemHistorica();
         });
-
-        database.ref('historico_movimentacoes').limitToLast(40).on('value', snapshot => {
-            if(snapshot.exists()) {
-                const lista = [];
-                snapshot.forEach(child => {
-                    lista.push(child.val());
-                });
-                lista.reverse();
-                renderizarHistoricoMov(lista);
+    }
+ 
+    async function carregarBaseMateriais() {
+        const cache = localStorage.getItem('base_materiais');
+        if (cache) baseMateriais = JSON.parse(cache);
+        if (navigator.onLine) {
+            const snap = await db.collection("base_materiais").get();
+            if (!snap.empty) { 
+                baseMateriais = snap.docs.map(doc => doc.data()); 
+                localStorage.setItem('base_materiais', JSON.stringify(baseMateriais));
             }
+        }
+    }
+ 
+    function atualizarEstatisticas() {
+        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
+        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length;
+        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
+    }
+ 
+    function processarFiltragemHistorica() {
+        if (todasMovimentacoes.length === 0) return;
+ 
+        const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
+        const filtroMes = document.getElementById('filtro-mes-valor').value; 
+        const filtroDia = document.getElementById('filtro-dia-valor').value; 
+        const filtroDe = document.getElementById('filtro-de-valor').value;
+        const filtroAte = document.getElementById('filtro-ate-valor').value;
+ 
+        movimentacoesFiltradas = todasMovimentacoes.filter(mov => {
+            if (!mov.data) return false;
+            const partes = mov.data.split('/');
+            const dataMov = new Date(partes[2], partes[1] - 1, partes[0]);
+            
+            if (tipoTempo === 'mes' && filtroMes) {
+                const [ano, mes] = filtroMes.split('-');
+                return dataMov.getFullYear() === parseInt(ano) && (dataMov.getMonth() + 1) === parseInt(mes);
+            } else if (tipoTempo === 'dia' && filtroDia) {
+                const [ano, mes, dia] = filtroDia.split('-');
+                return dataMov.getFullYear() === parseInt(ano) && (dataMov.getMonth() + 1) === parseInt(mes) && dataMov.getDate() === parseInt(dia);
+            } else if (tipoTempo === 'periodo' && filtroDe && filtroAte) {
+                const dInit = new Date(filtroDe + "T00:00:00");
+                const dEnd = new Date(filtroAte + "T23:59:59");
+                return dataMov >= dInit && dataMov <= dEnd;
+            }
+            return true;
         });
-
-        // Fluxo de telas e navegação básica
-        function efetuarLogin() {
-            usuarioLogado = document.getElementById('login-perfil').value;
-            document.getElementById('txt-perfil-logado').innerText = `PERFIL: ${usuarioLogado}`;
-            
-            if(usuarioLogado === "ADMIN") {
-                document.getElementById('btn-menu-admin').style.display = 'flex';
-            } else {
-                document.getElementById('btn-menu-admin').style.display = 'none';
-            }
-            
-            navegarPara('main-menu');
-        }
-
-        function logout() {
-            navegarPara('login-screen');
-        }
-
-        function navegarPara(idPainel) {
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.getElementById(idPainel).classList.add('active');
-            
-            if(idPainel === 'panel-consulta') {
-                document.getElementById('busca-estoque').value = '';
-                renderizarEstoque(estoqueCompletoLocal);
-            }
-        }
-
-        function voltarAoMenu() {
-            navegarPara('main-menu');
-        }
-
-        // Lógica de Validação Auxiliar
-        function buscarDescricao(codigo, elementIdDestino) {
-            const limpo = codigo.trim();
-            if(!limpo) {
-                document.getElementById(elementIdDestino).innerText = "---";
-                return;
-            }
-            if(baseMateriais[limpo]) {
-                document.getElementById(elementIdDestino).innerText = baseMateriais[limpo].descricao;
-            } else {
-                document.getElementById(elementIdDestino).innerText = "MATERIAL NAO CADASTRADO";
-            }
-        }
-
-        function calcularDiasRestantes(stringData, labelId) {
-            if(!stringData) {
-                document.getElementById(labelId).innerText = "";
-                document.getElementById(labelId).className = "badge-vencimento";
-                return;
-            }
-            const partes = stringData.split('-');
-            const dataVenc = new Date(partes[0], partes[1] - 1, partes[2]);
-            const hoje = new Date();
-            hoje.setHours(0,0,0,0);
-            dataVenc.setHours(0,0,0,0);
-            
-            const diffTime = dataVenc - hoje;
-            const diasCalculados = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            const el = document.getElementById(labelId);
-            if(diasCalculados < 0) {
-                el.innerText = `VENCIDO HÁ ${Math.abs(diasCalculados)} DIAS`;
-                el.className = "badge-vencimento vencido";
-            } else if(diasCalculados <= 15) {
-                el.innerText = `CRÍTICO: VENCE EM ${diasCalculados} DIAS`;
-                el.className = "badge-vencimento atencao";
-            } else {
-                el.innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
-                el.className = "badge-vencimento normal";
-            }
-        }
-
-        // Funções de Persistência Operacional (Regras originais intactas)
-        async function registrarMovimentacao(tipo, material, vencimento, quantidade, local) {
-            const agora = new Date();
-            const dataStr = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-            
-            const registro = {
-                dataHora: dataStr,
-                tipo: tipo,
-                material: material,
-                vencimento: vencimento,
-                quantidade: quantidade,
-                localizacao: local,
-                usuario: usuarioLogado
-            };
-            await database.ref('historico_movimentacoes').push(registro);
-        }
-
-        async function salvarEntrada() {
-            const mat = document.getElementById('ent-mat').value.trim();
-            const desc = document.getElementById('ent-desc').innerText;
-            const qtd = parseInt(document.getElementById('ent-qtd').value);
-            const inputVenc = document.getElementById('ent-venc').value;
-            const endereco = document.getElementById('ent-endereco').value.trim().toUpperCase();
-
-            if(!mat || isNaN(qtd) || qtd <= 0 || !inputVenc || !endereco) 
-                return alert("Preencha todos os campos corretamente.");
-            if(desc === "MATERIAL NAO CADASTRADO") 
-                return alert("Código de material inexistente na base.");
-
-            const val = inputVenc.split('-').reverse().join('/');
-
-            try {
-                const novoItem = { material: mat, descricao: desc, vencimento: val, localizacao: endereco, quantidade: qtd };
-                await database.ref('estoque_atual').push(novoItem);
-                await registrarMovimentacao("ENTRADA", mat, val, `+${qtd} PL`, endereco);
-                
-                alert("Entrada registrada com sucesso!");
-                ['ent-mat', 'ent-qtd', 'ent-venc', 'ent-endereco'].forEach(id => document.getElementById(id).value = '');
-                document.getElementById('ent-desc').innerText = '---';
-                document.getElementById('ent-label-dias').innerText = '';
-                document.getElementById('ent-label-dias').className = 'badge-vencimento';
-            } catch(e) {
-                alert("Erro ao gravar no banco.");
-            }
-        }
-
-        async function salvarSaida() {
-            const mat = document.getElementById('sai-mat').value.trim();
-            const desc = document.getElementById('sai-desc').innerText;
-            const qtd = parseInt(document.getElementById('sai-qtd').value);
-            const inputVenc = document.getElementById('sai-venc').value;
-            const endereco = document.getElementById('sai-endereco').value.trim().toUpperCase();
-            const destino = document.getElementById('sai-destino').value;
-
-            if(!mat || isNaN(qtd) || qtd <= 0 || !inputVenc || !endereco) 
-                return alert("Preencha todos os campos.");
-            if(desc === "MATERIAL NAO CADASTRADO") 
-                return alert("Código inválido.");
-
-            const val = inputVenc.split('-').reverse().join('/');
-
-            // Busca correspondência exata para deduzir estoque
-            const itemEstoque = estoqueCompletoLocal.find(i => i.material === mat && i.vencimento === val && i.localizacao === endereco);
-            
-            if(!itemEstoque) {
-                return alert("Lote não localizado com essas especificações exatas de Material, Vencimento e Endereço.");
-            }
-            if(itemEstoque.quantidade < qtd) {
-                return alert(`Saldo insuficiente na posição. Saldo atual: ${itemEstoque.quantidade} PL`);
-            }
-
-            try {
-                if(itemEstoque.quantidade === qtd) {
-                    await database.ref(`estoque_atual/${itemEstoque.idFirebase}`).remove();
-                } else {
-                    const novaQtd = itemEstoque.quantidade - qtd;
-                    await database.ref(`estoque_atual/${itemEstoque.idFirebase}`).update({ quantidade: novaQtd });
-                }
-
-                await registrarMovimentacao("SAIDA", mat, val, `-${qtd} PL`, `${endereco} -> ${destino}`);
-                alert("Saída processada com sucesso!");
-                
-                ['sai-mat', 'sai-qtd', 'sai-venc', 'sai-endereco'].forEach(id => document.getElementById(id).value = '');
-                document.getElementById('sai-desc').innerText = '---';
-                document.getElementById('sai-label-dias').innerText = '';
-                document.getElementById('sai-label-dias').className = 'badge-vencimento';
-            } catch(e) {
-                alert("Erro ao remover do estoque.");
-            }
-        }
-
-        async function salvarMovimentacaoDriveIn() {
-            const mat = document.getElementById('mdi-mat').value.trim();
-            const desc = document.getElementById('mdi-desc').innerText;
-            const qtd = parseInt(document.getElementById('mdi-qtd').value);
-            const inputVenc = document.getElementById('mdi-venc').value;
-            const destino = document.getElementById('mdi-destino').value;
-
-            if (!mat || isNaN(qtd) || qtd <= 0 || !inputVenc || !destino)
-                return alert("Preencha todos os campos.");
-            if (desc === "MATERIAL NAO CADASTRADO")
-                return alert("Codigo nao cadastrado na base.");
-
-            const val = inputVenc.split('-').reverse().join('/');
-
-            try {
-                await registrarMovimentacao("DRIVE-IN", mat, val, `-${qtd} PL`, destino);
-                alert("Movimentacao Drive In registrada com sucesso!");
-                ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc'].forEach(id => document.getElementById(id).value = '');
-                document.getElementById('mdi-label-dias').innerText = '';
-                document.getElementById('mdi-destino').value = 'APANHA';
-                document.getElementById('mdi-label-dias').className = 'badge-vencimento';
-            } catch (e) {
-                alert("Erro ao registrar Drive In.");
-            }
-        }
-
-        // Renderizadores de Interface
-        function renderizarEstoque(lista) {
-            const tbody = document.getElementById('tbody-estoque');
-            tbody.innerHTML = '';
-            
-            if(lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:#555;">Nenhum registro em estoque</td></tr>`;
-                return;
-            }
-
-            lista.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight:700;">${item.material}</td>
-                    <td style="font-size:0.75rem; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.descricao}</td>
-                    <td>${item.vencimento}</td>
-                    <td style="font-weight:700; color:#ff3e3e;">${item.localizacao}</td>
-                    <td style="text-align:center; font-weight:800; color:#2ecc71;">${item.quantidade}</td>
-                `;
-                tbody.appendChild(tr);
+ 
+        filtrarTabelasEDados();
+    }
+ 
+    function limparFiltrosHistoricos() {
+        document.getElementById('filtro-tipo-tempo').value = 'mes';
+        document.getElementById('filtro-material').value = '';
+        const hoje = new Date();
+        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
+        alternarCamposData();
+    }
+ 
+    function filtrarTabelasEDados() {
+        const queryMat = document.getElementById('filtro-material').value.toLowerCase().trim();
+        
+        let dadosExibicao = movimentacoesFiltradas;
+        if (queryMat) {
+            dadosExibicao = movimentacoesFiltradas.filter(m => {
+                const materialCod = m.material ? m.material.toString().toLowerCase() : "";
+                const descMat = buscarDescricaoLocal(m.material).toLowerCase();
+                return materialCod.includes(queryMat) || descMat.includes(queryMat);
             });
         }
-
-        function filtrarEstoqueLocal(termo) {
-            const lower = termo.toLowerCase().trim();
-            if(!lower) {
-                renderizarEstoque(estoqueCompletoLocal);
-                return;
-            }
-            const filtrados = estoqueCompletoLocal.filter(i => 
-                i.material.toLowerCase().includes(lower) || 
-                i.descricao.toLowerCase().includes(lower) || 
-                i.localizacao.toLowerCase().includes(lower)
-            );
-            renderizarEstoque(filtrados);
-        }
-
-        function renderizarHistoricoMov(lista) {
-            const tbody = document.getElementById('tbody-historico');
-            tbody.innerHTML = '';
-            
-            lista.forEach(item => {
-                const tr = document.createElement('tr');
-                let corTipo = "#fff";
-                if(item.tipo === "ENTRADA") corTipo = "#2ecc71";
-                if(item.tipo === "SAIDA") corTipo = "#e74c3c";
-                if(item.tipo === "DRIVE-IN") corTipo = "#3498db";
-
-                tr.innerHTML = `
-                    <td style="font-size:0.75rem; color:#888;">${item.dataHora}</td>
-                    <td style="font-weight:700; color:${corTipo}; font-size:0.75rem;">${item.tipo}</td>
-                    <td>${item.material}</td>
-                    <td style="font-weight:700;">${item.quantidade}</td>
-                    <td style="font-size:0.75rem;">${item.localizacao}</td>
-                    <td style="color:#aaa; font-size:0.75rem;">${item.usuario}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // Funções do Administrador (Com Injeção Complementar de Log para Auditoria)
-        async function atualizarEstoqueCSV() {
-            const fileInput = document.getElementById('csv-file');
-            if(!fileInput.files.length) {
-                return alert("Por favor, selecione um arquivo CSV primeiro.");
-            }
-
-            const file = fileInput.files[0];
-            const nomeDoArquivo = file.name;
-            const leitor = new FileReader();
-
-            leitor.onload = async function(e) {
-                const texto = e.target.result;
-                const linhas = texto.split('\n');
-                let linhasProcessadasComSucesso = 0;
-
-                try {
-                    // Limpa estoque atual antes da nova carga total, conforme regra implícita original
-                    await database.ref('estoque_atual').set(null);
-
-                    for(let i = 1; i < linhas.length; i++) {
-                        const linha = linhas[i].trim();
-                        if(!linha) continue;
-
-                        // Padrão esperado: material;descricao;vencimento;localizacao;quantidade
-                        const colunas = linha.split(';');
-                        if(colunas.length >= 5) {
-                            const mat = colunas[0].trim();
-                            const desc = colunas[1].trim();
-                            const venc = colunas[2].trim();
-                            const loc = colunas[3].trim().toUpperCase();
-                            const qtd = parseInt(colunas[4].trim());
-
-                            if(mat && loc && !isNaN(qtd)) {
-                                const obj = { material: mat, descricao: desc, vencimento: venc, localizacao: loc, quantidade: qtd };
-                                await database.ref('estoque_atual').push(obj);
-                                
-                                // Se o material não existir na tabela base auxiliar, cadastra automaticamente para consistência
-                                if(!baseMateriais[mat]) {
-                                    await database.ref(`materiais_base/${mat}`).set({ descricao: desc });
-                                }
-                                linhasProcessadasComSucesso++;
-                            }
+ 
+        renderizarPaineisEGraticos(dadosExibicao);
+    }
+ 
+    function buscarDescricaoLocal(cod) {
+        const match = baseMateriais.find(m => m.mat.toString() === cod?.toString());
+        return match ? match.desc : "N/A";
+    }
+ 
+    function buscarSetorLocal(cod) {
+        const match = baseMateriais.find(m => m.mat.toString() === cod?.toString());
+        return match && match.categoria ? match.categoria.toUpperCase() : "AVULSO";
+    }
+ 
+    // COMANDO PARA EXPANDIR GRÁFICOS (MODAL FULLSCREEN)
+    function expandirGrafico(chartId, titulo) {
+        const modal = document.getElementById('modal-grafico-expandido');
+        document.getElementById('modal-grafico-titulo').innerText = titulo;
+        modal.style.display = 'flex';
+ 
+        // Captura a instância original do gráfico ativo
+        let graficoOriginal = null;
+        if (chartId === 'chart-fluxo-diario') graficoOriginal = chartDiarioInst;
+        if (chartId === 'chart-fluxo-mensal') graficoOriginal = chartMensalInst;
+        if (chartId === 'chart-setor-mensal') graficoOriginal = chartSetorMInst;
+        if (chartId === 'chart-setor-diario') graficoOriginal = chartSetorDInst;
+        if (chartId === 'chart-destinos-saida') graficoOriginal = chartDestinosInst;
+        if (chartId === 'chart-apanha-setor') graficoOriginal = chartApanhaSetorInst;
+        if (chartId === 'chart-status') graficoOriginal = chartStatus;
+ 
+        if (!graficoOriginal) return;
+ 
+        const ctxExpanded = document.getElementById('canvas-expanded-render').getContext('2d');
+        if (chartExpandidoInst) chartExpandidoInst.destroy();
+ 
+        // Clona a estrutura do gráfico com escala e fontes maiores para exibição em TV
+        chartExpandidoInst = new Chart(ctxExpanded, {
+            type: graficoOriginal.config.type,
+            data: JSON.parse(JSON.stringify(graficoOriginal.config.data)),
+            options: {
+                ...graficoOriginal.config.options,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "#fff", font: { size: 14, weight: "700" } } },
+                    x: { grid: { display: false }, ticks: { color: "#fff", font: { size: 14, weight: "800" } } }
+                },
+                plugins: {
+                    ...graficoOriginal.config.options.plugins,
+                    legend: {
+                        display: graficoOriginal.config.options.plugins?.legend?.display !== false,
+                        position: 'bottom',
+                        labels: { color: '#fff', font: { size: 16, weight: '800' } }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: { size: 16, weight: '900' },
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        borderRadius: 6,
+                        padding: 8,
+                        formatter: (val, ctx) => {
+                            let label = ctx.chart.data.labels[ctx.dataIndex] || '';
+                            return graficoOriginal.config.type === 'doughnut' ? `${label}: ${val}` : val;
                         }
                     }
-
-                    // --- INJEÇÃO COMPLEMENTAR: REGISTRO DE SUCESSO ---
-                    await registrarLogPlanilha(nomeDoArquivo, usuarioLogado, linhasProcessadasComSucesso, "Sucesso");
-
-                    alert(`Importação concluída! ${linhasProcessadasComSucesso} posições de estoque foram carregadas.`);
-                    fileInput.value = '';
-                } catch(error) {
-                    console.error(error);
-                    // --- INJEÇÃO COMPLEMENTAR: REGISTRO DE ERRO ---
-                    await registrarLogPlanilha(nomeDoArquivo, usuarioLogado, 0, `Erro: ${error.message || 'Falha ao processar'}`);
-                    alert("Erro interno durante o processamento do arquivo estruturado.");
                 }
-            };
-
-            leitor.readAsText(file, 'UTF-8');
-        }
-
-        async function cadastrarMaterialBase() {
-            const mat = document.getElementById('cad-mat').value.trim();
-            const desc = document.getElementById('cad-desc').value.trim().toUpperCase();
-
-            if(!mat || !desc) return alert("Preencha o Código e a Descrição.");
-
-            try {
-                await database.ref(`materiais_base/${mat}`).set({ descricao: desc });
-                alert("Material salvo com sucesso na base global!");
-                document.getElementById('cad-mat').value = '';
-                document.getElementById('cad-desc').value = '';
-            } catch(e) {
-                alert("Erro ao conectar.");
             }
-        }
-
-        async function limparBancoDadosCompleto() {
-            if(!confirm("Tem certeza que deseja apagar TODO o estoque e histórico de movimentações? Esta ação é irreversível.")) return;
+        });
+    }
+ 
+    function fecharGraficoExpandido() {
+        document.getElementById('modal-grafico-expandido').style.display = 'none';
+        if (chartExpandidoInst) { chartExpandidoInst.destroy(); chartExpandidoInst = null; }
+    }
+ 
+    function renderizarPaineisEGraticos(dados) {
+        const hojeStr = new Date().toLocaleDateString('pt-BR');
+        let movHojeContagem = todasMovimentacoes.filter(m => m.data === hojeStr).length;
+        document.getElementById('st-mov').innerText = movHojeContagem;
+ 
+        // FEED TEMPO REAL
+        const feed = document.getElementById('activity-feed');
+        feed.innerHTML = '';
+        todasMovimentacoes.slice(0, 15).forEach(d => {
+            const loginLimpo = d.login ? d.login.split('@')[0].toUpperCase() : 'SISTEMA';
+            const tagCor = (d.quantidade && d.quantidade.toString().includes('+')) ? 'var(--verde)' : 'var(--primary)';
+            const desc = buscarDescricaoLocal(d.material);
+            const estCorrespondente = estoqueCompleto.find(e => e.mat === d.material && e.ender === d.endereco);
+            const validadeInfo = estCorrespondente ? estCorrespondente.valFrente : (d.validade || "Não Informada");
+ 
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            item.innerHTML = `
+                <div class="activity-icon-box" style="color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? '📥' : '📤'}</div>
+                <div class="activity-content">
+                    <span class="activity-tag" style="background: ${tagCor}20; color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? 'Entrada' : 'Saída'}</span>
+                    <br>Op: <b>${loginLimpo}</b> | Material: <b>${d.material} - ${desc}</b>
+                    <br>Endereço: <b>${d.endereco || 'N/A'}</b> | Vol: <b>${d.quantidade || '0'}</b>
+                    <span class="activity-time">Vencimento (FEFO): <span style="color:var(--critico); font-weight:700;">${validadeInfo}</span> às ${d.hora || '00:00'} - ${d.data}</span>
+                </div>`;
+            feed.appendChild(item);
+        });
+ 
+        // ESTRUTURAÇÃO DE DADOS DOS GRAFICOS
+        const volumeDiario = {};
+        const volumeMensal = {};
+        const rankingMateriais = {};
+        const rankingOperadores = {};
+        
+        const setorMensalAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
+        const setorDiarioAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
+        
+        // Objeto para controle do novo gráfico de saídas solicitadas
+        const fluxosDestinoAcumulado = { "TRANSFERENCIA": 0, "APANHA": 0, "SEPARAÇÃO": 0 };
+        const apanhaSetorAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
+ 
+ 
+        const dataAtualObjeto = new Date();
+        const anoAtualStr = dataAtualObjeto.getFullYear().toString();
+ 
+        dados.forEach(mov => {
+            const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
+            const dataMov = mov.data; 
+            if (!dataMov) return;
+ 
+            const partes = dataMov.split('/');
+ 
+            volumeDiario[dataMov] = (volumeDiario[dataMov] || 0) + qtdAbsoluta;
+            rankingMateriais[mov.material] = (rankingMateriais[mov.material] || 0) + qtdAbsoluta;
+            const operadorChave = mov.login ? mov.login.split('@')[0].toUpperCase() : "SISTEMA";
+            rankingOperadores[operadorChave] = (rankingOperadores[operadorChave] || 0) + qtdAbsoluta;
+ 
+            const setorMat = buscarSetorLocal(mov.material);
+            if (setorMensalAcumulado[setorMat] !== undefined) {
+                setorMensalAcumulado[setorMat] += qtdAbsoluta;
+            }
+ 
+            // Alimentação do Novo Gráfico de Destinos de Carga (Apenas Fluxos de Saída)
+            const fluxoNormalizado = mov.fluxo ? mov.fluxo.toUpperCase().trim() : "";
             
-            try {
-                await database.ref('estoque_atual').set(null);
-                await database.ref('historico_movimentacoes').set(null);
-                alert("Base limpa com sucesso!");
-            } catch(e) {
-                alert("Erro ao limpar dados.");
-            }
-        }
-
-        // =========================================================================
-        // FUNÇÕES EXCLUSIVAS E COMPLEMENTARES DO HISTÓRICO DE PLANILHAS (PERFIL ADMIN)
-        // =========================================================================
-
-        /**
-         * Salva as métricas e logs estruturados no nó autônomo 'historico_planilhas'
-         */
-        async function registrarLogPlanilha(nomeArquivo, usuario, qtdRegistros, status) {
-            try {
-                const agora = new Date();
-                
-                const dia = String(agora.getDate()).padStart(2, '0');
-                const mes = String(agora.getMonth() + 1).padStart(2, '0');
-                const ano = agora.getFullYear();
-                const dataFormatada = `${dia}/${mes}/${ano}`;
-                
-                const hora = String(agora.getHours()).padStart(2, '0');
-                const min = String(agora.getMinutes()).padStart(2, '0');
-                const horaFormatada = `${hora}:${min}`;
-
-                const novoLog = {
-                    data: dataFormatada,
-                    hora: horaFormatada,
-                    timestamp: agora.getTime(),
-                    usuario: usuario,
-                    arquivo: nomeArquivo,
-                    registros: qtdRegistros,
-                    status: status
-                };
-
-                // Executa a inserção paralela e isolada via push
-                await database.ref('historico_planilhas').push(novoLog);
-            } catch (e) {
-                console.error("Erro complementar ao registrar histórico da planilha:", e);
-            }
-        }
-
-        /**
-         * Abre a modal de auditoria e captura os dados do nó complementar
-         */
-        async function abrirHistoricoPlanilhas() {
-            document.getElementById('modal-historico-planilhas').style.display = 'block';
-            document.body.style.overflow = 'hidden';
-            
-            try {
-                document.getElementById('tbody-historico-planilhas').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#888;">Carregando histórico do Firebase...</td></tr>`;
-                
-                const snapshot = await database.ref('historico_planilhas').once('value');
-                dadosHistoricoLocal = [];
-                
-                if (snapshot.exists()) {
-                    snapshot.forEach(childSnapshot => {
-                        dadosHistoricoLocal.push(childSnapshot.val());
-                    });
+            if (fluxoNormalizado === "APANHA") {
+                if (apanhaSetorAcumulado[setorMat] !== undefined) {
+                    apanhaSetorAcumulado[setorMat] += qtdAbsoluta;
                 }
-
-                // Organização Decrescente (Cronológica)
-                dadosHistoricoLocal.sort((a, b) => b.timestamp - a.timestamp);
-                renderizarTabelaHistorico();
-            } catch (error) {
-                console.error("Erro ao ler dados do histórico:", error);
-                document.getElementById('tbody-historico-planilhas').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#ff3e3e;">Erro de conexão ao carregar registros.</td></tr>`;
             }
-        }
-
-        /**
-         * Fecha a modal retornando o scroll original
-         */
-        function fecharHistoricoPlanilhas() {
-            document.getElementById('modal-historico-planilhas').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        /**
-         * Controla a montagem das linhas aplicando o filtro de data (se aplicável)
-         */
-        function renderizarTabelaHistorico() {
-            const tbody = document.getElementById('tbody-historico-planilhas');
-            const filtroDataInput = document.getElementById('filtro-data-hist').value; 
+ 
+            if (fluxosDestinoAcumulado[fluxoNormalizado] !== undefined) {
+                fluxosDestinoAcumulado[fluxoNormalizado] += qtdAbsoluta;
+            }
+ 
+            const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
+            const filtroDiaSel = document.getElementById('filtro-dia-valor').value;
+            let diaAlvoStr = new Date().toISOString().substring(0,10);
+            if(tipoTempo === 'dia' && filtroDiaSel) diaAlvoStr = filtroDiaSel;
             
-            let dadosFiltrados = dadosHistoricoLocal;
-
-            if (filtroDataInput) {
-                const partes = filtroDataInput.split('-');
-                const dataFiltroBR = `${partes[2]}/${partes[1]}/${partes[0]}`;
-                dadosFiltrados = dadosHistoricoLocal.filter(item => item.data === dataFiltroBR);
+            const [aA, mM, dD] = diaAlvoStr.split('-');
+            const dataFormatadaComp = `${dD}/${mM}/${aA}`;
+ 
+            if(dataMov === dataFormatadaComp) {
+                if (setorDiarioAcumulado[setorMat] !== undefined) {
+                    setorDiarioAcumulado[setorMat] += qtdAbsoluta;
+                }
             }
-
-            if (dadosFiltrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#555;">Nenhum histórico encontrado para os critérios inseridos.</td></tr>`;
-                return;
+        });
+ 
+        todasMovimentacoes.forEach(mov => {
+            if(!mov.data) return;
+            const partes = mov.data.split('/');
+            if(partes[2] === anoAtualStr) {
+                const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
+                volumeMensal[partes[1]] = (volumeMensal[partes[1]] || 0) + qtdAbsoluta;
             }
-
-            let html = '';
-            dadosFiltrados.forEach(item => {
-                const corStatus = item.status === "Sucesso" ? "#2ecc71" : "#e74c3c";
-                html += `
-                    <tr style="border-bottom: 1px solid #151515;">
-                        <td style="padding: 10px; border: 1px solid #222; font-family: monospace;">${item.data} ${item.hora}</td>
-                        <td style="padding: 10px; border: 1px solid #222; font-weight: 600;">${item.usuario}</td>
-                        <td style="padding: 10px; border: 1px solid #222; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.arquivo}">${item.arquivo}</td>
-                        <td style="padding: 10px; border: 1px solid #222; text-align: center; font-weight: bold; color: #3498db;">${item.registros}</td>
-                        <td style="padding: 10px; border: 1px solid #222; text-align: center; color: ${corStatus}; font-weight: 800; font-size: 0.8rem; text-transform: uppercase;">${item.status}</td>
-                    </tr>
-                `;
+        });
+ 
+        // CONFIGURAÇÃO DOS PLUGINS DE LABELS VISUAIS DIRETOS NOS GRÁFICOS
+        const padraoDatalabelsBarra = {
+            anchor: 'end',
+            align: 'top',
+            color: '#fff',
+            font: { weight: '800', size: 10 },
+            formatter: (val) => val > 0 ? val : ''
+        };
+ 
+        const padraoDatalabelsRosca = {
+            color: '#fff',
+            font: { weight: '900', size: 11 },
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            borderRadius: 4,
+            padding: 4,
+            formatter: (val, ctx) => {
+                return val > 0 ? `${ctx.chart.data.labels[ctx.dataIndex]}\n${val} PL` : '';
+            }
+        };
+ 
+        // 1. RENDER GRÁFICO DIÁRIO
+        const labelsDias = Object.keys(volumeDiario).sort((a, b) => new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-')));
+        const ctxD = document.getElementById('chart-fluxo-diario').getContext('2d');
+        if (chartDiarioInst) chartDiarioInst.destroy();
+        chartDiarioInst = new Chart(ctxD, {
+            type: 'bar',
+            data: { labels: labelsDias, datasets: [{ label: 'Paletes', data: labelsDias.map(lbl => volumeDiario[lbl]), backgroundColor: '#6366f1' }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra }, scales: { y: { grid: { color: 'rgba(255,255,255,0.03)' } } } }
+        });
+ 
+        // 2. RENDER GRÁFICO MENSAL ACUMULADO
+        const mesesLabelsReduzidos = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        const ctxM = document.getElementById('chart-fluxo-mensal').getContext('2d');
+        if (chartMensalInst) chartMensalInst.destroy();
+        chartMensalInst = new Chart(ctxM, {
+            type: 'line',
+            data: { labels: mesesLabelsReduzidos, datasets: [{ data: ["01","02","03","04","05","06","07","08","09","10","11","12"].map(m => volumeMensal[m] || 0), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', fill: true, tension: 0.2 }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: { ...padraoDatalabelsBarra, align: 'right' } } }
+        });
+ 
+        // 6.1 GRÁFICO SETOR MENSAL
+        const ctxSM = document.getElementById('chart-setor-mensal').getContext('2d');
+        if (chartSetorMInst) chartSetorMInst.destroy();
+        chartSetorMInst = new Chart(ctxSM, {
+            type: 'doughnut',
+            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorMensalAcumulado[s]), backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'] }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } }
+        });
+ 
+        // 6.2 GRÁFICO SETOR DIÁRIO
+        const ctxSD = document.getElementById('chart-setor-diario').getContext('2d');
+        if (chartSetorDInst) chartSetorDInst.destroy();
+        chartSetorDInst = new Chart(ctxSD, {
+            type: 'bar',
+            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorDiarioAcumulado[s]), backgroundColor: 'rgba(255, 62, 62, 0.4)', borderColor: '#ff3e3e', borderWidth: 1 }] },
+            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra } }
+        });
+ 
+        // NOVO GRÁFICO: DESTINO DAS CARGAS (TRANSFERENCIA, APANHA, SEPARAÇÃO)
+        const ctxDest = document.getElementById('chart-destinos-saida').getContext('2d');
+        if (chartDestinosInst) chartDestinosInst.destroy();
+        chartDestinosInst = new Chart(ctxDest, {
+            type: 'doughnut',
+            data: { 
+                labels: ["TRANSFERENCIA", "APANHA", "SEPARAÇÃO"], 
+                datasets: [{ 
+                    data: [fluxosDestinoAcumulado["TRANSFERENCIA"], fluxosDestinoAcumulado["APANHA"], fluxosDestinoAcumulado["SEPARAÇÃO"]], 
+                    backgroundColor: ['#00f2ff', '#fbbf24', '#6366f1'] 
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                plugins: { 
+                    legend: { display: false }, 
+                    datalabels: padraoDatalabelsRosca 
+                } 
+            }
+        });
+ 
+        
+        
+        // 7. RENDER GRÁFICO APANHA POR SETOR
+        const ctxApanha = document.getElementById('chart-apanha-setor').getContext('2d');
+        if (chartApanhaSetorInst) chartApanhaSetorInst.destroy();
+        chartApanhaSetorInst = new Chart(ctxApanha, {
+            type: 'bar',
+            data: { 
+                labels: SETORES_LISTA, 
+                datasets: [{ 
+                    label: 'Paletes Abastecidos',
+                    data: SETORES_LISTA.map(s => apanhaSetorAcumulado[s]), 
+                    backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'],
+                    borderRadius: 8
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                plugins: { 
+                    legend: { display: false }, 
+                    datalabels: {
+                        anchor: 'center',
+                        align: 'center',
+                        color: '#fff',
+                        font: { weight: '900', size: 14 },
+                        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                        borderRadius: 4,
+                        padding: 4,
+                        formatter: (val) => val > 0 ? val : '0'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#ffffff', font: { weight: '600' } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#ffffff', font: { weight: '800', size: 11 } }
+                    }
+                }
+            }
+        });
+ 
+ 
+ 
+        // GRÁFICO DE SAÚDE INVENTÁRIO
+        const ctxS = document.getElementById('chart-status').getContext('2d');
+        if (chartStatus) chartStatus.destroy();
+        chartStatus = new Chart(ctxS, { 
+            type: 'doughnut', 
+            data: { labels: ['Boa', 'Crítica', 'Retida'], datasets: [{ data: [estoqueCompleto.filter(i => i.dias > 60).length, estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length, estoqueCompleto.filter(i => i.dias <= 30).length], backgroundColor: ['#10b981', '#fbbf24', '#f87171'] }] }, 
+            options: { responsive: true, cutout: '75%', plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } } 
+        });
+ 
+        // RENDERIZAR TABELAS OPERACIONAIS
+        const tbodyHist = document.getElementById('table-historico-consolidado');
+        tbodyHist.innerHTML = '';
+        dados.slice(0, 5).forEach(m => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
+            tbodyHist.appendChild(tr);
+        });
+ 
+        const tbodyMat = document.getElementById('table-ranking-materiais');
+        tbodyMat.innerHTML = '';
+        Object.entries(rankingMateriais).sort((a,b) => b[1] - a[1]).slice(0, 10).forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><b>${item[0]}</b></td><td>${buscarDescricaoLocal(item[0])}</td><td><span style="color:var(--primary); font-weight:900;">${item[1]} PL</span></td>`;
+            tbodyMat.appendChild(tr);
+        });
+ 
+        const tbodyOp = document.getElementById('table-ranking-operadores');
+        tbodyOp.innerHTML = '';
+        Object.entries(rankingOperadores).sort((a,b) => b[1] - a[1]).forEach((op, index) => {
+            const medalha = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${medalha}<b>${op[0]}</b></td><td><span style="color:var(--verde); font-weight:800;">${op[1]} Paletes</span></td>`;
+            tbodyOp.appendChild(tr);
+        });
+    }
+ 
+    function carregarDadosDashboard() { processarFiltragemHistorica(); }
+ 
+    function renderizarEstoque() {
+        const termo = document.getElementById('search-input').value.toLowerCase().trim();
+        const lista = document.getElementById('lista-estoque');
+        lista.innerHTML = '';
+        if (!termo) return;
+        const isAdmin = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
+        let filtrados = estoqueCompleto.filter(i => {
+            if (parseInt(i.qtd) <= 0) return false;
+            if (termo === '60') return i.dias > 30 && i.dias <= 60;
+            if (termo === '30') return i.dias <= 30;
+            const mat = i.mat?.toString().toLowerCase() || "";
+            const ender = i.ender?.toString().toLowerCase() || "";
+            return /^\d+$/.test(termo) ? mat === termo : ender.includes(termo);
+        });
+        if (!isAdmin) filtrados = filtrados.filter(item => item.dias > 30);
+        if (filtrados.length === 0) return;
+        // Prioridade: CRÍTICO (31-60d) → RETIDO (≤30d) → DATA BOA (>60d)
+        function prioridade(dias) {
+            const d = parseInt(dias) || 0;
+            if (d > 30 && d <= 60) return 1;
+            if (d <= 30) return 2;
+            return 3;
+        }
+        filtrados.sort((a, b) => {
+            const pa = prioridade(a.dias), pb = prioridade(b.dias);
+            if (pa !== pb) return pa - pb;
+            return (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0);
+        });
+        if (/^\d+$/.test(termo) && termo !== '60' && termo !== '30') filtrados = [filtrados[0]];
+        filtrados.forEach(item => {
+            let status = item.dias <= 30 ? "RETIDO" : (item.dias <= 60 ? "CRÍTICO" : "DATA BOA");
+            let cor = item.dias <= 30 ? "var(--retido)" : (item.dias <= 60 ? "var(--critico)" : "var(--verde)");
+            const card = document.createElement('div');
+            card.className = `item-card`;
+            card.style.borderLeft = `8px solid ${cor}`;
+            card.innerHTML = `<div><span class="badge badge-ender">${item.ender}</span><span class="badge" style="background: ${cor}20; color: ${cor}; border: 1px solid ${cor}40; margin-left: 5px;">${status}</span><div style="font-weight:900; font-size:24px; margin-top:15px; letter-spacing:-1px; color: #fff;">${item.mat}</div><div style="font-size:12px; color:var(--text-secondary); margin-top:5px; font-weight:600;">${item.desc || "---"}</div><div style="font-size:10px; margin-top:15px; color: var(--text-secondary); font-weight: 800;">VALIDADE: <b style="color: ${cor}">${item.dias} DIAS</b></div></div><div style="text-align: right;"><div style="font-size:32px; font-weight:900; margin-bottom:15px; color: #fff;">${item.qtd}<span style="font-size:12px; color:var(--text-secondary); margin-left:5px;">PL</span></div><button class="btn-action" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button></div>`;
+            lista.appendChild(card);
+        });
+    }
+ 
+    function puxarDescricaoObrigatoria(val, inputDescId, listId) {
+        const list = document.getElementById(listId);
+        const descInput = document.getElementById(inputDescId);
+        list.innerHTML = '';
+        if (!val) { descInput.value = ''; return; }
+        const matches = baseMateriais.filter(m => m.mat.toString().startsWith(val)).slice(0, 5);
+        matches.forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-item';
+            div.innerHTML = `<strong>${m.mat}</strong> - ${m.desc}`;
+            div.onclick = () => { document.getElementById('eb-mat').value = m.mat; descInput.value = m.desc; list.innerHTML = ''; };
+            list.appendChild(div);
+        });
+        const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
+        if (exact) { descInput.value = exact.desc; descInput.style.color = "var(--verde)"; } 
+        else { descInput.value = "MATERIAL NÃO CADASTRADO"; descInput.style.color = "var(--retido)"; }
+    }
+ 
+    document.addEventListener('click', e => { if (e.target.id !== 'eb-mat') { const l = document.getElementById('eb-mat-list'); if(l) l.innerHTML = ''; } });
+    
+    function retirarMaterial(id, qtdAtual, mat, ender, val) {
+        itemParaRetirar = { id, qtdAtual, mat, ender, val };
+        document.getElementById('modal-titulo').innerText = mat;
+        document.getElementById('modal-info').innerHTML = `Posição: <b>${ender}</b><br>Saldo Atual: <b>${qtdAtual} Pallets</b>`;
+        document.getElementById('modal-input-qtd').value = '';
+        document.getElementById('modal-retirada').style.display = 'flex';
+        setTimeout(() => document.getElementById('modal-input-qtd').focus(), 150);
+        document.getElementById('btn-confirmar-modal').onclick = processarRetirada;
+    }
+ 
+    function fecharModal() { document.getElementById('modal-retirada').style.display = 'none'; }
+ 
+    async function processarRetirada() {
+        const v = parseInt(document.getElementById('modal-input-qtd').value);
+        if (isNaN(v) || v <= 0 || v > itemParaRetirar.qtdAtual) return alert("Quantidade inválida.");
+        try {
+            if (v === itemParaRetirar.qtdAtual) { await db.collection("estoque_blocado").doc(itemParaRetirar.id).delete(); } 
+            else { await db.collection("estoque_blocado").doc(itemParaRetirar.id).update({ qtd: itemParaRetirar.qtdAtual - v }); }
+            registrarMovimentacao(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, `-${v} PL`, document.getElementById('modal-destino-mov').value);
+            fecharModal();
+        } catch (e) { alert("Erro ao processar retirada."); }
+    }
+ 
+    async function salvarEntradaBloco() {
+        const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
+        const mat = document.getElementById('eb-mat').value.trim();
+        const desc = document.getElementById('eb-desc').value;
+        const qtd = parseInt(document.getElementById('eb-qtd').value);
+        const inputVenc = document.getElementById('eb-venc').value;
+        if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos.");
+        if(desc === "MATERIAL NÃO CADASTRADO") return alert("Código não cadastrado na base.");
+        const val = inputVenc.split('-').reverse().join('/');
+        const ocupante = estoqueCompleto.find(i => i.ender === ender);
+        if (ocupante && ocupante.mat !== mat) return alert("Posição ocupada por outro material.");
+        if (ocupante) { await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd }); } 
+        else { await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: val, desc: desc }); }
+        registrarMovimentacao(ender, mat, val, `+${qtd} PL`, `ENTRADA VIA ${document.getElementById('eb-origem').value}`);
+        ['eb-ender', 'eb-mat', 'eb-desc', 'eb-qtd', 'eb-venc'].forEach(id => document.getElementById(id).value = '');
+        navegar('retirar');
+    }
+ 
+    function carregarDadosOrigemAbertura(ender) {
+        const item = estoqueCompleto.find(i => i.ender.toLowerCase() === ender.toLowerCase().trim());
+        if (item) { itemOrigemAbertura = item; document.getElementById('ab-mat').value = item.mat; document.getElementById('ab-qtd').placeholder = `Max: ${item.qtd}`; } 
+        else { itemOrigemAbertura = null; document.getElementById('ab-mat').value = ''; }
+    }
+ 
+    async function processarAberturaBlocado() {
+        const dest = document.getElementById('ab-destino').value.toUpperCase().trim();
+        const qtd = parseInt(document.getElementById('ab-qtd').value);
+        if(!itemOrigemAbertura || isNaN(qtd) || qtd <= 0 || qtd > itemOrigemAbertura.qtd || !dest) return alert("Dados inválidos.");
+        const ocup = estoqueCompleto.find(i => i.ender === dest);
+        if (ocup && ocup.mat !== itemOrigemAbertura.mat) return alert("Destino ocupado.");
+        if (qtd === itemOrigemAbertura.qtd) { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete(); } 
+        else { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtd }); }
+        if (ocup) { await db.collection("estoque_blocado").doc(ocup.id).update({ qtd: ocup.qtd + qtd }); } 
+        else { await db.collection("estoque_blocado").add({ ender: dest, mat: itemOrigemAbertura.mat, desc: itemOrigemAbertura.desc, qtd, dias: itemOrigemAbertura.dias, valFrente: itemOrigemAbertura.valFrente }); }
+        registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtd} PL`, `PARA ${dest}`);
+        registrarMovimentacao(dest, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtd} PL`, `DE ${itemOrigemAbertura.ender}`);
+        navegar('retirar');
+    }
+ 
+    function calcularDias(data, labelId) {
+        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
+        document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
+    }
+ 
+    async function registrarMovimentacao(ender, mat, val, qtd, fluxo) {
+        const agora = new Date();
+        await db.collection("movimentacoes_wms").add({ 
+            endereco: ender, 
+            material: mat, 
+            validade: val, 
+            quantidade: qtd, 
+            fluxo, 
+            login: usuarioLogado.email, 
+            data: agora.toLocaleDateString('pt-BR'), 
+            hora: agora.toLocaleTimeString('pt-BR'), 
+            timestamp: agora 
+        });
+    }
+ 
+    function exportarRelatorioFiltradoExcel() {
+        if(movimentacoesFiltradas.length === 0) return alert("Não existem dados no período filtrado para exportar.");
+        const dadosPlanilha = movimentacoesFiltradas.map(m => ({ "Data": m.data, "Horário": m.hora, "Fluxo / Ação": m.fluxo, "Código Material": m.material, "Descrição": buscarDescricaoLocal(m.material), "Setor Logístico": buscarSetorLocal(m.material), "Quantidade (PL)": m.quantidade, "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A' }));
+        const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Relatório_Filtrado");
+        XLSX.writeFile(wb, `WMS_Relatorio_Consolidado_${new Date().getTime()}.xlsx`);
+    }
+ 
+    async function exportarHistoricoExcel() {
+        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
+        const dados = snap.docs.map(doc => { const d = doc.data(); return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora }; });
+        const ws = XLSX.utils.json_to_sheet(dados);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Infinity_Log");
+        XLSX.writeFile(wb, `Infinity_WMS_Log_Completo_${new Date().getTime()}.xlsx`);
+    }
+ 
+    async function importarCSV(event) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
+            if (!confirm(`Confirmar reset de estoque para ${linhas.length} itens?`)) return;
+            const snapshot = await db.collection("estoque_blocado").get();
+            if (!snapshot.empty) {
+                let batchDel = db.batch();
+                snapshot.docs.forEach((doc, idx) => { batchDel.delete(doc.ref); if ((idx + 1) % 400 === 0) { batchDel.commit(); batchDel = db.batch(); } });
+                await batchDel.commit();
+            }
+            let batch = db.batch();
+            linhas.forEach((linha, i) => {
+                const c = linha.split(";");
+                if (c.length >= 6) {
+                    batch.set(db.collection("estoque_blocado").doc(), { ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(), valFrente: c[3].trim(), qtd: parseInt(c[5].replace(/\D/g, '')) || 0, dias: parseInt(c[7].replace(/\D/g, '')) || 0 });
+                    if((i+1)%400===0) { batch.commit(); batch = db.batch(); }
+                }
             });
-
-            tbody.innerHTML = html;
+            await batch.commit();
+            alert("Estoque Infinity Updated!");
+        };
+        reader.readAsText(event.target.files[0]);
+    }
+ 
+    async function sincronizarBaseMateriais() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.xlsx, .xls';
+        input.onchange = async (e) => {
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                const data = new Uint8Array(ev.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                let batch = db.batch();
+                let count = 0;
+                for(const item of json) {
+                    const mat = item['Cód. Material'];
+                    if(mat) {
+                        batch.set(db.collection("base_materiais").doc(mat.toString()), { mat, desc: item['Descrição'] || '', qtd_base: item['Quantidade'] || 0, categoria: item['Categoria'] || '', vasilhame: item['Vasilhame'] || '', lastro: item['Lastro'] || null, camada: item['Camada'] || null });
+                        count++;
+                        if(count % 400 === 0) { await batch.commit(); batch = db.batch(); }
+                    }
+                }
+                await batch.commit();
+                alert("Base de Dados Infinity Sincronizada!");
+                carregarBaseMateriais();
+            };
+            reader.readAsArrayBuffer(e.target.files[0]);
+        };
+        input.click();
+    }
+ 
+    function toggleKB(id) {
+        const input = document.getElementById(id);
+        const btn = event.currentTarget;
+        if (input.inputMode === 'numeric' || input.inputMode === 'decimal') {
+            input.inputMode = 'text';
+            btn.innerText = '123';
+            btn.style.background = 'var(--primary)';
+            btn.style.color = '#fff';
+        } else {
+            input.inputMode = id.includes('qtd') ? 'decimal' : 'numeric';
+            btn.innerText = 'Abc';
+            btn.style.background = 'var(--glass)';
+            btn.style.color = 'var(--text-secondary)';
         }
-
-        /**
-         * Limpa o input de filtragem e atualiza a exibição completa
-         */
-        function limparFiltroHistorico() {
-            document.getElementById('filtro-data-hist').value = '';
-            renderizarTabelaHistorico();
+        input.focus();
+    }
+ 
+    
+window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
+ 
+    // SCREEN WAKE LOCK - Mantém a tela sempre ativa
+    let wakeLock = null;
+ 
+    async function requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log('Screen Wake Lock ativado com sucesso');
+                
+                // Reativar Wake Lock se o documento ficar visível novamente
+                document.addEventListener('visibilitychange', async () => {
+                    if (document.hidden) {
+                        if (wakeLock !== null) {
+                            wakeLock.release();
+                            wakeLock = null;
+                        }
+                    } else {
+                        try {
+                            wakeLock = await navigator.wakeLock.request('screen');
+                            console.log('Screen Wake Lock reativado');
+                        } catch (err) {
+                            console.error(`Erro ao reativar Wake Lock: ${err.name}, ${err.message}`);
+                        }
+                    }
+                });
+            } else {
+                console.warn('Screen Wake Lock API não suportada neste navegador');
+            }
+        } catch (err) {
+            console.error(`Erro ao solicitar Wake Lock: ${err.name}, ${err.message}`);
         }
-    </script>
+    }
+ 
+    // Ativar Wake Lock quando o aplicativo iniciar
+    function iniciarAppComWakeLock() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'block';
+        document.getElementById('user-name').innerText = usuarioLogado.nome;
+        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
+        document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
+        document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
+        
+        const hoje = new Date();
+        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
+        document.getElementById('filtro-dia-valor').value = hoje.toISOString().substring(0, 10);
+        document.getElementById('filtro-de-valor').value = hoje.toISOString().substring(0, 10);
+        document.getElementById('filtro-ate-valor').value = hoje.toISOString().substring(0, 10);
+ 
+        conectarFirebase();
+        carregarBaseMateriais();
+        navegar(isAdmin ? 'admin' : 'retirar');
+        
+        // Ativar Screen Wake Lock
+        requestWakeLock();
+    }
+ 
+    function puxarDescricaoMovDriveIn(val, inputDescId, listId) {
+        const list = document.getElementById(listId);
+        const descInput = document.getElementById(inputDescId);
+        list.innerHTML = '';
+        if (!val) { descInput.value = ''; return; }
+        const matches = baseMateriais.filter(m => m.mat.toString().startsWith(val)).slice(0, 5);
+        matches.forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-item';
+            div.innerHTML = `<strong>${m.mat}</strong> - ${m.desc}`;
+            div.onclick = () => { document.getElementById('mdi-mat').value = m.mat; descInput.value = m.desc; list.innerHTML = ''; };
+            list.appendChild(div);
+        });
+        const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
+        if (exact) { descInput.value = exact.desc; descInput.style.color = "var(--verde)"; } 
+        else { descInput.value = "MATERIAL NAO CADASTRADO"; descInput.style.color = "var(--retido)"; }
+    }
+ 
+    document.addEventListener('click', e => { if (e.target.id !== 'mdi-mat') { const l = document.getElementById('mdi-mat-list'); if(l) l.innerHTML = ''; } });
+ 
+    function calcularDiasMovDriveIn(data, labelId) {
+        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
+        document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
+    }
+ 
+    async function salvarMovimentacaoDriveIn() {
+        const mat       = document.getElementById('mdi-mat').value.trim();
+        const desc      = document.getElementById('mdi-desc').value;
+        const qtd       = parseInt(document.getElementById('mdi-qtd').value);
+        const inputVenc = document.getElementById('mdi-venc').value;
+        const destino   = document.getElementById('mdi-destino').value;
+ 
+        if (!mat || isNaN(qtd) || qtd <= 0 || !inputVenc || !destino)
+            return alert("Preencha todos os campos.");
+        if (desc === "MATERIAL NAO CADASTRADO")
+            return alert("Codigo nao cadastrado na base.");
+ 
+        const val = inputVenc.split('-').reverse().join('/');
+ 
+        try {
+            // Registra APENAS a saída do Drive In (valor negativo) — sem gerar entrada
+            await registrarMovimentacao("DRIVE-IN", mat, val, `-${qtd} PL`, destino);
+            alert("Movimentacao Drive In registrada com sucesso!");
+            ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('mdi-label-dias').innerText = '';
+            document.getElementById('mdi-destino').value = 'APANHA';
+        } catch (e) {
+            alert("Erro ao registrar movimentacao: " + e.message);
+        }
+    }
+</script>
 </body>
 </html>
