@@ -146,6 +146,11 @@
  
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+
+        /* Estilos específicos para os novos filtros de categoria nos gráficos */
+        .chart-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .filter-chip { padding: 6px 12px; border-radius: 20px; background: var(--glass); border: 1px solid var(--glass-border); font-size: 10px; font-weight: 800; color: var(--text-secondary); cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+        .filter-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
     </style>
 </head>
 <body>
@@ -189,7 +194,7 @@
                 </div>
                 <input type="password" id="login-senha" placeholder="Senha" style="text-align: center;">
             </div>
-            <button onclick="tentarLogin()" class="btn-action" style="width: 100%; padding: 20px; font-size: 15px; margin-top: 10px;">INICIAR OPERAÇÃO</button>
+            <button onclick="tentarLogin()" class="btn-action" style="width: 100%; padding: 20px; margin-top: 20px;">ENTRAR NO SISTEMA</button>
         </div>
     </div>
 </div>
@@ -197,13 +202,13 @@
 <div id="app-screen" style="display: none;">
     <div class="header">
         <button class="menu-btn" onclick="toggleMenu()">☰</button>
-        <div style="flex-grow: 1;">
-            <div id="user-name" style="font-weight: 900; font-size: 18px; letter-spacing: -0.5px; color: #fff;"></div>
-            <div id="role-label" style="font-size: 9px; color: var(--primary); font-weight: 900; letter-spacing: 2px; text-transform: uppercase;"></div>
+        <div>
+            <h1 style="font-size: 16px; font-weight: 900; letter-spacing: -0.5px; color: #fff;">WMS INFINITY</h1>
+            <p style="font-size: 10px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Olá, <span id="user-name">Usuário</span> | <span id="role-label" style="color: var(--primary);">OPERADOR</span></p>
         </div>
-        <div style="text-align: right;">
-            <div id="current-time" style="font-size: 12px; font-weight: 800;">00:00</div>
-            <div style="font-size: 9px; color: var(--text-secondary); text-transform: uppercase;">Online</div>
+        <div style="margin-left: auto; text-align: right;">
+            <div id="current-time" style="font-weight: 900; font-size: 18px; letter-spacing: -1px; color: #fff;">00:00</div>
+            <div style="font-size: 9px; color: var(--text-secondary); font-weight: 800; text-transform: uppercase;">Real-time Hub</div>
         </div>
     </div>
  
@@ -254,6 +259,51 @@
             </div>
  
             <div class="dashboard-row">
+                <!-- 1. Comparativo de Movimentações por Mês -->
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-comparativo-mensal', 'Comparativo de Movimentações por Mês')">Expandir ⛶</button>
+                    <div class="chart-title">📊 Comparativo de Movimentações por Mês</div>
+                    <div class="chart-filters" id="filters-comparativo-mensal">
+                        <div class="filter-chip active" onclick="toggleFiltroCategoria('APANHA', this)">Apanha</div>
+                        <div class="filter-chip active" onclick="toggleFiltroCategoria('SEPARAÇÃO', this)">Separação</div>
+                        <div class="filter-chip active" onclick="toggleFiltroCategoria('TRANSFERENCIA', this)">Transferência</div>
+                    </div>
+                    <canvas id="chart-comparativo-mensal" style="max-height: 250px;"></canvas>
+                </div>
+                <!-- 2. Picos de Movimentação -->
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-picos-movimentacao', 'Picos de Movimentação')">Expandir ⛶</button>
+                    <div class="chart-title">📈 Picos de Movimentação</div>
+                    <div class="chart-filters">
+                        <div class="filter-chip active" id="chip-pico-dia" onclick="setFiltroPico('dia')">Dia</div>
+                        <div class="filter-chip" id="chip-pico-horario" onclick="setFiltroPico('horario')">Horário</div>
+                        <div class="filter-chip" id="chip-pico-mes" onclick="setFiltroPico('mes')">Mês</div>
+                    </div>
+                    <canvas id="chart-picos-movimentacao" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+ 
+            <div class="dashboard-row">
+                <!-- 3. Top 10 Materiais Críticos -->
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-materiais-criticos', 'Top 10 Materiais Críticos')">Expandir ⛶</button>
+                    <div class="chart-title">⚠️ Top 10 Materiais Críticos <span>(FEFO)</span></div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="font-size: 8px;">Filtrar por Validade Até:</label>
+                        <input type="date" id="filtro-validade-criticos" onchange="renderizarGraficoMateriaisCriticos()" style="padding: 8px; font-size: 12px; border-radius: 8px;">
+                    </div>
+                    <canvas id="chart-materiais-criticos" style="max-height: 250px;"></canvas>
+                </div>
+                <!-- 4. Percentual de Materiais -->
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-percentual-materiais', 'Percentual de Materiais')">Expandir ⛶</button>
+                    <div class="chart-title">🍩 Percentual de Materiais</div>
+                    <canvas id="chart-percentual-materiais" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráficos Originais Mantidos -->
+            <div class="dashboard-row">
                 <div class="chart-box glass-card">
                     <button class="expand-btn" onclick="expandirGrafico('chart-fluxo-diario', '1. Movimentação de Paletes Diária')">Expandir ⛶</button>
                     <div class="chart-title">📈 1. Movimentação de Paletes Diária <span>(Período Selecionado)</span></div>
@@ -284,7 +334,6 @@
                 </div>
             </div>
  
-            
             <div class="dashboard-fullrow">
                 <div class="chart-box glass-card">
                     <button class="expand-btn" onclick="expandirGrafico('chart-apanha-setor', '7. Abastecimento APANHA por Setor')">Expandir ⛶</button>
@@ -412,7 +461,7 @@
                     <div class="input-with-toggle"><input type="text" inputmode="numeric" id="mdi-mat" placeholder="Codigo..." oninput="puxarDescricaoMovDriveIn(this.value, 'mdi-desc', 'mdi-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('mdi-mat')">Abc</div></div>
                     <div id="mdi-mat-list" class="autocomplete-items"></div>
                 </div>
-                <div class="form-group"><label>Descricao do Material</label><input type="text" id="mdi-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando codigo..."></div>
+                <div class="form-group"><label>Descricao do Material</label><input type="text" id="mdi-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando código..."></div>
                 <div class="form-group"><label>Quantidade (Pallets)</label>
                     <div class="input-with-toggle"><input type="text" inputmode="decimal" id="mdi-qtd" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('mdi-qtd')">Abc</div></div>
                 </div>
@@ -480,10 +529,23 @@
     let chartApanhaSetorInst = null;
     let chartStatus = null;
     let chartExpandidoInst = null; // Instância temporária do modal de ampliação
+
+    // Novas Instâncias de Gráficos
+    let chartComparativoMensalInst = null;
+    let chartPicosMovimentacaoInst = null;
+    let chartMateriaisCriticosInst = null;
+    let chartPercentualMateriaisInst = null;
+
+    // Estados dos Filtros dos Novos Gráficos
+    let filtrosCategoriaAtivos = ["APANHA", "SEPARAÇÃO", "TRANSFERENCIA"];
+    let filtroPicoAtivo = 'dia'; // 'dia', 'horario', 'mes'
  
     const SETORES_LISTA = ["ALCOÓLICO", "AVULSO", "LATA", "PET", "SUCO", "VIDRO"];
  
-    setInterval(() => { document.getElementById('current-time').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }, 1000);
+    setInterval(() => { 
+        const timeEl = document.getElementById('current-time');
+        if(timeEl) timeEl.innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); 
+    }, 1000);
     window.addEventListener('online', () => document.getElementById('network-status').style.display = 'none');
     window.addEventListener('offline', () => document.getElementById('network-status').style.display = 'block');
  
@@ -526,8 +588,12 @@
     }
  
     function navegar(tela) {
-        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
-        document.getElementById('view-' + tela).style.display = 'block';
+        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in'].forEach(t => {
+            const el = document.getElementById('view-' + t);
+            if(el) el.style.display = 'none';
+        });
+        const target = document.getElementById('view-' + tela);
+        if(target) target.style.display = 'block';
         document.getElementById('sidebar').classList.remove('active');
         if(tela === 'admin') carregarDadosDashboard();
     }
@@ -551,7 +617,10 @@
     function conectarFirebase() {
         db.collection("estoque_blocado").onSnapshot(snap => {
             estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if(usuarioLogado?.perfil?.toUpperCase() === "ADMIN") { atualizarEstatisticas(); carregarDadosDashboard(); }
+            if(usuarioLogado?.perfil?.toUpperCase() === "ADMIN") { 
+                atualizarEstatisticas(); 
+                carregarDadosDashboard(); 
+            }
             renderizarEstoque();
         });
  
@@ -658,6 +727,10 @@
         if (chartId === 'chart-destinos-saida') graficoOriginal = chartDestinosInst;
         if (chartId === 'chart-apanha-setor') graficoOriginal = chartApanhaSetorInst;
         if (chartId === 'chart-status') graficoOriginal = chartStatus;
+        if (chartId === 'chart-comparativo-mensal') graficoOriginal = chartComparativoMensalInst;
+        if (chartId === 'chart-picos-movimentacao') graficoOriginal = chartPicosMovimentacaoInst;
+        if (chartId === 'chart-materiais-criticos') graficoOriginal = chartMateriaisCriticosInst;
+        if (chartId === 'chart-percentual-materiais') graficoOriginal = chartPercentualMateriaisInst;
  
         if (!graficoOriginal) return;
  
@@ -702,6 +775,29 @@
         document.getElementById('modal-grafico-expandido').style.display = 'none';
         if (chartExpandidoInst) { chartExpandidoInst.destroy(); chartExpandidoInst = null; }
     }
+
+    // Funções de Filtro para os Novos Gráficos
+    function toggleFiltroCategoria(cat, chip) {
+        if (filtrosCategoriaAtivos.includes(cat)) {
+            if (filtrosCategoriaAtivos.length > 1) {
+                filtrosCategoriaAtivos = filtrosCategoriaAtivos.filter(c => c !== cat);
+                chip.classList.remove('active');
+            }
+        } else {
+            filtrosCategoriaAtivos.push(cat);
+            chip.classList.add('active');
+        }
+        renderizarGraficoComparativoMensal();
+    }
+
+    function setFiltroPico(tipo) {
+        filtroPicoAtivo = tipo;
+        ['dia', 'horario', 'mes'].forEach(t => {
+            document.getElementById('chip-pico-' + t).classList.remove('active');
+        });
+        document.getElementById('chip-pico-' + tipo).classList.add('active');
+        renderizarGraficoPicosMovimentacao();
+    }
  
     function renderizarPaineisEGraticos(dados) {
         const hojeStr = new Date().toLocaleDateString('pt-BR');
@@ -710,26 +806,28 @@
  
         // FEED TEMPO REAL
         const feed = document.getElementById('activity-feed');
-        feed.innerHTML = '';
-        todasMovimentacoes.slice(0, 15).forEach(d => {
-            const loginLimpo = d.login ? d.login.split('@')[0].toUpperCase() : 'SISTEMA';
-            const tagCor = (d.quantidade && d.quantidade.toString().includes('+')) ? 'var(--verde)' : 'var(--primary)';
-            const desc = buscarDescricaoLocal(d.material);
-            const estCorrespondente = estoqueCompleto.find(e => e.mat === d.material && e.ender === d.endereco);
-            const validadeInfo = estCorrespondente ? estCorrespondente.valFrente : (d.validade || "Não Informada");
- 
-            const item = document.createElement('div');
-            item.className = 'activity-item';
-            item.innerHTML = `
-                <div class="activity-icon-box" style="color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? '📥' : '📤'}</div>
-                <div class="activity-content">
-                    <span class="activity-tag" style="background: ${tagCor}20; color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? 'Entrada' : 'Saída'}</span>
-                    <br>Op: <b>${loginLimpo}</b> | Material: <b>${d.material} - ${desc}</b>
-                    <br>Endereço: <b>${d.endereco || 'N/A'}</b> | Vol: <b>${d.quantidade || '0'}</b>
-                    <span class="activity-time">Vencimento (FEFO): <span style="color:var(--critico); font-weight:700;">${validadeInfo}</span> às ${d.hora || '00:00'} - ${d.data}</span>
-                </div>`;
-            feed.appendChild(item);
-        });
+        if(feed) {
+            feed.innerHTML = '';
+            todasMovimentacoes.slice(0, 15).forEach(d => {
+                const loginLimpo = d.login ? d.login.split('@')[0].toUpperCase() : 'SISTEMA';
+                const tagCor = (d.quantidade && d.quantidade.toString().includes('+')) ? 'var(--verde)' : 'var(--primary)';
+                const desc = buscarDescricaoLocal(d.material);
+                const estCorrespondente = estoqueCompleto.find(e => e.mat === d.material && e.ender === d.endereco);
+                const validadeInfo = estCorrespondente ? estCorrespondente.valFrente : (d.validade || "Não Informada");
+    
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                item.innerHTML = `
+                    <div class="activity-icon-box" style="color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? '📥' : '📤'}</div>
+                    <div class="activity-content">
+                        <span class="activity-tag" style="background: ${tagCor}20; color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? 'Entrada' : 'Saída'}</span>
+                        <br>Op: <b>${loginLimpo}</b> | Material: <b>${d.material} - ${desc}</b>
+                        <br>Endereço: <b>${d.endereco || 'N/A'}</b> | Vol: <b>${d.quantidade || '0'}</b>
+                        <span class="activity-time">Vencimento (FEFO): <span style="color:var(--critico); font-weight:700;">${validadeInfo}</span> às ${d.hora || '00:00'} - ${d.data}</span>
+                    </div>`;
+                feed.appendChild(item);
+            });
+        }
  
         // ESTRUTURAÇÃO DE DADOS DOS GRAFICOS
         const volumeDiario = {};
@@ -881,8 +979,6 @@
             }
         });
  
-        
-        
         // 7. RENDER GRÁFICO APANHA POR SETOR
         const ctxApanha = document.getElementById('chart-apanha-setor').getContext('2d');
         if (chartApanhaSetorInst) chartApanhaSetorInst.destroy();
@@ -926,8 +1022,6 @@
             }
         });
  
- 
- 
         // GRÁFICO DE SAÚDE INVENTÁRIO
         const ctxS = document.getElementById('chart-status').getContext('2d');
         if (chartStatus) chartStatus.destroy();
@@ -936,31 +1030,257 @@
             data: { labels: ['Boa', 'Crítica', 'Retida'], datasets: [{ data: [estoqueCompleto.filter(i => i.dias > 60).length, estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length, estoqueCompleto.filter(i => i.dias <= 30).length], backgroundColor: ['#10b981', '#fbbf24', '#f87171'] }] }, 
             options: { responsive: true, cutout: '75%', plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } } 
         });
+
+        // --- RENDERIZAÇÃO DOS NOVOS GRÁFICOS SOLICITADOS ---
+        renderizarGraficoComparativoMensal();
+        renderizarGraficoPicosMovimentacao();
+        renderizarGraficoMateriaisCriticos();
+        renderizarGraficoPercentualMateriais();
  
         // RENDERIZAR TABELAS OPERACIONAIS
         const tbodyHist = document.getElementById('table-historico-consolidado');
-        tbodyHist.innerHTML = '';
-        dados.slice(0, 5).forEach(m => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
-            tbodyHist.appendChild(tr);
-        });
+        if(tbodyHist) {
+            tbodyHist.innerHTML = '';
+            dados.slice(0, 5).forEach(m => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
+                tbodyHist.appendChild(tr);
+            });
+        }
  
         const tbodyMat = document.getElementById('table-ranking-materiais');
-        tbodyMat.innerHTML = '';
-        Object.entries(rankingMateriais).sort((a,b) => b[1] - a[1]).slice(0, 10).forEach(item => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><b>${item[0]}</b></td><td>${buscarDescricaoLocal(item[0])}</td><td><span style="color:var(--primary); font-weight:900;">${item[1]} PL</span></td>`;
-            tbodyMat.appendChild(tr);
-        });
+        if(tbodyMat) {
+            tbodyMat.innerHTML = '';
+            Object.entries(rankingMateriais).sort((a,b) => b[1] - a[1]).slice(0, 10).forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td><b>${item[0]}</b></td><td>${buscarDescricaoLocal(item[0])}</td><td><span style="color:var(--primary); font-weight:900;">${item[1]} PL</span></td>`;
+                tbodyMat.appendChild(tr);
+            });
+        }
  
         const tbodyOp = document.getElementById('table-ranking-operadores');
-        tbodyOp.innerHTML = '';
-        Object.entries(rankingOperadores).sort((a,b) => b[1] - a[1]).forEach((op, index) => {
-            const medalha = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${medalha}<b>${op[0]}</b></td><td><span style="color:var(--verde); font-weight:800;">${op[1]} Paletes</span></td>`;
-            tbodyOp.appendChild(tr);
+        if(tbodyOp) {
+            tbodyOp.innerHTML = '';
+            Object.entries(rankingOperadores).sort((a,b) => b[1] - a[1]).forEach((op, index) => {
+                const medalha = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${medalha}<b>${op[0]}</b></td><td><span style="color:var(--verde); font-weight:800;">${op[1]} Paletes</span></td>`;
+                tbodyOp.appendChild(tr);
+            });
+        }
+    }
+
+    // 1. Comparativo de Movimentações por Mês
+    function renderizarGraficoComparativoMensal() {
+        const ctx = document.getElementById('chart-comparativo-mensal').getContext('2d');
+        const meses = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+        const labels = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        const anoAtual = new Date().getFullYear().toString();
+
+        const datasets = [];
+        const cores = { 'APANHA': '#fbbf24', 'SEPARAÇÃO': '#6366f1', 'TRANSFERENCIA': '#00f2ff' };
+
+        filtrosCategoriaAtivos.forEach(cat => {
+            const data = meses.map(m => {
+                return todasMovimentacoes.filter(mov => {
+                    if (!mov.data || !mov.fluxo) return false;
+                    const partes = mov.data.split('/');
+                    return partes[2] === anoAtual && partes[1] === m && mov.fluxo.toUpperCase().trim() === cat;
+                }).reduce((acc, mov) => acc + Math.abs(parseInt(mov.quantidade) || 0), 0);
+            });
+
+            datasets.push({
+                label: cat,
+                data: data,
+                backgroundColor: cores[cat],
+                borderRadius: 4
+            });
+        });
+
+        if (chartComparativoMensalInst) chartComparativoMensalInst.destroy();
+        chartComparativoMensalInst = new Chart(ctx, {
+            type: 'bar',
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true, position: 'bottom', labels: { color: '#fff', font: { size: 10 } } },
+                    datalabels: { display: false }
+                },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' } },
+                    x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                }
+            }
+        });
+    }
+
+    // 2. Picos de Movimentação
+    function renderizarGraficoPicosMovimentacao() {
+        const ctx = document.getElementById('chart-picos-movimentacao').getContext('2d');
+        let labels = [];
+        let data = [];
+
+        if (filtroPicoAtivo === 'dia') {
+            const volumePorDia = {};
+            todasMovimentacoes.slice(0, 100).forEach(mov => {
+                if (mov.data) volumePorDia[mov.data] = (volumePorDia[mov.data] || 0) + Math.abs(parseInt(mov.quantidade) || 0);
+            });
+            labels = Object.keys(volumePorDia).sort((a, b) => volumePorDia[b] - volumePorDia[a]).slice(0, 7);
+            data = labels.map(l => volumePorDia[l]);
+        } else if (filtroPicoAtivo === 'horario') {
+            const volumePorHora = {};
+            todasMovimentacoes.forEach(mov => {
+                if (mov.hora) {
+                    const hora = mov.hora.split(':')[0] + ':00';
+                    volumePorHora[hora] = (volumePorHora[hora] || 0) + Math.abs(parseInt(mov.quantidade) || 0);
+                }
+            });
+            labels = Object.keys(volumePorHora).sort((a, b) => parseInt(a) - parseInt(b));
+            data = labels.map(l => volumePorHora[l]);
+        } else {
+            const volumePorMes = {};
+            const labelsMes = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            todasMovimentacoes.forEach(mov => {
+                if (mov.data) {
+                    const mesIdx = parseInt(mov.data.split('/')[1]) - 1;
+                    volumePorMes[labelsMes[mesIdx]] = (volumePorMes[labelsMes[mesIdx]] || 0) + Math.abs(parseInt(mov.quantidade) || 0);
+                }
+            });
+            labels = labelsMes;
+            data = labels.map(l => volumePorMes[l] || 0);
+        }
+
+        if (chartPicosMovimentacaoInst) chartPicosMovimentacaoInst.destroy();
+        chartPicosMovimentacaoInst = new Chart(ctx, {
+            type: filtroPicoAtivo === 'horario' ? 'line' : 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Volume',
+                    data,
+                    backgroundColor: 'rgba(255, 62, 62, 0.5)',
+                    borderColor: '#ff3e3e',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        anchor: 'end', align: 'top', color: '#fff', font: { weight: 'bold' },
+                        formatter: (val) => val > 0 ? val : ''
+                    }
+                },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 3. Top 10 Materiais Críticos
+    function renderizarGraficoMateriaisCriticos() {
+        const ctx = document.getElementById('chart-materiais-criticos').getContext('2d');
+        const filtroData = document.getElementById('filtro-validade-criticos').value;
+        
+        let criticos = estoqueCompleto.filter(i => i.dias <= 60);
+        
+        if (filtroData) {
+            const dataLimite = new Date(filtroData);
+            criticos = criticos.filter(i => {
+                const partes = i.valFrente.split('/');
+                const dataVal = new Date(partes[2], partes[1] - 1, partes[0]);
+                return dataVal <= dataLimite;
+            });
+        }
+
+        // Ordenar: mais próximo do vencimento (menor dias) para o mais distante
+        criticos.sort((a, b) => (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0));
+        const top10 = criticos.slice(0, 10);
+
+        if (chartMateriaisCriticosInst) chartMateriaisCriticosInst.destroy();
+        chartMateriaisCriticosInst = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: top10.map(i => i.mat),
+                datasets: [{
+                    label: 'Qtd (PL)',
+                    data: top10.map(i => parseInt(i.qtd) || 0),
+                    backgroundColor: top10.map(i => i.dias <= 30 ? 'rgba(248, 113, 113, 0.8)' : 'rgba(251, 191, 36, 0.8)'),
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: (context) => {
+                                const item = top10[context.dataIndex];
+                                return `Descrição: ${item.desc}\nVencimento: ${item.valFrente}\nDias: ${item.dias}`;
+                            }
+                        }
+                    },
+                    datalabels: { color: '#fff', font: { weight: 'bold' }, anchor: 'end', align: 'right' }
+                },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.03)' } },
+                    y: { grid: { display: false }, ticks: { color: '#fff' } }
+                }
+            }
+        });
+    }
+
+    // 4. Percentual de Materiais
+    function renderizarGraficoPercentualMateriais() {
+        const ctx = document.getElementById('chart-percentual-materiais').getContext('2d');
+        const criticos = estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length;
+        const bons = estoqueCompleto.filter(i => i.dias > 60).length;
+        const retidos = estoqueCompleto.filter(i => i.dias <= 30).length;
+        const total = criticos + bons + retidos;
+
+        if (chartPercentualMateriaisInst) chartPercentualMateriaisInst.destroy();
+        chartPercentualMateriaisInst = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Críticos', 'Bons', 'Retidos'],
+                datasets: [{
+                    data: [criticos, bons, retidos],
+                    backgroundColor: ['#fbbf24', '#10b981', '#f87171'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '60%',
+                plugins: {
+                    legend: { display: true, position: 'bottom', labels: { color: '#fff' } },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const val = context.raw;
+                                const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                                return ` ${context.label}: ${val} PL (${pct}%)`;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: '900', size: 12 },
+                        formatter: (val) => {
+                            const pct = total > 0 ? ((val / total) * 100).toFixed(0) : 0;
+                            return pct > 5 ? `${pct}%` : '';
+                        }
+                    }
+                }
+            }
         });
     }
  
@@ -969,6 +1289,7 @@
     function renderizarEstoque() {
         const termo = document.getElementById('search-input').value.toLowerCase().trim();
         const lista = document.getElementById('lista-estoque');
+        if(!lista) return;
         lista.innerHTML = '';
         if (!termo) return;
         const isAdmin = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
@@ -1016,7 +1337,12 @@
             const div = document.createElement('div');
             div.className = 'autocomplete-item';
             div.innerHTML = `<strong>${m.mat}</strong> - ${m.desc}`;
-            div.onclick = () => { document.getElementById('eb-mat').value = m.mat; descInput.value = m.desc; list.innerHTML = ''; };
+            div.onclick = () => { 
+                const matInput = document.getElementById(listId.replace('-list', ''));
+                if(matInput) matInput.value = m.mat; 
+                descInput.value = m.desc; 
+                list.innerHTML = ''; 
+            };
             list.appendChild(div);
         });
         const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
@@ -1024,7 +1350,10 @@
         else { descInput.value = "MATERIAL NÃO CADASTRADO"; descInput.style.color = "var(--retido)"; }
     }
  
-    document.addEventListener('click', e => { if (e.target.id !== 'eb-mat') { const l = document.getElementById('eb-mat-list'); if(l) l.innerHTML = ''; } });
+    document.addEventListener('click', e => { 
+        if (e.target.id !== 'eb-mat') { const l = document.getElementById('eb-mat-list'); if(l) l.innerHTML = ''; } 
+        if (e.target.id !== 'mdi-mat') { const l = document.getElementById('mdi-mat-list'); if(l) l.innerHTML = ''; }
+    });
     
     function retirarMaterial(id, qtdAtual, mat, ender, val) {
         itemParaRetirar = { id, qtdAtual, mat, ender, val };
@@ -1090,7 +1419,8 @@
  
     function calcularDias(data, labelId) {
         diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
-        document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
+        const el = document.getElementById(labelId);
+        if(el) el.innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
     }
  
     async function registrarMovimentacao(ender, mat, val, qtd, fluxo) {
@@ -1233,29 +1563,6 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         }
     }
  
-    // Ativar Wake Lock quando o aplicativo iniciar
-    function iniciarAppComWakeLock() {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-screen').style.display = 'block';
-        document.getElementById('user-name').innerText = usuarioLogado.nome;
-        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
-        document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
-        document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
-        
-        const hoje = new Date();
-        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
-        document.getElementById('filtro-dia-valor').value = hoje.toISOString().substring(0, 10);
-        document.getElementById('filtro-de-valor').value = hoje.toISOString().substring(0, 10);
-        document.getElementById('filtro-ate-valor').value = hoje.toISOString().substring(0, 10);
- 
-        conectarFirebase();
-        carregarBaseMateriais();
-        navegar(isAdmin ? 'admin' : 'retirar');
-        
-        // Ativar Screen Wake Lock
-        requestWakeLock();
-    }
- 
     function puxarDescricaoMovDriveIn(val, inputDescId, listId) {
         const list = document.getElementById(listId);
         const descInput = document.getElementById(inputDescId);
@@ -1266,7 +1573,12 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
             const div = document.createElement('div');
             div.className = 'autocomplete-item';
             div.innerHTML = `<strong>${m.mat}</strong> - ${m.desc}`;
-            div.onclick = () => { document.getElementById('mdi-mat').value = m.mat; descInput.value = m.desc; list.innerHTML = ''; };
+            div.onclick = () => { 
+                const matInput = document.getElementById(listId.replace('-list', ''));
+                if(matInput) matInput.value = m.mat; 
+                descInput.value = m.desc; 
+                list.innerHTML = ''; 
+            };
             list.appendChild(div);
         });
         const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
@@ -1274,11 +1586,10 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         else { descInput.value = "MATERIAL NAO CADASTRADO"; descInput.style.color = "var(--retido)"; }
     }
  
-    document.addEventListener('click', e => { if (e.target.id !== 'mdi-mat') { const l = document.getElementById('mdi-mat-list'); if(l) l.innerHTML = ''; } });
- 
     function calcularDiasMovDriveIn(data, labelId) {
         diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
-        document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
+        const el = document.getElementById(labelId);
+        if(el) el.innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
     }
  
     async function salvarMovimentacaoDriveIn() {
@@ -1300,7 +1611,8 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
             await registrarMovimentacao("DRIVE-IN", mat, val, `-${qtd} PL`, destino);
             alert("Movimentacao Drive In registrada com sucesso!");
             ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('mdi-label-dias').innerText = '';
+            const labelDias = document.getElementById('mdi-label-dias');
+            if(labelDias) labelDias.innerText = '';
             document.getElementById('mdi-destino').value = 'APANHA';
         } catch (e) {
             alert("Erro ao registrar movimentacao: " + e.message);
