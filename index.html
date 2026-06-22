@@ -350,8 +350,8 @@
             <!-- NOVOS GRÁFICOS: MATERIAIS CRÍTICOS -->
             <div class="dashboard-row" style="margin-bottom: 24px;">
                 <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-criticos-estoque', 'Materiais Críticos — Top 20 por Pallets')">Expandir ⛶</button>
-                    <div class="chart-title">⚠️ Materiais Críticos <span style="color:var(--critico);">Top 20 por Pallets</span></div>
+                    <button class="expand-btn" onclick="expandirGrafico('chart-criticos-estoque', 'Materiais Críticos por Endereço (31–60 dias)')">Expandir ⛶</button>
+                    <div class="chart-title">⚠️ Materiais Críticos <span style="color:var(--critico);">por Endereço — 31 a 60 dias</span></div>
                     <canvas id="chart-criticos-estoque" style="max-height: 300px;"></canvas>
                 </div>
                 <div class="chart-box glass-card">
@@ -956,51 +956,73 @@
         });
 
         // GRÁFICO: TOP 20 MATERIAIS CRÍTICOS (31-60 dias) por Pallets
+        // GRÁFICO: MATERIAIS CRÍTICOS — todos os itens com 30 < dias <= 60
+        // Ordenados por dias crescente (mais urgente primeiro), sem limite de registros
+        // Label = COD_ENDER | Cor por faixa de dias a vencer (espelha cores da planilha Excel)
         const criticosRaw = estoqueCompleto
-            .filter(i => i.dias > 30 && i.dias <= 60 && parseInt(i.qtd) > 0)
-            .sort((a, b) => (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0))
-            .slice(0, 20);
+            .filter(i => parseInt(i.dias) > 30 && parseInt(i.dias) <= 60 && parseInt(i.qtd) > 0)
+            .sort((a, b) => (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0));
 
-        const criticosLabels = criticosRaw.map(i => `${i.mat}`);
+        // Paleta por faixa de dias: 31-40 → vermelho, 41-50 → laranja, 51-60 → amarelo-ouro
+        function corCritica(dias) {
+            const d = parseInt(dias) || 0;
+            if (d <= 40) return '#ef4444';   // vermelho — mais urgente
+            if (d <= 50) return '#f97316';   // laranja — intermediário
+            return '#eab308';                // amarelo-ouro — menos urgente
+        }
+
+        const criticosLabels = criticosRaw.map(i => i.ender || i.mat || '—');
         const criticosQtd    = criticosRaw.map(i => parseInt(i.qtd) || 0);
         const criticosDias   = criticosRaw.map(i => parseInt(i.dias) || 0);
+        const criticosCores  = criticosDias.map(d => corCritica(d));
 
-        // Cor: quanto mais próximo de 30 dias → vermelho; acima de 50 → amarelo
-        const criticosCores = criticosDias.map(d => d <= 40 ? '#f87171' : '#fbbf24');
+        // Altura dinâmica: 26px por barra, mínimo 200px
+        const altCrit = Math.max(200, criticosRaw.length * 26);
+        const canvasCrit = document.getElementById('chart-criticos-estoque');
+        canvasCrit.style.maxHeight = altCrit + 'px';
+        canvasCrit.style.height    = altCrit + 'px';
 
-        const ctxCrit = document.getElementById('chart-criticos-estoque').getContext('2d');
+        const ctxCrit = canvasCrit.getContext('2d');
         if (chartCriticosInst) chartCriticosInst.destroy();
         chartCriticosInst = new Chart(ctxCrit, {
             type: 'bar',
             data: {
                 labels: criticosLabels,
                 datasets: [{
-                    label: 'Pallets',
+                    label: 'QT Pallets',
                     data: criticosQtd,
                     backgroundColor: criticosCores,
-                    borderRadius: 6
+                    borderRadius: 4,
+                    barThickness: 18
                 }]
             },
             options: {
                 indexAxis: 'y',
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false },
                     datalabels: {
-                        anchor: 'end',
-                        align: 'right',
+                        anchor: 'center',
+                        align: 'center',
                         color: '#fff',
-                        font: { weight: '800', size: 10 },
-                        formatter: (val, ctx) => {
-                            const dias = criticosDias[ctx.dataIndex];
-                            return `${val} PL · ${dias}d`;
-                        }
+                        font: { weight: '900', size: 10 },
+                        formatter: (val) => val > 0 ? val : ''
                     },
                     tooltip: {
                         callbacks: {
+                            title: (ctx) => {
+                                const item = criticosRaw[ctx[0].dataIndex];
+                                return `${item.ender || '—'} · Mat: ${item.mat}`;
+                            },
                             label: (ctx) => {
                                 const item = criticosRaw[ctx.dataIndex];
-                                return [`${ctx.parsed.x} PL`, `Dias: ${item.dias}`, `Ender: ${item.ender || 'N/A'}`, `Val: ${item.valFrente || 'N/A'}`];
+                                return [
+                                    `Pallets: ${ctx.parsed.x}`,
+                                    `Validade: ${item.valFrente || 'N/A'}`,
+                                    `Dias a vencer: ${item.dias}`,
+                                    `Descrição: ${item.desc || buscarDescricaoLocal(item.mat)}`
+                                ];
                             }
                         }
                     }
@@ -1008,12 +1030,12 @@
                 scales: {
                     x: {
                         beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.04)' },
+                        grid: { color: 'rgba(255,255,255,0.05)' },
                         ticks: { color: '#64748b', font: { weight: '700', size: 10 } }
                     },
                     y: {
                         grid: { display: false },
-                        ticks: { color: '#ffffff', font: { weight: '800', size: 10 } }
+                        ticks: { color: '#e2e8f0', font: { weight: '800', size: 10 } }
                     }
                 }
             }
