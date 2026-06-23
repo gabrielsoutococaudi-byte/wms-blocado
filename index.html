@@ -42,8 +42,27 @@
         }
         .input-with-toggle { position: relative; display: flex; align-items: center; }
         .input-with-toggle input { padding-right: 50px !important; }
-        .toggle-kb-btn { position: absolute; right: 10px; background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-secondary); border-radius: 10px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: 0.3s; z-index: 10; }
-        .toggle-kb-btn:hover { background: var(--primary); color: #fff; }
+        .toggle-kb-btn {
+            position: absolute; right: 10px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            color: var(--text-secondary);
+            border-radius: 10px;
+            width: 34px; height: 34px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        .toggle-kb-btn:hover {
+            background: linear-gradient(135deg, var(--primary), #c0392b);
+            border-color: var(--primary);
+            color: #fff;
+            box-shadow: 0 3px 10px var(--primary-glow);
+        }
  
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
  
@@ -73,11 +92,53 @@
         
         .sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100dvh; background: rgba(5, 5, 5, 0.98); backdrop-filter: blur(20px); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1500; padding-top: calc(60px + env(safe-area-inset-top)); border-right: 1px solid var(--glass-border); }
         .sidebar.active { left: 0; }
-        .sidebar button { width: 85%; padding: 16px 20px; background: transparent; border: none; color: var(--text-secondary); text-align: left; cursor: pointer; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 12px; margin: 8px auto; border-radius: 14px; transition: 0.3s; }
-        .sidebar button:hover { background: var(--glass); color: var(--text); transform: translateX(8px); }
+        .sidebar button {
+            width: 85%;
+            padding: 14px 20px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            text-align: left;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 5px auto;
+            border-radius: 14px;
+            transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+        }
+        .sidebar button:hover {
+            background: linear-gradient(135deg, rgba(255,62,62,0.08), rgba(99,102,241,0.06));
+            border-color: rgba(255,62,62,0.2);
+            color: var(--text);
+            transform: translateX(6px);
+            box-shadow: 0 2px 12px rgba(255,62,62,0.08);
+        }
  
         .header { padding: calc(20px + env(safe-area-inset-top)) 24px 20px 24px; display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 900; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); }
-        .menu-btn { background: var(--glass); border: 1px solid var(--glass-border); padding: 10px; border-radius: 14px; color: white; font-size: 20px; display: flex; width: 46px; height: 46px; align-items: center; justify-content: center; }
+        .menu-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 14px;
+            color: white;
+            font-size: 20px;
+            display: flex;
+            width: 46px; height: 46px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.22s ease;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+        .menu-btn:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+            transform: scale(1.06);
+        }
         
         .container { width: 100%; max-width: 1200px; margin: auto; padding: 0 20px; }
  
@@ -96,9 +157,58 @@
         .chart-title span { color: var(--primary); }
  
         /* Botão de Expansão */
-        .expand-btn { position: absolute; top: 22px; right: 22px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; font-weight: 700; transition: 0.2s; z-index: 10; }
-        .expand-btn:hover { background: var(--accent); border-color: var(--accent); }
+        .expand-btn {
+            position: absolute; top: 22px; right: 22px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+            z-index: 10;
+            backdrop-filter: blur(8px);
+        }
+        .expand-btn:hover {
+            background: linear-gradient(135deg, var(--accent), #4f46e5);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 14px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+        .expand-btn:active { transform: scale(0.94); }
  
+        /* ── Variantes de cor para btn-action ── */
+        .btn-action[style*="background: var(--accent)"],
+        .btn-action[style*="background:var(--accent)"] {
+            background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%) !important;
+            box-shadow: 0 4px 15px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+        }
+        .btn-action[style*="background: #107c41"],
+        .btn-action[style*="background:#107c41"] {
+            background: linear-gradient(135deg, #10b981 0%, #107c41 100%) !important;
+            box-shadow: 0 4px 15px rgba(16,185,129,0.25), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+        }
+        .btn-action[style*="background: var(--glass)"],
+        .btn-action[style*="background:var(--glass)"] {
+            background: rgba(255,255,255,0.06) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08) !important;
+            color: var(--text) !important;
+        }
+        .btn-action[style*="background: var(--glass)"]:hover,
+        .btn-action[style*="background:var(--glass)"]:hover {
+            background: rgba(255,255,255,0.1) !important;
+            border-color: rgba(255,255,255,0.18) !important;
+        }
+        .btn-action[style*="background: var(--primary)"],
+        .btn-action[style*="background:var(--primary)"] {
+            background: linear-gradient(135deg, var(--primary) 0%, #c0392b 100%) !important;
+        }
+
         /* Modal do Gráfico Expandido */
         .chart-fullscreen-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2,2,2,0.98); z-index: 5000; padding: 40px; flex-direction: column; }
         .chart-fullscreen-modal .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; }
@@ -122,8 +232,41 @@
         .badge { padding: 6px 12px; border-radius: 10px; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
         .badge-ender { background: #fff; color: #000; }
  
-        .btn-action { background: var(--primary); color: #fff; border: none; padding: 16px 28px; border-radius: 16px; font-weight: 900; cursor: pointer; font-size: 13px; box-shadow: 0 10px 20px var(--primary-glow); transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-action:active { transform: scale(0.96); }
+        /* ── BTN-ACTION: design sofisticado ── */
+        .btn-action {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--primary) 0%, #c0392b 100%);
+            color: #fff;
+            border: none;
+            padding: 16px 28px;
+            border-radius: 16px;
+            font-weight: 900;
+            cursor: pointer;
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+            transition: transform 0.18s cubic-bezier(0.4,0,0.2,1), box-shadow 0.18s ease, filter 0.18s ease;
+        }
+        .btn-action::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+            transform: skewX(-20deg);
+            transition: left 0.55s ease;
+            pointer-events: none;
+        }
+        .btn-action:hover::before { left: 160%; }
+        .btn-action:hover {
+            box-shadow: 0 8px 28px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
+        .btn-action:active { transform: scale(0.96) translateY(0); box-shadow: 0 2px 8px var(--primary-glow); }
  
         .form-box { padding: 35px; margin-bottom: 30px; margin-top: 20px; }
         .form-group label { display: block; font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 800; letter-spacing: 1.5px; }
@@ -435,7 +578,7 @@
             </div>
         </div>
         <div class="form-group"><label>Destino da Carga:</label><select id="modal-destino-mov" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 18px; border-radius: 16px; color: #fff; width: 100%; font-weight: 600;"><option value="TRANSFERENCIA">TRANSFERENCIA</option><option value="APANHA">APANHA</option><option value="SEPARAÇÃO">SEPARAÇÃO</option></select></div>
-        <div style="display:flex; gap:15px; margin-top:35px;"><button onclick="fecharModal()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button><button id="btn-confirmar-modal" class="btn-action" style="flex:1;">CONFIRMAR</button></div>
+        <div style="display:flex; gap:15px; margin-top:35px;"><button onclick="fecharModal()" style="flex:1; padding:18px; background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.1); border-radius:16px; font-weight:800; cursor:pointer; text-transform:uppercase; font-size:11px; letter-spacing:1px; transition:all 0.2s ease; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(255,255,255,0.7)'">CANCELAR</button><button id="btn-confirmar-modal" class="btn-action" style="flex:1;">CONFIRMAR</button></div>
     </div>
 </div>
  
