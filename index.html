@@ -349,8 +349,18 @@
  
             <!-- TABELA: Acompanhamento de Paletes por Endereço -->
             <div class="dashboard-fullrow">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">📦 Acompanhamento de Paletes por Endereço <span style="color:var(--accent);">Estoque Crítico</span></div>
+                <div class="chart-box glass-card" style="padding: 28px;">
+                    <button class="expand-btn" onclick="expandirTabelaPaleteEndereco()">Expandir ⛶</button>
+                    <div class="chart-title" style="margin-bottom: 15px;">📦 Acompanhamento de Paletes por Endereço <span style="color:var(--accent);">Estoque Crítico</span></div>
+                    <!-- Filtro de data para histórico -->
+                    <div style="display:flex; gap:12px; align-items:center; margin-bottom:18px; flex-wrap:wrap;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <label style="font-size:10px; color:var(--text-secondary); font-weight:800; text-transform:uppercase; letter-spacing:1px; white-space:nowrap;">Data Contagem:</label>
+                            <input type="date" id="filtro-data-palete-ender" style="background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:10px; color:#fff; padding:8px 12px; font-size:12px; font-weight:700; outline:none; cursor:pointer;" onchange="filtrarTabelaPaleteEndereco()">
+                        </div>
+                        <div id="badge-data-palete" style="font-size:10px; color:var(--accent); font-weight:900; text-transform:uppercase; letter-spacing:1px; padding:5px 10px; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.2); border-radius:8px; display:none;"></div>
+                        <button onclick="resetarFiltroEndereco()" style="font-size:10px; font-weight:800; color:var(--text-secondary); background:var(--glass); border:1px solid var(--glass-border); border-radius:8px; padding:6px 12px; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Ver Tudo</button>
+                    </div>
                     <div class="wms-table-container">
                         <table class="wms-table" id="table-palete-endereco">
                             <thead>
@@ -393,7 +403,7 @@
                             <tfoot>
                                 <tr>
                                     <td colspan="5" style="font-weight:900; text-align:right; text-transform:uppercase; letter-spacing:1px; font-size:11px; color:var(--text-secondary);">TOTAL</td>
-                                    <td style="font-weight:900; color:#fff; background:rgba(255,62,62,0.3); border:1px solid var(--primary); text-align:center;">1187</td>
+                                    <td id="total-palete-ender" style="font-weight:900; color:#fff; background:rgba(255,62,62,0.3); border:1px solid var(--primary); text-align:center;">1187</td>
                                     <td colspan="2"></td>
                                 </tr>
                             </tfoot>
@@ -402,12 +412,46 @@
                 </div>
             </div>
 
+            <!-- MODAL EXPANDIDO: Tabela Paletes por Endereço -->
+            <div id="modal-palete-ender-expand" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(2,2,2,0.98); z-index:5000; padding:30px; flex-direction:column; overflow-y:auto;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--glass-border); padding-bottom:15px; flex-wrap:wrap; gap:10px;">
+                    <h2 style="font-weight:900; letter-spacing:-1px; font-size:20px;">📦 Acompanhamento de Paletes por Endereço — <span style="color:var(--accent);">Estoque Crítico</span></h2>
+                    <button class="btn-action" style="padding:10px 20px; background:var(--primary);" onclick="document.getElementById('modal-palete-ender-expand').style.display='none'">Fechar Voltar ✕</button>
+                </div>
+                <div style="display:flex; gap:12px; align-items:center; margin-bottom:18px; flex-wrap:wrap;">
+                    <label style="font-size:10px; color:var(--text-secondary); font-weight:800; text-transform:uppercase; letter-spacing:1px;">Data Contagem:</label>
+                    <input type="date" id="filtro-data-palete-ender-modal" style="background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:10px; color:#fff; padding:8px 12px; font-size:12px; font-weight:700; outline:none; cursor:pointer;" onchange="sincronizarFiltroModal()">
+                    <button onclick="resetarFiltroEnderecoModal()" style="font-size:10px; font-weight:800; color:var(--text-secondary); background:var(--glass); border:1px solid var(--glass-border); border-radius:8px; padding:6px 12px; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Ver Tudo</button>
+                </div>
+                <div class="wms-table-container" style="flex:1; margin-top:0;">
+                    <table class="wms-table" id="table-palete-endereco-modal">
+                        <thead>
+                            <tr>
+                                <th>COD_ENDER</th><th>MATERIAL</th><th>DESCRIÇÃO</th><th>VALIDADE FRENTE</th><th>VALIDADE FUNDOS</th><th>QTD PALLETS</th><th>DATA CONTAGEM</th><th>DIAS P/ VENC.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-palete-endereco-modal"></tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" style="font-weight:900; text-align:right; text-transform:uppercase; letter-spacing:1px; font-size:11px; color:var(--text-secondary);">TOTAL</td>
+                                <td id="total-palete-ender-modal" style="font-weight:900; color:#fff; background:rgba(255,62,62,0.3); border:1px solid var(--primary); text-align:center;"></td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
             <!-- GRÁFICO: Acompanhamento de Projeção de Paletes -->
             <div class="dashboard-fullrow">
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-projecao-paletes', 'Acompanhamento de Projeção de Paletes')">Expandir ⛶</button>
-                    <div class="chart-title">📈 Acompanhamento de Projeção de Paletes <span>Comparativo Diário</span></div>
-                    <canvas id="chart-projecao-paletes" style="max-height: 320px;"></canvas>
+                <div class="chart-box glass-card" style="padding: 28px;">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-projecao-paletes', 'Acompanhamento de Projeção de Paletes — Qtd por Dia')">Expandir ⛶</button>
+                    <div class="chart-title">📈 Acompanhamento de Projeção de Paletes <span>Quantidade por Dia</span></div>
+                    <div style="display:flex; gap:20px; margin-bottom:15px; flex-wrap:wrap;">
+                        <div style="display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-secondary); font-weight:700;"><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#4fa8d5;"></span>Qtd. Paletes/Dia</div>
+                        <div id="pp-resumo-hoje" style="font-size:11px; color:var(--neon-blue); font-weight:800; text-transform:uppercase; letter-spacing:1px;"></div>
+                    </div>
+                    <canvas id="chart-projecao-paletes" style="max-height: 360px;"></canvas>
                 </div>
             </div>
 
@@ -1003,50 +1047,93 @@
             options: { responsive: true, cutout: '75%', plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } } 
         });
 
-        // GRÁFICO DE PROJEÇÃO DE PALETES
-        const ctxPP = document.getElementById('chart-projecao-paletes').getContext('2d');
-        if (chartProjecaoPaletesInst) chartProjecaoPaletesInst.destroy();
-        chartProjecaoPaletesInst = new Chart(ctxPP, {
-            type: 'line',
-            data: {
-                labels: ['20/06','21/06','22/06','23/06','24/06','25/06','26/06','27/06','28/06','29/06','30/06','01/07','02/07'],
-                datasets: [{
-                    label: 'Qtd. Paletes',
-                    data: [580, 600, 100, 1200, 1100, 900, 801, 1000, 900, 800, 600, 580, 310],
-                    borderColor: '#4fa8d5',
-                    backgroundColor: 'rgba(79,168,213,0.10)',
-                    borderWidth: 2.5,
-                    pointBackgroundColor: '#4fa8d5',
-                    pointBorderColor: '#fff',
-                    pointRadius: 7,
-                    pointHoverRadius: 9,
-                    fill: false,
-                    tension: 0.2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: { display: false },
-                    datalabels: {
-                        display: true,
-                        color: '#fff',
-                        font: { weight: '800', size: 11 },
-                        backgroundColor: 'rgba(79,168,213,0.75)',
-                        borderRadius: 20,
-                        padding: { top: 4, bottom: 4, left: 8, right: 8 },
-                        anchor: 'center',
-                        align: 'center',
-                        formatter: v => v
-                    }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.55)', font: { size: 10, weight: '700' } } },
-                    y: { display: false, grid: { display: false } }
-                }
+        // GRÁFICO DE PROJEÇÃO DE PALETES — Quantidade de paletes por dia (DATA CONTAGEM)
+        {
+            // Agrupar estoque por DATA CONTAGEM: somar qtd por data
+            const qtdPorDia = {};
+            estoqueCompleto.forEach(item => {
+                const dc = item.dataContagem || item.DATA_CONTAGEM || item.data_contagem || '';
+                if (!dc) return;
+                const qtd = Math.abs(parseInt(item.qtd) || 0);
+                qtdPorDia[dc] = (qtdPorDia[dc] || 0) + qtd;
+            });
+
+            // Fallback: usar movimentações agrupadas por data se não houver dataContagem
+            if (Object.keys(qtdPorDia).length === 0) {
+                todasMovimentacoes.forEach(mov => {
+                    if (!mov.data) return;
+                    const qtd = Math.abs(parseInt(mov.quantidade) || 0);
+                    qtdPorDia[mov.data] = (qtdPorDia[mov.data] || 0) + qtd;
+                });
             }
-        });
+
+            const labelsDiasPP = Object.keys(qtdPorDia).sort((a, b) => {
+                const toDate = s => { const p = s.split('/'); return new Date(p[2], p[1]-1, p[0]); };
+                return toDate(a) - toDate(b);
+            });
+            const valoresPP = labelsDiasPP.map(d => qtdPorDia[d]);
+
+            // Resumo do dia mais recente
+            if (labelsDiasPP.length > 0) {
+                const ultimoDia = labelsDiasPP[labelsDiasPP.length - 1];
+                const ultimoVal = valoresPP[valoresPP.length - 1];
+                const el = document.getElementById('pp-resumo-hoje');
+                if (el) el.innerText = `Última contagem: ${ultimoDia} — ${ultimoVal} Paletes`;
+            }
+
+            const ctxPP = document.getElementById('chart-projecao-paletes').getContext('2d');
+            if (chartProjecaoPaletesInst) chartProjecaoPaletesInst.destroy();
+            chartProjecaoPaletesInst = new Chart(ctxPP, {
+                type: 'line',
+                data: {
+                    labels: labelsDiasPP,
+                    datasets: [{
+                        label: 'Qtd. Paletes/Dia',
+                        data: valoresPP,
+                        borderColor: '#4fa8d5',
+                        backgroundColor: 'rgba(79,168,213,0.08)',
+                        borderWidth: 2.5,
+                        pointBackgroundColor: '#4fa8d5',
+                        pointBorderColor: '#fff',
+                        pointRadius: 6,
+                        pointHoverRadius: 9,
+                        fill: true,
+                        tension: 0.25
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` ${ctx.parsed.y} Paletes`
+                            }
+                        },
+                        datalabels: {
+                            display: true,
+                            color: '#fff',
+                            font: { weight: '800', size: 11 },
+                            backgroundColor: 'rgba(79,168,213,0.75)',
+                            borderRadius: 20,
+                            padding: { top: 4, bottom: 4, left: 8, right: 8 },
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: v => v > 0 ? v : ''
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 10, weight: '700' } } },
+                        y: { 
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.04)' },
+                            ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 10, weight: '600' } }
+                        }
+                    }
+                }
+            });
+        }
  
         // RENDERIZAR TABELAS OPERACIONAIS
         const tbodyHist = document.getElementById('table-historico-consolidado');
@@ -1309,7 +1396,117 @@
     }
  
     
-window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
+    // ─── TABELA PALETES POR ENDEREÇO: dados estáticos + filtro por data ───
+
+    const _DADOS_PALETE_ENDER = [
+        { ender:'101-1', mat:'288', desc:'CHOPP KAISER CLARO 50L', valFr:'26/07/2026', valFd:'15/08/2026', qtd:56, dataC:'23/06/2026', dias:33, critico:true },
+        { ender:'DOCA X', mat:'288', desc:'CHOPP KAISER CLARO 50L', valFr:'26/07/2026', valFd:'26/07/2026', qtd:28, dataC:'23/06/2026', dias:33, critico:true },
+        { ender:'205-BOLSÃO-02', mat:'1231', desc:'AGUA CRYSTAL VIP PT350 C/GAS 12X1', valFr:'02/08/2026', valFd:'30/08/2026', qtd:10, dataC:'23/06/2026', dias:40, critico:true },
+        { ender:'203-35', mat:'1776', desc:'FANTA LARANJA PT1L 12X1', valFr:'05/08/2026', valFd:'05/08/2026', qtd:22, dataC:'23/06/2026', dias:43, critico:false },
+        { ender:'204-BOLSÃO-04', mat:'1910', desc:'FANTA GUARANA PT1L 12X1', valFr:'06/08/2026', valFd:'06/08/2026', qtd:10, dataC:'23/06/2026', dias:44, critico:false },
+        { ender:'204-34', mat:'1778', desc:'SPRITE ORIGINAL PT1L 12X1', valFr:'09/08/2026', valFd:'24/08/2026', qtd:39, dataC:'23/06/2026', dias:47, critico:false },
+        { ender:'205-BOLSÃO-01', mat:'1220', desc:'AGUA CRYSTAL PT500 C/GAS 12X1', valFr:'13/08/2026', valFd:'13/08/2026', qtd:46, dataC:'23/06/2026', dias:51, critico:false },
+        { ender:'203-43', mat:'1776', desc:'FANTA LARANJA PT1L 12X1', valFr:'13/08/2026', valFd:'13/08/2026', qtd:40, dataC:'23/06/2026', dias:51, critico:false },
+        { ender:'201-10', mat:'1748', desc:'COCA COLA ZERO ACUCAR MINI PT200ML 12X1', valFr:'16/08/2026', valFd:'16/08/2026', qtd:27, dataC:'23/06/2026', dias:54, critico:false },
+        { ender:'201-14', mat:'1748', desc:'COCA COLA ZERO ACUCAR MINI PT200ML 12X1', valFr:'16/08/2026', valFd:'16/08/2026', qtd:78, dataC:'23/06/2026', dias:54, critico:false },
+        { ender:'204-36', mat:'1748', desc:'COCA COLA ZERO ACUCAR MINI PT200ML 12X1', valFr:'16/08/2026', valFd:'16/08/2026', qtd:43, dataC:'23/06/2026', dias:54, critico:false },
+        { ender:'201-4', mat:'1748', desc:'COCA COLA ZERO ACUCAR MINI PT200ML 12X1', valFr:'17/08/2026', valFd:'17/08/2026', qtd:74, dataC:'23/06/2026', dias:55, critico:false },
+        { ender:'201-12', mat:'1748', desc:'COCA COLA ZERO ACUCAR MINI PT200ML 12X1', valFr:'17/08/2026', valFd:'17/08/2026', qtd:38, dataC:'23/06/2026', dias:55, critico:false },
+        { ender:'203-38', mat:'1030', desc:'COCA COLA ZERO ACUCAR PT1,5L 6X1', valFr:'17/08/2026', valFd:'17/08/2026', qtd:119, dataC:'23/06/2026', dias:55, critico:false },
+        { ender:'203-45', mat:'1030', desc:'COCA COLA ZERO ACUCAR PT1,5L 6X1', valFr:'17/08/2026', valFd:'17/08/2026', qtd:40, dataC:'23/06/2026', dias:55, critico:false },
+        { ender:'204-PARCIAL-02', mat:'1030', desc:'COCA COLA ZERO ACUCAR PT1,5L 6X1', valFr:'17/08/2026', valFd:'17/08/2026', qtd:13, dataC:'23/06/2026', dias:55, critico:false },
+        { ender:'203-18', mat:'820', desc:'COCA COLA PT1,5L 6X1', valFr:'19/08/2026', valFd:'19/08/2026', qtd:82, dataC:'23/06/2026', dias:57, critico:false },
+        { ender:'204-BOLSÃO-03', mat:'1815', desc:'FANTA UVA PT1L 12X1', valFr:'19/08/2026', valFd:'19/08/2026', qtd:12, dataC:'23/06/2026', dias:57, critico:false },
+        { ender:'204-13', mat:'1776', desc:'FANTA LARANJA PT1L 12X1', valFr:'20/08/2026', valFd:'20/08/2026', qtd:40, dataC:'23/06/2026', dias:58, critico:false },
+        { ender:'204-29', mat:'1776', desc:'FANTA LARANJA PT1L 12X1', valFr:'20/08/2026', valFd:'20/08/2026', qtd:27, dataC:'23/06/2026', dias:58, critico:false },
+        { ender:'201-2', mat:'1747', desc:'COCA COLA MINI PT200ML 12X1', valFr:'21/08/2026', valFd:'21/08/2026', qtd:51, dataC:'23/06/2026', dias:59, critico:false },
+        { ender:'201-24', mat:'1747', desc:'COCA COLA MINI PT200ML 12X1', valFr:'21/08/2026', valFd:'21/08/2026', qtd:34, dataC:'23/06/2026', dias:59, critico:false },
+        { ender:'204-17', mat:'1378', desc:'FANTA LARANJA PT3L 6X1', valFr:'22/08/2026', valFd:'22/08/2026', qtd:15, dataC:'23/06/2026', dias:60, critico:false },
+    ];
+
+    function _renderTabelaEnder(dados, tbodyId, totalId) {
+        const tbody = document.getElementById(tbodyId);
+        const totalEl = document.getElementById(totalId);
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        let total = 0;
+        dados.forEach(r => {
+            total += r.qtd;
+            const corDias = r.dias <= 33 ? 'var(--critico)' : (r.dias <= 45 ? 'var(--critico)' : 'var(--text)');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${r.ender}</td><td>${r.mat}</td><td>${r.desc}</td><td>${r.valFr}</td><td>${r.valFd}</td><td>${r.qtd}</td><td>${r.dataC}</td><td style="color:${corDias}; font-weight:800;">${r.dias}</td>`;
+            tbody.appendChild(tr);
+        });
+        if (totalEl) totalEl.innerText = total;
+    }
+
+    function filtrarTabelaPaleteEndereco() {
+        const val = document.getElementById('filtro-data-palete-ender').value;
+        let filtrados = _DADOS_PALETE_ENDER;
+        if (val) {
+            // Converter yyyy-mm-dd → dd/mm/yyyy para comparar com dataC
+            const [y,m,d] = val.split('-');
+            const dataFmt = `${d}/${m}/${y}`;
+            filtrados = _DADOS_PALETE_ENDER.filter(r => r.dataC === dataFmt);
+            const badge = document.getElementById('badge-data-palete');
+            if (badge) { badge.innerText = `Contagem: ${dataFmt} — ${filtrados.length} itens`; badge.style.display = 'inline-block'; }
+        } else {
+            const badge = document.getElementById('badge-data-palete');
+            if (badge) badge.style.display = 'none';
+        }
+        _renderTabelaEnder(filtrados, 'tbody-palete-endereco', 'total-palete-ender');
+    }
+
+    function resetarFiltroEndereco() {
+        const el = document.getElementById('filtro-data-palete-ender');
+        if (el) el.value = '';
+        const badge = document.getElementById('badge-data-palete');
+        if (badge) badge.style.display = 'none';
+        _renderTabelaEnder(_DADOS_PALETE_ENDER, 'tbody-palete-endereco', 'total-palete-ender');
+    }
+
+    function expandirTabelaPaleteEndereco() {
+        const modal = document.getElementById('modal-palete-ender-expand');
+        if (!modal) return;
+        modal.style.display = 'flex';
+        // Sincronizar filtro da tabela principal
+        const valMain = document.getElementById('filtro-data-palete-ender')?.value || '';
+        const modalInput = document.getElementById('filtro-data-palete-ender-modal');
+        if (modalInput) modalInput.value = valMain;
+        sincronizarFiltroModal();
+    }
+
+    function sincronizarFiltroModal() {
+        const val = document.getElementById('filtro-data-palete-ender-modal')?.value || '';
+        let filtrados = _DADOS_PALETE_ENDER;
+        if (val) {
+            const [y,m,d] = val.split('-');
+            const dataFmt = `${d}/${m}/${y}`;
+            filtrados = _DADOS_PALETE_ENDER.filter(r => r.dataC === dataFmt);
+        }
+        _renderTabelaEnder(filtrados, 'tbody-palete-endereco-modal', 'total-palete-ender-modal');
+    }
+
+    function resetarFiltroEnderecoModal() {
+        const el = document.getElementById('filtro-data-palete-ender-modal');
+        if (el) el.value = '';
+        _renderTabelaEnder(_DADOS_PALETE_ENDER, 'tbody-palete-endereco-modal', 'total-palete-ender-modal');
+    }
+
+    // Inicializar tabela com todos os dados ao carregar
+    document.addEventListener('DOMContentLoaded', () => {
+        _renderTabelaEnder(_DADOS_PALETE_ENDER, 'tbody-palete-endereco', 'total-palete-ender');
+    });
+    // Também garantir render quando navegar para admin
+    const _navOriginal = window.navegar;
+    if (typeof navegar === 'function') {
+        const _navRef = navegar;
+        window._posNavAdmin = function() {
+            _renderTabelaEnder(_DADOS_PALETE_ENDER, 'tbody-palete-endereco', 'total-palete-ender');
+        };
+    }
+
+window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } _renderTabelaEnder(_DADOS_PALETE_ENDER, 'tbody-palete-endereco', 'total-palete-ender'); };
  
     // SCREEN WAKE LOCK - Mantém a tela sempre ativa
     let wakeLock = null;
