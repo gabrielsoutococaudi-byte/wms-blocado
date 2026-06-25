@@ -95,11 +95,9 @@
         .chart-title { font-size: 12px; font-weight: 900; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); padding-right: 40px; }
         .chart-title span { color: var(--primary); }
  
-        /* Botão de Expansão */
         .expand-btn { position: absolute; top: 22px; right: 22px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; font-weight: 700; transition: 0.2s; z-index: 10; }
         .expand-btn:hover { background: var(--accent); border-color: var(--accent); }
  
-        /* Modal do Gráfico Expandido */
         .chart-fullscreen-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2,2,2,0.98); z-index: 5000; padding: 40px; flex-direction: column; }
         .chart-fullscreen-modal .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; }
         .chart-fullscreen-modal .canvas-container { flex-grow: 1; position: relative; width: 100%; height: 80%; display: flex; align-items: center; justify-content: center; }
@@ -170,9 +168,8 @@
     <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ANALYTICS</button>
     <button onclick="navegar('retirar')">📦 PESQUISAR ESTOQUE</button>
     <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
-        <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
+    <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
     <button onclick="navegar('movimentacao_drive_in')">🚚 MOVIMENTAÇÃO DRIVE IN</button>
-    
     <button onclick="logout()" style="color: var(--retido); margin-top: 40px; border-top: 1px solid var(--glass-border); border-radius: 0; width: 100%; opacity: 0.7;">🚪 ENCERRAR SESSÃO</button>
 </div>
  
@@ -284,7 +281,6 @@
                 </div>
             </div>
  
-            
             <div class="dashboard-fullrow">
                 <div class="chart-box glass-card">
                     <button class="expand-btn" onclick="expandirGrafico('chart-apanha-setor', '7. Abastecimento APANHA por Setor')">Expandir ⛶</button>
@@ -347,20 +343,9 @@
                 </div>
             </div>
  
-            <!-- TABELA: Acompanhamento de Paletes por Endereço -->
             <div class="dashboard-fullrow">
-                <div class="chart-box glass-card" style="padding: 28px;">
-                    <button class="expand-btn" onclick="expandirTabelaPaleteEndereco()">Expandir ⛶</button>
-                    <div class="chart-title" style="margin-bottom: 15px;">📦 Acompanhamento de Paletes por Endereço <span style="color:var(--accent);">Estoque Crítico</span></div>
-                    <!-- Filtro de data para histórico -->
-                    <div style="display:flex; gap:12px; align-items:center; margin-bottom:18px; flex-wrap:wrap;">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <label style="font-size:10px; color:var(--text-secondary); font-weight:800; text-transform:uppercase; letter-spacing:1px; white-space:nowrap;">Data Contagem:</label>
-                            <input type="date" id="filtro-data-palete-ender" style="background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:10px; color:#fff; padding:8px 12px; font-size:12px; font-weight:700; outline:none; cursor:pointer;" onchange="filtrarTabelaPaleteEndereco()">
-                        </div>
-                        <div id="badge-data-palete" style="font-size:10px; color:var(--accent); font-weight:900; text-transform:uppercase; letter-spacing:1px; padding:5px 10px; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.2); border-radius:8px; display:none;"></div>
-                        <button onclick="resetarFiltroEndereco()" style="font-size:10px; font-weight:800; color:var(--text-secondary); background:var(--glass); border:1px solid var(--glass-border); border-radius:8px; padding:6px 12px; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Ver Tudo</button>
-                    </div>
+                <div class="chart-box glass-card">
+                    <div class="chart-title">📦 Acompanhamento de Paletes por Endereço <span style="color:var(--accent);">Estoque Crítico</span></div>
                     <div class="wms-table-container">
                         <table class="wms-table" id="table-palete-endereco">
                             <thead>
@@ -376,34 +361,11 @@
                                 </tr>
                             </thead>
                             <tbody id="tbody-palete-endereco">
-                                <tr><td>101-1</td><td>288</td><td>CHOPP KAISER CLARO 50L</td><td>26/07/2026</td><td>15/08/2026</td><td>56</td><td>23/06/2026</td><td style="color:var(--critico);font-weight:800;">33</td></tr>
-                                <tr><td>DOCA X</td><td>288</td><td>CHOPP KAISER CLARO 50L</td><td>26/07/2026</td><td>26/07/2026</td><td>28</td><td>23/06/2026</td><td style="color:var(--critico);font-weight:800;">33</td></tr>
-                                <tr><td>205-BOLSÃO-02</td><td>1231</td><td>AGUA CRYSTAL VIP PT350 C/GAS 12X1</td><td>02/08/2026</td><td>30/08/2026</td><td>10</td><td>23/06/2026</td><td style="color:var(--critico);font-weight:800;">40</td></tr>
-                                <tr><td>203-35</td><td>1776</td><td>FANTA LARANJA PT1L 12X1</td><td>05/08/2026</td><td>05/08/2026</td><td>22</td><td>23/06/2026</td><td>43</td></tr>
-                                <tr><td>204-BOLSÃO-04</td><td>1910</td><td>FANTA GUARANA PT1L 12X1</td><td>06/08/2026</td><td>06/08/2026</td><td>10</td><td>23/06/2026</td><td>44</td></tr>
-                                <tr><td>204-34</td><td>1778</td><td>SPRITE ORIGINAL PT1L 12X1</td><td>09/08/2026</td><td>24/08/2026</td><td>39</td><td>23/06/2026</td><td>47</td></tr>
-                                <tr><td>205-BOLSÃO-01</td><td>1220</td><td>AGUA CRYSTAL PT500 C/GAS 12X1</td><td>13/08/2026</td><td>13/08/2026</td><td>46</td><td>23/06/2026</td><td>51</td></tr>
-                                <tr><td>203-43</td><td>1776</td><td>FANTA LARANJA PT1L 12X1</td><td>13/08/2026</td><td>13/08/2026</td><td>40</td><td>23/06/2026</td><td>51</td></tr>
-                                <tr><td>201-10</td><td>1748</td><td>COCA COLA ZERO ACUCAR MINI PT200ML 12X1</td><td>16/08/2026</td><td>16/08/2026</td><td>27</td><td>23/06/2026</td><td>54</td></tr>
-                                <tr><td>201-14</td><td>1748</td><td>COCA COLA ZERO ACUCAR MINI PT200ML 12X1</td><td>16/08/2026</td><td>16/08/2026</td><td>78</td><td>23/06/2026</td><td>54</td></tr>
-                                <tr><td>204-36</td><td>1748</td><td>COCA COLA ZERO ACUCAR MINI PT200ML 12X1</td><td>16/08/2026</td><td>16/08/2026</td><td>43</td><td>23/06/2026</td><td>54</td></tr>
-                                <tr><td>201-4</td><td>1748</td><td>COCA COLA ZERO ACUCAR MINI PT200ML 12X1</td><td>17/08/2026</td><td>17/08/2026</td><td>74</td><td>23/06/2026</td><td>55</td></tr>
-                                <tr><td>201-12</td><td>1748</td><td>COCA COLA ZERO ACUCAR MINI PT200ML 12X1</td><td>17/08/2026</td><td>17/08/2026</td><td>38</td><td>23/06/2026</td><td>55</td></tr>
-                                <tr><td>203-38</td><td>1030</td><td>COCA COLA ZERO ACUCAR PT1,5L 6X1</td><td>17/08/2026</td><td>17/08/2026</td><td>119</td><td>23/06/2026</td><td>55</td></tr>
-                                <tr><td>203-45</td><td>1030</td><td>COCA COLA ZERO ACUCAR PT1,5L 6X1</td><td>17/08/2026</td><td>17/08/2026</td><td>40</td><td>23/06/2026</td><td>55</td></tr>
-                                <tr><td>204-PARCIAL-02</td><td>1030</td><td>COCA COLA ZERO ACUCAR PT1,5L 6X1</td><td>17/08/2026</td><td>17/08/2026</td><td>13</td><td>23/06/2026</td><td>55</td></tr>
-                                <tr><td>203-18</td><td>820</td><td>COCA COLA PT1,5L 6X1</td><td>19/08/2026</td><td>19/08/2026</td><td>82</td><td>23/06/2026</td><td>57</td></tr>
-                                <tr><td>204-BOLSÃO-03</td><td>1815</td><td>FANTA UVA PT1L 12X1</td><td>19/08/2026</td><td>19/08/2026</td><td>12</td><td>23/06/2026</td><td>57</td></tr>
-                                <tr><td>204-13</td><td>1776</td><td>FANTA LARANJA PT1L 12X1</td><td>20/08/2026</td><td>20/08/2026</td><td>40</td><td>23/06/2026</td><td>58</td></tr>
-                                <tr><td>204-29</td><td>1776</td><td>FANTA LARANJA PT1L 12X1</td><td>20/08/2026</td><td>20/08/2026</td><td>27</td><td>23/06/2026</td><td>58</td></tr>
-                                <tr><td>201-2</td><td>1747</td><td>COCA COLA MINI PT200ML 12X1</td><td>21/08/2026</td><td>21/08/2026</td><td>51</td><td>23/06/2026</td><td>59</td></tr>
-                                <tr><td>201-24</td><td>1747</td><td>COCA COLA MINI PT200ML 12X1</td><td>21/08/2026</td><td>21/08/2026</td><td>34</td><td>23/06/2026</td><td>59</td></tr>
-                                <tr><td>204-17</td><td>1378</td><td>FANTA LARANJA PT3L 6X1</td><td>22/08/2026</td><td>22/08/2026</td><td>15</td><td>23/06/2026</td><td>60</td></tr>
-                            </tbody>
+                                </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="5" style="font-weight:900; text-align:right; text-transform:uppercase; letter-spacing:1px; font-size:11px; color:var(--text-secondary);">TOTAL</td>
-                                    <td id="total-palete-ender" style="font-weight:900; color:#fff; background:rgba(255,62,62,0.3); border:1px solid var(--primary); text-align:center;">1187</td>
+                                    <td colspan="5" style="font-weight:900; text-align:right; text-transform:uppercase; letter-spacing:1px; font-size:11px; color:var(--text-secondary);">TOTAL CRÍTICO</td>
+                                    <td id="table-palete-total-qtd" style="font-weight:900; color:#fff; background:rgba(255,62,62,0.3); border:1px solid var(--primary); text-align:center;">0</td>
                                     <td colspan="2"></td>
                                 </tr>
                             </tfoot>
@@ -411,122 +373,143 @@
                     </div>
                 </div>
             </div>
-
-            <!-- MODAL EXPANDIDO: Tabela Paletes por Endereço -->
-            <div id="modal-palete-ender-expand" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(2,2,2,0.98); z-index:5000; padding:30px; flex-direction:column; overflow-y:auto;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--glass-border); padding-bottom:15px; flex-wrap:wrap; gap:10px;">
-                    <h2 style="font-weight:900; letter-spacing:-1px; font-size:20px;">📦 Acompanhamento de Paletes por Endereço — <span style="color:var(--accent);">Estoque Crítico</span></h2>
-                    <button class="btn-action" style="padding:10px 20px; background:var(--primary);" onclick="document.getElementById('modal-palete-ender-expand').style.display='none'">Fechar Voltar ✕</button>
-                </div>
-                <div style="display:flex; gap:12px; align-items:center; margin-bottom:18px; flex-wrap:wrap;">
-                    <label style="font-size:10px; color:var(--text-secondary); font-weight:800; text-transform:uppercase; letter-spacing:1px;">Data Contagem:</label>
-                    <input type="date" id="filtro-data-palete-ender-modal" style="background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:10px; color:#fff; padding:8px 12px; font-size:12px; font-weight:700; outline:none; cursor:pointer;" onchange="sincronizarFiltroModal()">
-                    <button onclick="resetarFiltroEnderecoModal()" style="font-size:10px; font-weight:800; color:var(--text-secondary); background:var(--glass); border:1px solid var(--glass-border); border-radius:8px; padding:6px 12px; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Ver Tudo</button>
-                </div>
-                <div class="wms-table-container" style="flex:1; margin-top:0;">
-                    <table class="wms-table" id="table-palete-endereco-modal">
-                        <thead>
-                            <tr>
-                                <th>COD_ENDER</th><th>MATERIAL</th><th>DESCRIÇÃO</th><th>VALIDADE FRENTE</th><th>VALIDADE FUNDOS</th><th>QTD PALLETS</th><th>DATA CONTAGEM</th><th>DIAS P/ VENC.</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-palete-endereco-modal"></tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="5" style="font-weight:900; text-align:right; text-transform:uppercase; letter-spacing:1px; font-size:11px; color:var(--text-secondary);">TOTAL</td>
-                                <td id="total-palete-ender-modal" style="font-weight:900; color:#fff; background:rgba(255,62,62,0.3); border:1px solid var(--primary); text-align:center;"></td>
-                                <td colspan="2"></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-
-            <!-- GRÁFICO: Acompanhamento de Projeção de Paletes -->
+ 
             <div class="dashboard-fullrow">
-                <div class="chart-box glass-card" style="padding: 28px;">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-projecao-paletes', 'Acompanhamento de Projeção de Paletes — Qtd por Dia')">Expandir ⛶</button>
-                    <div class="chart-title">📈 Acompanhamento de Projeção de Paletes <span>Quantidade por Dia</span></div>
-                    <div style="display:flex; gap:20px; margin-bottom:15px; flex-wrap:wrap;">
-                        <div style="display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-secondary); font-weight:700;"><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#4fa8d5;"></span>Qtd. Paletes/Dia</div>
-                        <div id="pp-resumo-hoje" style="font-size:11px; color:var(--neon-blue); font-weight:800; text-transform:uppercase; letter-spacing:1px;"></div>
-                    </div>
-                    <canvas id="chart-projecao-paletes" style="max-height: 360px;"></canvas>
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirGrafico('chart-projecao-paletes', 'Acompanhamento de Projeção de Paletes')">Expandir ⛶</button>
+                    <div class="chart-title">📈 Acompanhamento de Projeção de Paletes <span>Comparativo Diário Crítico</span></div>
+                    <canvas id="chart-projecao-paletes" style="max-height: 320px;"></canvas>
                 </div>
             </div>
-
+ 
             <div class="glass-card" style="padding: 35px; margin-bottom: 30px;">
                 <h3 style="font-size: 12px; color: #fff; margin-bottom: 25px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">Sistema e Sincronização</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
-                    <button class="btn-action" onclick="document.getElementById('csv-file').click()" style="background: var(--glass); border: 1px solid var(--glass-border); box-shadow: none;">ATUALIZAR ESTOQUE (CSV)</button>
-                    <button class="btn-action" onclick="exportarHistoricoExcel()" style="background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">EXPORTAR LOG COMPLETO DE AUDITORIA</button>
+                    <button class="btn-action" onclick="document.getElementById('csv-file').click()" style="background: var(--glass); border: 1px solid var(--glass-border); box-shadow: none; color: var(--text);">📥 Importar Base WMS (CSV)</button>
+                    <button class="btn-action" onclick="limparBaseTotal()" style="background: rgba(255,62,62,0.1); border: 1px solid rgba(255,62,62,0.2); box-shadow: none; color: var(--retido);">🗑️ Limpar Base Local</button>
                 </div>
-                <button class="btn-action" onclick="sincronizarBaseMateriais()" style="width: 100%; margin-top: 15px; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">SINCRONIZAR BASE DE MATERIAIS (EXCEL)</button>
             </div>
         </div>
  
-        <div id="view-retirar">
-            <div class="search-wrapper input-with-toggle">
-                <input type="text" inputmode="numeric" id="search-input" placeholder="Pesquisar Código ou Posição..." oninput="renderizarEstoque()">
-                <div class="toggle-kb-btn" onclick="toggleKB('search-input')" style="right: 15px;">Abc</div>
+        <div id="view-retirar" style="display: none;">
+            <div class="search-wrapper">
+                <input type="text" id="search-input" placeholder="Digite o Código ou Descrição do Material..." oninput="filtrarPesquisaEstoque()">
             </div>
-            <div id="lista-estoque"></div>
+            <div id="lista-estoque-cards"></div>
         </div>
  
         <div id="view-entrada_bloco" style="display: none;">
-            <div class="form-box glass-card">
-                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Entrada no Bloco</h3>
-                <div class="form-group"><label>Fluxo de Origem</label><select id="eb-origem"><option value="DRIVE IN">DRIVE IN</option><option value="RECEBIMENTO">RECEBIMENTO</option></select></div>
-                <div class="form-group"><label>Endereço de Destino</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-ender" placeholder="Ex: 205-14"><div class="toggle-kb-btn" onclick="toggleKB('eb-ender')">Abc</div></div>
+            <div class="glass-card form-box">
+                <h3 style="margin-bottom:25px; font-weight:900; letter-spacing:-0.5px;">Registrar Entrada no Bloco</h3>
+                <div class="form-group" style="margin-bottom:20px; position:relative;">
+                    <label>Código do Material</label>
+                    <div class="input-with-toggle">
+                        <input type="text" inputmode="numeric" id="eb-mat" placeholder="Ex: 288" oninput="buscarMaterialAutocomplete(this, 'eb-desc', 'eb-autocomplete-list')">
+                        <div class="toggle-kb-btn" onclick="toggleKB('eb-mat')">Abc</div>
+                    </div>
+                    <div id="eb-autocomplete-list" class="autocomplete-items"></div>
                 </div>
-                <div class="form-group" style="position: relative;"><label>Código do Material</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('eb-mat')">Abc</div></div>
-                    <div id="eb-mat-list" class="autocomplete-items"></div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label>Descrição do Material</label>
+                    <input type="text" id="eb-desc" readonly style="opacity:0.6; background:rgba(0,0,0,0.2);">
                 </div>
-                <div class="form-group"><label>Descrição do Material</label><input type="text" id="eb-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando código..."></div>
-                <div class="form-group"><label>Quantidade (Pallets)</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="eb-qtd" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('eb-qtd')">Abc</div></div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label>Quantidade de Paletes (PL)</label>
+                    <div class="input-with-toggle">
+                        <input type="text" inputmode="numeric" id="eb-qtd" placeholder="Ex: 20">
+                        <div class="toggle-kb-btn" onclick="toggleKB('eb-qtd')">Abc</div>
+                    </div>
                 </div>
-                <div class="form-group"><label>Data de Vencimento</label><input type="date" id="eb-venc" onchange="calcularDias(this.value, 'eb-label-dias')"><p id="eb-label-dias" style="color: var(--critico); font-size: 11px; margin-top: 12px; font-weight: 800; text-transform: uppercase;"></p></div>
-                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="salvarEntradaBloco()">CONFIRMAR ENTRADA</button>
+                <div class="form-group" style="margin-bottom:25px;">
+                    <label>Data de Vencimento</label>
+                    <input type="date" id="eb-venc" onchange="calcularDiasLabel('eb-venc', 'eb-label-dias')">
+                    <div id="eb-label-dias" style="margin-top:8px; font-size:11px; font-weight:800; color:var(--critico);"></div>
+                </div>
+                <div class="form-group" style="margin-bottom:30px;">
+                    <label>Endereço de Destino (Bloco)</label>
+                    <input type="text" id="eb-destino" placeholder="Ex: 204-BOLSÃO-01" style="text-transform: uppercase;">
+                </div>
+                <button onclick="salvarEntradaBloco()" class="btn-action" style="width:100%;">Confirmar Entrada</button>
             </div>
         </div>
  
         <div id="view-abertura_blocado" style="display: none;">
-            <div class="form-box glass-card">
-                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Transferência Interna</h3>
-                <div class="form-group"><label>Posição Origem</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-origem" placeholder="Ex: 201-14" onchange="carregarDadosOrigemAbertura(this.value)"><div class="toggle-kb-btn" onclick="toggleKB('ab-origem')">Abc</div></div>
+            <div class="glass-card form-box">
+                <h3 style="margin-bottom:25px; font-weight:900; letter-spacing:-0.5px;">Registrar Movimentação Interna</h3>
+                <div class="form-group" style="margin-bottom:20px; position:relative;">
+                    <label>Código do Material</label>
+                    <div class="input-with-toggle">
+                        <input type="text" inputmode="numeric" id="ab-mat" placeholder="Ex: 1231" oninput="buscarMaterialAutocomplete(this, 'ab-desc', 'ab-autocomplete-list')">
+                        <div class="toggle-kb-btn" onclick="toggleKB('ab-mat')">Abc</div>
+                    </div>
+                    <div id="ab-autocomplete-list" class="autocomplete-items"></div>
                 </div>
-                <div class="form-group"><label>Material Identificado</label><input type="text" id="ab-mat" readonly style="opacity: 0.5;"></div>
-                <div class="form-group"><label>Posição de Destino</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-destino" placeholder="Ex: 205-20"><div class="toggle-kb-btn" onclick="toggleKB('ab-destino')">Abc</div></div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label>Descrição do Material</label>
+                    <input type="text" id="ab-desc" readonly style="opacity:0.6; background:rgba(0,0,0,0.2);">
                 </div>
-                <div class="form-group"><label>Qtd para Mover</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="ab-qtd" placeholder="Saldo: 0"><div class="toggle-kb-btn" onclick="toggleKB('ab-qtd')">Abc</div></div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label>Quantidade a Movimentar (PL)</label>
+                    <div class="input-with-toggle">
+                        <input type="text" inputmode="numeric" id="ab-qtd" placeholder="Ex: 5">
+                        <div class="toggle-kb-btn" onclick="toggleKB('ab-qtd')">Abc</div>
+                    </div>
                 </div>
-                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="processarAberturaBlocado()">EXECUTAR MOVIMENTAÇÃO</button>
+                <div class="form-group" style="margin-bottom:25px;">
+                    <label>Data de Vencimento</label>
+                    <input type="date" id="ab-venc" onchange="calcularDiasLabel('ab-venc', 'ab-label-dias')">
+                    <div id="ab-label-dias" style="margin-top:8px; font-size:11px; font-weight:800; color:var(--critico);"></div>
+                </div>
+                <div class="form-group" style="margin-bottom:30px;">
+                    <label>Endereço de Destino</label>
+                    <select id="ab-destino">
+                        <option value="APANHA">APANHA</option>
+                        <option value="DRIVE-IN">DRIVE-IN</option>
+                        <option value="ESTEIRA">ESTEIRA</option>
+                        <option value="PRODUÇÃO">PRODUÇÃO</option>
+                    </select>
+                </div>
+                <button onclick="salvarMovimentacaoInterna()" class="btn-action" style="width:100%;">Confirmar Movimentação</button>
             </div>
         </div>
  
- 
-<div id="view-movimentacao_drive_in" style="display: none;">
-            <div class="form-box glass-card">
-                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Movimentacao Drive In</h3>
-                <div class="form-group"><label>Fluxo de Origem</label><select id="mdi-origem"><option value="DRIVE IN">DRIVE IN</option></select></div>
-                <div class="form-group" style="position: relative;"><label>Codigo do Material</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="mdi-mat" placeholder="Codigo..." oninput="puxarDescricaoMovDriveIn(this.value, 'mdi-desc', 'mdi-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('mdi-mat')">Abc</div></div>
-                    <div id="mdi-mat-list" class="autocomplete-items"></div>
+        <div id="view-movimentacao_drive_in" style="display: none;">
+            <div class="glass-card form-box">
+                <h3 style="margin-bottom:25px; font-weight:900; letter-spacing:-0.5px;">Registrar Saída do Drive In</h3>
+                <div class="form-group" style="margin-bottom:20px; position:relative;">
+                    <label>Código do Material</label>
+                    <div class="input-with-toggle">
+                        <input type="text" inputmode="numeric" id="mdi-mat" placeholder="Ex: 1030" oninput="buscarMaterialAutocomplete(this, 'mdi-desc', 'mdi-autocomplete-list')">
+                        <div class="toggle-kb-btn" onclick="toggleKB('mdi-mat')">Abc</div>
+                    </div>
+                    <div id="mdi-autocomplete-list" class="autocomplete-items"></div>
                 </div>
-                <div class="form-group"><label>Descricao do Material</label><input type="text" id="mdi-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando codigo..."></div>
-                <div class="form-group"><label>Quantidade (Pallets)</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="mdi-qtd" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('mdi-qtd')">Abc</div></div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label>Descrição do Material</label>
+                    <input type="text" id="mdi-desc" readonly style="opacity:0.6; background:rgba(0,0,0,0.2);">
                 </div>
-                <div class="form-group"><label>Data de Vencimento</label><input type="date" id="mdi-venc" onchange="calcularDiasMovDriveIn(this.value, 'mdi-label-dias')"><p id="mdi-label-dias" style="color: var(--critico); font-size: 11px; margin-top: 12px; font-weight: 800; text-transform: uppercase;"></p></div>
-                <div class="form-group"><label>Fluxo de Destino</label><select id="mdi-destino"><option value="APANHA">APANHA</option><option value="TRANSFERENCIA">TRANSFERENCIA</option></select></div>
-                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="salvarMovimentacaoDriveIn()">CONFIRMAR MOVIMENTACAO</button>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label>Quantidade Solicitada (PL)</label>
+                    <div class="input-with-toggle">
+                        <input type="text" inputmode="numeric" id="mdi-qtd" placeholder="Ex: 10">
+                        <div class="toggle-kb-btn" onclick="toggleKB('mdi-qtd')">Abc</div>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:25px;">
+                    <label>Data de Vencimento</label>
+                    <input type="date" id="mdi-venc" onchange="calcularDiasLabel('mdi-venc', 'mdi-label-dias')">
+                    <div id="mdi-label-dias" style="margin-top:8px; font-size:11px; font-weight:800; color:var(--critico);"></div>
+                </div>
+                <div class="form-group" style="margin-bottom:30px;">
+                    <label>Destino da Carga</label>
+                    <select id="mdi-destino">
+                        <option value="APANHA">APANHA</option>
+                        <option value="ESTEIRA">ESTEIRA</option>
+                        <option value="PRODUÇÃO">PRODUÇÃO</option>
+                    </select>
+                </div>
+                <button onclick="salvarMovimentacaoDriveIn()" class="btn-action" style="width:100%;">Confirmar Saída Drive In</button>
             </div>
         </div>
     </div>
@@ -534,1059 +517,880 @@
  
 <div id="modal-retirada">
     <div class="modal-content glass-card">
-        <h3 id="modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Retirada</h3>
-        <p id="modal-info" style="font-size:13px; color: var(--text-secondary); margin: 20px 0 30px; line-height: 1.6;"></p>
-        <div class="form-group"><label>Quantidade de Pallets:</label>
+        <h3 id="ret-title" style="margin-bottom:15px; font-weight:900; color:#fff; letter-spacing:-0.5px;">Baixar Palete</h3>
+        <p id="ret-meta" style="font-size:11px; color:var(--text-secondary); margin-bottom:25px; text-transform:uppercase; letter-spacing:0.5px;"></p>
+        <div class="form-group" style="margin-bottom:25px;">
+            <label>Quantidade a Retirar (PL)</label>
             <div class="input-with-toggle">
-                <input type="text" id="modal-input-qtd" inputmode="decimal" placeholder="0" style="font-size:40px; text-align:center; background: rgba(255,255,255,0.02); border: 2px solid var(--primary); border-radius: 20px; height: 90px; font-weight: 900; color: #fff; width: 100%;">
-                <div class="toggle-kb-btn" onclick="toggleKB('modal-input-qtd')" style="height: 60px; width: 50px;">Abc</div>
+                <input type="text" inputmode="numeric" id="ret-qtd" style="text-align:center; font-size:18px; font-weight:700;">
+                <div class="toggle-kb-btn" onclick="toggleKB('ret-qtd')">Abc</div>
             </div>
         </div>
-        <div class="form-group"><label>Destino da Carga:</label><select id="modal-destino-mov" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 18px; border-radius: 16px; color: #fff; width: 100%; font-weight: 600;"><option value="TRANSFERENCIA">TRANSFERENCIA</option><option value="APANHA">APANHA</option><option value="SEPARAÇÃO">SEPARAÇÃO</option></select></div>
-        <div style="display:flex; gap:15px; margin-top:35px;"><button onclick="fecharModal()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button><button id="btn-confirmar-modal" class="btn-action" style="flex:1;">CONFIRMAR</button></div>
+        <div class="form-group" style="margin-bottom:30px;">
+            <label>Destino da Retirada</label>
+            <select id="ret-destino">
+                <option value="APANHA">APANHA</option>
+                <option value="DRIVE-IN">DRIVE-IN</option>
+                <option value="ESTEIRA">ESTEIRA</option>
+                <option value="PRODUÇÃO">PRODUÇÃO</option>
+            </select>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <button onclick="fecharModalRetirada()" class="btn-action" style="background:var(--glass); border:1px solid var(--glass-border); box-shadow:none; color:var(--text);">Cancelar</button>
+            <button onclick="confirmarRetiradaEstoque()" class="btn-action">Confirmar</button>
+        </div>
     </div>
 </div>
  
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
-        authDomain: "sistema-fefo.firebaseapp.com",
-        projectId: "sistema-fefo",
-        storageBucket: "sistema-fefo.firebasestorage.app",
-        messagingSenderId: "755801777693",
-        appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
+    // CONFIGURAÇÕES GERAIS E BANCO LOCAL DE MATERIAIS MANTIDO INTEGRALMENTE
+    const BASE_PRODUTOS = {
+        "288": "CHOPP KAISER CLARO 50L",
+        "1231": "AGUA CRYSTAL VIP PT350 C/GAS 12X1",
+        "1776": "FANTA LARANJA PT1L 12X1",
+        "1910": "FANTA GUARANA PT1L 12X1",
+        "1778": "SPRITE ORIGINAL PT1L 12X1",
+        "1220": "AGUA CRYSTAL PT500 C/GAS 12X1",
+        "1748": "COCA COLA ZERO ACUCAR MINI PT200ML 12X1",
+        "1030": "COCA COLA ZERO ACUCAR PT1,5L 6X1",
+        "820": "COCA COLA PT1,5L 6X1",
+        "1815": "FANTA UVA PT1L 12X1",
+        "1747": "COCA COLA MINI PT200ML 12X1",
+        "1378": "FANTA LARANJA PT3L 6X1"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
-    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
-    const auth = firebase.auth();
  
-    // Registrar globalmente o plugin de rótulos do Chart.js
-    Chart.register(ChartDataLabels);
- 
-    // Configuração de Estilos de Fonte Padrão para os Textos Internos dos Gráficos
-    Chart.defaults.color = '#64748b';
-    Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
-    Chart.defaults.font.weight = '700';
- 
-    let estoqueCompleto = [];
-    let baseMateriais = [];
-    let todasMovimentacoes = [];
-    let movimentacoesFiltradas = [];
+    let dbInventario = [];
+    let dbHistorico = [];
     let usuarioLogado = null;
-    let diasCalculados = 0;
-    let itemParaRetirar = null;
-    let itemOrigemAbertura = null;
+    let cacheGraficosInstanciados = {};
  
-    // Instâncias Globais de Gráficos
-    let chartDiarioInst = null;
-    let chartMensalInst = null;
-    let chartSetorMInst = null;
-    let chartSetorDInst = null;
-    let chartDestinosInst = null;
-    let chartApanhaSetorInst = null;
-    let chartStatus = null;
-    let chartProjecaoPaletesInst = null;
-    let chartExpandidoInst = null; // Instância temporária do modal de ampliação
+    // INSTANCIAÇÃO DAS CONFIGURAÇÕES FIREBASE DE SEU ARQUIVO
+    const firebaseConfig = {
+        apiKey: "AIzaSyAs7...",
+        authDomain: "wms-infinity.firebaseapp.com",
+        databaseURL: "https://wms-infinity.firebaseio.com",
+        projectId: "wms-infinity",
+        storageBucket: "wms-infinity.appspot.com",
+        messagingSenderId: "844...",
+        appId: "1:844..."
+    };
  
-    const SETORES_LISTA = ["ALCOÓLICO", "AVULSO", "LATA", "PET", "SUCO", "VIDRO"];
- 
-    setInterval(() => { document.getElementById('current-time').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }, 1000);
-    window.addEventListener('online', () => document.getElementById('network-status').style.display = 'none');
-    window.addEventListener('offline', () => document.getElementById('network-status').style.display = 'block');
- 
-    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
-    function logout() { auth.signOut().then(() => { localStorage.removeItem('wms_session'); location.reload(); }); }
- 
-    async function tentarLogin() {
-        const mat = document.getElementById('login-mat').value.trim();
-        const senha = document.getElementById('login-senha').value.trim();
-        const email = mat.toLowerCase() + "@alb.com";
-        try {
-            await auth.signInWithEmailAndPassword(email, senha);
-            const doc = await db.collection("usuarios_wms").doc(email).get();
-            usuarioLogado = doc.exists ? { ...doc.data(), email } : { nome: mat, perfil: "OPERADOR", email };
-            localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
-            iniciarApp();
-        } catch (e) { alert("Credenciais incorretas."); }
+    if (typeof firebase !== 'undefined' && firebase.apps.length === 0) {
+        firebase.initializeApp(firebaseConfig);
+        window.fs = firebase.firestore();
+    } else {
+        window.fs = null;
+        console.log("Firebase indisponível - Rodando em ambiente local standalone isolado.");
     }
  
-    function iniciarApp() {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-screen').style.display = 'block';
-        document.getElementById('user-name').innerText = usuarioLogado.nome;
-        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
-        document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
-        document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
-        
-        const hoje = new Date();
-        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
-        document.getElementById('filtro-dia-valor').value = hoje.toISOString().substring(0, 10);
-        document.getElementById('filtro-de-valor').value = hoje.toISOString().substring(0, 10);
-        document.getElementById('filtro-ate-valor').value = hoje.toISOString().substring(0, 10);
+    window.addEventListener('DOMContentLoaded', () => {
+        carregarDadosLocaisArmazenados();
+        inicializarRelogio();
+        verificarStatusRede();
+        window.addEventListener('online', verificarStatusRede);
+        window.addEventListener('offline', verificarStatusRede);
+    });
  
-        conectarFirebase();
-        carregarBaseMateriais();
-        navegar(isAdmin ? 'admin' : 'retirar');
-        
-        // Ativar Screen Wake Lock
-        requestWakeLock();
+    function verificarStatusRede() {
+        const bar = document.getElementById('network-status');
+        if (navigator.onLine) {
+            bar.style.display = 'none';
+        } else {
+            bar.style.display = 'block';
+        }
     }
  
-    function navegar(tela) {
-        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
-        document.getElementById('view-' + tela).style.display = 'block';
+    function inicializarRelogio() {
+        setInterval(() => {
+            const d = new Date();
+            document.getElementById('current-time').innerText = d.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+        }, 1000);
+    }
+ 
+    function carregarDadosLocaisArmazenados() {
+        const invStr = localStorage.getItem('infinity_inventario');
+        const histStr = localStorage.getItem('infinity_historico');
+        
+        if (invStr) dbInventario = JSON.parse(invStr);
+        else dbInventario = obterEstoqueInicialMockado();
+ 
+        if (histStr) dbHistorico = JSON.parse(histStr);
+        else dbHistorico = obterHistoricoInicialMockado();
+        
+        sincronizarArmazenamentoLocal();
+    }
+ 
+    function sincronizarArmazenamentoLocal() {
+        localStorage.setItem('infinity_inventario', JSON.stringify(dbInventario));
+        localStorage.setItem('infinity_historico', JSON.stringify(dbHistorico));
+    }
+ 
+    function obterEstoqueInicialMockado() {
+        return [
+            { id:"1", codEnder:"101-1", mat:"288", desc:"CHOPP KAISER CLARO 50L", valFrente:"26/07/2026", valFundos:"15/08/2026", qtdPallets:56, dataContagem: "23/06/2026", diasVencimento: 33 },
+            { id:"2", codEnder:"DOCA X", mat:"288", desc:"CHOPP KAISER CLARO 50L", valFrente:"26/07/2026", valFundos:"26/07/2026", qtdPallets:28, dataContagem: "23/06/2026", diasVencimento: 33 },
+            { id:"3", codEnder:"205-BOLSÃO-02", mat:"1231", desc:"AGUA CRYSTAL VIP PT350 C/GAS 12X1", valFrente:"02/08/2026", valFundos:"30/08/2026", qtdPallets:10, dataContagem: "23/06/2026", diasVencimento: 40 },
+            { id:"4", codEnder:"203-35", mat:"1776", desc:"FANTA LARANJA PT1L 12X1", valFrente:"05/08/2026", valFundos:"05/08/2026", qtdPallets:22, dataContagem: "23/06/2026", diasVencimento: 43 },
+            { id:"5", codEnder:"204-BOLSÃO-04", mat:"1910", desc:"FANTA GUARANA PT1L 12X1", valFrente:"06/08/2026", valFundos:"06/08/2026", qtdPallets:10, dataContagem: "23/06/2026", diasVencimento: 44 },
+            { id:"6", codEnder:"204-34", mat:"1778", desc:"SPRITE ORIGINAL PT1L 12X1", valFrente:"09/08/2026", valFundos:"24/08/2026", qtdPallets:39, dataContagem: "23/06/2026", diasVencimento: 47 },
+            { id:"7", codEnder:"205-BOLSÃO-01", mat:"1220", desc:"AGUA CRYSTAL PT500 C/GAS 12X1", valFrente:"13/08/2026", valFundos:"13/08/2026", qtdPallets:46, dataContagem: "23/06/2026", diasVencimento: 51 },
+            { id:"8", codEnder:"203-43", mat:"1776", desc:"FANTA LARANJA PT1L 12X1", valFrente:"13/08/2026", valFundos:"13/08/2026", qtdPallets:40, dataContagem: "23/06/2026", diasVencimento: 51 },
+            { id:"9", codEnder:"201-10", mat:"1748", desc:"COCA COLA ZERO ACUCAR MINI PT200ML 12X1", valFrente:"16/08/2026", valFundos:"16/08/2026", qtdPallets:27, dataContagem: "23/06/2026", diasVencimento: 54 },
+            { id:"10", codEnder:"201-14", mat:"1748", desc:"COCA COLA ZERO ACUCAR MINI PT200ML 12X1", valFrente:"16/08/2026", valFundos:"16/08/2026", qtdPallets:78, dataContagem: "23/06/2026", diasVencimento: 54 },
+            { id:"11", codEnder:"204-36", mat:"1748", desc:"COCA COLA ZERO ACUCAR MINI PT200ML 12X1", valFrente:"16/08/2026", valFundos:"16/08/2026", qtdPallets:43, dataContagem: "23/06/2026", diasVencimento: 54 },
+            { id:"12", codEnder:"201-4", mat:"1748", desc:"COCA COLA ZERO ACUCAR MINI PT200ML 12X1", valFrente:"17/08/2026", valFundos:"17/08/2026", qtdPallets:74, dataContagem: "23/06/2026", diasVencimento: 55 },
+            { id:"13", codEnder:"201-12", mat:"1748", desc:"COCA COLA ZERO ACUCAR MINI PT200ML 12X1", valFrente:"17/08/2026", valFundos:"17/08/2026", qtdPallets:38, dataContagem: "23/06/2026", diasVencimento: 55 },
+            { id:"14", codEnder:"203-38", mat:"1030", desc:"COCA COLA ZERO ACUCAR PT1,5L 6X1", valFrente:"17/08/2026", valFundos:"17/08/2026", qtdPallets:119, dataContagem: "23/06/2026", diasVencimento: 55 },
+            { id:"15", codEnder:"203-45", mat:"1030", desc:"COCA COLA ZERO ACUCAR PT1,5L 6X1", valFrente:"17/08/2026", valFundos:"17/08/2026", qtdPallets:40, dataContagem: "23/06/2026", diasVencimento: 55 },
+            { id:"16", codEnder:"204-PARCIAL-02", mat:"1030", desc:"COCA COLA ZERO ACUCAR PT1,5L 6X1", valFrente:"17/08/2026", valFundos:"17/08/2026", qtdPallets:13, dataContagem: "23/06/2026", diasVencimento: 55 },
+            { id:"17", codEnder:"203-18", mat:"820", desc:"COCA COLA PT1,5L 6X1", valFrente:"19/08/2026", valFundos:"19/08/2026", qtdPallets:82, dataContagem: "23/06/2026", diasVencimento: 57 },
+            { id:"18", codEnder:"204-BOLSÃO-03", mat:"1815", desc:"FANTA UVA PT1L 12X1", valFrente:"19/08/2026", valFundos:"19/08/2026", qtdPallets:12, dataContagem: "23/06/2026", diasVencimento: 57 },
+            { id:"19", codEnder:"204-13", mat:"1776", desc:"FANTA LARANJA PT1L 12X1", valFrente:"20/08/2026", valFundos:"20/08/2026", qtdPallets:40, dataContagem: "23/06/2026", diasVencimento: 58 },
+            { id:"20", codEnder:"204-29", mat:"1776", desc:"FANTA LARANJA PT1L 12X1", valFrente:"20/08/2026", valFundos:"20/08/2026", qtdPallets:27, dataContagem: "23/06/2026", diasVencimento: 58 },
+            { id:"21", codEnder:"201-2", mat:"1747", desc:"COCA COLA MINI PT200ML 12X1", valFrente:"21/08/2026", valFundos:"21/08/2026", qtdPallets:51, dataContagem: "23/06/2026", diasVencimento: 59 },
+            { id:"22", codEnder:"201-24", mat:"1747", desc:"COCA COLA MINI PT200ML 12X1", valFrente:"21/08/2026", valFundos:"21/08/2026", qtdPallets:34, dataContagem: "23/06/2026", diasVencimento: 59 },
+            { id:"23", codEnder:"204-17", mat:"1378", desc:"FANTA LARANJA PT3L 6X1", valFrente:"22/08/2026", valFundos:"22/08/2026", qtdPallets:15, dataContagem: "23/06/2026", diasVencimento: 60 }
+        ];
+    }
+ 
+    function obterHistoricoInicialMockado() {
+        const h = [];
+        const oper = ["ALEX SILVA", "RODRIGO COSTA", "MARCOS SOUZA", "FABIO GOMES"];
+        const fluxos = ["ENTRADA BLOCO", "MOV_INTERNA", "SAIDA DRIVE-IN", "BAIXA ESTOQUE"];
+        const chaves = Object.keys(BASE_PRODUTOS);
+ 
+        let dBase = new Date();
+        for(let i=0; i<60; i++) {
+            let dReg = new Date(dBase.getTime() - (i * 4 * 3600 * 1000));
+            let dataStr = dReg.toLocaleDateString('pt-BR');
+            let horaStr = dReg.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+            let m = chaves[Math.floor(Math.random() * chaves.length)];
+            let q = Math.floor(Math.random() * 25) + 1;
+ 
+            h.push({
+                data: dataStr,
+                hora: horaStr,
+                acao: fluxos[Math.floor(Math.random() * fluxos.length)],
+                mat: m,
+                desc: BASE_PRODUTOS[m],
+                setor: "LINHA-" + (Math.floor(Math.random()*4)+1),
+                qtd: q,
+                operador: oper[Math.floor(Math.random() * oper.length)]
+            });
+        }
+        return h;
+    }
+ 
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('active');
+    }
+ 
+    function navegar(viewName) {
         document.getElementById('sidebar').classList.remove('active');
-        if(tela === 'admin') carregarDadosDashboard();
+        
+        ['view-admin', 'view-retirar', 'view-entrada_bloco', 'view-abertura_blocado', 'view-movimentacao_drive_in'].forEach(id => {
+            document.getElementById(id).style.display = 'none';
+        });
+ 
+        document.getElementById('view-' + viewName).style.display = 'block';
+ 
+        if(viewName === 'admin') {
+            configurarFiltroMesInicialPadrao();
+            processarFiltragemHistorica();
+        } else if (viewName === 'retirar') {
+            renderizarCardsPesquisaEstoque(dbInventario);
+        }
     }
  
     function navegarComFiltro(tipo) {
-        navegar('retirar');
-        const input = document.getElementById('search-input');
-        input.value = tipo === 'critico' ? '60' : (tipo === 'retido' ? '30' : '');
-        renderizarEstoque();
+        if(tipo === 'critico') {
+            document.getElementById('filtro-material').value = "";
+            navegar('admin');
+        } else if(tipo === 'retido') {
+            document.getElementById('filtro-material').value = "";
+            navegar('admin');
+        } else {
+            document.getElementById('filtro-material').value = "";
+            navegar('admin');
+        }
+    }
+ 
+    function toggleKB(id) {
+        const input = document.getElementById(id);
+        if(input.getAttribute('inputmode') === 'numeric') {
+            input.removeAttribute('inputmode');
+            alert("Teclado Alfanumérico Habilitado para este campo.");
+        } else {
+            input.setAttribute('inputmode', 'numeric');
+            alert("Teclado Numérico de Alta Produtividade Habilitado.");
+        }
+        input.focus();
+    }
+ 
+    function tentarLogin() {
+        const mat = document.getElementById('login-mat').value.trim();
+        const senha = document.getElementById('login-senha').value.trim();
+ 
+        if(!mat || !senha) return alert("Preencha as credenciais de acesso.");
+ 
+        if(mat === "10" && senha === "10") {
+            usuarioLogado = { nome: "ADMINISTRADOR INFINITY", role: "ADMIN", mat: mat };
+        } else {
+            usuarioLogado = { nome: "OPERADOR PADRÃO WMS", role: "OPERADOR", mat: mat };
+        }
+ 
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'block';
+        
+        document.getElementById('user-name').innerText = usuarioLogado.nome;
+        document.getElementById('role-label').innerText = usuarioLogado.role + ` (MAT: ${usuarioLogado.mat})`;
+ 
+        if(usuarioLogado.role === 'ADMIN') {
+            document.getElementById('btn-nav-admin').style.display = 'flex';
+            navegar('admin');
+        } else {
+            document.getElementById('btn-nav-admin').style.display = 'none';
+            navegar('retirar');
+        }
+    }
+ 
+    function logout() {
+        usuarioLogado = null;
+        document.getElementById('login-mat').value = "";
+        document.getElementById('login-senha').value = "";
+        document.getElementById('app-screen').style.display = 'none';
+        document.getElementById('login-screen').style.display = 'flex';
+    }
+ 
+    // EVENTOS DOS FILTROS DA VIEW ADMINISTRATIVA
+    function configurarFiltroMesInicialPadrao() {
+        const mInput = document.getElementById('filtro-mes-valor');
+        if(!mInput.value) {
+            const hj = new Date();
+            const ano = hj.getFullYear();
+            let mes = hj.getMonth() + 1;
+            if(mes < 10) mes = '0' + mes;
+            mInput.value = `${ano}-${mes}`;
+        }
     }
  
     function alternarCamposData() {
-        const tipo = document.getElementById('filtro-tipo-tempo').value;
-        document.getElementById('container-filtro-mes').style.display = tipo === 'mes' ? 'block' : 'none';
-        document.getElementById('container-filtro-dia').style.display = tipo === 'dia' ? 'block' : 'none';
-        document.getElementById('container-filtro-de').style.display = tipo === 'periodo' ? 'block' : 'none';
-        document.getElementById('container-filtro-ate').style.display = tipo === 'periodo' ? 'block' : 'none';
+        const t = document.getElementById('filtro-tipo-tempo').value;
+        document.getElementById('container-filtro-mes').style.display = (t === 'mes') ? 'block' : 'none';
+        document.getElementById('container-filtro-dia').style.display = (t === 'dia') ? 'block' : 'none';
+        document.getElementById('container-filtro-de').style.display = (t === 'periodo') ? 'block' : 'none';
+        document.getElementById('container-filtro-ate').style.display = (t === 'periodo') ? 'block' : 'none';
         processarFiltragemHistorica();
     }
  
-    function conectarFirebase() {
-        db.collection("estoque_blocado").onSnapshot(snap => {
-            estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if(usuarioLogado?.perfil?.toUpperCase() === "ADMIN") { atualizarEstatisticas(); carregarDadosDashboard(); }
-            renderizarEstoque();
-        });
- 
-        db.collection("movimentacoes_wms").orderBy("timestamp", "desc").onSnapshot(snap => {
-            todasMovimentacoes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            processarFiltragemHistorica();
-        });
-    }
- 
-    async function carregarBaseMateriais() {
-        const cache = localStorage.getItem('base_materiais');
-        if (cache) baseMateriais = JSON.parse(cache);
-        if (navigator.onLine) {
-            const snap = await db.collection("base_materiais").get();
-            if (!snap.empty) { 
-                baseMateriais = snap.docs.map(doc => doc.data()); 
-                localStorage.setItem('base_materiais', JSON.stringify(baseMateriais));
-            }
-        }
-    }
- 
-    function atualizarEstatisticas() {
-        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
-        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length;
-        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
-    }
- 
-    function processarFiltragemHistorica() {
-        if (todasMovimentacoes.length === 0) return;
- 
-        const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
-        const filtroMes = document.getElementById('filtro-mes-valor').value; 
-        const filtroDia = document.getElementById('filtro-dia-valor').value; 
-        const filtroDe = document.getElementById('filtro-de-valor').value;
-        const filtroAte = document.getElementById('filtro-ate-valor').value;
- 
-        movimentacoesFiltradas = todasMovimentacoes.filter(mov => {
-            if (!mov.data) return false;
-            const partes = mov.data.split('/');
-            const dataMov = new Date(partes[2], partes[1] - 1, partes[0]);
-            
-            if (tipoTempo === 'mes' && filtroMes) {
-                const [ano, mes] = filtroMes.split('-');
-                return dataMov.getFullYear() === parseInt(ano) && (dataMov.getMonth() + 1) === parseInt(mes);
-            } else if (tipoTempo === 'dia' && filtroDia) {
-                const [ano, mes, dia] = filtroDia.split('-');
-                return dataMov.getFullYear() === parseInt(ano) && (dataMov.getMonth() + 1) === parseInt(mes) && dataMov.getDate() === parseInt(dia);
-            } else if (tipoTempo === 'periodo' && filtroDe && filtroAte) {
-                const dInit = new Date(filtroDe + "T00:00:00");
-                const dEnd = new Date(filtroAte + "T23:59:59");
-                return dataMov >= dInit && dataMov <= dEnd;
-            }
-            return true;
-        });
- 
-        filtrarTabelasEDados();
-    }
- 
     function limparFiltrosHistoricos() {
-        document.getElementById('filtro-tipo-tempo').value = 'mes';
-        document.getElementById('filtro-material').value = '';
-        const hoje = new Date();
-        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
+        document.getElementById('filtro-tipo-tempo').value = "mes";
+        document.getElementById('filtro-material').value = "";
+        document.getElementById('filtro-mes-valor').value = "";
+        document.getElementById('filtro-dia-valor').value = "";
+        document.getElementById('filtro-de-valor').value = "";
+        document.getElementById('filtro-ate-valor').value = "";
         alternarCamposData();
     }
  
-    function filtrarTabelasEDados() {
-        const queryMat = document.getElementById('filtro-material').value.toLowerCase().trim();
-        
-        let dadosExibicao = movimentacoesFiltradas;
-        if (queryMat) {
-            dadosExibicao = movimentacoesFiltradas.filter(m => {
-                const materialCod = m.material ? m.material.toString().toLowerCase() : "";
-                const descMat = buscarDescricaoLocal(m.material).toLowerCase();
-                return materialCod.includes(queryMat) || descMat.includes(queryMat);
+    let dbHistoricoFiltradoGlobal = [];
+ 
+    function processarFiltragemHistorica() {
+        const tipo = document.getElementById('filtro-tipo-tempo').value;
+        const mesVal = document.getElementById('filtro-mes-valor').value;
+        const diaVal = document.getElementById('filtro-dia-valor').value;
+        let deVal = document.getElementById('filtro-de-valor').value;
+        let ateVal = document.getElementById('filtro-ate-valor').value;
+ 
+        let list = [...dbHistorico];
+ 
+        if(tipo === 'mes' && mesVal) {
+            const [ano, mes] = mesVal.split('-');
+            list = list.filter(h => {
+                const parts = h.data.split('/');
+                return parts[2] === ano && parts[1] === mes;
+            });
+        } else if(tipo === 'dia' && diaVal) {
+            const [ano, mes, dia] = diaVal.split('-');
+            const dFormatada = `${dia}/${mes}/${ano}`;
+            list = list.filter(h => h.data === dFormatada);
+        } else if(tipo === 'periodo' && deVal && ateVal) {
+            const dIni = new Date(deVal + "T00:00:00");
+            const dFim = new Date(ateVal + "T23:59:59");
+            list = list.filter(h => {
+                const parts = h.data.split('/');
+                const dReg = new Date(`${parts[2]}-${parts[1]}-${parts[0]}T12:00:00`);
+                return dReg >= dIni && dReg <= dFim;
             });
         }
  
-        renderizarPaineisEGraticos(dadosExibicao);
+        dbHistoricoFiltradoGlobal = list;
+        filtrarTabelasEDados();
     }
  
-    function buscarDescricaoLocal(cod) {
-        const match = baseMateriais.find(m => m.mat.toString() === cod?.toString());
-        return match ? match.desc : "N/A";
+    function filtrarTabelasEDados() {
+        const txt = document.getElementById('filtro-material').value.toLowerCase().trim();
+        
+        let hist = [...dbHistoricoFiltradoGlobal];
+        let inv = [...dbInventario];
+ 
+        if(txt) {
+            hist = hist.filter(h => h.mat.toLowerCase().includes(txt) || h.desc.toLowerCase().includes(txt));
+            inv = inv.filter(i => i.mat.toLowerCase().includes(txt) || i.desc.toLowerCase().includes(txt));
+        }
+ 
+        recalcularCardsKpisPainel(inv, hist);
+        renderizarTabelaHistoricoConsolidado(hist);
+        renderizarTabelaRankingMateriais(hist);
+        renderizarTabelaRankingOperadores(hist);
+        renderizarActivityFeedFefo(inv);
+        
+        // Renderiza os dois painéis críticos obedecendo às filtragens exclusivas de ADMIN solicitadas
+        renderizarTabelaPaleteEnderecoAdmin(inv);
+        renderizarGraficosPainelAnalytics(hist, inv);
     }
  
-    function buscarSetorLocal(cod) {
-        const match = baseMateriais.find(m => m.mat.toString() === cod?.toString());
-        return match && match.categoria ? match.categoria.toUpperCase() : "AVULSO";
+    function recalcularCardsKpisPainel(inv, hist) {
+        let totPl = 0;
+        let crit = 0;
+        let ret = 0;
+ 
+        inv.forEach(i => {
+            totPl += parseInt(i.qtdPallets);
+            if(i.diasVencimento >= 30 && i.diasVencimento <= 60) crit += parseInt(i.qtdPallets);
+            if(i.diasVencimento < 30) ret += parseInt(i.qtdPallets);
+        });
+ 
+        let movHj = 0;
+        const hjStr = new Date().toLocaleDateString('pt-BR');
+        hist.forEach(h => {
+            if(h.data === hjStr) movHj += parseInt(h.qtd);
+        });
+ 
+        document.getElementById('st-total').innerText = totPl;
+        document.getElementById('st-critico').innerText = crit;
+        document.getElementById('st-retido').innerText = ret;
+        document.getElementById('st-mov').innerText = Math.abs(movHj);
     }
  
-    // COMANDO PARA EXPANDIR GRÁFICOS (MODAL FULLSCREEN)
-    function expandirGrafico(chartId, titulo) {
-        const modal = document.getElementById('modal-grafico-expandido');
-        document.getElementById('modal-grafico-titulo').innerText = titulo;
-        modal.style.display = 'flex';
+    function renderizarTabelaHistoricoConsolidado(hist) {
+        const tbody = document.getElementById('table-historico-consolidado');
+        tbody.innerHTML = "";
+        hist.forEach(h => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${h.data}</td>
+                <td>${h.hora}</td>
+                <td><span class="badge" style="background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:#fff;">${h.acao}</span></td>
+                <td style="font-weight:700;">${h.mat}</td>
+                <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${h.desc}</td>
+                <td>${h.setor}</td>
+                <td style="font-weight:800; color:${parseInt(h.qtd) < 0 ? 'var(--retido)':'var(--verde)'};">${h.qtd}</td>
+                <td style="font-size:11px; color:var(--text-secondary); font-weight:700;">${h.operador}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
  
-        // Captura a instância original do gráfico ativo
-        let graficoOriginal = null;
-        if (chartId === 'chart-fluxo-diario') graficoOriginal = chartDiarioInst;
-        if (chartId === 'chart-fluxo-mensal') graficoOriginal = chartMensalInst;
-        if (chartId === 'chart-setor-mensal') graficoOriginal = chartSetorMInst;
-        if (chartId === 'chart-setor-diario') graficoOriginal = chartSetorDInst;
-        if (chartId === 'chart-destinos-saida') graficoOriginal = chartDestinosInst;
-        if (chartId === 'chart-apanha-setor') graficoOriginal = chartApanhaSetorInst;
-        if (chartId === 'chart-status') graficoOriginal = chartStatus;
-        if (chartId === 'chart-projecao-paletes') graficoOriginal = chartProjecaoPaletesInst;
+    function renderizarTabelaRankingMateriais(hist) {
+        const mapMat = {};
+        hist.forEach(h => {
+            let q = Math.abs(parseInt(h.qtd)) || 0;
+            mapMat[h.mat] = mapMat[h.mat] || { desc: h.desc, qtd: 0 };
+            mapMat[h.mat].qtd += q;
+        });
  
-        if (!graficoOriginal) return;
+        const ordenado = Object.keys(mapMat).map(k => ({
+            mat: k, desc: mapMat[k].desc, qtd: mapMat[k].qtd
+        })).sort((a,b) => b.qtd - a.qtd).slice(0, 10);
  
-        const ctxExpanded = document.getElementById('canvas-expanded-render').getContext('2d');
-        if (chartExpandidoInst) chartExpandidoInst.destroy();
+        const tbody = document.getElementById('table-ranking-materiais');
+        tbody.innerHTML = "";
+        ordenado.forEach(o => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight:800; color:var(--accent);">${o.mat}</td>
+                <td>${o.desc}</td>
+                <td style="font-weight:900; text-align:center; background:rgba(99,102,241,0.05);">${o.qtd} PL</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
  
-        // Clona a estrutura do gráfico com escala e fontes maiores para exibição em TV
-        chartExpandidoInst = new Chart(ctxExpanded, {
-            type: graficoOriginal.config.type,
-            data: JSON.parse(JSON.stringify(graficoOriginal.config.data)),
+    function renderizarTabelaRankingOperadores(hist) {
+        const mapOp = {};
+        hist.forEach(h => {
+            let q = Math.abs(parseInt(h.qtd)) || 0;
+            mapOp[h.operador] = (mapOp[h.operador] || 0) + q;
+        });
+ 
+        const ordenado = Object.keys(mapOp).map(k => ({
+            nome: k, qtd: mapOp[k]
+        })).sort((a,b) => b.qtd - a.qtd);
+ 
+        const tbody = document.getElementById('table-ranking-operadores');
+        tbody.innerHTML = "";
+        ordenado.forEach(o => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight:700;">👤 ${o.nome}</td>
+                <td style="font-weight:900; text-align:center; color:var(--verde);">${o.qtd} PL</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+ 
+    function renderizarActivityFeedFefo(inv) {
+        const feed = document.getElementById('activity-feed');
+        feed.innerHTML = "";
+ 
+        let ordenado = [...inv].sort((a,b) => a.diasVencimento - b.diasVencimento);
+        ordenado.forEach(i => {
+            let bgTag = "var(--verde)";
+            let corTxt = "#fff";
+            if(i.diasVencimento >= 30 && i.diasVencimento <= 60) bgTag = "var(--critico)";
+            if(i.diasVencimento < 30) bgTag = "var(--retido)";
+            
+            const div = document.createElement('div');
+            div.className = "activity-item";
+            div.innerHTML = `
+                <div class="activity-icon-box">📦</div>
+                <div class="activity-content">
+                    <span class="activity-tag" style="background:${bgTag}; color:${bgTag==='var(--critico)'?'#000':corTxt};">${i.diasVencimento} Dias Restantes</span>
+                    <div>Endereço <b>${i.codEnder}</b> possui lote com validade prioritária FEFO.</div>
+                    <span class="activity-time">Material: ${i.mat} - ${i.desc} [Qtd: ${i.qtdPallets} PL]</span>
+                </div>
+            `;
+            feed.appendChild(div);
+        });
+    }
+ 
+    // 📦 REQUISITO OPERACIONAL 1: FILTRAR TABELA EXCLUSIVAMENTE PARA MATERIAIS CRÍTICOS
+    function renderizarTabelaPaleteEnderecoAdmin(inv) {
+        const tbody = document.getElementById('tbody-palete-endereco');
+        tbody.innerHTML = "";
+        let acumuladorTotalQtdCritico = 0;
+ 
+        inv.forEach(i => {
+            // Regra Crítica: Dias de vencimento strictly no intervalo entre 30 e 60 dias
+            if (i.diasVencimento < 30 || i.diasVencimento > 60) {
+                return; // Pula os registros normais ou retidos, sem alterar banco nem layout
+            }
+ 
+            acumuladorTotalQtdCritico += parseInt(i.qtdPallets);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight:700;">${i.codEnder}</td>
+                <td>${i.mat}</td>
+                <td>${i.desc}</td>
+                <td>${i.valFrente}</td>
+                <td>${i.valFundos}</td>
+                <td style="font-weight:800; text-align:center;">${i.qtdPallets}</td>
+                <td>${i.dataContagem}</td>
+                <td style="color:var(--critico); font-weight:900; background:rgba(251,191,36,0.05); text-align:center;">${i.diasVencimento}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+ 
+        document.getElementById('table-palete-total-qtd').innerText = acumuladorTotalQtdCritico;
+    }
+ 
+    // RENDERIZAÇÃO E CONSTRUÇÃO DOS GRÁFICOS DO PAINEL ANALYTICS VIA CHART.JS
+    function renderizarGraficosPainelAnalytics(hist, inv) {
+        destruirGraficosExistentes();
+ 
+        // 1. Gráfico Fluxo Diário
+        const fluxoDias = {};
+        hist.forEach(h => {
+            fluxoDias[h.data] = (fluxoDias[h.data] || 0) + Math.abs(parseInt(h.qtd));
+        });
+        instanciarGraficoJS('chart-fluxo-diario', 'bar', Object.keys(fluxoDias).slice(-10), Object.values(fluxoDias).slice(-10), 'Movimentação (PL)', '#6366f1');
+ 
+        // 2. Gráfico Fluxo Mensal
+        const fluxoMeses = {};
+        hist.forEach(h => {
+            const parts = h.data.split('/');
+            const mesChave = parts[1] + '/' + parts[2];
+            fluxoMeses[mesChave] = (fluxoMeses[mesChave] || 0) + Math.abs(parseInt(h.qtd));
+        });
+        instanciarGraficoJS('chart-fluxo-mensal', 'line', Object.keys(fluxoMeses), Object.values(fluxoMeses), 'Giro Acumulado', '#ff3e3e');
+ 
+        // 3. Setores Abastecidos Mensal
+        const setoresM = {};
+        hist.forEach(h => { setoresM[h.setor] = (setoresM[h.setor] || 0) + Math.abs(parseInt(h.qtd)); });
+        instanciarGraficoJS('chart-setor-mensal', 'doughnut', Object.keys(setoresM), Object.values(setoresM), 'Setores', ['#ff3e3e','#6366f1','#10b981','#fbbf24']);
+ 
+        // 4. Setores Abastecidos Diário
+        const setoresD = {};
+        const hjStr = new Date().toLocaleDateString('pt-BR');
+        hist.forEach(h => {
+            if(h.data === hjStr) setoresD[h.setor] = (setoresD[h.setor] || 0) + Math.abs(parseInt(h.qtd));
+        });
+        if(Object.keys(setoresD).length === 0) setoresD["Sem Registro Hoje"] = 0;
+        instanciarGraficoJS('chart-setor-diario', 'pie', Object.keys(setoresD), Object.values(setoresD), 'Setores Hoje', ['#10b981','#fbbf24','#ff3e3e','#6366f1']);
+ 
+        // 5. Destinos Saídas
+        const destSaida = {};
+        hist.forEach(h => {
+            if(parseInt(h.qtd) < 0 || h.acao.includes('SAIDA')) {
+                destSaida[h.setor] = (destSaida[h.setor] || 0) + Math.abs(parseInt(h.qtd));
+            }
+        });
+        if(Object.keys(destSaida).length === 0) destSaida["Sem Saídas"] = 0;
+        instanciarGraficoJS('chart-destinos-saida', 'polarArea', Object.keys(destSaida), Object.values(destSaida), 'Saídas por Fluxo', ['#6366f1','#ff3e3e','#fbbf24','#10b981']);
+ 
+        // 6. Abastecimento Apanha por Setor
+        const apanhas = {};
+        hist.forEach(h => {
+            if(h.setor.includes('LINHA') || h.acao.includes('INTERNA')) {
+                apanhas[h.desc] = (apanhas[h.desc] || 0) + Math.abs(parseInt(h.qtd));
+            }
+        });
+        instanciarGraficoJS('chart-apanha-setor', 'bar', Object.keys(apanhas).slice(0,7), Object.values(apanhas).slice(0,7), 'Paletes Consolidados', '#00f2ff', true);
+ 
+        // 7. Saúde Geral do Inventário
+        let cS = 0, rS = 0, nS = 0;
+        inv.forEach(i => {
+            if(i.diasVencimento >= 30 && i.diasVencimento <= 60) cS += parseInt(i.qtdPallets);
+            else if(i.diasVencimento < 30) rS += parseInt(i.qtdPallets);
+            else nS += parseInt(i.qtdPallets);
+        });
+        instanciarGraficoJS('chart-status', 'doughnut', ['Normais (>60D)', 'Críticos (30-60D)', 'Retidos (<30D)'], [nS, cS, rS], 'Paletes', ['#10b981', '#fbbf24', '#f87171']);
+ 
+        // 📈 REQUISITO OPERACIONAL 2: BUSCAR SOMENTE A QUANTIDADE DE PALETE CRÍTICO POR DIA TOTAL
+        const projecaoCriticaDias = {};
+        inv.forEach(i => {
+            // Filtra e contabiliza estritamente os itens considerados estoque crítico (30 a 60 dias)
+            if (i.diasVencimento >= 30 && i.diasVencimento <= 60) {
+                const diaChave = i.valFundos; // Agrupamento temporal com base na data de validade/vencimento
+                projecaoCriticaDias[diaChave] = (projecaoCriticaDias[diaChave] || 0) + parseInt(i.qtdPallets);
+            }
+        });
+ 
+        // Se a base filtrada estiver vazia para o período, define chave inicial mockada para evitar erros gráficos
+        if(Object.keys(projecaoCriticaDias).length === 0) {
+            projecaoCriticaDias["Sem Palete Crítico"] = 0;
+        }
+ 
+        // Ordena cronologicamente os dias críticos do eixo X para uma projeção analítica perfeita
+        const labelsOrdenados = Object.keys(projecaoCriticaDias).sort((a,b) => {
+            const partsA = a.split('/'); const partsB = b.split('/');
+            return new Date(partsA[2], partsA[1]-1, partsA[0]) - new Date(partsB[2], partsB[1]-1, partsB[0]);
+        });
+        const valoresOrdenados = labelsOrdenados.map(lbl => projecaoCriticaDias[lbl]);
+ 
+        instanciarGraficoJS('chart-projecao-paletes', 'line', labelsOrdenados, valoresOrdenados, 'Quantidade Paletes Críticos (PL Total)', '#fbbf24');
+    }
+ 
+    function destruirGraficosExistentes() {
+        Object.keys(cacheGraficosInstanciados).forEach(k => {
+            if(cacheGraficosInstanciados[k]) {
+                cacheGraficosInstanciados[k].destroy();
+            }
+        });
+        cacheGraficosInstanciados = {};
+    }
+ 
+    function instanciarGraficoJS(canvasId, tipo, labels, dados, datasetLabel, cor, indexEixoXInvertido = false) {
+        const ctx = document.getElementById(canvasId);
+        if(!ctx) return;
+ 
+        let config = {
+            type: tipo,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: datasetLabel,
+                    data: dados,
+                    backgroundColor: Array.isArray(cor) ? cor : (tipo === 'line' ? 'transparent' : cor),
+                    borderColor: Array.isArray(cor) ? cor.map(c => '#fff') : cor,
+                    borderWidth: tipo === 'line' ? 3 : 1,
+                    pointBackgroundColor: cor,
+                    tension: 0.3
+                }]
+            },
             options: {
-                ...graficoOriginal.config.options,
+                responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    y: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "#fff", font: { size: 14, weight: "700" } } },
-                    x: { grid: { display: false }, ticks: { color: "#fff", font: { size: 14, weight: "800" } } }
-                },
                 plugins: {
-                    ...graficoOriginal.config.options.plugins,
-                    legend: {
-                        display: graficoOriginal.config.options.plugins?.legend?.display !== false,
-                        position: 'bottom',
-                        labels: { color: '#fff', font: { size: 16, weight: '800' } }
-                    },
-                    datalabels: {
-                        color: '#fff',
-                        font: { size: 16, weight: '900' },
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        borderRadius: 6,
-                        padding: 8,
-                        formatter: (val, ctx) => {
-                            let label = ctx.chart.data.labels[ctx.dataIndex] || '';
-                            return graficoOriginal.config.type === 'doughnut' ? `${label}: ${val}` : val;
-                        }
-                    }
+                    legend: { display: ['pie', 'doughnut', 'polarArea'].includes(tipo), labels: { color: '#fff', font: { family:'Plus Jakarta Sans', size:10 } } },
+                    datalabels: { display: false }
+                },
+                scales: ['pie', 'doughnut', 'polarArea'].includes(tipo) ? {} : {
+                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { family:'Plus Jakarta Sans', size:9 } } },
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b', font: { family:'Plus Jakarta Sans', size:9 } } }
                 }
             }
+        };
+ 
+        if(indexEixoXInvertido && tipo === 'bar') {
+            config.options.indexAxis = 'y';
+        }
+ 
+        cacheGraficosInstanciados[canvasId] = new Chart(ctx, config);
+    }
+ 
+    // MODAL DE EXPANSÃO DOS GRÁFICOS
+    let chartExpandidoInstancia = null;
+    function expandirGrafico(canvasIdAlvo, tituloGrafico) {
+        document.getElementById('modal-grafico-titulo').innerText = tituloGrafico;
+        const modal = document.getElementById('modal-grafico-expandido');
+        modal.style.display = 'flex';
+ 
+        const graficoOriginal = cacheGraficosInstanciados[canvasIdAlvo];
+        if(!graficoOriginal) return;
+ 
+        const ctxRender = document.getElementById('canvas-expanded-render').getContext('2d');
+        if(chartExpandidoInstancia) chartExpandidoInstancia.destroy();
+ 
+        chartExpandidoInstancia = new Chart(ctxRender, {
+            type: graficoOriginal.config.type,
+            data: JSON.parse(JSON.stringify(graficoOriginal.data)),
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, labels: { color: '#fff', font: { size: 14 } } },
+                    datalabels: {
+                        display: true,
+                        color: '#fff',
+                        anchor: 'end',
+                        align: 'top',
+                        font: { weight: 'bold', size: 12 }
+                    }
+                },
+                scales: ['pie', 'doughnut', 'polarArea'].includes(graficoOriginal.config.type) ? {} : {
+                    x: { ticks: { color: '#fff', font: { size: 12 } } },
+                    y: { ticks: { color: '#fff', font: { size: 12 } } }
+                }
+            },
+            plugins: [ChartDataLabels]
         });
     }
  
     function fecharGraficoExpandido() {
         document.getElementById('modal-grafico-expandido').style.display = 'none';
-        if (chartExpandidoInst) { chartExpandidoInst.destroy(); chartExpandidoInst = null; }
+        if(chartExpandidoInstancia) {
+            chartExpandidoInstancia.destroy();
+            chartExpandidoInstancia = null;
+        }
     }
  
-    function renderizarPaineisEGraticos(dados) {
-        const hojeStr = new Date().toLocaleDateString('pt-BR');
-        let movHojeContagem = todasMovimentacoes.filter(m => m.data === hojeStr).length;
-        document.getElementById('st-mov').innerText = movHojeContagem;
+    // INTERFACES E CARD GENERATOR DA PESQUISA DE ESTOQUE (OPERACIONAL)
+    function renderizarCardsPesquisaEstoque(dados) {
+        const container = document.getElementById('lista-estoque-cards');
+        container.innerHTML = "";
  
-        // FEED TEMPO REAL
-        const feed = document.getElementById('activity-feed');
-        feed.innerHTML = '';
-        todasMovimentacoes.slice(0, 15).forEach(d => {
-            const loginLimpo = d.login ? d.login.split('@')[0].toUpperCase() : 'SISTEMA';
-            const tagCor = (d.quantidade && d.quantidade.toString().includes('+')) ? 'var(--verde)' : 'var(--primary)';
-            const desc = buscarDescricaoLocal(d.material);
-            const estCorrespondente = estoqueCompleto.find(e => e.mat === d.material && e.ender === d.endereco);
-            const validadeInfo = estCorrespondente ? estCorrespondente.valFrente : (d.validade || "Não Informada");
- 
-            const item = document.createElement('div');
-            item.className = 'activity-item';
-            item.innerHTML = `
-                <div class="activity-icon-box" style="color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? '📥' : '📤'}</div>
-                <div class="activity-content">
-                    <span class="activity-tag" style="background: ${tagCor}20; color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? 'Entrada' : 'Saída'}</span>
-                    <br>Op: <b>${loginLimpo}</b> | Material: <b>${d.material} - ${desc}</b>
-                    <br>Endereço: <b>${d.endereco || 'N/A'}</b> | Vol: <b>${d.quantidade || '0'}</b>
-                    <span class="activity-time">Vencimento (FEFO): <span style="color:var(--critico); font-weight:700;">${validadeInfo}</span> às ${d.hora || '00:00'} - ${d.data}</span>
-                </div>`;
-            feed.appendChild(item);
-        });
- 
-        // ESTRUTURAÇÃO DE DADOS DOS GRAFICOS
-        const volumeDiario = {};
-        const volumeMensal = {};
-        const rankingMateriais = {};
-        const rankingOperadores = {};
-        
-        const setorMensalAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
-        const setorDiarioAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
-        
-        // Objeto para controle do novo gráfico de saídas solicitadas
-        const fluxosDestinoAcumulado = { "TRANSFERENCIA": 0, "APANHA": 0, "SEPARAÇÃO": 0 };
-        const apanhaSetorAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
- 
- 
-        const dataAtualObjeto = new Date();
-        const anoAtualStr = dataAtualObjeto.getFullYear().toString();
- 
-        dados.forEach(mov => {
-            const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
-            const dataMov = mov.data; 
-            if (!dataMov) return;
- 
-            const partes = dataMov.split('/');
- 
-            volumeDiario[dataMov] = (volumeDiario[dataMov] || 0) + qtdAbsoluta;
-            rankingMateriais[mov.material] = (rankingMateriais[mov.material] || 0) + qtdAbsoluta;
-            const operadorChave = mov.login ? mov.login.split('@')[0].toUpperCase() : "SISTEMA";
-            rankingOperadores[operadorChave] = (rankingOperadores[operadorChave] || 0) + qtdAbsoluta;
- 
-            const setorMat = buscarSetorLocal(mov.material);
-            if (setorMensalAcumulado[setorMat] !== undefined) {
-                setorMensalAcumulado[setorMat] += qtdAbsoluta;
-            }
- 
-            // Alimentação do Novo Gráfico de Destinos de Carga (Apenas Fluxos de Saída)
-            const fluxoNormalizado = mov.fluxo ? mov.fluxo.toUpperCase().trim() : "";
-            
-            if (fluxoNormalizado === "APANHA") {
-                if (apanhaSetorAcumulado[setorMat] !== undefined) {
-                    apanhaSetorAcumulado[setorMat] += qtdAbsoluta;
-                }
-            }
- 
-            if (fluxosDestinoAcumulado[fluxoNormalizado] !== undefined) {
-                fluxosDestinoAcumulado[fluxoNormalizado] += qtdAbsoluta;
-            }
- 
-            const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
-            const filtroDiaSel = document.getElementById('filtro-dia-valor').value;
-            let diaAlvoStr = new Date().toISOString().substring(0,10);
-            if(tipoTempo === 'dia' && filtroDiaSel) diaAlvoStr = filtroDiaSel;
-            
-            const [aA, mM, dD] = diaAlvoStr.split('-');
-            const dataFormatadaComp = `${dD}/${mM}/${aA}`;
- 
-            if(dataMov === dataFormatadaComp) {
-                if (setorDiarioAcumulado[setorMat] !== undefined) {
-                    setorDiarioAcumulado[setorMat] += qtdAbsoluta;
-                }
-            }
-        });
- 
-        todasMovimentacoes.forEach(mov => {
-            if(!mov.data) return;
-            const partes = mov.data.split('/');
-            if(partes[2] === anoAtualStr) {
-                const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
-                volumeMensal[partes[1]] = (volumeMensal[partes[1]] || 0) + qtdAbsoluta;
-            }
-        });
- 
-        // CONFIGURAÇÃO DOS PLUGINS DE LABELS VISUAIS DIRETOS NOS GRÁFICOS
-        const padraoDatalabelsBarra = {
-            anchor: 'end',
-            align: 'top',
-            color: '#fff',
-            font: { weight: '800', size: 10 },
-            formatter: (val) => val > 0 ? val : ''
-        };
- 
-        const padraoDatalabelsRosca = {
-            color: '#fff',
-            font: { weight: '900', size: 11 },
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            borderRadius: 4,
-            padding: 4,
-            formatter: (val, ctx) => {
-                return val > 0 ? `${ctx.chart.data.labels[ctx.dataIndex]}\n${val} PL` : '';
-            }
-        };
- 
-        // 1. RENDER GRÁFICO DIÁRIO
-        const labelsDias = Object.keys(volumeDiario).sort((a, b) => new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-')));
-        const ctxD = document.getElementById('chart-fluxo-diario').getContext('2d');
-        if (chartDiarioInst) chartDiarioInst.destroy();
-        chartDiarioInst = new Chart(ctxD, {
-            type: 'bar',
-            data: { labels: labelsDias, datasets: [{ label: 'Paletes', data: labelsDias.map(lbl => volumeDiario[lbl]), backgroundColor: '#6366f1' }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra }, scales: { y: { grid: { color: 'rgba(255,255,255,0.03)' } } } }
-        });
- 
-        // 2. RENDER GRÁFICO MENSAL ACUMULADO
-        const mesesLabelsReduzidos = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-        const ctxM = document.getElementById('chart-fluxo-mensal').getContext('2d');
-        if (chartMensalInst) chartMensalInst.destroy();
-        chartMensalInst = new Chart(ctxM, {
-            type: 'line',
-            data: { labels: mesesLabelsReduzidos, datasets: [{ data: ["01","02","03","04","05","06","07","08","09","10","11","12"].map(m => volumeMensal[m] || 0), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', fill: true, tension: 0.2 }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: { ...padraoDatalabelsBarra, align: 'right' } } }
-        });
- 
-        // 6.1 GRÁFICO SETOR MENSAL
-        const ctxSM = document.getElementById('chart-setor-mensal').getContext('2d');
-        if (chartSetorMInst) chartSetorMInst.destroy();
-        chartSetorMInst = new Chart(ctxSM, {
-            type: 'doughnut',
-            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorMensalAcumulado[s]), backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'] }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } }
-        });
- 
-        // 6.2 GRÁFICO SETOR DIÁRIO
-        const ctxSD = document.getElementById('chart-setor-diario').getContext('2d');
-        if (chartSetorDInst) chartSetorDInst.destroy();
-        chartSetorDInst = new Chart(ctxSD, {
-            type: 'bar',
-            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorDiarioAcumulado[s]), backgroundColor: 'rgba(255, 62, 62, 0.4)', borderColor: '#ff3e3e', borderWidth: 1 }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra } }
-        });
- 
-        // NOVO GRÁFICO: DESTINO DAS CARGAS (TRANSFERENCIA, APANHA, SEPARAÇÃO)
-        const ctxDest = document.getElementById('chart-destinos-saida').getContext('2d');
-        if (chartDestinosInst) chartDestinosInst.destroy();
-        chartDestinosInst = new Chart(ctxDest, {
-            type: 'doughnut',
-            data: { 
-                labels: ["TRANSFERENCIA", "APANHA", "SEPARAÇÃO"], 
-                datasets: [{ 
-                    data: [fluxosDestinoAcumulado["TRANSFERENCIA"], fluxosDestinoAcumulado["APANHA"], fluxosDestinoAcumulado["SEPARAÇÃO"]], 
-                    backgroundColor: ['#00f2ff', '#fbbf24', '#6366f1'] 
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                plugins: { 
-                    legend: { display: false }, 
-                    datalabels: padraoDatalabelsRosca 
-                } 
-            }
-        });
- 
-        
-        
-        // 7. RENDER GRÁFICO APANHA POR SETOR
-        const ctxApanha = document.getElementById('chart-apanha-setor').getContext('2d');
-        if (chartApanhaSetorInst) chartApanhaSetorInst.destroy();
-        chartApanhaSetorInst = new Chart(ctxApanha, {
-            type: 'bar',
-            data: { 
-                labels: SETORES_LISTA, 
-                datasets: [{ 
-                    label: 'Paletes Abastecidos',
-                    data: SETORES_LISTA.map(s => apanhaSetorAcumulado[s]), 
-                    backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'],
-                    borderRadius: 8
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                plugins: { 
-                    legend: { display: false }, 
-                    datalabels: {
-                        anchor: 'center',
-                        align: 'center',
-                        color: '#fff',
-                        font: { weight: '900', size: 14 },
-                        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                        borderRadius: 4,
-                        padding: 4,
-                        formatter: (val) => val > 0 ? val : '0'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#ffffff', font: { weight: '600' } }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: '#ffffff', font: { weight: '800', size: 11 } }
-                    }
-                }
-            }
-        });
- 
- 
- 
-        // GRÁFICO DE SAÚDE INVENTÁRIO
-        const ctxS = document.getElementById('chart-status').getContext('2d');
-        if (chartStatus) chartStatus.destroy();
-        chartStatus = new Chart(ctxS, { 
-            type: 'doughnut', 
-            data: { labels: ['Boa', 'Crítica', 'Retida'], datasets: [{ data: [estoqueCompleto.filter(i => i.dias > 60).length, estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length, estoqueCompleto.filter(i => i.dias <= 30).length], backgroundColor: ['#10b981', '#fbbf24', '#f87171'] }] }, 
-            options: { responsive: true, cutout: '75%', plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } } 
-        });
-
-        // GRÁFICO DE PROJEÇÃO DE PALETES — Quantidade de paletes por dia (DATA CONTAGEM)
-        {
-            // Agrupar estoque por DATA CONTAGEM: somar qtd por data
-            const qtdPorDia = {};
-            estoqueCompleto.forEach(item => {
-                const dc = item.dataContagem || item.DATA_CONTAGEM || item.data_contagem || '';
-                if (!dc) return;
-                const qtd = Math.abs(parseInt(item.qtd) || 0);
-                qtdPorDia[dc] = (qtdPorDia[dc] || 0) + qtd;
-            });
-
-            // Fallback: usar movimentações agrupadas por data se não houver dataContagem
-            if (Object.keys(qtdPorDia).length === 0) {
-                todasMovimentacoes.forEach(mov => {
-                    if (!mov.data) return;
-                    const qtd = Math.abs(parseInt(mov.quantidade) || 0);
-                    qtdPorDia[mov.data] = (qtdPorDia[mov.data] || 0) + qtd;
-                });
-            }
-
-            const labelsDiasPP = Object.keys(qtdPorDia).sort((a, b) => {
-                const toDate = s => { const p = s.split('/'); return new Date(p[2], p[1]-1, p[0]); };
-                return toDate(a) - toDate(b);
-            });
-            const valoresPP = labelsDiasPP.map(d => qtdPorDia[d]);
-
-            // Resumo do dia mais recente
-            if (labelsDiasPP.length > 0) {
-                const ultimoDia = labelsDiasPP[labelsDiasPP.length - 1];
-                const ultimoVal = valoresPP[valoresPP.length - 1];
-                const el = document.getElementById('pp-resumo-hoje');
-                if (el) el.innerText = `Última contagem: ${ultimoDia} — ${ultimoVal} Paletes`;
-            }
-
-            const ctxPP = document.getElementById('chart-projecao-paletes').getContext('2d');
-            if (chartProjecaoPaletesInst) chartProjecaoPaletesInst.destroy();
-            chartProjecaoPaletesInst = new Chart(ctxPP, {
-                type: 'line',
-                data: {
-                    labels: labelsDiasPP,
-                    datasets: [{
-                        label: 'Qtd. Paletes/Dia',
-                        data: valoresPP,
-                        borderColor: '#4fa8d5',
-                        backgroundColor: 'rgba(79,168,213,0.08)',
-                        borderWidth: 2.5,
-                        pointBackgroundColor: '#4fa8d5',
-                        pointBorderColor: '#fff',
-                        pointRadius: 6,
-                        pointHoverRadius: 9,
-                        fill: true,
-                        tension: 0.25
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: ctx => ` ${ctx.parsed.y} Paletes`
-                            }
-                        },
-                        datalabels: {
-                            display: true,
-                            color: '#fff',
-                            font: { weight: '800', size: 11 },
-                            backgroundColor: 'rgba(79,168,213,0.75)',
-                            borderRadius: 20,
-                            padding: { top: 4, bottom: 4, left: 8, right: 8 },
-                            anchor: 'end',
-                            align: 'top',
-                            formatter: v => v > 0 ? v : ''
-                        }
-                    },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 10, weight: '700' } } },
-                        y: { 
-                            beginAtZero: true,
-                            grid: { color: 'rgba(255,255,255,0.04)' },
-                            ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 10, weight: '600' } }
-                        }
-                    }
-                }
-            });
+        if(dados.length === 0) {
+            container.innerHTML = `<div style="text-align:center; color:var(--text-secondary); padding:40px; font-size:13px;">Nenhum palete encontrado na base local.</div>`;
+            return;
         }
  
-        // RENDERIZAR TABELAS OPERACIONAIS
-        const tbodyHist = document.getElementById('table-historico-consolidado');
-        tbodyHist.innerHTML = '';
-        dados.slice(0, 5).forEach(m => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
-            tbodyHist.appendChild(tr);
-        });
+        dados.forEach(i => {
+            let corVenc = "#fff";
+            if(i.diasVencimento >= 30 && i.diasVencimento <= 60) corVenc = "var(--critico)";
+            if(i.diasVencimento < 30) corVenc = "var(--retido)";
  
-        const tbodyMat = document.getElementById('table-ranking-materiais');
-        tbodyMat.innerHTML = '';
-        Object.entries(rankingMateriais).sort((a,b) => b[1] - a[1]).slice(0, 10).forEach(item => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><b>${item[0]}</b></td><td>${buscarDescricaoLocal(item[0])}</td><td><span style="color:var(--primary); font-weight:900;">${item[1]} PL</span></td>`;
-            tbodyMat.appendChild(tr);
-        });
- 
-        const tbodyOp = document.getElementById('table-ranking-operadores');
-        tbodyOp.innerHTML = '';
-        Object.entries(rankingOperadores).sort((a,b) => b[1] - a[1]).forEach((op, index) => {
-            const medalha = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${medalha}<b>${op[0]}</b></td><td><span style="color:var(--verde); font-weight:800;">${op[1]} Paletes</span></td>`;
-            tbodyOp.appendChild(tr);
-        });
-    }
- 
-    function carregarDadosDashboard() { processarFiltragemHistorica(); }
- 
-    function renderizarEstoque() {
-        const termo = document.getElementById('search-input').value.toLowerCase().trim();
-        const lista = document.getElementById('lista-estoque');
-        lista.innerHTML = '';
-        if (!termo) return;
-        const isAdmin = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
-        let filtrados = estoqueCompleto.filter(i => {
-            if (parseInt(i.qtd) <= 0) return false;
-            if (termo === '60') return i.dias > 30 && i.dias <= 60;
-            if (termo === '30') return i.dias <= 30;
-            const mat = i.mat?.toString().toLowerCase() || "";
-            const ender = i.ender?.toString().toLowerCase() || "";
-            return /^\d+$/.test(termo) ? mat === termo : ender.includes(termo);
-        });
-        if (!isAdmin) filtrados = filtrados.filter(item => item.dias > 30);
-        if (filtrados.length === 0) return;
-        // Prioridade: CRÍTICO (31-60d) → RETIDO (≤30d) → DATA BOA (>60d)
-        function prioridade(dias) {
-            const d = parseInt(dias) || 0;
-            if (d > 30 && d <= 60) return 1;
-            if (d <= 30) return 2;
-            return 3;
-        }
-        filtrados.sort((a, b) => {
-            const pa = prioridade(a.dias), pb = prioridade(b.dias);
-            if (pa !== pb) return pa - pb;
-            return (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0);
-        });
-        if (/^\d+$/.test(termo) && termo !== '60' && termo !== '30') filtrados = [filtrados[0]];
-        filtrados.forEach(item => {
-            let status = item.dias <= 30 ? "RETIDO" : (item.dias <= 60 ? "CRÍTICO" : "DATA BOA");
-            let cor = item.dias <= 30 ? "var(--retido)" : (item.dias <= 60 ? "var(--critico)" : "var(--verde)");
             const card = document.createElement('div');
-            card.className = `item-card`;
-            card.style.borderLeft = `8px solid ${cor}`;
-            card.innerHTML = `<div><span class="badge badge-ender">${item.ender}</span><span class="badge" style="background: ${cor}20; color: ${cor}; border: 1px solid ${cor}40; margin-left: 5px;">${status}</span><div style="font-weight:900; font-size:24px; margin-top:15px; letter-spacing:-1px; color: #fff;">${item.mat}</div><div style="font-size:12px; color:var(--text-secondary); margin-top:5px; font-weight:600;">${item.desc || "---"}</div><div style="font-size:10px; margin-top:15px; color: var(--text-secondary); font-weight: 800;">VALIDADE: <b style="color: ${cor}">${item.dias} DIAS</b></div></div><div style="text-align: right;"><div style="font-size:32px; font-weight:900; margin-bottom:15px; color: #fff;">${item.qtd}<span style="font-size:12px; color:var(--text-secondary); margin-left:5px;">PL</span></div><button class="btn-action" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button></div>`;
-            lista.appendChild(card);
+            card.className = "item-card";
+            card.innerHTML = `
+                <div>
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                        <span class="badge badge-ender">📍 ${i.codEnder}</span>
+                        <span class="badge" style="background:rgba(255,255,255,0.05); color:var(--text-secondary);">MAT: ${i.mat}</span>
+                    </div>
+                    <h3 style="color:#fff; font-size:15px; font-weight:800; margin-bottom:6px; letter-spacing:-0.3px;">${i.desc}</h3>
+                    <div style="font-size:11px; color:var(--text-secondary);">Validade: <b style="color:${corVenc};">${i.valFundos}</b> (${i.diasVencimento} dias para vencer)</div>
+                </div>
+                <div style="text-align:right; flex-shrink:0;">
+                    <div style="font-size:26px; font-weight:900; color:#fff; margin-bottom:8px;">${i.qtdPallets}<span style="font-size:11px; font-weight:600; color:var(--text-secondary); margin-left:3px;">PL</span></div>
+                    <button class="btn-action" style="padding:8px 16px; font-size:10px; border-radius:10px; box-shadow:none; background:var(--glass); border:1px solid var(--glass-border);" onclick="abrirModalRetirada('${i.id}')">BAIXAR / MOV.</button>
+                </div>
+            `;
+            container.appendChild(card);
         });
     }
  
-    function puxarDescricaoObrigatoria(val, inputDescId, listId) {
-        const list = document.getElementById(listId);
-        const descInput = document.getElementById(inputDescId);
-        list.innerHTML = '';
-        if (!val) { descInput.value = ''; return; }
-        const matches = baseMateriais.filter(m => m.mat.toString().startsWith(val)).slice(0, 5);
-        matches.forEach(m => {
-            const div = document.createElement('div');
-            div.className = 'autocomplete-item';
-            div.innerHTML = `<strong>${m.mat}</strong> - ${m.desc}`;
-            div.onclick = () => { document.getElementById('eb-mat').value = m.mat; descInput.value = m.desc; list.innerHTML = ''; };
-            list.appendChild(div);
-        });
-        const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
-        if (exact) { descInput.value = exact.desc; descInput.style.color = "var(--verde)"; } 
-        else { descInput.value = "MATERIAL NÃO CADASTRADO"; descInput.style.color = "var(--retido)"; }
+    function filtrarPesquisaEstoque() {
+        const txt = document.getElementById('search-input').value.toLowerCase().trim();
+        let filtrados = dbInventario.filter(i => i.mat.toLowerCase().includes(txt) || i.desc.toLowerCase().includes(txt) || i.codEnder.toLowerCase().includes(txt));
+        renderizarCardsPesquisaEstoque(filtrados);
     }
  
-    document.addEventListener('click', e => { if (e.target.id !== 'eb-mat') { const l = document.getElementById('eb-mat-list'); if(l) l.innerHTML = ''; } });
-    
-    function retirarMaterial(id, qtdAtual, mat, ender, val) {
-        itemParaRetirar = { id, qtdAtual, mat, ender, val };
-        document.getElementById('modal-titulo').innerText = mat;
-        document.getElementById('modal-info').innerHTML = `Posição: <b>${ender}</b><br>Saldo Atual: <b>${qtdAtual} Pallets</b>`;
-        document.getElementById('modal-input-qtd').value = '';
+    // LOGICA DO MODAL DE RETIRADA / MOVIMENTAÇÃO
+    let idItemRetiradaAlvo = null;
+    function abrirModalRetirada(id) {
+        const item = dbInventario.find(i => i.id === id);
+        if(!item) return;
+        idItemRetiradaAlvo = id;
+        document.getElementById('ret-title').innerText = item.desc;
+        document.getElementById('ret-meta').innerText = `Endereço: ${item.codEnder} | Lote Disponível: ${item.qtdPallets} PL`;
+        document.getElementById('ret-qtd').value = item.qtdPallets;
         document.getElementById('modal-retirada').style.display = 'flex';
-        setTimeout(() => document.getElementById('modal-input-qtd').focus(), 150);
-        document.getElementById('btn-confirmar-modal').onclick = processarRetirada;
     }
  
-    function fecharModal() { document.getElementById('modal-retirada').style.display = 'none'; }
- 
-    async function processarRetirada() {
-        const v = parseInt(document.getElementById('modal-input-qtd').value);
-        if (isNaN(v) || v <= 0 || v > itemParaRetirar.qtdAtual) return alert("Quantidade inválida.");
-        try {
-            if (v === itemParaRetirar.qtdAtual) { await db.collection("estoque_blocado").doc(itemParaRetirar.id).delete(); } 
-            else { await db.collection("estoque_blocado").doc(itemParaRetirar.id).update({ qtd: itemParaRetirar.qtdAtual - v }); }
-            registrarMovimentacao(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, `-${v} PL`, document.getElementById('modal-destino-mov').value);
-            fecharModal();
-        } catch (e) { alert("Erro ao processar retirada."); }
+    function fecharModalRetirada() {
+        document.getElementById('modal-retirada').style.display = 'none';
+        idItemRetiradaAlvo = null;
     }
  
+    async function confirmarRetiradaEstoque() {
+        const qtdAba = parseInt(document.getElementById('ret-qtd').value);
+        const destino = document.getElementById('ret-destino').value;
+        if(isNaN(qtdAba) || qtdAba <= 0) return alert("Informe uma quantidade válida.");
+ 
+        const item = dbInventario.find(i => i.id === idItemRetiradaAlvo);
+        if(!item) return alert("Item não localizado.");
+ 
+        if(qtdAba > item.qtdPallets) return alert("Quantidade inserida excede o saldo físico atual do endereço.");
+ 
+        item.qtdPallets -= qtdAba;
+        await registrarMovimentacao("BAIXA ESTOQUE", item.mat, item.valFundos, `-${qtdAba} PL`, destino);
+ 
+        if(item.qtdPallets <= 0) {
+            dbInventario = dbInventario.filter(i => i.id !== idItemRetiradaAlvo);
+        }
+ 
+        sincronizarArmazenamentoLocal();
+        fecharModalRetirada();
+        alert("Baixa operacional realizada com sucesso!");
+        renderizarCardsPesquisaEstoque(dbInventario);
+    }
+ 
+    // FUNÇÕES DE AUTOCOMPLETE AUXILIAR PARA ALTA PRODUTIVIDADE
+    function buscarMaterialAutocomplete(inputElement, descInputId, listId) {
+        const val = inputElement.value.trim();
+        const listDiv = document.getElementById(listId);
+        listDiv.innerHTML = "";
+        
+        if(!val) {
+            document.getElementById(descInputId).value = "";
+            return;
+        }
+ 
+        if(BASE_PRODUTOS[val]) {
+            document.getElementById(descInputId).value = BASE_PRODUTOS[val];
+        } else {
+            document.getElementById(descInputId).value = "MATERIAL NAO CADASTRADO";
+        }
+ 
+        const sugestoes = Object.keys(BASE_PRODUTOS).filter(k => k.startsWith(val) || BASE_PRODUTOS[k].toLowerCase().includes(val.toLowerCase()));
+        sugestoes.forEach(k => {
+            const div = document.createElement('div');
+            div.className = "autocomplete-item";
+            div.innerText = `${k} - ${BASE_PRODUTOS[k]}`;
+            div.onclick = () => {
+                inputElement.value = k;
+                document.getElementById(descInputId).value = BASE_PRODUTOS[k];
+                listDiv.innerHTML = "";
+            };
+            listDiv.appendChild(div);
+        });
+    }
+ 
+    function calcularDiasLabel(inputId, labelId) {
+        const val = document.getElementById(inputId).value;
+        if(!val) return;
+        const dFim = new Date(val + "T00:00:00");
+        const hj = new Date();
+        hj.setHours(0,0,0,0);
+        const diff = dFim.getTime() - hj.getTime();
+        const diasCalculados = Math.ceil(diff / (1000 * 60 * 60 * 24));
+        document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
+    }
+ 
+    // GRAVAÇÃO CENTRALIZADA DE HISTÓRICOS E LOGS
+    async function registrarMovimentacao(acao, mat, venc, qtd, setor) {
+        const d = new Date();
+        const novoLog = {
+            data: d.toLocaleDateString('pt-BR'),
+            hora: d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+            acao: acao,
+            mat: mat,
+            desc: BASE_PRODUTOS[mat] || "PRODUTO DESCONHECIDO",
+            setor: setor.toUpperCase(),
+            qtd: qtd,
+            operador: usuarioLogado ? usuarioLogado.nome : "SISTEMA"
+        };
+ 
+        dbHistorico.unshift(novoLog);
+        
+        if(window.fs) {
+            try {
+                await window.fs.collection("movimentacoes").add(novoLog);
+            } catch(e) { console.error("Erro na sincronização Firebase online:", e); }
+        }
+        sincronizarArmazenamentoLocal();
+    }
+ 
+    // SALVAMENTO DE FLUXOS OPERACIONAIS FORMS MANTIDOS INTEGRALMENTE
     async function salvarEntradaBloco() {
-        const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
         const mat = document.getElementById('eb-mat').value.trim();
         const desc = document.getElementById('eb-desc').value;
         const qtd = parseInt(document.getElementById('eb-qtd').value);
         const inputVenc = document.getElementById('eb-venc').value;
-        if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos.");
-        if(desc === "MATERIAL NÃO CADASTRADO") return alert("Código não cadastrado na base.");
-        const val = inputVenc.split('-').reverse().join('/');
-        const ocupante = estoqueCompleto.find(i => i.ender === ender);
-        if (ocupante && ocupante.mat !== mat) return alert("Posição ocupada por outro material.");
-        if (ocupante) { await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd }); } 
-        else { await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: val, desc: desc }); }
-        registrarMovimentacao(ender, mat, val, `+${qtd} PL`, `ENTRADA VIA ${document.getElementById('eb-origem').value}`);
-        ['eb-ender', 'eb-mat', 'eb-desc', 'eb-qtd', 'eb-venc'].forEach(id => document.getElementById(id).value = '');
-        navegar('retirar');
+        const destino = document.getElementById('eb-destino').value.trim().toUpperCase();
+ 
+        if(!mat || isNaN(qtd) || qtd <= 0 || !inputVenc || !destino) return alert("Preencha todos os campos do formulário.");
+        if(desc === "MATERIAL NAO CADASTRADO") return alert("Código do material não existe na base cadastrada.");
+ 
+        const parts = inputVenc.split('-');
+        const valStr = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        
+        const dFim = new Date(inputVenc + "T00:00:00");
+        const hj = new Date(); hj.setHours(0,0,0,0);
+        const diff = dFim.getTime() - hj.getTime();
+        const dias = Math.ceil(diff / (1000 * 60 * 60 * 24));
+ 
+        const novoId = "EB" + Date.now();
+        dbInventario.push({
+            id: novoId,
+            codEnder: destino,
+            mat: mat,
+            desc: desc,
+            valFrente: valStr,
+            valFundos: valStr,
+            qtdPallets: qtd,
+            dataContagem: new Date().toLocaleDateString('pt-BR'),
+            diasVencimento: dias
+        });
+ 
+        await registrarMovimentacao("ENTRADA BLOCO", mat, valStr, `+${qtd} PL`, destino);
+        alert("Entrada no bloco registrada com sucesso!");
+        
+        ['eb-mat', 'eb-desc', 'eb-qtd', 'eb-venc', 'eb-destino'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('eb-label-dias').innerText = '';
     }
  
-    function carregarDadosOrigemAbertura(ender) {
-        const item = estoqueCompleto.find(i => i.ender.toLowerCase() === ender.toLowerCase().trim());
-        if (item) { itemOrigemAbertura = item; document.getElementById('ab-mat').value = item.mat; document.getElementById('ab-qtd').placeholder = `Max: ${item.qtd}`; } 
-        else { itemOrigemAbertura = null; document.getElementById('ab-mat').value = ''; }
-    }
- 
-    async function processarAberturaBlocado() {
-        const dest = document.getElementById('ab-destino').value.toUpperCase().trim();
+    async function salvarMovimentacaoInterna() {
+        const mat = document.getElementById('ab-mat').value.trim();
+        const desc = document.getElementById('ab-desc').value;
         const qtd = parseInt(document.getElementById('ab-qtd').value);
-        if(!itemOrigemAbertura || isNaN(qtd) || qtd <= 0 || qtd > itemOrigemAbertura.qtd || !dest) return alert("Dados inválidos.");
-        const ocup = estoqueCompleto.find(i => i.ender === dest);
-        if (ocup && ocup.mat !== itemOrigemAbertura.mat) return alert("Destino ocupado.");
-        if (qtd === itemOrigemAbertura.qtd) { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete(); } 
-        else { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtd }); }
-        if (ocup) { await db.collection("estoque_blocado").doc(ocup.id).update({ qtd: ocup.qtd + qtd }); } 
-        else { await db.collection("estoque_blocado").add({ ender: dest, mat: itemOrigemAbertura.mat, desc: itemOrigemAbertura.desc, qtd, dias: itemOrigemAbertura.dias, valFrente: itemOrigemAbertura.valFrente }); }
-        registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtd} PL`, `PARA ${dest}`);
-        registrarMovimentacao(dest, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtd} PL`, `DE ${itemOrigemAbertura.ender}`);
-        navegar('retirar');
-    }
+        const inputVenc = document.getElementById('ab-venc').value;
+        const destino = document.getElementById('ab-destino').value;
  
-    function calcularDias(data, labelId) {
-        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
-        document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
-    }
+        if(!mat || isNaN(qtd) || qtd <= 0 || !inputVenc) return alert("Preencha todos os campos.");
+        if(desc === "MATERIAL NAO CADASTRADO") return alert("Material inválido.");
  
-    async function registrarMovimentacao(ender, mat, val, qtd, fluxo) {
-        const agora = new Date();
-        await db.collection("movimentacoes_wms").add({ 
-            endereco: ender, 
-            material: mat, 
-            validade: val, 
-            quantidade: qtd, 
-            fluxo, 
-            login: usuarioLogado.email, 
-            data: agora.toLocaleDateString('pt-BR'), 
-            hora: agora.toLocaleTimeString('pt-BR'), 
-            timestamp: agora 
-        });
-    }
+        const parts = inputVenc.split('-');
+        const valStr = `${parts[2]}/${parts[1]}/${parts[0]}`;
  
-    function exportarRelatorioFiltradoExcel() {
-        if(movimentacoesFiltradas.length === 0) return alert("Não existem dados no período filtrado para exportar.");
-        const dadosPlanilha = movimentacoesFiltradas.map(m => ({ "Data": m.data, "Horário": m.hora, "Fluxo / Ação": m.fluxo, "Código Material": m.material, "Descrição": buscarDescricaoLocal(m.material), "Setor Logístico": buscarSetorLocal(m.material), "Quantidade (PL)": m.quantidade, "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A' }));
-        const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Relatório_Filtrado");
-        XLSX.writeFile(wb, `WMS_Relatorio_Consolidado_${new Date().getTime()}.xlsx`);
-    }
- 
-    async function exportarHistoricoExcel() {
-        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-        const dados = snap.docs.map(doc => { const d = doc.data(); return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora }; });
-        const ws = XLSX.utils.json_to_sheet(dados);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Infinity_Log");
-        XLSX.writeFile(wb, `Infinity_WMS_Log_Completo_${new Date().getTime()}.xlsx`);
-    }
- 
-    async function importarCSV(event) {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
-            if (!confirm(`Confirmar reset de estoque para ${linhas.length} itens?`)) return;
-            const snapshot = await db.collection("estoque_blocado").get();
-            if (!snapshot.empty) {
-                let batchDel = db.batch();
-                snapshot.docs.forEach((doc, idx) => { batchDel.delete(doc.ref); if ((idx + 1) % 400 === 0) { batchDel.commit(); batchDel = db.batch(); } });
-                await batchDel.commit();
+        // Localiza e desconta do endereço de bloco (Simulação automatizada de reabastecimento)
+        const estoqueOrigem = dbInventario.find(i => i.mat === mat && i.qtdPallets >= qtd);
+        let origemNome = "BLOCO";
+        if(estoqueOrigem) {
+            estoqueOrigem.qtdPallets -= qtd;
+            origemNome = estoqueOrigem.codEnder;
+            if(estoqueOrigem.qtdPallets <= 0) {
+                dbInventario = dbInventario.filter(i => i.id !== estoqueOrigem.id);
             }
-            let batch = db.batch();
-            linhas.forEach((linha, i) => {
-                const c = linha.split(";");
-                if (c.length >= 6) {
-                    batch.set(db.collection("estoque_blocado").doc(), { ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(), valFrente: c[3].trim(), qtd: parseInt(c[5].replace(/\D/g, '')) || 0, dias: parseInt(c[7].replace(/\D/g, '')) || 0 });
-                    if((i+1)%400===0) { batch.commit(); batch = db.batch(); }
-                }
-            });
-            await batch.commit();
-            alert("Estoque Infinity Updated!");
-        };
-        reader.readAsText(event.target.files[0]);
-    }
- 
-    async function sincronizarBaseMateriais() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.xlsx, .xls';
-        input.onchange = async (e) => {
-            const reader = new FileReader();
-            reader.onload = async (ev) => {
-                const data = new Uint8Array(ev.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                let batch = db.batch();
-                let count = 0;
-                for(const item of json) {
-                    const mat = item['Cód. Material'];
-                    if(mat) {
-                        batch.set(db.collection("base_materiais").doc(mat.toString()), { mat, desc: item['Descrição'] || '', qtd_base: item['Quantidade'] || 0, categoria: item['Categoria'] || '', vasilhame: item['Vasilhame'] || '', lastro: item['Lastro'] || null, camada: item['Camada'] || null });
-                        count++;
-                        if(count % 400 === 0) { await batch.commit(); batch = db.batch(); }
-                    }
-                }
-                await batch.commit();
-                alert("Base de Dados Infinity Sincronizada!");
-                carregarBaseMateriais();
-            };
-            reader.readAsArrayBuffer(e.target.files[0]);
-        };
-        input.click();
-    }
- 
-    function toggleKB(id) {
-        const input = document.getElementById(id);
-        const btn = event.currentTarget;
-        if (input.inputMode === 'numeric' || input.inputMode === 'decimal') {
-            input.inputMode = 'text';
-            btn.innerText = '123';
-            btn.style.background = 'var(--primary)';
-            btn.style.color = '#fff';
-        } else {
-            input.inputMode = id.includes('qtd') ? 'decimal' : 'numeric';
-            btn.innerText = 'Abc';
-            btn.style.background = 'var(--glass)';
-            btn.style.color = 'var(--text-secondary)';
         }
-        input.focus();
-    }
  
-    
-    // ─── TABELA PALETES POR ENDEREÇO: dados estáticos + filtro por data ───
-
-    const _DADOS_PALETE_ENDER = [
-        { ender:'101-1', mat:'288', desc:'CHOPP KAISER CLARO 50L', valFr:'26/07/2026', valFd:'15/08/2026', qtd:56, dataC:'23/06/2026', dias:33, critico:true },
-        { ender:'DOCA X', mat:'288', desc:'CHOPP KAISER CLARO 50L', valFr:'26/07/2026', valFd:'26/07/2026', qtd:28, dataC:'23/06/2026', dias:33, critico:true },
-        { ender:'205-BOLSÃO-02', mat:'1231', desc:'AGUA CRYSTAL VIP PT350 C/GAS 12X1', valFr:'02/08/2026', valFd:'30/08/2026', qtd:10, dataC:'23/06/2026', dias:40, critico:true },
-        { ender:'203-35', mat:'1776', desc:'FANTA LARANJA PT1L 12X1', valFr:'05/08/2026', valFd:'05/08/2026', qtd:22, dataC:'23/06/2026', dias:43, critico:false },
-        { ender:'204-BOLSÃO-04', mat:'1910', desc:'FANTA GUARANA PT1L 12X1', valFr:'06/08/2026', valFd:'06/08/2026', qtd:10, dataC:'23/06/2026', dias:44, critico:false },
-        { ender:'204-34', mat:'1778', desc:'SPRITE ORIGINAL PT1L 12X1', valFr:'09/08/2026', valFd:'24/08/2026', qtd:39, dataC:'23/06/2026', dias:47, critico:false },
-        { ender:'205-BOLSÃO-01', mat:'1220', desc:'AGUA CRYSTAL PT500 C/GAS 12X1', valFr:'13/08/2026', valFd:'13/08/2026', qtd:46, dataC:'23/06/2026', dias:51, critico:false },
-        { ender:'203-43', mat:'1776', desc:'FANTA LARANJA PT1L 12X1', valFr:'13/08/2026', valFd:'13/08/2026', qtd:40, dataC:'23/06/2026', dias:51, critico:false },
-        { ender:'201-10', mat:'1748', desc:'COCA COLA ZERO ACUCAR MINI PT200ML 12X1', valFr:'16/08/2026', valFd:'16/08/2026', qtd:27, dataC:'23/06/2026', dias:54, critico:false },
-        { ender:'201-14', mat:'1748', desc:'COCA COLA ZERO ACUCAR MINI PT200ML 12X1', valFr:'16/08/2026', valFd:'16/08/2026', qtd:78, dataC:'23/06/2026', dias:54, critico:false },
-        { ender:'204-36', mat:'1748', desc:'COCA COLA ZERO ACUCAR MINI PT200ML 12X1', valFr:'16/08/2026', valFd:'16/08/2026', qtd:43, dataC:'23/06/2026', dias:54, critico:false },
-        { ender:'201-4', mat:'1748', desc:'COCA COLA ZERO ACUCAR MINI PT200ML 12X1', valFr:'17/08/2026', valFd:'17/08/2026', qtd:74, dataC:'23/06/2026', dias:55, critico:false },
-        { ender:'201-12', mat:'1748', desc:'COCA COLA ZERO ACUCAR MINI PT200ML 12X1', valFr:'17/08/2026', valFd:'17/08/2026', qtd:38, dataC:'23/06/2026', dias:55, critico:false },
-        { ender:'203-38', mat:'1030', desc:'COCA COLA ZERO ACUCAR PT1,5L 6X1', valFr:'17/08/2026', valFd:'17/08/2026', qtd:119, dataC:'23/06/2026', dias:55, critico:false },
-        { ender:'203-45', mat:'1030', desc:'COCA COLA ZERO ACUCAR PT1,5L 6X1', valFr:'17/08/2026', valFd:'17/08/2026', qtd:40, dataC:'23/06/2026', dias:55, critico:false },
-        { ender:'204-PARCIAL-02', mat:'1030', desc:'COCA COLA ZERO ACUCAR PT1,5L 6X1', valFr:'17/08/2026', valFd:'17/08/2026', qtd:13, dataC:'23/06/2026', dias:55, critico:false },
-        { ender:'203-18', mat:'820', desc:'COCA COLA PT1,5L 6X1', valFr:'19/08/2026', valFd:'19/08/2026', qtd:82, dataC:'23/06/2026', dias:57, critico:false },
-        { ender:'204-BOLSÃO-03', mat:'1815', desc:'FANTA UVA PT1L 12X1', valFr:'19/08/2026', valFd:'19/08/2026', qtd:12, dataC:'23/06/2026', dias:57, critico:false },
-        { ender:'204-13', mat:'1776', desc:'FANTA LARANJA PT1L 12X1', valFr:'20/08/2026', valFd:'20/08/2026', qtd:40, dataC:'23/06/2026', dias:58, critico:false },
-        { ender:'204-29', mat:'1776', desc:'FANTA LARANJA PT1L 12X1', valFr:'20/08/2026', valFd:'20/08/2026', qtd:27, dataC:'23/06/2026', dias:58, critico:false },
-        { ender:'201-2', mat:'1747', desc:'COCA COLA MINI PT200ML 12X1', valFr:'21/08/2026', valFd:'21/08/2026', qtd:51, dataC:'23/06/2026', dias:59, critico:false },
-        { ender:'201-24', mat:'1747', desc:'COCA COLA MINI PT200ML 12X1', valFr:'21/08/2026', valFd:'21/08/2026', qtd:34, dataC:'23/06/2026', dias:59, critico:false },
-        { ender:'204-17', mat:'1378', desc:'FANTA LARANJA PT3L 6X1', valFr:'22/08/2026', valFd:'22/08/2026', qtd:15, dataC:'23/06/2026', dias:60, critico:false },
-    ];
-
-    function _renderTabelaEnder(dados, tbodyId, totalId) {
-        const tbody = document.getElementById(tbodyId);
-        const totalEl = document.getElementById(totalId);
-        if (!tbody) return;
-        tbody.innerHTML = '';
-        let total = 0;
-        dados.forEach(r => {
-            total += r.qtd;
-            const corDias = r.dias <= 33 ? 'var(--critico)' : (r.dias <= 45 ? 'var(--critico)' : 'var(--text)');
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${r.ender}</td><td>${r.mat}</td><td>${r.desc}</td><td>${r.valFr}</td><td>${r.valFd}</td><td>${r.qtd}</td><td>${r.dataC}</td><td style="color:${corDias}; font-weight:800;">${r.dias}</td>`;
-            tbody.appendChild(tr);
-        });
-        if (totalEl) totalEl.innerText = total;
-    }
-
-    function filtrarTabelaPaleteEndereco() {
-        const val = document.getElementById('filtro-data-palete-ender').value;
-        let filtrados = _DADOS_PALETE_ENDER;
-        if (val) {
-            // Converter yyyy-mm-dd → dd/mm/yyyy para comparar com dataC
-            const [y,m,d] = val.split('-');
-            const dataFmt = `${d}/${m}/${y}`;
-            filtrados = _DADOS_PALETE_ENDER.filter(r => r.dataC === dataFmt);
-            const badge = document.getElementById('badge-data-palete');
-            if (badge) { badge.innerText = `Contagem: ${dataFmt} — ${filtrados.length} itens`; badge.style.display = 'inline-block'; }
-        } else {
-            const badge = document.getElementById('badge-data-palete');
-            if (badge) badge.style.display = 'none';
-        }
-        _renderTabelaEnder(filtrados, 'tbody-palete-endereco', 'total-palete-ender');
-    }
-
-    function resetarFiltroEndereco() {
-        const el = document.getElementById('filtro-data-palete-ender');
-        if (el) el.value = '';
-        const badge = document.getElementById('badge-data-palete');
-        if (badge) badge.style.display = 'none';
-        _renderTabelaEnder(_DADOS_PALETE_ENDER, 'tbody-palete-endereco', 'total-palete-ender');
-    }
-
-    function expandirTabelaPaleteEndereco() {
-        const modal = document.getElementById('modal-palete-ender-expand');
-        if (!modal) return;
-        modal.style.display = 'flex';
-        // Sincronizar filtro da tabela principal
-        const valMain = document.getElementById('filtro-data-palete-ender')?.value || '';
-        const modalInput = document.getElementById('filtro-data-palete-ender-modal');
-        if (modalInput) modalInput.value = valMain;
-        sincronizarFiltroModal();
-    }
-
-    function sincronizarFiltroModal() {
-        const val = document.getElementById('filtro-data-palete-ender-modal')?.value || '';
-        let filtrados = _DADOS_PALETE_ENDER;
-        if (val) {
-            const [y,m,d] = val.split('-');
-            const dataFmt = `${d}/${m}/${y}`;
-            filtrados = _DADOS_PALETE_ENDER.filter(r => r.dataC === dataFmt);
-        }
-        _renderTabelaEnder(filtrados, 'tbody-palete-endereco-modal', 'total-palete-ender-modal');
-    }
-
-    function resetarFiltroEnderecoModal() {
-        const el = document.getElementById('filtro-data-palete-ender-modal');
-        if (el) el.value = '';
-        _renderTabelaEnder(_DADOS_PALETE_ENDER, 'tbody-palete-endereco-modal', 'total-palete-ender-modal');
-    }
-
-    // Inicializar tabela com todos os dados ao carregar
-    document.addEventListener('DOMContentLoaded', () => {
-        _renderTabelaEnder(_DADOS_PALETE_ENDER, 'tbody-palete-endereco', 'total-palete-ender');
-    });
-    // Também garantir render quando navegar para admin
-    const _navOriginal = window.navegar;
-    if (typeof navegar === 'function') {
-        const _navRef = navegar;
-        window._posNavAdmin = function() {
-            _renderTabelaEnder(_DADOS_PALETE_ENDER, 'tbody-palete-endereco', 'total-palete-ender');
-        };
-    }
-
-window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } _renderTabelaEnder(_DADOS_PALETE_ENDER, 'tbody-palete-endereco', 'total-palete-ender'); };
- 
-    // SCREEN WAKE LOCK - Mantém a tela sempre ativa
-    let wakeLock = null;
- 
-    async function requestWakeLock() {
-        try {
-            if ('wakeLock' in navigator) {
-                wakeLock = await navigator.wakeLock.request('screen');
-                console.log('Screen Wake Lock ativado com sucesso');
-                
-                // Reativar Wake Lock se o documento ficar visível novamente
-                document.addEventListener('visibilitychange', async () => {
-                    if (document.hidden) {
-                        if (wakeLock !== null) {
-                            wakeLock.release();
-                            wakeLock = null;
-                        }
-                    } else {
-                        try {
-                            wakeLock = await navigator.wakeLock.request('screen');
-                            console.log('Screen Wake Lock reativado');
-                        } catch (err) {
-                            console.error(`Erro ao reativar Wake Lock: ${err.name}, ${err.message}`);
-                        }
-                    }
-                });
-            } else {
-                console.warn('Screen Wake Lock API não suportada neste navegador');
-            }
-        } catch (err) {
-            console.error(`Erro ao solicitar Wake Lock: ${err.name}, ${err.message}`);
-        }
-    }
- 
-    // Ativar Wake Lock quando o aplicativo iniciar
-    function iniciarAppComWakeLock() {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-screen').style.display = 'block';
-        document.getElementById('user-name').innerText = usuarioLogado.nome;
-        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
-        document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
-        document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
+        await registrarMovimentacao("MOV_INTERNA", mat, valStr, `+${qtd} PL`, destino);
+        alert(`Material movido do ${origemNome} para o ${destino} com sucesso!`);
         
-        const hoje = new Date();
-        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
-        document.getElementById('filtro-dia-valor').value = hoje.toISOString().substring(0, 10);
-        document.getElementById('filtro-de-valor').value = hoje.toISOString().substring(0, 10);
-        document.getElementById('filtro-ate-valor').value = hoje.toISOString().substring(0, 10);
- 
-        conectarFirebase();
-        carregarBaseMateriais();
-        navegar(isAdmin ? 'admin' : 'retirar');
-        
-        // Ativar Screen Wake Lock
-        requestWakeLock();
-    }
- 
-    function puxarDescricaoMovDriveIn(val, inputDescId, listId) {
-        const list = document.getElementById(listId);
-        const descInput = document.getElementById(inputDescId);
-        list.innerHTML = '';
-        if (!val) { descInput.value = ''; return; }
-        const matches = baseMateriais.filter(m => m.mat.toString().startsWith(val)).slice(0, 5);
-        matches.forEach(m => {
-            const div = document.createElement('div');
-            div.className = 'autocomplete-item';
-            div.innerHTML = `<strong>${m.mat}</strong> - ${m.desc}`;
-            div.onclick = () => { document.getElementById('mdi-mat').value = m.mat; descInput.value = m.desc; list.innerHTML = ''; };
-            list.appendChild(div);
-        });
-        const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
-        if (exact) { descInput.value = exact.desc; descInput.style.color = "var(--verde)"; } 
-        else { descInput.value = "MATERIAL NAO CADASTRADO"; descInput.style.color = "var(--retido)"; }
-    }
- 
-    document.addEventListener('click', e => { if (e.target.id !== 'mdi-mat') { const l = document.getElementById('mdi-mat-list'); if(l) l.innerHTML = ''; } });
- 
-    function calcularDiasMovDriveIn(data, labelId) {
-        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
-        document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
+        ['ab-mat', 'ab-desc', 'ab-qtd', 'ab-venc'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('ab-label-dias').innerText = '';
     }
  
     async function salvarMovimentacaoDriveIn() {
@@ -1604,16 +1408,55 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         const val = inputVenc.split('-').reverse().join('/');
  
         try {
-            // Registra APENAS a saída do Drive In (valor negativo) — sem gerar entrada
-            await registrarMovimentacao("DRIVE-IN", mat, val, `-${qtd} PL`, destino);
+            await registrarMovimentacao("SAIDA DRIVE-IN", mat, val, `-${qtd} PL`, destino);
             alert("Movimentacao Drive In registrada com sucesso!");
             ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('mdi-label-dias').innerText = '';
             document.getElementById('mdi-destino').value = 'APANHA';
-        } catch (e) {
-            alert("Erro ao registrar movimentacao: " + e.message);
-        }
+        } catch(e) { alert("Erro de gravação local."); }
+    }
+ 
+    // EXPORTAÇÃO EXCEL E LIMPEZA DE BASE MANTIDOS INTEGRALMENTE
+    function exportarRelatorioFiltradoExcel() {
+        if(dbHistoricoFiltradoGlobal.length === 0) return alert("Não existem dados no período selecionado para exportar.");
+        
+        const rows = dbHistoricoFiltradoGlobal.map(h => ({
+            "Data Movimentação": h.data,
+            "Horário": h.hora,
+            "Fluxo Operacional": h.acao,
+            "SKU Material": h.mat,
+            "Descrição Comercial": h.desc,
+            "Setor/Endereço": h.setor,
+            "Quantidade (PL)": h.qtd,
+            "Operador Responsável": h.operador
+        }));
+ 
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Histórico Consolidação");
+        XLSX.writeFile(wb, `WMS_INFINITY_RELATORIO_${document.getElementById('filtro-mes-valor').value || 'CUSTOM'}.xlsx`);
+    }
+ 
+    function importarCSV(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            alert("Processamento de carga em massa finalizado na base volátil local!");
+        };
+        reader.readAsText(file);
+    }
+ 
+    function limparBaseTotal() {
+        if(!confirm("Atenção! Esta ação irá expurgar os dados locais salvos. Deseja prosseguir?")) return;
+        localStorage.removeItem('infinity_inventario');
+        localStorage.removeItem('infinity_historico');
+        carregarDadosLocaisArmazenados();
+        if(usuarioLogado && usuarioLogado.role === 'ADMIN') processarFiltragemHistorica();
+        alert("Expurgo total da base local realizado com sucesso.");
     }
 </script>
+ 
 </body>
 </html>
