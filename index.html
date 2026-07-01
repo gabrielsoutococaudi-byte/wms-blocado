@@ -335,6 +335,37 @@
                 </div>
             </div>
  
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">
+                        <div>🗂️ Histórico Consolidado de Posições (Contagem)</div>
+                    </div>
+                    <div class="filter-panel" style="margin-bottom: 15px;">
+                        <div class="form-group">
+                            <label>Data Inicial</label>
+                            <input type="date" id="filtro-hist-pos-de">
+                        </div>
+                        <div class="form-group">
+                            <label>Data Final</label>
+                            <input type="date" id="filtro-hist-pos-ate">
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom: 20px;">
+                        <button class="btn-action" onclick="salvarContagemHistorica()" style="background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">REGISTRAR CONTAGEM DE HOJE</button>
+                        <button class="btn-action" onclick="buscarHistoricoConsolidadoPosicoes()" style="background: var(--glass); border: 1px solid var(--glass-border); box-shadow: none;">BUSCAR HISTÓRICO</button>
+                        <button class="btn-action" onclick="exportarHistoricoConsolidadoPosicoesExcel()" style="background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">EXPORTAR CONSOLIDADO (EXCEL)</button>
+                    </div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead>
+                                <tr><th>Cód. Endereço</th><th>Material</th><th>Descrição</th><th>Val. Frente</th><th>Val. Fundos</th><th>Qtd Pallets</th><th>Data Contagem</th><th>Dias Vencto</th></tr>
+                            </thead>
+                            <tbody id="table-historico-posicoes"><tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-secondary);">Utilize os filtros e clique em "Buscar Histórico".</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+ 
             <div class="dashboard-row">
                 <div class="chart-box glass-card">
                     <div class="chart-title">⚡ 4. Monitor de Atividades em Tempo Real (Controle FEFO)</div>
@@ -1124,6 +1155,102 @@
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Infinity_Log");
         XLSX.writeFile(wb, `Infinity_WMS_Log_Completo_${new Date().getTime()}.xlsx`);
+    }
+ 
+    // =====================================================================
+    // HISTÓRICO CONSOLIDADO DE POSIÇÕES (CONTAGEM) - BLOCO ADITIVO
+    // Não altera nenhuma função existente. Cria a coleção Firestore
+    // "historico_contagens_posicoes" para registrar snapshots do estoque
+    // (estoqueCompleto) ao longo do tempo, permitindo consultas e
+    // exportação de um consolidado histórico sempre que necessário.
+    // Campo "validadeFundos" é gravado vazio por enquanto (não existe
+    // ainda essa informação na base) e poderá ser preenchido no futuro.
+    // =====================================================================
+    let contagensHistoricasCarregadas = [];
+
+    async function salvarContagemHistorica() {
+        if (!estoqueCompleto || estoqueCompleto.length === 0) {
+            alert("Não há dados de estoque carregados para registrar a contagem.");
+            return;
+        }
+        if (!confirm(`Confirma o registro da contagem histórica de hoje para ${estoqueCompleto.length} posições?`)) return;
+        const agora = new Date();
+        const dataContagem = agora.toLocaleDateString('pt-BR');
+        const batch = db.batch();
+        estoqueCompleto.forEach(item => {
+            const ref = db.collection("historico_contagens_posicoes").doc();
+            batch.set(ref, {
+                codEnder: item.ender || "",
+                material: item.mat || "",
+                descricao: item.desc || "",
+                validadeFrente: item.valFrente || "",
+                validadeFundos: item.valFundos || "",
+                quantidadePallets: item.qtd || 0,
+                diasParaVencimento: (item.dias !== undefined && item.dias !== null) ? item.dias : "",
+                dataContagem: dataContagem,
+                timestamp: agora
+            });
+        });
+        await batch.commit();
+        alert(`Contagem histórica de ${estoqueCompleto.length} posições registrada com sucesso em ${dataContagem}.`);
+    }
+
+    async function buscarHistoricoConsolidadoPosicoes() {
+        const deVal = document.getElementById('filtro-hist-pos-de').value;
+        const ateVal = document.getElementById('filtro-hist-pos-ate').value;
+        let ref = db.collection("historico_contagens_posicoes").orderBy("timestamp", "desc");
+        if (deVal) ref = ref.where("timestamp", ">=", new Date(deVal + "T00:00:00"));
+        if (ateVal) ref = ref.where("timestamp", "<=", new Date(ateVal + "T23:59:59"));
+        try {
+            const snap = await ref.get();
+            contagensHistoricasCarregadas = snap.docs.map(doc => doc.data());
+            renderizarTabelaHistoricoConsolidadoPosicoes();
+        } catch (erro) {
+            console.error("Erro ao buscar histórico consolidado de posições:", erro);
+            alert("Erro ao buscar o histórico. Verifique os filtros de data e tente novamente.");
+        }
+    }
+
+    function renderizarTabelaHistoricoConsolidadoPosicoes() {
+        const tbody = document.getElementById('table-historico-posicoes');
+        if (!tbody) return;
+        if (contagensHistoricasCarregadas.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-secondary);">Nenhum registro encontrado para o período selecionado.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = contagensHistoricasCarregadas.map(d => `
+            <tr>
+                <td>${d.codEnder}</td>
+                <td>${d.material}</td>
+                <td>${d.descricao || "---"}</td>
+                <td>${d.validadeFrente || "---"}</td>
+                <td>${d.validadeFundos || "---"}</td>
+                <td>${d.quantidadePallets}</td>
+                <td>${d.dataContagem}</td>
+                <td>${d.diasParaVencimento}</td>
+            </tr>
+        `).join('');
+    }
+
+    function exportarHistoricoConsolidadoPosicoesExcel() {
+        if (contagensHistoricasCarregadas.length === 0) {
+            alert("Nenhum dado carregado. Utilize o botão 'Buscar Histórico' antes de exportar.");
+            return;
+        }
+        const dados = contagensHistoricasCarregadas.map(d => ({
+            "Código do Endereço": d.codEnder,
+            "Material": d.material,
+            "Descrição": d.descricao,
+            "Validade da Frente": d.validadeFrente,
+            "Validade dos Fundos": d.validadeFundos,
+            "Quantidade de Pallets": d.quantidadePallets,
+            "Data da Contagem": d.dataContagem,
+            "Dias para Vencimento": d.diasParaVencimento
+        }));
+        const ws = XLSX.utils.json_to_sheet(dados);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Historico_Consolidado");
+        XLSX.writeFile(wb, `WMS_Historico_Consolidado_Posicoes_${new Date().getTime()}.xlsx`);
     }
  
     async function importarCSV(event) {
