@@ -172,7 +172,7 @@
     <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
         <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
     <button onclick="navegar('movimentacao_drive_in')">🚚 MOVIMENTAÇÃO DRIVE IN</button>
-    <button onclick="navegar('cadastro_bins')">🗂️ CADASTRO DE BINS</button>
+    <button id="btn-nav-bins" onclick="navegar('cadastro_bins')" style="display: none;">🗂️ CADASTRO DE BINS</button>
     
     <button onclick="logout()" style="color: var(--retido); margin-top: 40px; border-top: 1px solid var(--glass-border); border-radius: 0; width: 100%; opacity: 0.7;">🚪 ENCERRAR SESSÃO</button>
 </div>
@@ -467,8 +467,16 @@
 
 <div id="modal-bin-palete" style="display:none; position:fixed; top:0; left:0; width:100%; height:100dvh; background:rgba(0,0,0,0.95); z-index:3000; align-items:center; justify-content:center; backdrop-filter: blur(20px); padding: 20px;">
     <div class="modal-content glass-card">
-        <h3 id="bin-modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Adicionar Palete</h3>
+        <h3 id="bin-modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Editar Posição</h3>
         <p id="bin-modal-info" style="font-size:13px; color: var(--text-secondary); margin: 15px 0 25px; line-height: 1.6;"></p>
+        <div class="form-group"><label>Status da Posição</label>
+            <select id="bin-modal-status">
+                <option value="LIVRE">LIVRE</option>
+                <option value="OCUPADA">OCUPADA</option>
+                <option value="BLOQUEADA">BLOQUEADA</option>
+                <option value="EM_AUDITORIA">EM AUDITORIA</option>
+            </select>
+        </div>
         <div class="form-group"><label>Código do Material</label>
             <div class="input-with-toggle"><input type="text" inputmode="numeric" id="bin-modal-material" placeholder="Código..."><div class="toggle-kb-btn" onclick="toggleKB('bin-modal-material')">Abc</div></div>
         </div>
@@ -483,8 +491,9 @@
         </div>
         <div style="display:flex; gap:15px; margin-top:25px;">
             <button onclick="fecharModalBin()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button>
-            <button class="btn-action" style="flex:1;" onclick="confirmarAdicionarPalete()">CONFIRMAR</button>
+            <button class="btn-action" style="flex:1;" onclick="confirmarEdicaoBin()">SALVAR ALTERAÇÕES</button>
         </div>
+        <button onclick="liberarPosicaoBin()" style="width:100%; margin-top:15px; padding:14px; background:transparent; color: var(--retido); border:1px solid var(--retido); border-radius:16px; font-weight:800; cursor:pointer; text-transform: uppercase; font-size: 11px; letter-spacing: 1px;">🗑️ LIBERAR POSIÇÃO</button>
     </div>
 </div>
 
@@ -576,6 +585,7 @@
         const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
         document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('btn-nav-bins').style.display = isAdmin ? 'block' : 'none';
         
         const hoje = new Date();
         document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
@@ -592,6 +602,8 @@
     }
  
     function navegar(tela) {
+        const isAdmin = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
+        if (tela === 'cadastro_bins' && !isAdmin) { alert("Acesso restrito ao perfil Administrador."); tela = 'retirar'; }
         ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in', 'cadastro_bins'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
         document.getElementById('view-' + tela).style.display = 'block';
         document.getElementById('sidebar').classList.remove('active');
@@ -1259,6 +1271,10 @@
         return loc.includes("DRIVE") ? "DRIVE_IN" : "RUA";
     }
 
+    function isAdminLogado() {
+        return usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
+    }
+
     function formatarDataHoraAgora() {
         const d = new Date();
         const data = d.toLocaleDateString('pt-BR');
@@ -1287,12 +1303,13 @@
                 <td>${qtdAtual}</td>
                 <td>${b.materialAtual || "-"}</td>
                 <td style="font-size:10px; color: var(--text-secondary);">${b.dataUltimaMovimentacao || "-"}</td>
-                <td><button class="expand-btn" style="position:static;" onclick="abrirModalBin('${b.id}')">+ Palete</button></td>
+                <td><button class="expand-btn" style="position:static;" onclick="abrirModalBin('${b.id}')">Editar</button></td>
             </tr>`;
         }).join('');
     }
 
     async function salvarNovoBin() {
+        if (!isAdminLogado()) return alert("Acesso restrito ao perfil Administrador.");
         const posicao = document.getElementById('bin-nova-posicao').value.trim().toUpperCase();
         const localizacao = document.getElementById('bin-nova-localizacao').value.trim().toUpperCase();
         const capacidade = parseInt(document.getElementById('bin-nova-capacidade').value) || 0;
@@ -1314,14 +1331,16 @@
     }
 
     function abrirModalBin(binId) {
+        if (!isAdminLogado()) return alert("Acesso restrito ao perfil Administrador.");
         binSelecionadoId = binId;
         const bin = binsEstoque.find(b => b.id === binId);
         if (!bin) return;
-        document.getElementById('bin-modal-titulo').innerText = `Adicionar Palete — ${bin.posicao}`;
-        document.getElementById('bin-modal-info').innerText = `${bin.localizacao || ""} · Capacidade: ${bin.capacidade ?? "-"} · Ocupação atual: ${bin.quantidadeAtual || 0}`;
+        document.getElementById('bin-modal-titulo').innerText = `Editar Posição — ${bin.posicao}`;
+        document.getElementById('bin-modal-info').innerText = `${bin.localizacao || ""} · Capacidade: ${bin.capacidade ?? "-"}`;
+        document.getElementById('bin-modal-status').value = bin.status || 'LIVRE';
         document.getElementById('bin-modal-material').value = bin.materialAtual || '';
         document.getElementById('bin-modal-lote').value = bin.loteAtual || '';
-        document.getElementById('bin-modal-qtd').value = '';
+        document.getElementById('bin-modal-qtd').value = bin.quantidadeAtual || '';
         document.getElementById('bin-modal-obs').value = bin.observacoes || '';
         document.getElementById('modal-bin-palete').style.display = 'flex';
     }
@@ -1331,33 +1350,58 @@
         binSelecionadoId = null;
     }
 
-    async function confirmarAdicionarPalete() {
+    async function confirmarEdicaoBin() {
+        if (!isAdminLogado()) return alert("Acesso restrito ao perfil Administrador.");
         if (!binSelecionadoId) return;
+        const status = document.getElementById('bin-modal-status').value;
         const material = document.getElementById('bin-modal-material').value.trim();
         const lote = document.getElementById('bin-modal-lote').value.trim();
-        const qtd = parseInt(document.getElementById('bin-modal-qtd').value);
+        const qtd = parseInt(document.getElementById('bin-modal-qtd').value) || 0;
         const obs = document.getElementById('bin-modal-obs').value.trim();
 
-        if (!material || isNaN(qtd) || qtd <= 0) return alert("Preencha material e quantidade.");
+        if (status === "OCUPADA" && (!material || qtd <= 0)) return alert("Para status OCUPADA, preencha material e quantidade.");
 
         try {
             await db.collection("bins_estoque").doc(binSelecionadoId).set({
-                materialAtual: material,
+                status,
+                materialAtual: material || null,
                 loteAtual: lote || null,
                 quantidadeAtual: qtd,
                 observacoes: obs || "",
-                status: "OCUPADA",
                 dataUltimaMovimentacao: formatarDataHoraAgora(),
                 usuarioResponsavel: usuarioLogado?.nome || usuarioLogado?.email || "SISTEMA"
             }, { merge: true });
             fecharModalBin();
-            alert("Palete registrado na posição com sucesso!");
+            alert("Posição atualizada com sucesso!");
         } catch (e) {
-            alert("Erro ao registrar palete: " + e.message);
+            alert("Erro ao atualizar posição: " + e.message);
+        }
+    }
+
+    async function liberarPosicaoBin() {
+        if (!isAdminLogado()) return alert("Acesso restrito ao perfil Administrador.");
+        if (!binSelecionadoId) return;
+        if (!confirm("Liberar esta posição? O material, lote e quantidade atuais serão removidos.")) return;
+
+        try {
+            await db.collection("bins_estoque").doc(binSelecionadoId).set({
+                status: "LIVRE",
+                materialAtual: null,
+                loteAtual: null,
+                quantidadeAtual: 0,
+                observacoes: "",
+                dataUltimaMovimentacao: formatarDataHoraAgora(),
+                usuarioResponsavel: usuarioLogado?.nome || usuarioLogado?.email || "SISTEMA"
+            }, { merge: true });
+            fecharModalBin();
+            alert("Posição liberada com sucesso!");
+        } catch (e) {
+            alert("Erro ao liberar posição: " + e.message);
         }
     }
 
     function processarImportacaoBins(event) {
+        if (!isAdminLogado()) { alert("Acesso restrito ao perfil Administrador."); event.target.value = ''; return; }
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
