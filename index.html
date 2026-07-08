@@ -172,6 +172,7 @@
     <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
         <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
     <button onclick="navegar('movimentacao_drive_in')">🚚 MOVIMENTAÇÃO DRIVE IN</button>
+    <button onclick="navegar('cadastro_bins')">🗂️ CADASTRO DE BINS</button>
     
     <button onclick="logout()" style="color: var(--retido); margin-top: 40px; border-top: 1px solid var(--glass-border); border-radius: 0; width: 100%; opacity: 0.7;">🚪 ENCERRAR SESSÃO</button>
 </div>
@@ -355,6 +356,8 @@
                     <button class="btn-action" onclick="exportarHistoricoExcel()" style="background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">EXPORTAR LOG COMPLETO DE AUDITORIA</button>
                 </div>
                 <button class="btn-action" onclick="sincronizarBaseMateriais()" style="width: 100%; margin-top: 15px; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">SINCRONIZAR BASE DE MATERIAIS (EXCEL)</button>
+                <input type="file" id="bins-file-admin" accept=".xlsx, .xls" style="display: none;" onchange="processarImportacaoBins(event)">
+                <button class="btn-action" onclick="document.getElementById('bins-file-admin').click()" style="width: 100%; margin-top: 15px; background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">IMPORTAR CADASTRO DE BINS (EXCEL)</button>
             </div>
         </div>
  
@@ -421,9 +424,70 @@
                 <button class="btn-action" style="width: 100%; padding: 20px;" onclick="salvarMovimentacaoDriveIn()">CONFIRMAR MOVIMENTACAO</button>
             </div>
         </div>
+
+<div id="view-cadastro_bins" style="display: none;">
+            <div class="search-wrapper">
+                <input type="text" id="bins-search-input" placeholder="🔎 Buscar por posição ou localização (ex: 301-002, DRIVE IN, RUA 101)..." oninput="renderizarBins()">
+            </div>
+
+            <div class="glass-card form-box" style="padding: 30px;">
+                <h3 style="color: #fff; margin-bottom: 25px; font-weight: 900; font-size: 18px; letter-spacing: -1px;">Cadastrar Nova Posição (Bin)</h3>
+                <div class="form-group"><label>Posição</label>
+                    <div class="input-with-toggle"><input type="text" id="bin-nova-posicao" placeholder="Ex: 301-002-001"><div class="toggle-kb-btn" onclick="toggleKB('bin-nova-posicao')">123</div></div>
+                </div>
+                <div class="form-group"><label>Localização</label>
+                    <div class="input-with-toggle"><input type="text" id="bin-nova-localizacao" placeholder="Ex: DRIVE IN / RUA - 101"><div class="toggle-kb-btn" onclick="toggleKB('bin-nova-localizacao')">Abc</div></div>
+                </div>
+                <div class="form-group"><label>Capacidade (Volumes/Paletes)</label>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="bin-nova-capacidade" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('bin-nova-capacidade')">Abc</div></div>
+                </div>
+                <button class="btn-action" style="width: 100%;" onclick="salvarNovoBin()">CADASTRAR POSIÇÃO</button>
+            </div>
+
+            <div class="glass-card" style="padding: 30px; margin-top: 20px;">
+                <h3 style="color: #fff; margin-bottom: 15px; font-weight: 900; font-size: 14px; letter-spacing: -0.5px; text-transform: uppercase;">Importar Planilha de Posições</h3>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6;">Colunas esperadas: POSIÇÃO, LOCALIZAÇÃO, QUANTIDADE POSIÇÃO. Posições já cadastradas mantêm o estoque atual — apenas capacidade e localização são atualizadas.</p>
+                <input type="file" id="bins-file" accept=".xlsx, .xls" style="display: none;" onchange="processarImportacaoBins(event)">
+                <button class="btn-action" onclick="document.getElementById('bins-file').click()" style="width: 100%; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">IMPORTAR POSIÇÕES (XLSX)</button>
+            </div>
+
+            <div class="glass-card" style="padding: 20px; margin-top: 20px; margin-bottom: 30px;">
+                <div class="wms-table-container">
+                    <table class="wms-table">
+                        <thead>
+                            <tr><th>Posição</th><th>Localização</th><th>Capacidade</th><th>Status</th><th>Qtd. Atual</th><th>Material</th><th>Última Mov.</th><th></th></tr>
+                        </thead>
+                        <tbody id="table-bins-estoque"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
- 
+
+<div id="modal-bin-palete" style="display:none; position:fixed; top:0; left:0; width:100%; height:100dvh; background:rgba(0,0,0,0.95); z-index:3000; align-items:center; justify-content:center; backdrop-filter: blur(20px); padding: 20px;">
+    <div class="modal-content glass-card">
+        <h3 id="bin-modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Adicionar Palete</h3>
+        <p id="bin-modal-info" style="font-size:13px; color: var(--text-secondary); margin: 15px 0 25px; line-height: 1.6;"></p>
+        <div class="form-group"><label>Código do Material</label>
+            <div class="input-with-toggle"><input type="text" inputmode="numeric" id="bin-modal-material" placeholder="Código..."><div class="toggle-kb-btn" onclick="toggleKB('bin-modal-material')">Abc</div></div>
+        </div>
+        <div class="form-group"><label>Lote (opcional)</label>
+            <div class="input-with-toggle"><input type="text" id="bin-modal-lote" placeholder="Lote"><div class="toggle-kb-btn" onclick="toggleKB('bin-modal-lote')">Abc</div></div>
+        </div>
+        <div class="form-group"><label>Quantidade de Volumes/Paletes</label>
+            <div class="input-with-toggle"><input type="text" inputmode="decimal" id="bin-modal-qtd" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('bin-modal-qtd')">Abc</div></div>
+        </div>
+        <div class="form-group"><label>Observações (opcional)</label>
+            <div class="input-with-toggle"><input type="text" id="bin-modal-obs" placeholder="Observações"><div class="toggle-kb-btn" onclick="toggleKB('bin-modal-obs')">Abc</div></div>
+        </div>
+        <div style="display:flex; gap:15px; margin-top:25px;">
+            <button onclick="fecharModalBin()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button>
+            <button class="btn-action" style="flex:1;" onclick="confirmarAdicionarPalete()">CONFIRMAR</button>
+        </div>
+    </div>
+</div>
+
 <div id="modal-retirada">
     <div class="modal-content glass-card">
         <h3 id="modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Retirada</h3>
@@ -470,6 +534,8 @@
     let diasCalculados = 0;
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
+    let binsEstoque = [];
+    let binSelecionadoId = null;
  
     // Instâncias Globais de Gráficos
     let chartDiarioInst = null;
@@ -526,10 +592,11 @@
     }
  
     function navegar(tela) {
-        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
+        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in', 'cadastro_bins'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
         document.getElementById('view-' + tela).style.display = 'block';
         document.getElementById('sidebar').classList.remove('active');
         if(tela === 'admin') carregarDadosDashboard();
+        if(tela === 'cadastro_bins') renderizarBins();
     }
  
     function navegarComFiltro(tipo) {
@@ -558,6 +625,11 @@
         db.collection("movimentacoes_wms").orderBy("timestamp", "desc").onSnapshot(snap => {
             todasMovimentacoes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             processarFiltragemHistorica();
+        });
+
+        db.collection("bins_estoque").onSnapshot(snap => {
+            binsEstoque = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderizarBins();
         });
     }
  
@@ -1179,7 +1251,152 @@
         };
         input.click();
     }
- 
+
+    // ===================== CADASTRO DE POSIÇÕES (BIN DE ESTOQUE) =====================
+
+    function classificarTipoBin(localizacao) {
+        const loc = (localizacao || "").toUpperCase();
+        return loc.includes("DRIVE") ? "DRIVE_IN" : "RUA";
+    }
+
+    function formatarDataHoraAgora() {
+        const d = new Date();
+        const data = d.toLocaleDateString('pt-BR');
+        const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        return `${data} ${hora}`;
+    }
+
+    function renderizarBins() {
+        const tbody = document.getElementById('table-bins-estoque');
+        if (!tbody) return;
+        const query = (document.getElementById('bins-search-input')?.value || "").toUpperCase().trim();
+
+        const lista = binsEstoque
+            .filter(b => !query || b.posicao?.toUpperCase().includes(query) || b.localizacao?.toUpperCase().includes(query))
+            .sort((a, b) => (a.posicao || "").localeCompare(b.posicao || ""));
+
+        tbody.innerHTML = lista.map(b => {
+            const status = b.status || "LIVRE";
+            const qtdAtual = b.quantidadeAtual || 0;
+            const corStatus = status === "OCUPADA" ? "var(--critico)" : status === "BLOQUEADA" ? "var(--retido)" : status === "EM_AUDITORIA" ? "var(--accent)" : "var(--verde)";
+            return `<tr>
+                <td><span class="badge badge-ender">${b.posicao}</span></td>
+                <td>${b.localizacao || "-"}</td>
+                <td>${b.capacidade ?? "-"}</td>
+                <td><span class="badge" style="background:${corStatus}; color:#000;">${status}</span></td>
+                <td>${qtdAtual}</td>
+                <td>${b.materialAtual || "-"}</td>
+                <td style="font-size:10px; color: var(--text-secondary);">${b.dataUltimaMovimentacao || "-"}</td>
+                <td><button class="expand-btn" style="position:static;" onclick="abrirModalBin('${b.id}')">+ Palete</button></td>
+            </tr>`;
+        }).join('');
+    }
+
+    async function salvarNovoBin() {
+        const posicao = document.getElementById('bin-nova-posicao').value.trim().toUpperCase();
+        const localizacao = document.getElementById('bin-nova-localizacao').value.trim().toUpperCase();
+        const capacidade = parseInt(document.getElementById('bin-nova-capacidade').value) || 0;
+
+        if (!posicao || !localizacao) return alert("Preencha posição e localização.");
+
+        try {
+            await db.collection("bins_estoque").doc(posicao).set({
+                posicao,
+                localizacao,
+                capacidade,
+                tipo: classificarTipoBin(localizacao)
+            }, { merge: true });
+            alert("Posição cadastrada com sucesso!");
+            ['bin-nova-posicao', 'bin-nova-localizacao', 'bin-nova-capacidade'].forEach(id => document.getElementById(id).value = '');
+        } catch (e) {
+            alert("Erro ao cadastrar posição: " + e.message);
+        }
+    }
+
+    function abrirModalBin(binId) {
+        binSelecionadoId = binId;
+        const bin = binsEstoque.find(b => b.id === binId);
+        if (!bin) return;
+        document.getElementById('bin-modal-titulo').innerText = `Adicionar Palete — ${bin.posicao}`;
+        document.getElementById('bin-modal-info').innerText = `${bin.localizacao || ""} · Capacidade: ${bin.capacidade ?? "-"} · Ocupação atual: ${bin.quantidadeAtual || 0}`;
+        document.getElementById('bin-modal-material').value = bin.materialAtual || '';
+        document.getElementById('bin-modal-lote').value = bin.loteAtual || '';
+        document.getElementById('bin-modal-qtd').value = '';
+        document.getElementById('bin-modal-obs').value = bin.observacoes || '';
+        document.getElementById('modal-bin-palete').style.display = 'flex';
+    }
+
+    function fecharModalBin() {
+        document.getElementById('modal-bin-palete').style.display = 'none';
+        binSelecionadoId = null;
+    }
+
+    async function confirmarAdicionarPalete() {
+        if (!binSelecionadoId) return;
+        const material = document.getElementById('bin-modal-material').value.trim();
+        const lote = document.getElementById('bin-modal-lote').value.trim();
+        const qtd = parseInt(document.getElementById('bin-modal-qtd').value);
+        const obs = document.getElementById('bin-modal-obs').value.trim();
+
+        if (!material || isNaN(qtd) || qtd <= 0) return alert("Preencha material e quantidade.");
+
+        try {
+            await db.collection("bins_estoque").doc(binSelecionadoId).set({
+                materialAtual: material,
+                loteAtual: lote || null,
+                quantidadeAtual: qtd,
+                observacoes: obs || "",
+                status: "OCUPADA",
+                dataUltimaMovimentacao: formatarDataHoraAgora(),
+                usuarioResponsavel: usuarioLogado?.nome || usuarioLogado?.email || "SISTEMA"
+            }, { merge: true });
+            fecharModalBin();
+            alert("Palete registrado na posição com sucesso!");
+        } catch (e) {
+            alert("Erro ao registrar palete: " + e.message);
+        }
+    }
+
+    function processarImportacaoBins(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+            try {
+                const data = new Uint8Array(ev.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+                if (!confirm(`Importar ${json.length} posições para o cadastro de Bins?`)) return;
+
+                let batch = db.batch();
+                let count = 0;
+                for (const item of json) {
+                    const posicao = (item['POSIÇÃO'] || item['POSICAO'] || '').toString().trim().toUpperCase();
+                    const localizacao = (item['LOCALIZAÇÃO'] || item['LOCALIZACAO'] || '').toString().trim().toUpperCase();
+                    const capacidade = parseInt(item['QUANTIDADE POSIÇÃO'] || item['QUANTIDADE POSICAO'] || 0) || 0;
+                    if (!posicao) continue;
+
+                    batch.set(db.collection("bins_estoque").doc(posicao), {
+                        posicao,
+                        localizacao,
+                        capacidade,
+                        tipo: classificarTipoBin(localizacao)
+                    }, { merge: true });
+                    count++;
+                    if (count % 400 === 0) { await batch.commit(); batch = db.batch(); }
+                }
+                await batch.commit();
+                alert(`Importação concluída: ${count} posições processadas.`);
+            } catch (e) {
+                alert("Erro ao importar planilha: " + e.message);
+            } finally {
+                event.target.value = '';
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
     function toggleKB(id) {
         const input = document.getElementById(id);
         const btn = event.currentTarget;
