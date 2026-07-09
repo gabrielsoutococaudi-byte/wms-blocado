@@ -172,7 +172,6 @@
     <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
         <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
     <button onclick="navegar('movimentacao_drive_in')">🚚 MOVIMENTAÇÃO DRIVE IN</button>
-    <button id="btn-nav-bins" onclick="navegar('cadastro_bins')" style="display: none;">🗂️ CADASTRO DE BINS</button>
     
     <button onclick="logout()" style="color: var(--retido); margin-top: 40px; border-top: 1px solid var(--glass-border); border-radius: 0; width: 100%; opacity: 0.7;">🚪 ENCERRAR SESSÃO</button>
 </div>
@@ -328,7 +327,7 @@
                     <div class="wms-table-container">
                         <table class="wms-table">
                             <thead>
-                                <tr><th>Data</th><th>Hora</th><th>Fluxo/Ação</th><th>Material</th><th>Descrição</th><th>Setor</th><th>Qtd</th><th>Operador</th></tr>
+                                <tr><th>Data</th><th>Hora</th><th>Fluxo/Ação</th><th>Material</th><th>Descrição</th><th>Setor</th><th>Qtd</th><th>Operador</th><th>Transação SAP</th><th>Nº OT</th></tr>
                             </thead>
                             <tbody id="table-historico-consolidado"></tbody>
                         </table>
@@ -356,8 +355,6 @@
                     <button class="btn-action" onclick="exportarHistoricoExcel()" style="background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">EXPORTAR LOG COMPLETO DE AUDITORIA</button>
                 </div>
                 <button class="btn-action" onclick="sincronizarBaseMateriais()" style="width: 100%; margin-top: 15px; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">SINCRONIZAR BASE DE MATERIAIS (EXCEL)</button>
-                <input type="file" id="bins-file-admin" accept=".xlsx, .xls" style="display: none;" onchange="processarImportacaoBins(event)">
-                <button class="btn-action" onclick="document.getElementById('bins-file-admin').click()" style="width: 100%; margin-top: 15px; background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">IMPORTAR CADASTRO DE BINS (EXCEL)</button>
             </div>
         </div>
  
@@ -424,79 +421,9 @@
                 <button class="btn-action" style="width: 100%; padding: 20px;" onclick="salvarMovimentacaoDriveIn()">CONFIRMAR MOVIMENTACAO</button>
             </div>
         </div>
-
-<div id="view-cadastro_bins" style="display: none;">
-            <div class="search-wrapper">
-                <input type="text" id="bins-search-input" placeholder="🔎 Buscar por posição ou localização (ex: 301-002, DRIVE IN, RUA 101)..." oninput="renderizarBins()">
-            </div>
-
-            <div class="glass-card form-box" style="padding: 30px;">
-                <h3 style="color: #fff; margin-bottom: 25px; font-weight: 900; font-size: 18px; letter-spacing: -1px;">Cadastrar Nova Posição (Bin)</h3>
-                <div class="form-group"><label>Posição</label>
-                    <div class="input-with-toggle"><input type="text" id="bin-nova-posicao" placeholder="Ex: 301-002-001"><div class="toggle-kb-btn" onclick="toggleKB('bin-nova-posicao')">123</div></div>
-                </div>
-                <div class="form-group"><label>Localização</label>
-                    <div class="input-with-toggle"><input type="text" id="bin-nova-localizacao" placeholder="Ex: DRIVE IN / RUA - 101"><div class="toggle-kb-btn" onclick="toggleKB('bin-nova-localizacao')">Abc</div></div>
-                </div>
-                <div class="form-group"><label>Capacidade (Volumes/Paletes)</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="bin-nova-capacidade" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('bin-nova-capacidade')">Abc</div></div>
-                </div>
-                <button class="btn-action" style="width: 100%;" onclick="salvarNovoBin()">CADASTRAR POSIÇÃO</button>
-            </div>
-
-            <div class="glass-card" style="padding: 30px; margin-top: 20px;">
-                <h3 style="color: #fff; margin-bottom: 15px; font-weight: 900; font-size: 14px; letter-spacing: -0.5px; text-transform: uppercase;">Importar Planilha de Posições</h3>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6;">Colunas esperadas: POSIÇÃO, LOCALIZAÇÃO, QUANTIDADE POSIÇÃO. Posições já cadastradas mantêm o estoque atual — apenas capacidade e localização são atualizadas.</p>
-                <input type="file" id="bins-file" accept=".xlsx, .xls" style="display: none;" onchange="processarImportacaoBins(event)">
-                <button class="btn-action" onclick="document.getElementById('bins-file').click()" style="width: 100%; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">IMPORTAR POSIÇÕES (XLSX)</button>
-            </div>
-
-            <div class="glass-card" style="padding: 20px; margin-top: 20px; margin-bottom: 30px;">
-                <div class="wms-table-container">
-                    <table class="wms-table">
-                        <thead>
-                            <tr><th>Posição</th><th>Localização</th><th>Capacidade</th><th>Status</th><th>Qtd. Atual</th><th>Material</th><th>Última Mov.</th><th></th></tr>
-                        </thead>
-                        <tbody id="table-bins-estoque"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
-
-<div id="modal-bin-palete" style="display:none; position:fixed; top:0; left:0; width:100%; height:100dvh; background:rgba(0,0,0,0.95); z-index:3000; align-items:center; justify-content:center; backdrop-filter: blur(20px); padding: 20px;">
-    <div class="modal-content glass-card">
-        <h3 id="bin-modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Editar Posição</h3>
-        <p id="bin-modal-info" style="font-size:13px; color: var(--text-secondary); margin: 15px 0 25px; line-height: 1.6;"></p>
-        <div class="form-group"><label>Status da Posição</label>
-            <select id="bin-modal-status">
-                <option value="LIVRE">LIVRE</option>
-                <option value="OCUPADA">OCUPADA</option>
-                <option value="BLOQUEADA">BLOQUEADA</option>
-                <option value="EM_AUDITORIA">EM AUDITORIA</option>
-            </select>
-        </div>
-        <div class="form-group"><label>Código do Material</label>
-            <div class="input-with-toggle"><input type="text" inputmode="numeric" id="bin-modal-material" placeholder="Código..."><div class="toggle-kb-btn" onclick="toggleKB('bin-modal-material')">Abc</div></div>
-        </div>
-        <div class="form-group"><label>Lote (opcional)</label>
-            <div class="input-with-toggle"><input type="text" id="bin-modal-lote" placeholder="Lote"><div class="toggle-kb-btn" onclick="toggleKB('bin-modal-lote')">Abc</div></div>
-        </div>
-        <div class="form-group"><label>Quantidade de Volumes/Paletes</label>
-            <div class="input-with-toggle"><input type="text" inputmode="decimal" id="bin-modal-qtd" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('bin-modal-qtd')">Abc</div></div>
-        </div>
-        <div class="form-group"><label>Observações (opcional)</label>
-            <div class="input-with-toggle"><input type="text" id="bin-modal-obs" placeholder="Observações"><div class="toggle-kb-btn" onclick="toggleKB('bin-modal-obs')">Abc</div></div>
-        </div>
-        <div style="display:flex; gap:15px; margin-top:25px;">
-            <button onclick="fecharModalBin()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button>
-            <button class="btn-action" style="flex:1;" onclick="confirmarEdicaoBin()">SALVAR ALTERAÇÕES</button>
-        </div>
-        <button onclick="liberarPosicaoBin()" style="width:100%; margin-top:15px; padding:14px; background:transparent; color: var(--retido); border:1px solid var(--retido); border-radius:16px; font-weight:800; cursor:pointer; text-transform: uppercase; font-size: 11px; letter-spacing: 1px;">🗑️ LIBERAR POSIÇÃO</button>
-    </div>
-</div>
-
+ 
 <div id="modal-retirada">
     <div class="modal-content glass-card">
         <h3 id="modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Retirada</h3>
@@ -539,12 +466,28 @@
     let baseMateriais = [];
     let todasMovimentacoes = [];
     let movimentacoesFiltradas = [];
+
+    // ==== SIMULAÇÃO SAP WM/EWM — METADADOS CORPORATIVOS (LX03/LS24/LT01/LT12/LP11) ====
+    const SAP_DEPOSITO_PADRAO = '001'; // Número do Depósito (Warehouse Number padrão)
+    const SAP_TIPOS_DEPOSITO = { '001': 'Porta-Paletes', '002': 'Blocado', '902': 'Recebimento' };
+    function gerarOrdemTransferenciaSAP() {
+        // Simula um número de Ordem de Transferência (OT) sequencial de 10 dígitos, como no SAP LT01/LT12
+        return Date.now().toString().slice(-10).padStart(10, '0');
+    }
+    function obterMetadadosSAP(item) {
+        // Deriva/retorna os metadados corporativos SAP de uma posição para exibição técnica (LX03/LS24)
+        const tipo = item?.tipoDeposito || '002';
+        return {
+            deposito: item?.numeroDeposito || SAP_DEPOSITO_PADRAO,
+            tipoDeposito: tipo,
+            tipoDepositoDesc: SAP_TIPOS_DEPOSITO[tipo] || 'Blocado',
+            areaArmazenamento: item?.areaArmazenamento || (item?.ender ? item.ender.toString().split('-')[0] : '---')
+        };
+    }
     let usuarioLogado = null;
     let diasCalculados = 0;
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
-    let binsEstoque = [];
-    let binSelecionadoId = null;
  
     // Instâncias Globais de Gráficos
     let chartDiarioInst = null;
@@ -585,7 +528,6 @@
         const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
         document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
-        document.getElementById('btn-nav-bins').style.display = isAdmin ? 'block' : 'none';
         
         const hoje = new Date();
         document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
@@ -602,13 +544,10 @@
     }
  
     function navegar(tela) {
-        const isAdmin = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
-        if (tela === 'cadastro_bins' && !isAdmin) { alert("Acesso restrito ao perfil Administrador."); tela = 'retirar'; }
-        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in', 'cadastro_bins'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
+        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
         document.getElementById('view-' + tela).style.display = 'block';
         document.getElementById('sidebar').classList.remove('active');
         if(tela === 'admin') carregarDadosDashboard();
-        if(tela === 'cadastro_bins') renderizarBins();
     }
  
     function navegarComFiltro(tipo) {
@@ -637,11 +576,6 @@
         db.collection("movimentacoes_wms").orderBy("timestamp", "desc").onSnapshot(snap => {
             todasMovimentacoes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             processarFiltragemHistorica();
-        });
-
-        db.collection("bins_estoque").onSnapshot(snap => {
-            binsEstoque = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderizarBins();
         });
     }
  
@@ -1026,7 +960,7 @@
         tbodyHist.innerHTML = '';
         dados.slice(0, 5).forEach(m => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
+            tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td><td style="font-size:10px; color:var(--text-secondary);">${m.transacaoSAP || '-'}</td><td style="font-size:10px; color:var(--text-secondary);">${m.Ordem_Transferencia_SAP || '-'}</td>`;
             tbodyHist.appendChild(tr);
         });
  
@@ -1082,10 +1016,11 @@
         filtrados.forEach(item => {
             let status = item.dias <= 30 ? "RETIDO" : (item.dias <= 60 ? "CRÍTICO" : "DATA BOA");
             let cor = item.dias <= 30 ? "var(--retido)" : (item.dias <= 60 ? "var(--critico)" : "var(--verde)");
+            const sap = obterMetadadosSAP(item);
             const card = document.createElement('div');
             card.className = `item-card`;
             card.style.borderLeft = `8px solid ${cor}`;
-            card.innerHTML = `<div><span class="badge badge-ender">${item.ender}</span><span class="badge" style="background: ${cor}20; color: ${cor}; border: 1px solid ${cor}40; margin-left: 5px;">${status}</span><div style="font-weight:900; font-size:24px; margin-top:15px; letter-spacing:-1px; color: #fff;">${item.mat}</div><div style="font-size:12px; color:var(--text-secondary); margin-top:5px; font-weight:600;">${item.desc || "---"}</div><div style="font-size:10px; margin-top:15px; color: var(--text-secondary); font-weight: 800;">VALIDADE: <b style="color: ${cor}">${item.dias} DIAS</b></div></div><div style="text-align: right;"><div style="font-size:32px; font-weight:900; margin-bottom:15px; color: #fff;">${item.qtd}<span style="font-size:12px; color:var(--text-secondary); margin-left:5px;">PL</span></div><button class="btn-action" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button></div>`;
+            card.innerHTML = `<div><span class="badge badge-ender">${item.ender}</span><span class="badge" style="background: ${cor}20; color: ${cor}; border: 1px solid ${cor}40; margin-left: 5px;">${status}</span><div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;"><span class="badge" style="background:rgba(255,255,255,0.06); color:var(--text-secondary); font-family:monospace;" title="Número do Depósito (SAP)">DEP ${sap.deposito}</span><span class="badge" style="background:rgba(255,255,255,0.06); color:var(--text-secondary); font-family:monospace;" title="Tipo de Depósito (SAP)">TD ${sap.tipoDeposito} · ${sap.tipoDepositoDesc}</span><span class="badge" style="background:rgba(255,255,255,0.06); color:var(--text-secondary); font-family:monospace;" title="Área de Armazenamento (SAP)">ÁREA ${sap.areaArmazenamento}</span></div><div style="font-weight:900; font-size:24px; margin-top:15px; letter-spacing:-1px; color: #fff;">${item.mat}</div><div style="font-size:12px; color:var(--text-secondary); margin-top:5px; font-weight:600;">${item.desc || "---"}</div><div style="font-size:10px; margin-top:15px; color: var(--text-secondary); font-weight: 800;">VALIDADE: <b style="color: ${cor}">${item.dias} DIAS</b></div></div><div style="text-align: right;"><div style="font-size:32px; font-weight:900; margin-bottom:15px; color: #fff;">${item.qtd}<span style="font-size:12px; color:var(--text-secondary); margin-left:5px;">PL</span></div><button class="btn-action" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button></div>`;
             lista.appendChild(card);
         });
     }
@@ -1139,14 +1074,25 @@
         const desc = document.getElementById('eb-desc').value;
         const qtd = parseInt(document.getElementById('eb-qtd').value);
         const inputVenc = document.getElementById('eb-venc').value;
+        const origem = document.getElementById('eb-origem').value;
         if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos.");
         if(desc === "MATERIAL NÃO CADASTRADO") return alert("Código não cadastrado na base.");
         const val = inputVenc.split('-').reverse().join('/');
         const ocupante = estoqueCompleto.find(i => i.ender === ender);
         if (ocupante && ocupante.mat !== mat) return alert("Posição ocupada por outro material.");
-        if (ocupante) { await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd }); } 
-        else { await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: val, desc: desc }); }
-        registrarMovimentacao(ender, mat, val, `+${qtd} PL`, `ENTRADA VIA ${document.getElementById('eb-origem').value}`);
+
+        // === SIMULAÇÃO SAP: Ordem de Transferência (MIGO -> LB10 -> LT12) ===
+        const ordemTransferenciaSAP = gerarOrdemTransferenciaSAP();
+        const areaArmazenamento = ender.split('-')[0];
+
+        if (origem === 'RECEBIMENTO') {
+            // Registra saldo temporário no Tipo de Depósito 902 (Área de Recebimento SAP) antes de consolidar no destino final
+            await registrarMovimentacao(ender, mat, val, `+${qtd} PL`, `RECEBIMENTO EM ÁREA 902 (MIGO)`, { transacao: 'MIGO (Entrada Recebimento)', ot: ordemTransferenciaSAP, status: 'Saldo Temporário em Depósito 902' });
+        }
+
+        if (ocupante) { await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd, numeroDeposito: SAP_DEPOSITO_PADRAO, tipoDeposito: '002', areaArmazenamento }); } 
+        else { await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: val, desc: desc, numeroDeposito: SAP_DEPOSITO_PADRAO, tipoDeposito: '002', areaArmazenamento }); }
+        registrarMovimentacao(ender, mat, val, `+${qtd} PL`, `ENTRADA VIA ${origem}`, { transacao: 'LT12 (Confirmação de OT)', ot: ordemTransferenciaSAP, status: 'Confirmado via Coletor (LT12)' });
         ['eb-ender', 'eb-mat', 'eb-desc', 'eb-qtd', 'eb-venc'].forEach(id => document.getElementById(id).value = '');
         navegar('retirar');
     }
@@ -1161,14 +1107,21 @@
         const dest = document.getElementById('ab-destino').value.toUpperCase().trim();
         const qtd = parseInt(document.getElementById('ab-qtd').value);
         if(!itemOrigemAbertura || isNaN(qtd) || qtd <= 0 || qtd > itemOrigemAbertura.qtd || !dest) return alert("Dados inválidos.");
+        // === VALIDAÇÃO TÉCNICA SAP (LT01): posição origem não pode ser igual à posição destino ===
+        if (itemOrigemAbertura.ender.toUpperCase().trim() === dest) return alert("Posição de origem e destino não podem ser iguais (validação SAP LT01).");
         const ocup = estoqueCompleto.find(i => i.ender === dest);
         if (ocup && ocup.mat !== itemOrigemAbertura.mat) return alert("Destino ocupado.");
+        const areaArmazenamentoDest = dest.split('-')[0];
         if (qtd === itemOrigemAbertura.qtd) { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete(); } 
         else { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtd }); }
-        if (ocup) { await db.collection("estoque_blocado").doc(ocup.id).update({ qtd: ocup.qtd + qtd }); } 
-        else { await db.collection("estoque_blocado").add({ ender: dest, mat: itemOrigemAbertura.mat, desc: itemOrigemAbertura.desc, qtd, dias: itemOrigemAbertura.dias, valFrente: itemOrigemAbertura.valFrente }); }
-        registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtd} PL`, `PARA ${dest}`);
-        registrarMovimentacao(dest, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtd} PL`, `DE ${itemOrigemAbertura.ender}`);
+        if (ocup) { await db.collection("estoque_blocado").doc(ocup.id).update({ qtd: ocup.qtd + qtd, numeroDeposito: SAP_DEPOSITO_PADRAO, tipoDeposito: '002', areaArmazenamento: areaArmazenamentoDest }); } 
+        else { await db.collection("estoque_blocado").add({ ender: dest, mat: itemOrigemAbertura.mat, desc: itemOrigemAbertura.desc, qtd, dias: itemOrigemAbertura.dias, valFrente: itemOrigemAbertura.valFrente, numeroDeposito: SAP_DEPOSITO_PADRAO, tipoDeposito: '002', areaArmazenamento: areaArmazenamentoDest }); }
+
+        // === SIMULAÇÃO SAP: Transferência Interna (LT01 + LT12) ===
+        const ordemTransferenciaSAP = gerarOrdemTransferenciaSAP();
+        const sapMeta = { transacao: 'Movimentação Manual de Posições (Simulação LT01)', ot: ordemTransferenciaSAP, status: 'Confirmação Instantânea (LT12)' };
+        registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtd} PL`, `PARA ${dest}`, sapMeta);
+        registrarMovimentacao(dest, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtd} PL`, `DE ${itemOrigemAbertura.ender}`, sapMeta);
         navegar('retirar');
     }
  
@@ -1177,9 +1130,9 @@
         document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
     }
  
-    async function registrarMovimentacao(ender, mat, val, qtd, fluxo) {
+    async function registrarMovimentacao(ender, mat, val, qtd, fluxo, sapMeta = null) {
         const agora = new Date();
-        await db.collection("movimentacoes_wms").add({ 
+        const doc = { 
             endereco: ender, 
             material: mat, 
             validade: val, 
@@ -1189,12 +1142,19 @@
             data: agora.toLocaleDateString('pt-BR'), 
             hora: agora.toLocaleTimeString('pt-BR'), 
             timestamp: agora 
-        });
+        };
+        // Metadados corporativos SAP (opcionais, aditivos) — Transação correspondente e Ordem de Transferência simulada
+        if (sapMeta) {
+            if (sapMeta.transacao) doc.transacaoSAP = sapMeta.transacao;
+            if (sapMeta.ot) doc.Ordem_Transferencia_SAP = sapMeta.ot;
+            if (sapMeta.status) doc.statusSAP = sapMeta.status;
+        }
+        await db.collection("movimentacoes_wms").add(doc);
     }
  
     function exportarRelatorioFiltradoExcel() {
         if(movimentacoesFiltradas.length === 0) return alert("Não existem dados no período filtrado para exportar.");
-        const dadosPlanilha = movimentacoesFiltradas.map(m => ({ "Data": m.data, "Horário": m.hora, "Fluxo / Ação": m.fluxo, "Código Material": m.material, "Descrição": buscarDescricaoLocal(m.material), "Setor Logístico": buscarSetorLocal(m.material), "Quantidade (PL)": m.quantidade, "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A' }));
+        const dadosPlanilha = movimentacoesFiltradas.map(m => ({ "Data": m.data, "Horário": m.hora, "Fluxo / Ação": m.fluxo, "Código Material": m.material, "Descrição": buscarDescricaoLocal(m.material), "Setor Logístico": buscarSetorLocal(m.material), "Quantidade (PL)": m.quantidade, "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A', "Transação SAP Correspondente": m.transacaoSAP || '-', "Número da OT": m.Ordem_Transferencia_SAP || '-' }));
         const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Relatório_Filtrado");
@@ -1203,7 +1163,7 @@
  
     async function exportarHistoricoExcel() {
         const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-        const dados = snap.docs.map(doc => { const d = doc.data(); return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora }; });
+        const dados = snap.docs.map(doc => { const d = doc.data(); return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora, "Transação SAP Correspondente": d.transacaoSAP || '-', "Número da OT": d.Ordem_Transferencia_SAP || '-', "Status SAP": d.statusSAP || '-' }; });
         const ws = XLSX.utils.json_to_sheet(dados);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Infinity_Log");
@@ -1263,184 +1223,7 @@
         };
         input.click();
     }
-
-    // ===================== CADASTRO DE POSIÇÕES (BIN DE ESTOQUE) =====================
-
-    function classificarTipoBin(localizacao) {
-        const loc = (localizacao || "").toUpperCase();
-        return loc.includes("DRIVE") ? "DRIVE_IN" : "RUA";
-    }
-
-    function isAdminLogado() {
-        return usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
-    }
-
-    function formatarDataHoraAgora() {
-        const d = new Date();
-        const data = d.toLocaleDateString('pt-BR');
-        const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        return `${data} ${hora}`;
-    }
-
-    function renderizarBins() {
-        const tbody = document.getElementById('table-bins-estoque');
-        if (!tbody) return;
-        const query = (document.getElementById('bins-search-input')?.value || "").toUpperCase().trim();
-
-        const lista = binsEstoque
-            .filter(b => !query || b.posicao?.toUpperCase().includes(query) || b.localizacao?.toUpperCase().includes(query))
-            .sort((a, b) => (a.posicao || "").localeCompare(b.posicao || ""));
-
-        tbody.innerHTML = lista.map(b => {
-            const status = b.status || "LIVRE";
-            const qtdAtual = b.quantidadeAtual || 0;
-            const corStatus = status === "OCUPADA" ? "var(--critico)" : status === "BLOQUEADA" ? "var(--retido)" : status === "EM_AUDITORIA" ? "var(--accent)" : "var(--verde)";
-            return `<tr>
-                <td><span class="badge badge-ender">${b.posicao}</span></td>
-                <td>${b.localizacao || "-"}</td>
-                <td>${b.capacidade ?? "-"}</td>
-                <td><span class="badge" style="background:${corStatus}; color:#000;">${status}</span></td>
-                <td>${qtdAtual}</td>
-                <td>${b.materialAtual || "-"}</td>
-                <td style="font-size:10px; color: var(--text-secondary);">${b.dataUltimaMovimentacao || "-"}</td>
-                <td><button class="expand-btn" style="position:static;" onclick="abrirModalBin('${b.id}')">Editar</button></td>
-            </tr>`;
-        }).join('');
-    }
-
-    async function salvarNovoBin() {
-        if (!isAdminLogado()) return alert("Acesso restrito ao perfil Administrador.");
-        const posicao = document.getElementById('bin-nova-posicao').value.trim().toUpperCase();
-        const localizacao = document.getElementById('bin-nova-localizacao').value.trim().toUpperCase();
-        const capacidade = parseInt(document.getElementById('bin-nova-capacidade').value) || 0;
-
-        if (!posicao || !localizacao) return alert("Preencha posição e localização.");
-
-        try {
-            await db.collection("bins_estoque").doc(posicao).set({
-                posicao,
-                localizacao,
-                capacidade,
-                tipo: classificarTipoBin(localizacao)
-            }, { merge: true });
-            alert("Posição cadastrada com sucesso!");
-            ['bin-nova-posicao', 'bin-nova-localizacao', 'bin-nova-capacidade'].forEach(id => document.getElementById(id).value = '');
-        } catch (e) {
-            alert("Erro ao cadastrar posição: " + e.message);
-        }
-    }
-
-    function abrirModalBin(binId) {
-        if (!isAdminLogado()) return alert("Acesso restrito ao perfil Administrador.");
-        binSelecionadoId = binId;
-        const bin = binsEstoque.find(b => b.id === binId);
-        if (!bin) return;
-        document.getElementById('bin-modal-titulo').innerText = `Editar Posição — ${bin.posicao}`;
-        document.getElementById('bin-modal-info').innerText = `${bin.localizacao || ""} · Capacidade: ${bin.capacidade ?? "-"}`;
-        document.getElementById('bin-modal-status').value = bin.status || 'LIVRE';
-        document.getElementById('bin-modal-material').value = bin.materialAtual || '';
-        document.getElementById('bin-modal-lote').value = bin.loteAtual || '';
-        document.getElementById('bin-modal-qtd').value = bin.quantidadeAtual || '';
-        document.getElementById('bin-modal-obs').value = bin.observacoes || '';
-        document.getElementById('modal-bin-palete').style.display = 'flex';
-    }
-
-    function fecharModalBin() {
-        document.getElementById('modal-bin-palete').style.display = 'none';
-        binSelecionadoId = null;
-    }
-
-    async function confirmarEdicaoBin() {
-        if (!isAdminLogado()) return alert("Acesso restrito ao perfil Administrador.");
-        if (!binSelecionadoId) return;
-        const status = document.getElementById('bin-modal-status').value;
-        const material = document.getElementById('bin-modal-material').value.trim();
-        const lote = document.getElementById('bin-modal-lote').value.trim();
-        const qtd = parseInt(document.getElementById('bin-modal-qtd').value) || 0;
-        const obs = document.getElementById('bin-modal-obs').value.trim();
-
-        if (status === "OCUPADA" && (!material || qtd <= 0)) return alert("Para status OCUPADA, preencha material e quantidade.");
-
-        try {
-            await db.collection("bins_estoque").doc(binSelecionadoId).set({
-                status,
-                materialAtual: material || null,
-                loteAtual: lote || null,
-                quantidadeAtual: qtd,
-                observacoes: obs || "",
-                dataUltimaMovimentacao: formatarDataHoraAgora(),
-                usuarioResponsavel: usuarioLogado?.nome || usuarioLogado?.email || "SISTEMA"
-            }, { merge: true });
-            fecharModalBin();
-            alert("Posição atualizada com sucesso!");
-        } catch (e) {
-            alert("Erro ao atualizar posição: " + e.message);
-        }
-    }
-
-    async function liberarPosicaoBin() {
-        if (!isAdminLogado()) return alert("Acesso restrito ao perfil Administrador.");
-        if (!binSelecionadoId) return;
-        if (!confirm("Liberar esta posição? O material, lote e quantidade atuais serão removidos.")) return;
-
-        try {
-            await db.collection("bins_estoque").doc(binSelecionadoId).set({
-                status: "LIVRE",
-                materialAtual: null,
-                loteAtual: null,
-                quantidadeAtual: 0,
-                observacoes: "",
-                dataUltimaMovimentacao: formatarDataHoraAgora(),
-                usuarioResponsavel: usuarioLogado?.nome || usuarioLogado?.email || "SISTEMA"
-            }, { merge: true });
-            fecharModalBin();
-            alert("Posição liberada com sucesso!");
-        } catch (e) {
-            alert("Erro ao liberar posição: " + e.message);
-        }
-    }
-
-    function processarImportacaoBins(event) {
-        if (!isAdminLogado()) { alert("Acesso restrito ao perfil Administrador."); event.target.value = ''; return; }
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async (ev) => {
-            try {
-                const data = new Uint8Array(ev.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-
-                if (!confirm(`Importar ${json.length} posições para o cadastro de Bins?`)) return;
-
-                let batch = db.batch();
-                let count = 0;
-                for (const item of json) {
-                    const posicao = (item['POSIÇÃO'] || item['POSICAO'] || '').toString().trim().toUpperCase();
-                    const localizacao = (item['LOCALIZAÇÃO'] || item['LOCALIZACAO'] || '').toString().trim().toUpperCase();
-                    const capacidade = parseInt(item['QUANTIDADE POSIÇÃO'] || item['QUANTIDADE POSICAO'] || 0) || 0;
-                    if (!posicao) continue;
-
-                    batch.set(db.collection("bins_estoque").doc(posicao), {
-                        posicao,
-                        localizacao,
-                        capacidade,
-                        tipo: classificarTipoBin(localizacao)
-                    }, { merge: true });
-                    count++;
-                    if (count % 400 === 0) { await batch.commit(); batch = db.batch(); }
-                }
-                await batch.commit();
-                alert(`Importação concluída: ${count} posições processadas.`);
-            } catch (e) {
-                alert("Erro ao importar planilha: " + e.message);
-            } finally {
-                event.target.value = '';
-            }
-        };
-        reader.readAsArrayBuffer(file);
-    }
-
+ 
     function toggleKB(id) {
         const input = document.getElementById(id);
         const btn = event.currentTarget;
@@ -1557,8 +1340,13 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         const val = inputVenc.split('-').reverse().join('/');
  
         try {
+            // === SIMULAÇÃO SAP: Reabastecimento de Picking (LP11/LP12) quando destino for APANHA ===
+            const ordemTransferenciaSAP = gerarOrdemTransferenciaSAP();
+            const sapMeta = destino === 'APANHA'
+                ? { transacao: 'Reabastecimento de Posição de Picking Dinâmico (SAP LP11/LP12)', ot: ordemTransferenciaSAP, status: 'Confirmado (LP12)' }
+                : { transacao: 'Movimentação Interna (Simulação LT01)', ot: ordemTransferenciaSAP };
             // Registra APENAS a saída do Drive In (valor negativo) — sem gerar entrada
-            await registrarMovimentacao("DRIVE-IN", mat, val, `-${qtd} PL`, destino);
+            await registrarMovimentacao("DRIVE-IN", mat, val, `-${qtd} PL`, destino, sapMeta);
             alert("Movimentacao Drive In registrada com sucesso!");
             ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('mdi-label-dias').innerText = '';
