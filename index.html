@@ -321,30 +321,13 @@
             <div class="dashboard-fullrow">
                 <div class="chart-box glass-card">
                     <div class="chart-title">
-                        <div>🧾 Referência de Transações SAP Simuladas (WM/EWM)</div>
-                        <span style="font-size:10px; color:var(--text-secondary); font-weight:700; text-transform:uppercase;">Compliance / Auditoria Interna</span>
-                    </div>
-                    <div class="wms-table-container">
-                        <table class="wms-table">
-                            <thead>
-                                <tr><th>Transação SAP</th><th>Módulo</th><th>Descrição</th><th>Tela / Fluxo no Coletor</th></tr>
-                            </thead>
-                            <tbody id="table-referencia-sap"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
- 
-            <div class="dashboard-fullrow">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">
                         <div>📋 Histórico Detalhado Consolidação Fluxos</div>
                         <button class="btn-action" onclick="exportarRelatorioFiltradoExcel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">Exportar Planilha Filtrada</button>
                     </div>
                     <div class="wms-table-container">
                         <table class="wms-table">
                             <thead>
-                                <tr><th>Data</th><th>Hora</th><th>Fluxo/Ação</th><th>Material</th><th>Descrição</th><th>Setor</th><th>Qtd</th><th>Operador</th><th>Transação SAP</th><th>Nº OT</th></tr>
+                                <tr><th>Data</th><th>Hora</th><th>Fluxo/Ação</th><th>Material</th><th>Descrição</th><th>Setor</th><th>Qtd</th><th>Operador</th></tr>
                             </thead>
                             <tbody id="table-historico-consolidado"></tbody>
                         </table>
@@ -483,49 +466,6 @@
     let baseMateriais = [];
     let todasMovimentacoes = [];
     let movimentacoesFiltradas = [];
-
-    // ==== SIMULAÇÃO SAP WM/EWM — METADADOS CORPORATIVOS (LX03/LS24/LT01/LT12/LP11) ====
-    const SAP_DEPOSITO_PADRAO = '001'; // Número do Depósito (Warehouse Number padrão)
-    const SAP_TIPOS_DEPOSITO = { '001': 'Porta-Paletes', '002': 'Blocado', '902': 'Recebimento' };
-    function gerarOrdemTransferenciaSAP() {
-        // Simula um número de Ordem de Transferência (OT) sequencial de 10 dígitos, como no SAP LT01/LT12
-        return Date.now().toString().slice(-10).padStart(10, '0');
-    }
-    function obterMetadadosSAP(item) {
-        // Deriva/retorna os metadados corporativos SAP de uma posição para exibição técnica (LX03/LS24)
-        const tipo = item?.tipoDeposito || '002';
-        return {
-            deposito: item?.numeroDeposito || SAP_DEPOSITO_PADRAO,
-            tipoDeposito: tipo,
-            tipoDepositoDesc: SAP_TIPOS_DEPOSITO[tipo] || 'Blocado',
-            areaArmazenamento: item?.areaArmazenamento || (item?.ender ? item.ender.toString().split('-')[0] : '---')
-        };
-    }
-    // Referência completa das transações SAP WM/EWM simuladas pelo coletor (uso no painel admin)
-    const SAP_TRANSACOES_REFERENCIA = [
-        { codigo: 'LX03', modulo: 'WM', descricao: 'Mapa de Depósito / Consulta de Posições', tela: '#view-retirar (Consulta de Estoque)' },
-        { codigo: 'LS24', modulo: 'WM', descricao: 'Consulta de Saldos por Posição', tela: '#view-retirar (Badges de Depósito/Área)' },
-        { codigo: 'MIGO', modulo: 'MM', descricao: 'Entrada de Mercadoria (Recebimento)', tela: '#view-entrada_bloco (Origem: RECEBIMENTO)' },
-        { codigo: 'LB10', modulo: 'WM', descricao: 'Lista de Ordens de Transferência em Aberto', tela: '#view-entrada_bloco (Geração da OT)' },
-        { codigo: 'LT01', modulo: 'WM', descricao: 'Criação Manual de Ordem de Transferência', tela: '#view-abertura_blocado (Movimentação Manual)' },
-        { codigo: 'LT12', modulo: 'WM', descricao: 'Confirmação de Ordem de Transferência', tela: '#view-entrada_bloco / #view-abertura_blocado (Confirmação Instantânea)' },
-        { codigo: 'LP11', modulo: 'WM', descricao: 'Criação de OT de Reabastecimento de Picking', tela: '#view-movimentacao_drive_in (Destino: APANHA)' },
-        { codigo: 'LP12', modulo: 'WM', descricao: 'Confirmação de OT de Reabastecimento de Picking', tela: '#view-movimentacao_drive_in (Confirmação LP12)' },
-        { codigo: 'LT22', modulo: 'WM', descricao: 'Exibição de Ordem de Transferência (Log Detalhado)', tela: '#view-admin (Histórico Detalhado Consolidado)' },
-        { codigo: 'LT24', modulo: 'WM', descricao: 'Lista de Ordens de Transferência Confirmadas', tela: '#view-admin (Exportação de Relatórios Excel)' }
-    ];
-    function renderizarReferenciaSAP() {
-        const tbody = document.getElementById('table-referencia-sap');
-        if (!tbody) return;
-        tbody.innerHTML = SAP_TRANSACOES_REFERENCIA.map(t => `
-            <tr>
-                <td><span class="badge" style="background:rgba(255,255,255,0.08); color:var(--primary); font-weight:900;">${t.codigo}</span></td>
-                <td style="font-size:11px; color:var(--text-secondary); font-weight:800;">${t.modulo}</td>
-                <td>${t.descricao}</td>
-                <td style="font-size:11px; color:var(--text-secondary);">${t.tela}</td>
-            </tr>
-        `).join('');
-    }
     let usuarioLogado = null;
     let diasCalculados = 0;
     let itemParaRetirar = null;
@@ -589,7 +529,7 @@
         ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
         document.getElementById('view-' + tela).style.display = 'block';
         document.getElementById('sidebar').classList.remove('active');
-        if(tela === 'admin') { carregarDadosDashboard(); renderizarReferenciaSAP(); }
+        if(tela === 'admin') carregarDadosDashboard();
     }
  
     function navegarComFiltro(tipo) {
@@ -1002,7 +942,7 @@
         tbodyHist.innerHTML = '';
         dados.slice(0, 5).forEach(m => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td><td style="font-size:10px; color:var(--text-secondary);">${m.transacaoSAP || '-'}</td><td style="font-size:10px; color:var(--text-secondary);">${m.Ordem_Transferencia_SAP || '-'}</td>`;
+            tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
             tbodyHist.appendChild(tr);
         });
  
@@ -1058,11 +998,10 @@
         filtrados.forEach(item => {
             let status = item.dias <= 30 ? "RETIDO" : (item.dias <= 60 ? "CRÍTICO" : "DATA BOA");
             let cor = item.dias <= 30 ? "var(--retido)" : (item.dias <= 60 ? "var(--critico)" : "var(--verde)");
-            const sap = obterMetadadosSAP(item);
             const card = document.createElement('div');
             card.className = `item-card`;
             card.style.borderLeft = `8px solid ${cor}`;
-            card.innerHTML = `<div><span class="badge badge-ender">${item.ender}</span><span class="badge" style="background: ${cor}20; color: ${cor}; border: 1px solid ${cor}40; margin-left: 5px;">${status}</span><div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;"><span class="badge" style="background:rgba(255,255,255,0.06); color:var(--text-secondary); font-family:monospace;" title="Número do Depósito (SAP)">DEP ${sap.deposito}</span><span class="badge" style="background:rgba(255,255,255,0.06); color:var(--text-secondary); font-family:monospace;" title="Tipo de Depósito (SAP)">TD ${sap.tipoDeposito} · ${sap.tipoDepositoDesc}</span><span class="badge" style="background:rgba(255,255,255,0.06); color:var(--text-secondary); font-family:monospace;" title="Área de Armazenamento (SAP)">ÁREA ${sap.areaArmazenamento}</span></div><div style="font-weight:900; font-size:24px; margin-top:15px; letter-spacing:-1px; color: #fff;">${item.mat}</div><div style="font-size:12px; color:var(--text-secondary); margin-top:5px; font-weight:600;">${item.desc || "---"}</div><div style="font-size:10px; margin-top:15px; color: var(--text-secondary); font-weight: 800;">VALIDADE: <b style="color: ${cor}">${item.dias} DIAS</b></div></div><div style="text-align: right;"><div style="font-size:32px; font-weight:900; margin-bottom:15px; color: #fff;">${item.qtd}<span style="font-size:12px; color:var(--text-secondary); margin-left:5px;">PL</span></div><button class="btn-action" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button></div>`;
+            card.innerHTML = `<div><span class="badge badge-ender">${item.ender}</span><span class="badge" style="background: ${cor}20; color: ${cor}; border: 1px solid ${cor}40; margin-left: 5px;">${status}</span><div style="font-weight:900; font-size:24px; margin-top:15px; letter-spacing:-1px; color: #fff;">${item.mat}</div><div style="font-size:12px; color:var(--text-secondary); margin-top:5px; font-weight:600;">${item.desc || "---"}</div><div style="font-size:10px; margin-top:15px; color: var(--text-secondary); font-weight: 800;">VALIDADE: <b style="color: ${cor}">${item.dias} DIAS</b></div></div><div style="text-align: right;"><div style="font-size:32px; font-weight:900; margin-bottom:15px; color: #fff;">${item.qtd}<span style="font-size:12px; color:var(--text-secondary); margin-left:5px;">PL</span></div><button class="btn-action" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button></div>`;
             lista.appendChild(card);
         });
     }
@@ -1116,25 +1055,14 @@
         const desc = document.getElementById('eb-desc').value;
         const qtd = parseInt(document.getElementById('eb-qtd').value);
         const inputVenc = document.getElementById('eb-venc').value;
-        const origem = document.getElementById('eb-origem').value;
         if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos.");
         if(desc === "MATERIAL NÃO CADASTRADO") return alert("Código não cadastrado na base.");
         const val = inputVenc.split('-').reverse().join('/');
         const ocupante = estoqueCompleto.find(i => i.ender === ender);
         if (ocupante && ocupante.mat !== mat) return alert("Posição ocupada por outro material.");
-
-        // === SIMULAÇÃO SAP: Ordem de Transferência (MIGO -> LB10 -> LT12) ===
-        const ordemTransferenciaSAP = gerarOrdemTransferenciaSAP();
-        const areaArmazenamento = ender.split('-')[0];
-
-        if (origem === 'RECEBIMENTO') {
-            // Registra saldo temporário no Tipo de Depósito 902 (Área de Recebimento SAP) antes de consolidar no destino final
-            await registrarMovimentacao(ender, mat, val, `+${qtd} PL`, `RECEBIMENTO EM ÁREA 902 (MIGO)`, { transacao: 'MIGO (Entrada Recebimento)', ot: ordemTransferenciaSAP, status: 'Saldo Temporário em Depósito 902' });
-        }
-
-        if (ocupante) { await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd, numeroDeposito: SAP_DEPOSITO_PADRAO, tipoDeposito: '002', areaArmazenamento }); } 
-        else { await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: val, desc: desc, numeroDeposito: SAP_DEPOSITO_PADRAO, tipoDeposito: '002', areaArmazenamento }); }
-        registrarMovimentacao(ender, mat, val, `+${qtd} PL`, `ENTRADA VIA ${origem}`, { transacao: 'LT12 (Confirmação de OT)', ot: ordemTransferenciaSAP, status: 'Confirmado via Coletor (LT12)' });
+        if (ocupante) { await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd }); } 
+        else { await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: val, desc: desc }); }
+        registrarMovimentacao(ender, mat, val, `+${qtd} PL`, `ENTRADA VIA ${document.getElementById('eb-origem').value}`);
         ['eb-ender', 'eb-mat', 'eb-desc', 'eb-qtd', 'eb-venc'].forEach(id => document.getElementById(id).value = '');
         navegar('retirar');
     }
@@ -1149,21 +1077,14 @@
         const dest = document.getElementById('ab-destino').value.toUpperCase().trim();
         const qtd = parseInt(document.getElementById('ab-qtd').value);
         if(!itemOrigemAbertura || isNaN(qtd) || qtd <= 0 || qtd > itemOrigemAbertura.qtd || !dest) return alert("Dados inválidos.");
-        // === VALIDAÇÃO TÉCNICA SAP (LT01): posição origem não pode ser igual à posição destino ===
-        if (itemOrigemAbertura.ender.toUpperCase().trim() === dest) return alert("Posição de origem e destino não podem ser iguais (validação SAP LT01).");
         const ocup = estoqueCompleto.find(i => i.ender === dest);
         if (ocup && ocup.mat !== itemOrigemAbertura.mat) return alert("Destino ocupado.");
-        const areaArmazenamentoDest = dest.split('-')[0];
         if (qtd === itemOrigemAbertura.qtd) { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete(); } 
         else { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtd }); }
-        if (ocup) { await db.collection("estoque_blocado").doc(ocup.id).update({ qtd: ocup.qtd + qtd, numeroDeposito: SAP_DEPOSITO_PADRAO, tipoDeposito: '002', areaArmazenamento: areaArmazenamentoDest }); } 
-        else { await db.collection("estoque_blocado").add({ ender: dest, mat: itemOrigemAbertura.mat, desc: itemOrigemAbertura.desc, qtd, dias: itemOrigemAbertura.dias, valFrente: itemOrigemAbertura.valFrente, numeroDeposito: SAP_DEPOSITO_PADRAO, tipoDeposito: '002', areaArmazenamento: areaArmazenamentoDest }); }
-
-        // === SIMULAÇÃO SAP: Transferência Interna (LT01 + LT12) ===
-        const ordemTransferenciaSAP = gerarOrdemTransferenciaSAP();
-        const sapMeta = { transacao: 'Movimentação Manual de Posições (Simulação LT01)', ot: ordemTransferenciaSAP, status: 'Confirmação Instantânea (LT12)' };
-        registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtd} PL`, `PARA ${dest}`, sapMeta);
-        registrarMovimentacao(dest, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtd} PL`, `DE ${itemOrigemAbertura.ender}`, sapMeta);
+        if (ocup) { await db.collection("estoque_blocado").doc(ocup.id).update({ qtd: ocup.qtd + qtd }); } 
+        else { await db.collection("estoque_blocado").add({ ender: dest, mat: itemOrigemAbertura.mat, desc: itemOrigemAbertura.desc, qtd, dias: itemOrigemAbertura.dias, valFrente: itemOrigemAbertura.valFrente }); }
+        registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtd} PL`, `PARA ${dest}`);
+        registrarMovimentacao(dest, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtd} PL`, `DE ${itemOrigemAbertura.ender}`);
         navegar('retirar');
     }
  
@@ -1172,9 +1093,9 @@
         document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
     }
  
-    async function registrarMovimentacao(ender, mat, val, qtd, fluxo, sapMeta = null) {
+    async function registrarMovimentacao(ender, mat, val, qtd, fluxo) {
         const agora = new Date();
-        const doc = { 
+        await db.collection("movimentacoes_wms").add({ 
             endereco: ender, 
             material: mat, 
             validade: val, 
@@ -1184,19 +1105,12 @@
             data: agora.toLocaleDateString('pt-BR'), 
             hora: agora.toLocaleTimeString('pt-BR'), 
             timestamp: agora 
-        };
-        // Metadados corporativos SAP (opcionais, aditivos) — Transação correspondente e Ordem de Transferência simulada
-        if (sapMeta) {
-            if (sapMeta.transacao) doc.transacaoSAP = sapMeta.transacao;
-            if (sapMeta.ot) doc.Ordem_Transferencia_SAP = sapMeta.ot;
-            if (sapMeta.status) doc.statusSAP = sapMeta.status;
-        }
-        await db.collection("movimentacoes_wms").add(doc);
+        });
     }
  
     function exportarRelatorioFiltradoExcel() {
         if(movimentacoesFiltradas.length === 0) return alert("Não existem dados no período filtrado para exportar.");
-        const dadosPlanilha = movimentacoesFiltradas.map(m => ({ "Data": m.data, "Horário": m.hora, "Fluxo / Ação": m.fluxo, "Código Material": m.material, "Descrição": buscarDescricaoLocal(m.material), "Setor Logístico": buscarSetorLocal(m.material), "Quantidade (PL)": m.quantidade, "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A', "Transação SAP Correspondente": m.transacaoSAP || '-', "Número da OT": m.Ordem_Transferencia_SAP || '-' }));
+        const dadosPlanilha = movimentacoesFiltradas.map(m => ({ "Data": m.data, "Horário": m.hora, "Fluxo / Ação": m.fluxo, "Código Material": m.material, "Descrição": buscarDescricaoLocal(m.material), "Setor Logístico": buscarSetorLocal(m.material), "Quantidade (PL)": m.quantidade, "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A' }));
         const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Relatório_Filtrado");
@@ -1205,7 +1119,7 @@
  
     async function exportarHistoricoExcel() {
         const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-        const dados = snap.docs.map(doc => { const d = doc.data(); return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora, "Transação SAP Correspondente": d.transacaoSAP || '-', "Número da OT": d.Ordem_Transferencia_SAP || '-', "Status SAP": d.statusSAP || '-' }; });
+        const dados = snap.docs.map(doc => { const d = doc.data(); return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora }; });
         const ws = XLSX.utils.json_to_sheet(dados);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Infinity_Log");
@@ -1382,13 +1296,8 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         const val = inputVenc.split('-').reverse().join('/');
  
         try {
-            // === SIMULAÇÃO SAP: Reabastecimento de Picking (LP11/LP12) quando destino for APANHA ===
-            const ordemTransferenciaSAP = gerarOrdemTransferenciaSAP();
-            const sapMeta = destino === 'APANHA'
-                ? { transacao: 'Reabastecimento de Posição de Picking Dinâmico (SAP LP11/LP12)', ot: ordemTransferenciaSAP, status: 'Confirmado (LP12)' }
-                : { transacao: 'Movimentação Interna (Simulação LT01)', ot: ordemTransferenciaSAP };
             // Registra APENAS a saída do Drive In (valor negativo) — sem gerar entrada
-            await registrarMovimentacao("DRIVE-IN", mat, val, `-${qtd} PL`, destino, sapMeta);
+            await registrarMovimentacao("DRIVE-IN", mat, val, `-${qtd} PL`, destino);
             alert("Movimentacao Drive In registrada com sucesso!");
             ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('mdi-label-dias').innerText = '';
