@@ -321,6 +321,23 @@
             <div class="dashboard-fullrow">
                 <div class="chart-box glass-card">
                     <div class="chart-title">
+                        <div>🧾 Referência de Transações SAP Simuladas (WM/EWM)</div>
+                        <span style="font-size:10px; color:var(--text-secondary); font-weight:700; text-transform:uppercase;">Compliance / Auditoria Interna</span>
+                    </div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead>
+                                <tr><th>Transação SAP</th><th>Módulo</th><th>Descrição</th><th>Tela / Fluxo no Coletor</th></tr>
+                            </thead>
+                            <tbody id="table-referencia-sap"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+ 
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">
                         <div>📋 Histórico Detalhado Consolidação Fluxos</div>
                         <button class="btn-action" onclick="exportarRelatorioFiltradoExcel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">Exportar Planilha Filtrada</button>
                     </div>
@@ -484,6 +501,31 @@
             areaArmazenamento: item?.areaArmazenamento || (item?.ender ? item.ender.toString().split('-')[0] : '---')
         };
     }
+    // Referência completa das transações SAP WM/EWM simuladas pelo coletor (uso no painel admin)
+    const SAP_TRANSACOES_REFERENCIA = [
+        { codigo: 'LX03', modulo: 'WM', descricao: 'Mapa de Depósito / Consulta de Posições', tela: '#view-retirar (Consulta de Estoque)' },
+        { codigo: 'LS24', modulo: 'WM', descricao: 'Consulta de Saldos por Posição', tela: '#view-retirar (Badges de Depósito/Área)' },
+        { codigo: 'MIGO', modulo: 'MM', descricao: 'Entrada de Mercadoria (Recebimento)', tela: '#view-entrada_bloco (Origem: RECEBIMENTO)' },
+        { codigo: 'LB10', modulo: 'WM', descricao: 'Lista de Ordens de Transferência em Aberto', tela: '#view-entrada_bloco (Geração da OT)' },
+        { codigo: 'LT01', modulo: 'WM', descricao: 'Criação Manual de Ordem de Transferência', tela: '#view-abertura_blocado (Movimentação Manual)' },
+        { codigo: 'LT12', modulo: 'WM', descricao: 'Confirmação de Ordem de Transferência', tela: '#view-entrada_bloco / #view-abertura_blocado (Confirmação Instantânea)' },
+        { codigo: 'LP11', modulo: 'WM', descricao: 'Criação de OT de Reabastecimento de Picking', tela: '#view-movimentacao_drive_in (Destino: APANHA)' },
+        { codigo: 'LP12', modulo: 'WM', descricao: 'Confirmação de OT de Reabastecimento de Picking', tela: '#view-movimentacao_drive_in (Confirmação LP12)' },
+        { codigo: 'LT22', modulo: 'WM', descricao: 'Exibição de Ordem de Transferência (Log Detalhado)', tela: '#view-admin (Histórico Detalhado Consolidado)' },
+        { codigo: 'LT24', modulo: 'WM', descricao: 'Lista de Ordens de Transferência Confirmadas', tela: '#view-admin (Exportação de Relatórios Excel)' }
+    ];
+    function renderizarReferenciaSAP() {
+        const tbody = document.getElementById('table-referencia-sap');
+        if (!tbody) return;
+        tbody.innerHTML = SAP_TRANSACOES_REFERENCIA.map(t => `
+            <tr>
+                <td><span class="badge" style="background:rgba(255,255,255,0.08); color:var(--primary); font-weight:900;">${t.codigo}</span></td>
+                <td style="font-size:11px; color:var(--text-secondary); font-weight:800;">${t.modulo}</td>
+                <td>${t.descricao}</td>
+                <td style="font-size:11px; color:var(--text-secondary);">${t.tela}</td>
+            </tr>
+        `).join('');
+    }
     let usuarioLogado = null;
     let diasCalculados = 0;
     let itemParaRetirar = null;
@@ -547,7 +589,7 @@
         ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
         document.getElementById('view-' + tela).style.display = 'block';
         document.getElementById('sidebar').classList.remove('active');
-        if(tela === 'admin') carregarDadosDashboard();
+        if(tela === 'admin') { carregarDadosDashboard(); renderizarReferenciaSAP(); }
     }
  
     function navegarComFiltro(tipo) {
