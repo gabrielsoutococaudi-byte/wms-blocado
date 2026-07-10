@@ -130,6 +130,7 @@
         .form-group input, .form-group select { width: 100%; padding: 18px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: #fff; outline: none; font-size: 15px; transition: 0.3s; }
         
         #modal-retirada { display:none; position:fixed; top:0; left:0; width:100%; height:100dvh; background:rgba(0,0,0,0.95); z-index:3000; align-items:center; justify-content:center; backdrop-filter: blur(20px); padding: 20px; }
+        #modal-editar-bin { display:none; position:fixed; top:0; left:0; width:100%; height:100dvh; background:rgba(0,0,0,0.95); z-index:3000; align-items:center; justify-content:center; backdrop-filter: blur(20px); padding: 20px; }
         .modal-content { padding: 40px; width:100%; max-width:440px; border: 1px solid var(--primary); }
  
         .autocomplete-items { position: absolute; border: 1px solid var(--glass-border); border-top: none; z-index: 99; top: 100%; left: 0; right: 0; background: #080808; max-height: 250px; overflow-y: auto; border-radius: 0 0 20px 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
@@ -355,6 +356,8 @@
                     <button class="btn-action" onclick="exportarHistoricoExcel()" style="background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">EXPORTAR LOG COMPLETO DE AUDITORIA</button>
                 </div>
                 <button class="btn-action" onclick="sincronizarBaseMateriais()" style="width: 100%; margin-top: 15px; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">SINCRONIZAR BASE DE MATERIAIS (EXCEL)</button>
+                <button class="btn-action" onclick="abrirModalEditarBin()" style="width: 100%; margin-top: 15px; background: var(--primary); box-shadow: 0 10px 20px var(--primary-glow);">✏️ EDITAR POSIÇÃO / MATERIAL / VALIDADE / QTD</button>
+                <button class="btn-action" onclick="exportarBinsExcel()" style="width: 100%; margin-top: 15px; background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">📊 EXPORTAR TODOS OS BINS (EXCEL)</button>
             </div>
         </div>
  
@@ -436,6 +439,33 @@
         </div>
         <div class="form-group"><label>Destino da Carga:</label><select id="modal-destino-mov" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 18px; border-radius: 16px; color: #fff; width: 100%; font-weight: 600;"><option value="TRANSFERENCIA">TRANSFERENCIA</option><option value="APANHA">APANHA</option><option value="SEPARAÇÃO">SEPARAÇÃO</option></select></div>
         <div style="display:flex; gap:15px; margin-top:35px;"><button onclick="fecharModal()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button><button id="btn-confirmar-modal" class="btn-action" style="flex:1;">CONFIRMAR</button></div>
+    </div>
+</div>
+
+<div id="modal-editar-bin">
+    <div class="modal-content glass-card" style="max-width: 480px;">
+        <h3 style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Editar Posição de Estoque</h3>
+        <p style="font-size:12px; color: var(--text-secondary); margin: 10px 0 20px; line-height: 1.6;">Busque a posição pelo endereço (COD_ENDER) ou pelo código do material para carregar os dados atuais.</p>
+        <div class="form-group">
+            <label>Buscar Posição / Material:</label>
+            <div class="input-with-toggle">
+                <input type="text" id="edit-bin-busca" placeholder="Ex: A-01-01 ou 12345" style="text-align:center;">
+                <div class="toggle-kb-btn" onclick="toggleKB('edit-bin-busca')">Abc</div>
+            </div>
+        </div>
+        <button class="btn-action" style="width:100%; background:var(--accent); box-shadow:0 5px 15px var(--accent-glow); margin-bottom: 20px;" onclick="buscarBinParaEditar()">LOCALIZAR POSIÇÃO</button>
+
+        <div id="edit-bin-campos" style="display:none;">
+            <div class="form-group"><label>Posição (COD_ENDER):</label><input type="text" id="edit-bin-ender" style="text-align:center;"></div>
+            <div class="form-group"><label>Código do Material:</label><input type="text" id="edit-bin-mat" style="text-align:center;"></div>
+            <div class="form-group"><label>Data de Validade (Frente):</label><input type="text" id="edit-bin-valfrente" placeholder="DD/MM/AAAA" style="text-align:center;"></div>
+            <div class="form-group"><label>Quantidade de Pallets:</label><input type="text" id="edit-bin-qtd" inputmode="decimal" style="text-align:center; font-size:24px; font-weight:900;"></div>
+        </div>
+
+        <div style="display:flex; gap:15px; margin-top:15px;">
+            <button onclick="fecharModalEditarBin()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button>
+            <button id="btn-salvar-edicao-bin" class="btn-action" style="flex:1; display:none;" onclick="salvarEdicaoBin()">SALVAR ALTERAÇÕES</button>
+        </div>
     </div>
 </div>
  
@@ -1126,6 +1156,75 @@
         XLSX.writeFile(wb, `Infinity_WMS_Log_Completo_${new Date().getTime()}.xlsx`);
     }
  
+    let itemEditandoBinId = null;
+
+    function abrirModalEditarBin() {
+        document.getElementById('edit-bin-busca').value = '';
+        document.getElementById('edit-bin-campos').style.display = 'none';
+        document.getElementById('btn-salvar-edicao-bin').style.display = 'none';
+        itemEditandoBinId = null;
+        document.getElementById('modal-editar-bin').style.display = 'flex';
+    }
+
+    function fecharModalEditarBin() {
+        document.getElementById('modal-editar-bin').style.display = 'none';
+    }
+
+    function buscarBinParaEditar() {
+        const termo = document.getElementById('edit-bin-busca').value.trim().toLowerCase();
+        if (!termo) return alert("Informe a posição (COD_ENDER) ou o código do material para buscar.");
+        const item = estoqueCompleto.find(i => (i.ender && i.ender.toLowerCase() === termo) || (i.mat && i.mat.toString().toLowerCase() === termo));
+        if (!item) return alert("Nenhuma posição encontrada com esse endereço ou material.");
+        itemEditandoBinId = item.id;
+        document.getElementById('edit-bin-ender').value = item.ender || '';
+        document.getElementById('edit-bin-mat').value = item.mat || '';
+        document.getElementById('edit-bin-valfrente').value = item.valFrente || '';
+        document.getElementById('edit-bin-qtd').value = item.qtd || 0;
+        document.getElementById('edit-bin-campos').style.display = 'block';
+        document.getElementById('btn-salvar-edicao-bin').style.display = 'block';
+    }
+
+    async function salvarEdicaoBin() {
+        if (!itemEditandoBinId) return;
+        const novoEnder = document.getElementById('edit-bin-ender').value.trim();
+        const novoMat = document.getElementById('edit-bin-mat').value.trim();
+        const novaValidade = document.getElementById('edit-bin-valfrente').value.trim();
+        const novaQtd = parseInt(document.getElementById('edit-bin-qtd').value) || 0;
+
+        if (!novoEnder || !novoMat) return alert("Posição e Material são obrigatórios.");
+
+        const itemAtual = estoqueCompleto.find(i => i.id === itemEditandoBinId);
+        const descLookup = buscarDescricaoLocal(novoMat);
+        const novaDesc = descLookup !== "N/A" ? descLookup : (itemAtual ? itemAtual.desc : '');
+
+        await db.collection("estoque_blocado").doc(itemEditandoBinId).update({
+            ender: novoEnder,
+            mat: novoMat,
+            desc: novaDesc,
+            valFrente: novaValidade,
+            qtd: novaQtd
+        });
+
+        alert("Posição atualizada com sucesso!");
+        fecharModalEditarBin();
+    }
+
+    function exportarBinsExcel() {
+        if (estoqueCompleto.length === 0) return alert("Não há posições de estoque para exportar.");
+        const dadosPlanilha = estoqueCompleto.map(item => ({
+            "COD_ENDER": item.ender || '',
+            "MATERIAL": item.mat || '',
+            "DESCRIÇÃO": item.desc || buscarDescricaoLocal(item.mat),
+            "VALIDADE FRENTE": item.valFrente || '',
+            "QUANTIDADE DE PALLETS": item.qtd || 0,
+            "DIAS PARA VENCIMENTO": item.dias || 0
+        }));
+        const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Bins_Estoque");
+        XLSX.writeFile(wb, `WMS_Bins_Estoque_${new Date().getTime()}.xlsx`);
+    }
+
     async function importarCSV(event) {
         const reader = new FileReader();
         reader.onload = async (e) => {
