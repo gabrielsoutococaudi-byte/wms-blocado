@@ -170,6 +170,10 @@
     </div>
     <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ANALYTICS</button>
     <button id="btn-nav-lx03" onclick="abrirLX03()" style="display: none;">🏭 LX03 - ESTOQUE POR POSIÇÃO</button>
+    <button id="btn-nav-ls24" onclick="abrirLS24()" style="display: none;">🔍 LS24 - LOCALIZAR MATERIAL</button>
+    <button id="btn-nav-ls25" onclick="abrirLS25()" style="display: none;">📦 LS25 - CONTEÚDO DO BIN</button>
+    <button id="btn-nav-ls26" onclick="abrirLS26()" style="display: none;">📈 LS26 - ESTOQUE TOTAL DO MATERIAL</button>
+    <button id="btn-nav-ls03n" onclick="abrirLS03N()" style="display: none;">🗂️ LS03N - CADASTRO DO BIN</button>
     <button onclick="navegar('retirar')">📦 PESQUISAR ESTOQUE</button>
     <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
         <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
@@ -382,9 +386,9 @@
                         <label>Status do Estoque</label>
                         <select id="lx03-filtro-status" onchange="executarLX03()">
                             <option value="">Todos</option>
-                            <option value="boa">Boa (&gt;60 dias)</option>
-                            <option value="critico">Crítico (30-60 dias)</option>
-                            <option value="retido">Retido (&lt;30 dias)</option>
+                            <option value="ocupado">Ocupado</option>
+                            <option value="bloqueado">Bloqueado</option>
+                            <option value="vazio">Vazio</option>
                         </select>
                     </div>
                 </div>
@@ -392,6 +396,13 @@
                     <button class="btn-action" style="padding: 12px 24px; font-size:11px; background:var(--glass); border:1px solid var(--glass-border); box-shadow:none;" onclick="limparFiltrosLX03()">Limpar</button>
                     <button class="btn-action" style="padding: 12px 24px; font-size:11px; background:var(--accent); box-shadow:0 5px 15px var(--accent-glow);" onclick="executarLX03()">▶ EXECUTAR (F8)</button>
                 </div>
+            </div>
+
+            <div class="glass-card" style="padding: 25px; margin-bottom: 24px;">
+                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:10px; letter-spacing:1px;">🗺️ Mapa Físico do Armazém (necessário para identificar BINs Vazios)</h4>
+                <p style="font-size:11px; color:var(--text-secondary); margin-bottom:15px; line-height:1.6;">Cole abaixo, uma posição por linha, todos os endereços físicos existentes no armazém (ex: A-01-01). Sem esse cadastro, o LX03 mostra apenas posições Ocupadas/Bloqueadas.</p>
+                <textarea id="lx03-mapa-textarea" placeholder="A-01-01&#10;A-01-02&#10;A-01-03..." style="width:100%; min-height:100px; background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-radius:16px; padding:15px; color:#fff; font-family:monospace; font-size:12px;"></textarea>
+                <button class="btn-action" style="width:100%; margin-top:15px; background:var(--accent); box-shadow:0 10px 20px var(--accent-glow);" onclick="salvarMapaBinsLX03()">SALVAR MAPA DE BINS</button>
             </div>
 
             <div class="stats-grid">
@@ -417,6 +428,104 @@
             </div>
         </div>
  
+        <div id="view-ls24" style="display:none;">
+            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
+                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">LS24 — Localizar Material no Armazém</h4>
+                <div class="form-group">
+                    <label>Código ou Descrição do Material</label>
+                    <input type="text" id="ls24-filtro-material" placeholder="Ex: 12345 ou Cerveja Lata (deixe em branco p/ ver tudo)" oninput="executarLS24()">
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card glass-card"><h5>BINS ENCONTRADOS</h5><p id="ls24-total-bins">0</p></div>
+                <div class="stat-card glass-card"><h5>TOTAL DE PALLETS</h5><p id="ls24-total-pallets">0</p></div>
+            </div>
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">
+                        <div>📍 LS24 — Posições onde o Material Está Armazenado</div>
+                        <button class="btn-action" onclick="exportarLS24Excel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">Exportar (Excel)</button>
+                    </div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead><tr><th>Posição/Bin</th><th>Material</th><th>Descrição</th><th>Quantidade</th><th>Validade Frente</th><th>Dias Vencto</th><th>Status</th></tr></thead>
+                            <tbody id="ls24-tabela-resultado"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-ls25" style="display:none;">
+            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
+                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">LS25 — Conteúdo do BIN</h4>
+                <div class="form-group">
+                    <label>Posição / Bin</label>
+                    <input type="text" id="ls25-filtro-bin" placeholder="Ex: A-01-01" oninput="executarLS25()">
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card glass-card"><h5>ITENS NO BIN</h5><p id="ls25-total-itens">0</p></div>
+                <div class="stat-card glass-card"><h5>TOTAL DE PALLETS NO BIN</h5><p id="ls25-total-pallets">0</p></div>
+            </div>
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">
+                        <div>📦 LS25 — Itens Armazenados no BIN</div>
+                        <button class="btn-action" onclick="exportarLS25Excel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">Exportar (Excel)</button>
+                    </div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead><tr><th>Posição/Bin</th><th>Material</th><th>Descrição</th><th>Quantidade</th><th>Validade Frente</th><th>Dias Vencto</th><th>Status</th></tr></thead>
+                            <tbody id="ls25-tabela-resultado"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-ls26" style="display:none;">
+            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
+                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">LS26 — Estoque Total do Material no Armazém</h4>
+                <div class="form-group">
+                    <label>Código ou Descrição do Material</label>
+                    <input type="text" id="ls26-filtro-material" placeholder="Ex: 12345 ou Cerveja Lata" oninput="executarLS26()">
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card glass-card"><h5>TOTAL NO ARMAZÉM</h5><p id="ls26-total-pallets">0</p></div>
+                <div class="stat-card glass-card"><h5>BINS OCUPADOS</h5><p id="ls26-total-bins">0</p></div>
+                <div class="stat-card glass-card"><h5>PALLETS BLOQUEADOS</h5><p id="ls26-total-bloqueado" style="color: var(--retido);">0</p></div>
+                <div class="stat-card glass-card"><h5>PALLETS DISPONÍVEIS</h5><p id="ls26-total-disponivel" style="color: var(--verde);">0</p></div>
+            </div>
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">
+                        <div>📊 LS26 — Distribuição do Material por BIN</div>
+                        <button class="btn-action" onclick="exportarLS26Excel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">Exportar (Excel)</button>
+                    </div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead><tr><th>Posição/Bin</th><th>Material</th><th>Descrição</th><th>Quantidade</th><th>Validade Frente</th><th>Dias Vencto</th><th>Status</th></tr></thead>
+                            <tbody id="ls26-tabela-resultado"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-ls03n" style="display:none;">
+            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
+                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">LS03N — Dados Cadastrais do BIN</h4>
+                <div class="form-group">
+                    <label>Posição / Bin</label>
+                    <input type="text" id="ls03n-filtro-bin" placeholder="Ex: A-01-01" oninput="executarLS03N()">
+                </div>
+            </div>
+            <div id="ls03n-resultado" class="glass-card" style="padding: 35px; display:none;"></div>
+            <div id="ls03n-vazio" class="glass-card" style="padding:35px; text-align:center; color:var(--text-secondary); font-size:13px; display:block;">Informe uma posição para consultar os dados cadastrais do BIN.</div>
+        </div>
+
         <div id="view-retirar">
             <div class="search-wrapper input-with-toggle">
                 <input type="text" inputmode="numeric" id="search-input" placeholder="Pesquisar Código ou Posição..." oninput="renderizarEstoque()">
@@ -1283,6 +1392,7 @@
 
     // ===== MÓDULO LX03 — Estoque por Depósito/Posição (aditivo, não altera navegar()/iniciarApp() originais) =====
     let lx03ResultadosAtuais = [];
+    let mapaBinsArmazem = [];
 
     function abrirLX03() {
         document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.style.display = 'none');
@@ -1304,30 +1414,79 @@
         executarLX03();
     }
 
+    function carregarMapaBinsLX03() {
+        db.collection("lx03_mapa_bins").onSnapshot(snap => {
+            mapaBinsArmazem = snap.docs.map(doc => doc.id);
+            if (document.getElementById('view-lx03').style.display === 'block') executarLX03();
+        });
+    }
+
+    async function salvarMapaBinsLX03() {
+        const raw = document.getElementById('lx03-mapa-textarea').value;
+        const posicoes = [...new Set(raw.split(/\r?\n/).map(l => l.trim()).filter(l => l !== ''))];
+        if (posicoes.length === 0) return alert("Informe ao menos uma posição, uma por linha.");
+        if (!confirm(`Confirmar cadastro de ${posicoes.length} posições como mapa físico do armazém? Isso substituirá o cadastro atual de bins.`)) return;
+        const snapshot = await db.collection("lx03_mapa_bins").get();
+        if (!snapshot.empty) {
+            let batchDel = db.batch();
+            snapshot.docs.forEach((doc, idx) => { batchDel.delete(doc.ref); if ((idx + 1) % 400 === 0) { batchDel.commit(); batchDel = db.batch(); } });
+            await batchDel.commit();
+        }
+        let batch = db.batch();
+        posicoes.forEach((pos, i) => {
+            batch.set(db.collection("lx03_mapa_bins").doc(pos), { ender: pos });
+            if ((i + 1) % 400 === 0) { batch.commit(); batch = db.batch(); }
+        });
+        await batch.commit();
+        alert("Mapa de bins do armazém atualizado com sucesso!");
+    }
+
     function executarLX03() {
         const filtroBin = document.getElementById('lx03-filtro-bin').value.trim().toLowerCase();
         const filtroMat = document.getElementById('lx03-filtro-material').value.trim().toLowerCase();
         const filtroStatus = document.getElementById('lx03-filtro-status').value;
 
-        lx03ResultadosAtuais = estoqueCompleto.filter(item => {
-            if (filtroBin && !(item.ender || '').toString().toLowerCase().includes(filtroBin)) return false;
-            const descItem = (item.desc || buscarDescricaoLocal(item.mat) || '').toString().toLowerCase();
-            if (filtroMat && !(item.mat || '').toString().toLowerCase().includes(filtroMat) && !descItem.includes(filtroMat)) return false;
-            if (filtroStatus === 'boa' && !(item.dias > 60)) return false;
-            if (filtroStatus === 'critico' && !(item.dias > 30 && item.dias <= 60)) return false;
-            if (filtroStatus === 'retido' && !(item.dias <= 30)) return false;
+        const posicoesOcupadas = new Map();
+        estoqueCompleto.forEach(item => {
+            const key = (item.ender || '').toString();
+            if (!posicoesOcupadas.has(key)) posicoesOcupadas.set(key, []);
+            posicoesOcupadas.get(key).push(item);
+        });
+
+        const todasPosicoes = new Set([...posicoesOcupadas.keys(), ...mapaBinsArmazem]);
+
+        let linhas = [];
+        todasPosicoes.forEach(pos => {
+            const itensNaPosicao = posicoesOcupadas.get(pos);
+            if (itensNaPosicao && itensNaPosicao.length > 0) {
+                itensNaPosicao.forEach(item => {
+                    linhas.push({ ender: pos, mat: item.mat, desc: item.desc || buscarDescricaoLocal(item.mat), qtd: item.qtd, valFrente: item.valFrente, dias: item.dias, status: item.dias <= 30 ? 'bloqueado' : 'ocupado' });
+                });
+            } else {
+                linhas.push({ ender: pos, mat: '', desc: '', qtd: 0, valFrente: '', dias: '', status: 'vazio' });
+            }
+        });
+
+        lx03ResultadosAtuais = linhas.filter(l => {
+            if (filtroBin && !l.ender.toString().toLowerCase().includes(filtroBin)) return false;
+            if (filtroMat) {
+                if (l.status === 'vazio') return false;
+                const descL = (l.desc || '').toString().toLowerCase();
+                if (!(l.mat || '').toString().toLowerCase().includes(filtroMat) && !descL.includes(filtroMat)) return false;
+            }
+            if (filtroStatus && l.status !== filtroStatus) return false;
             return true;
         });
 
         const tbody = document.getElementById('lx03-tabela-resultado');
         tbody.innerHTML = '';
         let totalPallets = 0;
-        lx03ResultadosAtuais.forEach(item => {
-            totalPallets += parseInt(item.qtd) || 0;
-            const status = item.dias <= 30 ? 'RETIDO' : (item.dias <= 60 ? 'CRÍTICO' : 'BOA');
-            const cor = item.dias <= 30 ? 'var(--retido)' : (item.dias <= 60 ? 'var(--critico)' : 'var(--verde)');
+        lx03ResultadosAtuais.forEach(l => {
+            totalPallets += parseInt(l.qtd) || 0;
+            const cor = l.status === 'bloqueado' ? 'var(--retido)' : (l.status === 'vazio' ? 'var(--text-secondary)' : 'var(--verde)');
+            const label = l.status === 'bloqueado' ? 'BLOQUEADO' : (l.status === 'vazio' ? 'VAZIO' : 'OCUPADO');
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>ALB01</td><td>${extrairTipoDepositoLX03(item.ender)}</td><td><b>${item.ender || 'N/A'}</b></td><td>${item.mat || 'N/A'}</td><td>${item.desc || buscarDescricaoLocal(item.mat)}</td><td>PAL</td><td><b>${item.qtd || 0}</b></td><td>${item.valFrente || 'N/A'}</td><td>${item.dias ?? 'N/A'}</td><td><span class="badge" style="background:${cor}20; color:${cor}; border:1px solid ${cor}40;">${status}</span></td>`;
+            tr.innerHTML = `<td>ALB01</td><td>${extrairTipoDepositoLX03(l.ender)}</td><td><b>${l.ender}</b></td><td>${l.mat || '-'}</td><td>${l.desc || '-'}</td><td>${l.status === 'vazio' ? '-' : 'PAL'}</td><td><b>${l.qtd || 0}</b></td><td>${l.valFrente || '-'}</td><td>${l.dias !== '' ? l.dias : '-'}</td><td><span class="badge" style="background:${cor}20; color:${cor}; border:1px solid ${cor}40;">${label}</span></td>`;
             tbody.appendChild(tr);
         });
 
@@ -1337,17 +1496,17 @@
 
     function exportarLX03Excel() {
         if (lx03ResultadosAtuais.length === 0) return alert("Nenhum resultado para exportar. Execute a consulta primeiro.");
-        const dadosPlanilha = lx03ResultadosAtuais.map(item => ({
+        const dadosPlanilha = lx03ResultadosAtuais.map(l => ({
             "Depósito": "ALB01",
-            "TD": extrairTipoDepositoLX03(item.ender),
-            "Posição/Bin": item.ender || '',
-            "Material": item.mat || '',
-            "Descrição": item.desc || buscarDescricaoLocal(item.mat),
-            "UM": "PAL",
-            "Quantidade": item.qtd || 0,
-            "Validade Frente": item.valFrente || '',
-            "Dias Vencimento": item.dias ?? '',
-            "Status": item.dias <= 30 ? 'RETIDO' : (item.dias <= 60 ? 'CRÍTICO' : 'BOA')
+            "TD": extrairTipoDepositoLX03(l.ender),
+            "Posição/Bin": l.ender || '',
+            "Material": l.mat || '',
+            "Descrição": l.desc || '',
+            "UM": l.status === 'vazio' ? '' : 'PAL',
+            "Quantidade": l.qtd || 0,
+            "Validade Frente": l.valFrente || '',
+            "Dias Vencimento": l.dias !== '' ? l.dias : '',
+            "Status": l.status === 'bloqueado' ? 'BLOQUEADO' : (l.status === 'vazio' ? 'VAZIO' : 'OCUPADO')
         }));
         const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
         const wb = XLSX.utils.book_new();
@@ -1355,10 +1514,200 @@
         XLSX.writeFile(wb, `LX03_Estoque_Posicao_${new Date().getTime()}.xlsx`);
     }
 
+    // ===== LS24 — Localizar Material no Armazém =====
+    let ls24ResultadosAtuais = [];
+
+    function abrirLS24() {
+        document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.style.display = 'none');
+        document.getElementById('view-ls24').style.display = 'block';
+        document.getElementById('sidebar').classList.remove('active');
+        document.getElementById('ls24-filtro-material').value = '';
+        executarLS24();
+    }
+
+    function executarLS24() {
+        const termo = document.getElementById('ls24-filtro-material').value.trim().toLowerCase();
+        ls24ResultadosAtuais = estoqueCompleto.filter(item => {
+            if (!termo) return true;
+            const desc = (item.desc || buscarDescricaoLocal(item.mat) || '').toString().toLowerCase();
+            return (item.mat || '').toString().toLowerCase().includes(termo) || desc.includes(termo);
+        });
+        const tbody = document.getElementById('ls24-tabela-resultado');
+        tbody.innerHTML = '';
+        let total = 0;
+        ls24ResultadosAtuais.forEach(item => {
+            total += parseInt(item.qtd) || 0;
+            const status = item.dias <= 30 ? 'BLOQUEADO' : 'OCUPADO';
+            const cor = item.dias <= 30 ? 'var(--retido)' : 'var(--verde)';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><b>${item.ender || 'N/A'}</b></td><td>${item.mat || 'N/A'}</td><td>${item.desc || buscarDescricaoLocal(item.mat)}</td><td><b>${item.qtd || 0}</b></td><td>${item.valFrente || 'N/A'}</td><td>${item.dias ?? 'N/A'}</td><td><span class="badge" style="background:${cor}20; color:${cor}; border:1px solid ${cor}40;">${status}</span></td>`;
+            tbody.appendChild(tr);
+        });
+        document.getElementById('ls24-total-bins').innerText = ls24ResultadosAtuais.length;
+        document.getElementById('ls24-total-pallets').innerText = total;
+    }
+
+    function exportarLS24Excel() {
+        if (ls24ResultadosAtuais.length === 0) return alert("Nenhum resultado para exportar.");
+        const dados = ls24ResultadosAtuais.map(item => ({
+            "Posição/Bin": item.ender || '', "Material": item.mat || '', "Descrição": item.desc || buscarDescricaoLocal(item.mat),
+            "Quantidade": item.qtd || 0, "Validade Frente": item.valFrente || '', "Dias Vencimento": item.dias ?? '',
+            "Status": item.dias <= 30 ? 'BLOQUEADO' : 'OCUPADO'
+        }));
+        const ws = XLSX.utils.json_to_sheet(dados);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "LS24");
+        XLSX.writeFile(wb, `LS24_Localizacao_Material_${new Date().getTime()}.xlsx`);
+    }
+
+    // ===== LS25 — Conteúdo do BIN =====
+    let ls25ResultadosAtuais = [];
+
+    function abrirLS25() {
+        document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.style.display = 'none');
+        document.getElementById('view-ls25').style.display = 'block';
+        document.getElementById('sidebar').classList.remove('active');
+        document.getElementById('ls25-filtro-bin').value = '';
+        executarLS25();
+    }
+
+    function executarLS25() {
+        const termo = document.getElementById('ls25-filtro-bin').value.trim().toLowerCase();
+        ls25ResultadosAtuais = !termo ? [] : estoqueCompleto.filter(item => (item.ender || '').toString().toLowerCase().includes(termo));
+        const tbody = document.getElementById('ls25-tabela-resultado');
+        tbody.innerHTML = '';
+        let total = 0;
+        ls25ResultadosAtuais.forEach(item => {
+            total += parseInt(item.qtd) || 0;
+            const status = item.dias <= 30 ? 'BLOQUEADO' : 'OCUPADO';
+            const cor = item.dias <= 30 ? 'var(--retido)' : 'var(--verde)';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><b>${item.ender || 'N/A'}</b></td><td>${item.mat || 'N/A'}</td><td>${item.desc || buscarDescricaoLocal(item.mat)}</td><td><b>${item.qtd || 0}</b></td><td>${item.valFrente || 'N/A'}</td><td>${item.dias ?? 'N/A'}</td><td><span class="badge" style="background:${cor}20; color:${cor}; border:1px solid ${cor}40;">${status}</span></td>`;
+            tbody.appendChild(tr);
+        });
+        document.getElementById('ls25-total-itens').innerText = ls25ResultadosAtuais.length;
+        document.getElementById('ls25-total-pallets').innerText = total;
+        if (termo && ls25ResultadosAtuais.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-secondary); padding: 20px;">BIN vazio ou não encontrado.</td></tr>';
+        }
+    }
+
+    function exportarLS25Excel() {
+        if (ls25ResultadosAtuais.length === 0) return alert("Nenhum resultado para exportar.");
+        const dados = ls25ResultadosAtuais.map(item => ({
+            "Posição/Bin": item.ender || '', "Material": item.mat || '', "Descrição": item.desc || buscarDescricaoLocal(item.mat),
+            "Quantidade": item.qtd || 0, "Validade Frente": item.valFrente || '', "Dias Vencimento": item.dias ?? '',
+            "Status": item.dias <= 30 ? 'BLOQUEADO' : 'OCUPADO'
+        }));
+        const ws = XLSX.utils.json_to_sheet(dados);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "LS25");
+        XLSX.writeFile(wb, `LS25_Conteudo_Bin_${new Date().getTime()}.xlsx`);
+    }
+
+    // ===== LS26 — Estoque Total do Material no Armazém =====
+    let ls26ResultadosAtuais = [];
+
+    function abrirLS26() {
+        document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.style.display = 'none');
+        document.getElementById('view-ls26').style.display = 'block';
+        document.getElementById('sidebar').classList.remove('active');
+        document.getElementById('ls26-filtro-material').value = '';
+        executarLS26();
+    }
+
+    function executarLS26() {
+        const termo = document.getElementById('ls26-filtro-material').value.trim().toLowerCase();
+        ls26ResultadosAtuais = !termo ? [] : estoqueCompleto.filter(item => {
+            const desc = (item.desc || buscarDescricaoLocal(item.mat) || '').toString().toLowerCase();
+            return (item.mat || '').toString().toLowerCase().includes(termo) || desc.includes(termo);
+        });
+        const tbody = document.getElementById('ls26-tabela-resultado');
+        tbody.innerHTML = '';
+        let totalGeral = 0, totalBloqueado = 0, totalDisponivel = 0;
+        ls26ResultadosAtuais.forEach(item => {
+            const qtd = parseInt(item.qtd) || 0;
+            totalGeral += qtd;
+            const bloqueado = item.dias <= 30;
+            if (bloqueado) totalBloqueado += qtd; else totalDisponivel += qtd;
+            const status = bloqueado ? 'BLOQUEADO' : 'OCUPADO';
+            const cor = bloqueado ? 'var(--retido)' : 'var(--verde)';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><b>${item.ender || 'N/A'}</b></td><td>${item.mat || 'N/A'}</td><td>${item.desc || buscarDescricaoLocal(item.mat)}</td><td><b>${qtd}</b></td><td>${item.valFrente || 'N/A'}</td><td>${item.dias ?? 'N/A'}</td><td><span class="badge" style="background:${cor}20; color:${cor}; border:1px solid ${cor}40;">${status}</span></td>`;
+            tbody.appendChild(tr);
+        });
+        document.getElementById('ls26-total-pallets').innerText = totalGeral;
+        document.getElementById('ls26-total-bins').innerText = ls26ResultadosAtuais.length;
+        document.getElementById('ls26-total-bloqueado').innerText = totalBloqueado;
+        document.getElementById('ls26-total-disponivel').innerText = totalDisponivel;
+    }
+
+    function exportarLS26Excel() {
+        if (ls26ResultadosAtuais.length === 0) return alert("Nenhum resultado para exportar.");
+        const dados = ls26ResultadosAtuais.map(item => ({
+            "Posição/Bin": item.ender || '', "Material": item.mat || '', "Descrição": item.desc || buscarDescricaoLocal(item.mat),
+            "Quantidade": item.qtd || 0, "Validade Frente": item.valFrente || '', "Dias Vencimento": item.dias ?? '',
+            "Status": item.dias <= 30 ? 'BLOQUEADO' : 'OCUPADO'
+        }));
+        const ws = XLSX.utils.json_to_sheet(dados);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "LS26");
+        XLSX.writeFile(wb, `LS26_Estoque_Total_Material_${new Date().getTime()}.xlsx`);
+    }
+
+    // ===== LS03N — Dados Cadastrais do BIN =====
+    function abrirLS03N() {
+        document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.style.display = 'none');
+        document.getElementById('view-ls03n').style.display = 'block';
+        document.getElementById('sidebar').classList.remove('active');
+        document.getElementById('ls03n-filtro-bin').value = '';
+        executarLS03N();
+    }
+
+    function executarLS03N() {
+        const termo = document.getElementById('ls03n-filtro-bin').value.trim();
+        const painel = document.getElementById('ls03n-resultado');
+        const vazioMsg = document.getElementById('ls03n-vazio');
+        if (!termo) { painel.style.display = 'none'; vazioMsg.style.display = 'block'; return; }
+
+        const itens = estoqueCompleto.filter(item => (item.ender || '').toString().toLowerCase() === termo.toLowerCase());
+        const cadastrado = mapaBinsArmazem.some(p => p.toLowerCase() === termo.toLowerCase());
+
+        let status, corStatus, conteudoHtml;
+        if (itens.length > 0) {
+            const bloqueado = itens.some(i => i.dias <= 30);
+            status = bloqueado ? 'BLOQUEADO' : 'OCUPADO';
+            corStatus = bloqueado ? 'var(--retido)' : 'var(--verde)';
+            conteudoHtml = itens.map(i => `
+                <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid var(--glass-border);">
+                    <div><b style="color:#fff;">${i.mat || 'N/A'}</b><div style="font-size:11px; color:var(--text-secondary); margin-top:3px;">${i.desc || buscarDescricaoLocal(i.mat)}</div></div>
+                    <div style="text-align:right;"><b style="color:#fff;">${i.qtd || 0} PL</b><div style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Validade: ${i.valFrente || 'N/A'} (${i.dias ?? 'N/A'} dias)</div></div>
+                </div>`).join('');
+        } else {
+            status = 'VAZIO';
+            corStatus = 'var(--text-secondary)';
+            conteudoHtml = `<div style="text-align:center; padding:20px; color:var(--text-secondary); font-size:13px;">Nenhum material armazenado nesta posição.</div>`;
+        }
+
+        painel.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+                <div>
+                    <div style="font-size:28px; font-weight:900; color:#fff; letter-spacing:-1px;">${termo}</div>
+                    <div style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Tipo de Depósito: <b style="color:#fff;">${extrairTipoDepositoLX03(termo)}</b> &nbsp;|&nbsp; Depósito: <b style="color:#fff;">ALB01</b></div>
+                </div>
+                <span class="badge" style="background:${corStatus}20; color:${corStatus}; border:1px solid ${corStatus}40; font-size:12px; padding:10px 18px;">${status}</span>
+            </div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-bottom:15px;">Cadastrado no mapa físico do armazém: <b style="color:#fff;">${cadastrado ? 'SIM' : 'NÃO REGISTRADO'}</b></div>
+            ${conteudoHtml}
+        `;
+        painel.style.display = 'block';
+        vazioMsg.style.display = 'none';
+    }
+
     // Envolve navegar() e iniciarApp() por fora, sem alterar uma linha sequer das funções originais:
     const _navegarOriginalLX03 = navegar;
     navegar = function(tela) {
-        document.getElementById('view-lx03').style.display = 'none';
+        ['view-lx03', 'view-ls24', 'view-ls25', 'view-ls26', 'view-ls03n'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
         _navegarOriginalLX03(tela);
     };
 
@@ -1366,7 +1715,8 @@
     iniciarApp = function() {
         _iniciarAppOriginalLX03();
         const isAdminLX03 = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
-        document.getElementById('btn-nav-lx03').style.display = isAdminLX03 ? 'block' : 'none';
+        ['btn-nav-lx03', 'btn-nav-ls24', 'btn-nav-ls25', 'btn-nav-ls26', 'btn-nav-ls03n'].forEach(id => { document.getElementById(id).style.display = isAdminLX03 ? 'block' : 'none'; });
+        carregarMapaBinsLX03();
     };
 
     async function importarCSV(event) {
