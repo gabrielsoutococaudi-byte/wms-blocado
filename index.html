@@ -169,6 +169,7 @@
         INFINITY WMS
     </div>
     <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ANALYTICS</button>
+    <button id="btn-nav-lx03" onclick="abrirLX03()" style="display: none;">🏭 LX03 - ESTOQUE POR POSIÇÃO</button>
     <button onclick="navegar('retirar')">📦 PESQUISAR ESTOQUE</button>
     <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
         <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
@@ -358,6 +359,61 @@
                 <button class="btn-action" onclick="sincronizarBaseMateriais()" style="width: 100%; margin-top: 15px; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">SINCRONIZAR BASE DE MATERIAIS (EXCEL)</button>
                 <button class="btn-action" onclick="abrirModalEditarBin()" style="width: 100%; margin-top: 15px; background: var(--primary); box-shadow: 0 10px 20px var(--primary-glow);">✏️ EDITAR POSIÇÃO / MATERIAL / VALIDADE / QTD</button>
                 <button class="btn-action" onclick="exportarBinsExcel()" style="width: 100%; margin-top: 15px; background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">📊 EXPORTAR TODOS OS BINS (EXCEL)</button>
+            </div>
+        </div>
+
+        <div id="view-lx03" style="display:none;">
+            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
+                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">LX03 — Estoque de Depósito por Posição (Bin)</h4>
+                <div class="filter-panel">
+                    <div class="form-group">
+                        <label>Depósito (Armazém)</label>
+                        <input type="text" id="lx03-filtro-deposito" value="ALB01" disabled style="opacity:0.6;">
+                    </div>
+                    <div class="form-group">
+                        <label>Posição / Bin</label>
+                        <input type="text" id="lx03-filtro-bin" placeholder="Ex: A-01 (deixe em branco p/ todos)" oninput="executarLX03()">
+                    </div>
+                    <div class="form-group">
+                        <label>Material</label>
+                        <input type="text" id="lx03-filtro-material" placeholder="Código ou descrição" oninput="executarLX03()">
+                    </div>
+                    <div class="form-group">
+                        <label>Status do Estoque</label>
+                        <select id="lx03-filtro-status" onchange="executarLX03()">
+                            <option value="">Todos</option>
+                            <option value="boa">Boa (&gt;60 dias)</option>
+                            <option value="critico">Crítico (30-60 dias)</option>
+                            <option value="retido">Retido (&lt;30 dias)</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content: flex-end; gap: 15px;">
+                    <button class="btn-action" style="padding: 12px 24px; font-size:11px; background:var(--glass); border:1px solid var(--glass-border); box-shadow:none;" onclick="limparFiltrosLX03()">Limpar</button>
+                    <button class="btn-action" style="padding: 12px 24px; font-size:11px; background:var(--accent); box-shadow:0 5px 15px var(--accent-glow);" onclick="executarLX03()">▶ EXECUTAR (F8)</button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card glass-card"><h5>POSIÇÕES ENCONTRADAS</h5><p id="lx03-total-posicoes">0</p></div>
+                <div class="stat-card glass-card"><h5>TOTAL DE PALLETS</h5><p id="lx03-total-pallets">0</p></div>
+            </div>
+
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">
+                        <div>📋 LX03 — Lista de Estoque por Depósito/Posição</div>
+                        <button class="btn-action" onclick="exportarLX03Excel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">Exportar Lista (Excel)</button>
+                    </div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead>
+                                <tr><th>Depósito</th><th>TD</th><th>Posição/Bin</th><th>Material</th><th>Descrição</th><th>UM</th><th>Quantidade</th><th>Validade Frente</th><th>Dias Vencto</th><th>Status</th></tr>
+                            </thead>
+                            <tbody id="lx03-tabela-resultado"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
  
@@ -1224,6 +1280,94 @@
         XLSX.utils.book_append_sheet(wb, ws, "Bins_Estoque");
         XLSX.writeFile(wb, `WMS_Bins_Estoque_${new Date().getTime()}.xlsx`);
     }
+
+    // ===== MÓDULO LX03 — Estoque por Depósito/Posição (aditivo, não altera navegar()/iniciarApp() originais) =====
+    let lx03ResultadosAtuais = [];
+
+    function abrirLX03() {
+        document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.style.display = 'none');
+        document.getElementById('view-lx03').style.display = 'block';
+        document.getElementById('sidebar').classList.remove('active');
+        executarLX03();
+    }
+
+    function extrairTipoDepositoLX03(ender) {
+        if (!ender) return "N/A";
+        const partes = ender.toString().split('-');
+        return partes[0] || "N/A";
+    }
+
+    function limparFiltrosLX03() {
+        document.getElementById('lx03-filtro-bin').value = '';
+        document.getElementById('lx03-filtro-material').value = '';
+        document.getElementById('lx03-filtro-status').value = '';
+        executarLX03();
+    }
+
+    function executarLX03() {
+        const filtroBin = document.getElementById('lx03-filtro-bin').value.trim().toLowerCase();
+        const filtroMat = document.getElementById('lx03-filtro-material').value.trim().toLowerCase();
+        const filtroStatus = document.getElementById('lx03-filtro-status').value;
+
+        lx03ResultadosAtuais = estoqueCompleto.filter(item => {
+            if (filtroBin && !(item.ender || '').toString().toLowerCase().includes(filtroBin)) return false;
+            const descItem = (item.desc || buscarDescricaoLocal(item.mat) || '').toString().toLowerCase();
+            if (filtroMat && !(item.mat || '').toString().toLowerCase().includes(filtroMat) && !descItem.includes(filtroMat)) return false;
+            if (filtroStatus === 'boa' && !(item.dias > 60)) return false;
+            if (filtroStatus === 'critico' && !(item.dias > 30 && item.dias <= 60)) return false;
+            if (filtroStatus === 'retido' && !(item.dias <= 30)) return false;
+            return true;
+        });
+
+        const tbody = document.getElementById('lx03-tabela-resultado');
+        tbody.innerHTML = '';
+        let totalPallets = 0;
+        lx03ResultadosAtuais.forEach(item => {
+            totalPallets += parseInt(item.qtd) || 0;
+            const status = item.dias <= 30 ? 'RETIDO' : (item.dias <= 60 ? 'CRÍTICO' : 'BOA');
+            const cor = item.dias <= 30 ? 'var(--retido)' : (item.dias <= 60 ? 'var(--critico)' : 'var(--verde)');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>ALB01</td><td>${extrairTipoDepositoLX03(item.ender)}</td><td><b>${item.ender || 'N/A'}</b></td><td>${item.mat || 'N/A'}</td><td>${item.desc || buscarDescricaoLocal(item.mat)}</td><td>PAL</td><td><b>${item.qtd || 0}</b></td><td>${item.valFrente || 'N/A'}</td><td>${item.dias ?? 'N/A'}</td><td><span class="badge" style="background:${cor}20; color:${cor}; border:1px solid ${cor}40;">${status}</span></td>`;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('lx03-total-posicoes').innerText = lx03ResultadosAtuais.length;
+        document.getElementById('lx03-total-pallets').innerText = totalPallets;
+    }
+
+    function exportarLX03Excel() {
+        if (lx03ResultadosAtuais.length === 0) return alert("Nenhum resultado para exportar. Execute a consulta primeiro.");
+        const dadosPlanilha = lx03ResultadosAtuais.map(item => ({
+            "Depósito": "ALB01",
+            "TD": extrairTipoDepositoLX03(item.ender),
+            "Posição/Bin": item.ender || '',
+            "Material": item.mat || '',
+            "Descrição": item.desc || buscarDescricaoLocal(item.mat),
+            "UM": "PAL",
+            "Quantidade": item.qtd || 0,
+            "Validade Frente": item.valFrente || '',
+            "Dias Vencimento": item.dias ?? '',
+            "Status": item.dias <= 30 ? 'RETIDO' : (item.dias <= 60 ? 'CRÍTICO' : 'BOA')
+        }));
+        const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "LX03");
+        XLSX.writeFile(wb, `LX03_Estoque_Posicao_${new Date().getTime()}.xlsx`);
+    }
+
+    // Envolve navegar() e iniciarApp() por fora, sem alterar uma linha sequer das funções originais:
+    const _navegarOriginalLX03 = navegar;
+    navegar = function(tela) {
+        document.getElementById('view-lx03').style.display = 'none';
+        _navegarOriginalLX03(tela);
+    };
+
+    const _iniciarAppOriginalLX03 = iniciarApp;
+    iniciarApp = function() {
+        _iniciarAppOriginalLX03();
+        const isAdminLX03 = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
+        document.getElementById('btn-nav-lx03').style.display = isAdminLX03 ? 'block' : 'none';
+    };
 
     async function importarCSV(event) {
         const reader = new FileReader();
