@@ -1,1904 +1,1487 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="WMS INFINITY">
-    <meta name="theme-color" content="#020202">
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22WMS%20INFINITY%22,%22short_name%22:%22WMS%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%23020202%22,%22theme_color%22:%22%23ff3e3e%22,%22orientation%22:%22portrait-primary%22,%22scope%22:%22/%22}">
-    <meta name="description" content="WMS INFINITY - Sistema de Gerenciamento de Armazem">
-    
-    <title>WMS FLOW PRO - Infinity Edition</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-    <style>
-        :root { 
-            --bg: #020202;
-            --glass: rgba(255, 255, 255, 0.02);
-            --glass-border: rgba(255, 255, 255, 0.06);
-            --primary: #ff3e3e; 
-            --primary-glow: rgba(255, 62, 62, 0.2);
-            --accent: #6366f1;
-            --accent-glow: rgba(99, 102, 241, 0.3);
-            --critico: #fbbf24; 
-            --retido: #f87171; 
-            --verde: #10b981; 
-            --text: #f8fafc; 
-            --text-secondary: #64748b;
-            --neon-blue: #00f2ff;
-        }
-        .input-with-toggle { position: relative; display: flex; align-items: center; }
-        .input-with-toggle input { padding-right: 50px !important; }
-        .toggle-kb-btn { position: absolute; right: 10px; background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-secondary); border-radius: 10px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: 0.3s; z-index: 10; }
-        .toggle-kb-btn:hover { background: var(--primary); color: #fff; }
- 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
- 
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: var(--bg); 
-            color: var(--text); 
-            padding-bottom: env(safe-area-inset-bottom, 40px); 
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 0% 0%, rgba(255, 62, 62, 0.05) 0%, transparent 30%),
-                radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 30%);
-        }
- 
-        .glass-card { 
-            background: var(--glass);
-            backdrop-filter: blur(15px); 
-            -webkit-backdrop-filter: blur(15px); 
-            border: 1px solid var(--glass-border); 
-            border-radius: 24px; 
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .glass-card:hover { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); }
- 
-        #network-status { display: none; background: var(--critico); color: #000; text-align: center; padding: 8px; font-size: 10px; font-weight: 900; position: sticky; top: 0; z-index: 2000; text-transform: uppercase; letter-spacing: 2px; }
-        
-        .sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100dvh; background: rgba(5, 5, 5, 0.98); backdrop-filter: blur(20px); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1500; padding-top: calc(60px + env(safe-area-inset-top)); border-right: 1px solid var(--glass-border); }
-        .sidebar.active { left: 0; }
-        .sidebar button { width: 85%; padding: 16px 20px; background: transparent; border: none; color: var(--text-secondary); text-align: left; cursor: pointer; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 12px; margin: 8px auto; border-radius: 14px; transition: 0.3s; }
-        .sidebar button:hover { background: var(--glass); color: var(--text); transform: translateX(8px); }
- 
-        .header { padding: calc(20px + env(safe-area-inset-top)) 24px 20px 24px; display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 900; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); }
-        .menu-btn { background: var(--glass); border: 1px solid var(--glass-border); padding: 10px; border-radius: 14px; color: white; font-size: 20px; display: flex; width: 46px; height: 46px; align-items: center; justify-content: center; }
-        
-        .container { width: 100%; max-width: 1200px; margin: auto; padding: 0 20px; }
- 
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px; margin-top: 20px; }
-        .stat-card { padding: 24px; position: relative; overflow: hidden; cursor: pointer; border-bottom: 2px solid transparent; }
-        .stat-card h5 { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 800; }
-        .stat-card p { font-size: 30px; font-weight: 900; color: #fff; letter-spacing: -1px; }
- 
-        .dashboard-row { display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; margin-bottom: 24px; }
-        .dashboard-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px; }
-        .dashboard-fullrow { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 24px; }
-        @media (max-width: 900px) { .dashboard-row { grid-template-columns: 1fr; } }
- 
-        .chart-box { padding: 28px; position: relative; }
-        .chart-title { font-size: 12px; font-weight: 900; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); padding-right: 40px; }
-        .chart-title span { color: var(--primary); }
- 
-        /* Botão de Expansão */
-        .expand-btn { position: absolute; top: 22px; right: 22px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; font-weight: 700; transition: 0.2s; z-index: 10; }
-        .expand-btn:hover { background: var(--accent); border-color: var(--accent); }
- 
-        /* Modal do Gráfico Expandido */
-        .chart-fullscreen-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2,2,2,0.98); z-index: 5000; padding: 40px; flex-direction: column; }
-        .chart-fullscreen-modal .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; }
-        .chart-fullscreen-modal .canvas-container { flex-grow: 1; position: relative; width: 100%; height: 80%; display: flex; align-items: center; justify-content: center; }
- 
-        .activity-feed { max-height: 450px; overflow-y: auto; padding-right: 5px; }
-        .activity-item { display: flex; gap: 16px; margin-bottom: 24px; padding: 12px; border-radius: 16px; transition: 0.3s; }
-        .activity-icon-box { width: 40px; height: 40px; border-radius: 12px; background: var(--glass); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-        .activity-content { font-size: 12px; line-height: 1.5; }
-        .activity-content b { color: #fff; font-weight: 700; }
-        .activity-tag { font-size: 9px; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; font-weight: 900; margin-bottom: 6px; display: inline-block; }
-        .activity-time { font-size: 10px; color: var(--text-secondary); margin-top: 6px; display: block; }
- 
-        .search-wrapper { margin-bottom: 24px; position: relative; margin-top: 20px; }
-        .search-wrapper input { background: var(--glass); border: 1px solid var(--glass-border); padding: 20px 28px; border-radius: 20px; color: white; font-size: 16px; width: 100%; transition: 0.4s; outline: none; font-weight: 500; }
-        .search-wrapper input:focus { border-color: var(--accent); box-shadow: 0 0 30px var(--accent-glow); background: rgba(255,255,255,0.05); }
- 
-        .item-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 24px; padding: 24px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .item-card:hover { transform: scale(1.02); border-color: var(--primary); }
-        
-        .badge { padding: 6px 12px; border-radius: 10px; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
-        .badge-ender { background: #fff; color: #000; }
- 
-        .btn-action { background: var(--primary); color: #fff; border: none; padding: 16px 28px; border-radius: 16px; font-weight: 900; cursor: pointer; font-size: 13px; box-shadow: 0 10px 20px var(--primary-glow); transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-action:active { transform: scale(0.96); }
- 
-        .form-box { padding: 35px; margin-bottom: 30px; margin-top: 20px; }
-        .form-group label { display: block; font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 800; letter-spacing: 1.5px; }
-        .form-group input, .form-group select { width: 100%; padding: 18px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: #fff; outline: none; font-size: 15px; transition: 0.3s; }
-        
-        #modal-retirada { display:none; position:fixed; top:0; left:0; width:100%; height:100dvh; background:rgba(0,0,0,0.95); z-index:3000; align-items:center; justify-content:center; backdrop-filter: blur(20px); padding: 20px; }
-        #modal-editar-bin { display:none; position:fixed; top:0; left:0; width:100%; height:100dvh; background:rgba(0,0,0,0.95); z-index:3000; align-items:center; justify-content:center; backdrop-filter: blur(20px); padding: 20px; }
-        .modal-content { padding: 40px; width:100%; max-width:440px; border: 1px solid var(--primary); }
- 
-        .autocomplete-items { position: absolute; border: 1px solid var(--glass-border); border-top: none; z-index: 99; top: 100%; left: 0; right: 0; background: #080808; max-height: 250px; overflow-y: auto; border-radius: 0 0 20px 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
-        .autocomplete-item { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid var(--glass-border); font-size: 13px; }
-        .autocomplete-item:hover { background-color: var(--primary); color: #fff; }
- 
-        .wms-table-container { width: 100%; overflow-x: auto; margin-top: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid var(--glass-border); }
-        .wms-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
-        .wms-table th { background: rgba(255,255,255,0.05); padding: 14px 16px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; font-size: 10px; letter-spacing: 1px; }
-        .wms-table td { padding: 14px 16px; border-bottom: 1px solid var(--glass-border); color: var(--text); }
-        .wms-table tr:hover { background: rgba(255,255,255,0.01); }
- 
-        .filter-panel { background: rgba(255,255,255,0.01); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
- 
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<title>Auditoria de Estoque · Uberlândia Refrescos</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+  :root{
+    --primary:#C8102E;
+    --primary-dark:#8F0A1F;
+    --accent:#00843D;
+    --accent-light:#00B04F;
+    --gold:#F5A524;
+    --ink:#10151C;
+    --bg:#F3F5F8;
+    --panel:#FFFFFF;
+    --panel-2:#EEF1F6;
+    --line:#E4E8EF;
+    --muted:#6B7686;
+    --ok:#00843D; --ok-dim:#E2F5EA;
+    --mid:#F5A524; --mid-dim:#FEF2DC;
+    --bad:#C8102E; --bad-dim:#FBE5E9;
+    --radius:16px;
+    --font-display:'Plus Jakarta Sans', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+    --shadow: 0 10px 30px -12px rgba(16,21,28,0.18);
+    --shadow-sm: 0 2px 8px -2px rgba(16,21,28,0.10);
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0; font-family:var(--font-body);
+    background:var(--bg);
+    color:var(--ink); min-height:100vh;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ===================== HEADER ===================== */
+  header{
+    position:sticky; top:0; z-index:40;
+    background:#fff; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 32px; gap:16px; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:14px; min-width:0;}
+  .brand-mark{
+    width:44px; height:44px; border-radius:50%; flex-shrink:0; position:relative;
+    background: repeating-conic-gradient(var(--primary) 0deg 8deg, var(--primary-dark) 8deg 16deg);
+    box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--line);
+  }
+  .brand-mark::after{
+    content:"UR"; position:absolute; inset:6px; border-radius:50%;
+    background:#fff; color:var(--primary); display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:800; font-size:13px;
+  }
+  header h1{font-family:var(--font-display); font-size:19px; margin:0; font-weight:800; letter-spacing:-.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  header .sub{font-size:12px; color:var(--muted); font-weight:600; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+  nav.tabs{display:flex; gap:4px; background:var(--panel-2); padding:4px; border-radius:12px; flex-shrink:0;}
+  nav.tabs button{
+    background:transparent; border:none; color:var(--muted);
+    padding:9px 20px; border-radius:9px; cursor:pointer; font-size:13.5px; font-weight:700;
+    font-family:var(--font-body); transition:all .15s; white-space:nowrap;
+  }
+  nav.tabs button.active{background:var(--ink); color:#fff;}
+
+  /* ===================== HERO BAND — motivo "gaseificado" ===================== */
+  .hero{
+    position:relative; overflow:hidden;
+    background: linear-gradient(115deg, rgba(200,16,46,.95), rgba(15,20,27,.97) 55%, rgba(0,132,61,.92));
+    color:#fff; padding:38px 32px 32px;
+  }
+  .hero .bubbles{position:absolute; inset:0; pointer-events:none; opacity:.55;}
+  .hero .bubbles span{
+    position:absolute; border-radius:50%; background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.18);
+  }
+  .hero-inner{position:relative; max-width:1200px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap;}
+  .hero h2{font-family:var(--font-display); font-size:27px; font-weight:800; margin:0 0 6px; letter-spacing:-.4px;}
+  .hero p{margin:0; font-size:13.5px; color:rgba(255,255,255,.78); max-width:520px; line-height:1.55;}
+  .hero-badge{
+    display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.28); padding:10px 18px; border-radius:14px;
+    backdrop-filter: blur(6px);
+  }
+  .hero-badge .n{font-family:var(--font-mono); font-weight:700; font-size:20px;}
+  .hero-badge .l{font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:rgba(255,255,255,.72); font-weight:700;}
+
+  main{max-width:1200px; margin:0 auto; padding:28px 24px 100px;}
+
+  .legend-strip{
+    display:flex; gap:20px; align-items:center; flex-wrap:wrap;
+    padding:14px 20px; border-radius:12px;
+    background:var(--panel); margin-bottom:24px; font-size:13px; color:var(--muted);
+    box-shadow: var(--shadow-sm); border: 1px solid var(--line);
+  }
+  .legend-dot{width:10px; height:10px; border-radius:3px; display:inline-block; margin-right:8px;}
+
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--line); border-radius:var(--radius); padding:24px; margin-bottom:22px;
+    box-shadow: var(--shadow-sm); transition: box-shadow .2s;
+  }
+  .grid{display:grid; gap:18px;}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr);}
+  .grid.cols-2{grid-template-columns:repeat(2,1fr);}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  @media (max-width:900px){ .grid.cols-4,.grid.cols-2,.grid.cols-3{grid-template-columns:1fr 1fr;} }
+  @media (max-width:600px){ .grid.cols-4,.grid.cols-2,.grid.cols-3{grid-template-columns:1fr;} }
+
+  label{display:block; font-size:11.5px; color:var(--muted); margin-bottom:8px; font-weight:700; text-transform: uppercase; letter-spacing:.03em;}
+  input, select, textarea{
+    width:100%; background:var(--panel-2); border:1.5px solid transparent; color:var(--ink);
+    padding:12px 14px; border-radius:10px; font-size:14px; outline:none; font-family:var(--font-body);
+    transition:all .2s;
+  }
+  input:focus, select:focus, textarea:focus{border-color:var(--primary); background: #fff;}
+  input[type="file"]{padding:10px 12px; font-size:13px;}
+  input[type="file"]:disabled{opacity:.5; cursor:not-allowed;}
+
+  h2.section-title{
+    font-family:var(--font-display); font-size:16px; margin:0 0 20px; color:var(--ink);
+    display:flex; align-items:center; gap:12px; font-weight:800;
+  }
+  h2.section-title .badge{
+    background:var(--ink); color:#fff; font-size:12px; font-weight:800;
+    width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono);
+  }
+
+  .item-card{
+    display:flex; gap:16px; align-items:flex-start;
+    border:1px solid var(--line); border-radius:14px;
+    padding:18px; margin-bottom:14px; background:var(--panel); transition:all .2s;
+  }
+  .item-card.state-conforme{border-color:var(--ok); background-color:#F8FDFA;}
+  .item-card.state-parcial{background-color:#FFFBF2; border-color:var(--mid);}
+  .item-card.state-nao_conforme{background-color:#FEF6F7; border-color:var(--bad);}
+
+  .cap-badge{
+    width:38px; height:38px; border-radius:50%; flex-shrink:0; position:relative;
+    background: repeating-conic-gradient(var(--muted) 0deg 9deg, #cfd5df 9deg 18deg);
+    box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--line);
+  }
+  .item-card.state-conforme .cap-badge{background: repeating-conic-gradient(var(--ok) 0deg 9deg, #036b32 9deg 18deg);}
+  .item-card.state-parcial .cap-badge{background: repeating-conic-gradient(var(--mid) 0deg 9deg, #c9860f 9deg 18deg);}
+  .item-card.state-nao_conforme .cap-badge{background: repeating-conic-gradient(var(--bad) 0deg 9deg, var(--primary-dark) 9deg 18deg);}
+  .cap-badge::after{
+    content: attr(data-n); position:absolute; inset:5px; border-radius:50%; background:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:700; font-size:12px; color:var(--ink);
+  }
+
+  .item-body{flex:1; min-width:0;}
+  .item-title{font-size:14.5px; font-weight:700; color: var(--ink); font-family:var(--font-display);}
+  .item-desc{font-size:12.5px; color:var(--muted); margin-top:4px;}
+  .item-head{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
+  .peso-chip{
+    flex-shrink:0; font-size:10.5px; font-weight:800; font-family:var(--font-mono);
+    background:#fff; color:var(--ink); border:1.5px solid var(--line); padding:4px 10px; border-radius:8px;
+  }
+
+  .status-row{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;}
+  .status-btn{
+    flex:1; min-width:130px; padding:11px; border-radius:10px; border:1.5px solid var(--line);
+    background:#fff; color:var(--muted); cursor:pointer; font-size:12.5px; font-weight:700; transition:all .15s;
+  }
+  .status-btn.selected.ok{background:var(--ok); color:#fff; border-color:var(--ok);}
+  .status-btn.selected.bad{background:var(--bad); color:#fff; border-color:var(--bad);}
+  .status-btn.selected.mid{background:var(--mid); color:#fff; border-color:var(--mid);}
+
+  .item-extra{display:grid; grid-template-columns:2fr 1fr; gap:14px; margin-top:14px;}
+  @media (max-width:640px){ .item-extra{grid-template-columns:1fr;} }
+
+  .thumb-gallery{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  .thumb-item{position:relative; width:52px; height:52px; flex-shrink:0;}
+  .thumb-item img{width:100%; height:100%; object-fit:cover; border-radius:8px; border:2px solid #fff; box-shadow: var(--shadow-sm); display:block;}
+  .thumb-item .rm{
+    position:absolute; top:-6px; right:-6px; width:19px; height:19px; border-radius:50%;
+    background:var(--bad); color:#fff; border:2px solid #fff; font-size:11px; line-height:1;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; font-weight:700;
+  }
+  .photo-count{font-size:11px; color:var(--muted); margin-top:8px; font-weight:700; letter-spacing:.02em;}
+  .photo-count.full{color:var(--mid);}
+
+  button.primary{
+    background:var(--primary); color:#fff; border:none; padding:14px 32px; border-radius:12px;
+    font-weight:700; font-size:15px; cursor:pointer; transition:all .2s; font-family:var(--font-body);
+    box-shadow: 0 8px 20px -6px rgba(200,16,46,0.45);
+  }
+  button.primary:hover{transform: translateY(-1px); background: var(--primary-dark);}
+  button.primary:disabled{opacity:.5; cursor:not-allowed;}
+
+  button.secondary{
+    background:#fff; color:var(--ink); border:1.5px solid var(--line); padding:11px 18px; border-radius:10px;
+    font-size:13.5px; font-weight:700; cursor:pointer;
+  }
+  a.pillbtn, button.pillbtn{
+    background:#fff; color:var(--ink); border:1.5px solid var(--line); padding:8px 15px; border-radius:9px;
+    font-size:12px; font-weight:700; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+    font-family:var(--font-body);
+  }
+  a.pillbtn:hover, button.pillbtn:hover{border-color:var(--primary); color:var(--primary);}
+  button.pillbtn:disabled{opacity:.55; cursor:wait;}
+  a.pillbtn.ready{border-color:var(--ok); color:var(--ok);}
+
+  .kpi{padding:20px 22px; position:relative; overflow:hidden;}
+  .kpi::before{content:""; position:absolute; top:0; left:0; width:4px; height:100%; background:var(--kpi-color, var(--primary));}
+  .kpi .val{font-family:var(--font-mono); font-size:28px; font-weight:700; letter-spacing: -0.5px; color:var(--ink);}
+  .kpi .lbl{font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.03em; margin-top:2px;}
+  .kpi .trend{font-size:11.5px; font-weight:700; margin-top:8px;}
+  .kpi .trend.up{color:var(--ok);} .kpi .trend.down{color:var(--bad);}
+
+  .chart-card{padding:20px 22px 12px;}
+  .chart-card h3{font-family:var(--font-display); font-size:14px; margin:0 0 14px; font-weight:700; color:var(--ink);}
+  .chart-wrap{position:relative; height:240px;}
+
+  table{width:100%; border-collapse:separate; border-spacing: 0; font-size:13.5px; min-width:600px;}
+  th,td{padding:14px 16px; border-bottom:1px solid var(--line); text-align:left;}
+  th{background: var(--panel-2); color:var(--muted); font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em;}
+  tbody tr:hover{background:var(--panel-2);}
+
+  .tag{font-size:11.5px; padding:4px 12px; border-radius:7px; font-weight:800; font-family:var(--font-mono);}
+  .tag.ok{background:var(--ok-dim); color:var(--ok);}
+  .tag.bad{background:var(--bad-dim); color:var(--bad);}
+
+  .toast{
+    position:fixed; bottom:32px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:14px 28px; border-radius:12px;
+    font-weight:600; font-size:14px; z-index:100; box-shadow: var(--shadow);
+    max-width: calc(100vw - 48px); text-align:center;
+  }
+
+  #uploadingOverlay{
+    position: fixed; top: 20px; right: 20px; background: var(--ink); color: #fff;
+    padding: 12px 20px; border-radius: 10px; z-index: 1000; box-shadow: var(--shadow);
+    display: none; align-items: center; gap: 10px; font-weight: 600; font-size: 13px;
+    max-width: calc(100vw - 40px); min-width: 260px;
+  }
+  @media (max-width:768px){
+    #uploadingOverlay{ left:16px; right:16px; top:12px; min-width:0; }
+  }
+
+  /* ===================== MOBILE RESPONSIVE ===================== */
+  @media (max-width:768px){
+    body{ padding-bottom: env(safe-area-inset-bottom); }
+    header{ padding-top: calc(12px + env(safe-area-inset-top)); }
+
+    /* Alvos de toque com no mínimo 48px, como pedido nos critérios de
+       aceite — antes vários controles ficavam abaixo disso no celular. */
+    button.primary, button.secondary, .status-btn, a.pillbtn, button.pillbtn,
+    input, select, nav.tabs button{
+      min-height:48px;
+    }
+    input[type="file"]{ min-height:44px; }
+
+    header{padding:12px 16px; gap:10px;}
+    .brand-mark{width:36px; height:36px;}
+    .brand-mark::after{inset:5px; font-size:11px;}
+    header h1{font-size:15.5px;}
+    header .sub{font-size:10.5px;}
+    nav.tabs{width:100%; order:3;}
+    nav.tabs button{flex:1; padding:10px 8px; font-size:12.5px;}
+
+    .hero{padding:22px 16px 20px;}
+    .hero-inner{flex-direction:column; align-items:flex-start; gap:14px;}
+    .hero h2{font-size:19px;}
+    .hero p{font-size:12.5px;}
+    .hero-badge{align-self:stretch; justify-content:center;}
+
+    main{padding:18px 14px 90px;}
+    .card{padding:16px;}
+    h2.section-title{font-size:14.5px; margin-bottom:16px;}
+
+    .legend-strip{flex-direction:column; align-items:flex-start; gap:10px; padding:14px 16px;}
+    .legend-strip > span:last-child{margin-left:0 !important;}
+
+    .item-card{flex-direction:column; padding:14px;}
+    .cap-badge{width:30px; height:30px;}
+    .cap-badge::after{font-size:10.5px;}
+    .item-head{flex-direction:column; align-items:flex-start; gap:8px;}
+    .item-title{font-size:14px;}
+
+    .status-row{flex-direction:column; gap:8px;}
+    .status-btn{min-width:100%; padding:13px; font-size:13px;}
+
+    button.primary{width:100%; padding:15px; font-size:14.5px;}
+    #formSection > div[style*="display:flex"]{
+      flex-direction:column; align-items:stretch !important;
+      position:sticky; bottom:0; background:var(--bg);
+      padding:14px 0 calc(14px + env(safe-area-inset-bottom)) !important;
+      margin: 8px -14px -90px; padding-left:14px; padding-right:14px;
+      box-shadow: 0 -8px 20px -12px rgba(16,21,28,0.15);
+      z-index: 20;
+    }
+
+    .kpi .val{font-size:22px;}
+    .chart-wrap{height:200px;}
+
+    .thumb-item{width:46px; height:46px;}
+
+    /* Histórico de auditorias: em telas estreitas, cada linha vira um
+       cartão empilhado (rótulo: valor) em vez de uma tabela espremida
+       com rolagem horizontal difícil de usar no polegar. */
+    table.responsive-table{min-width:0;}
+    table.responsive-table thead{display:none;}
+    table.responsive-table, table.responsive-table tbody, table.responsive-table tr, table.responsive-table td{
+      display:block; width:100%;
+    }
+    table.responsive-table tr{
+      border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin:12px; box-shadow: var(--shadow-sm);
+    }
+    table.responsive-table td{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:9px 0; border-bottom:1px solid var(--panel-2); text-align:right;
+    }
+    table.responsive-table td:last-child{border-bottom:none;}
+    table.responsive-table td::before{
+      content: attr(data-label); font-weight:700; color:var(--muted); font-size:11px;
+      text-transform:uppercase; letter-spacing:.03em; text-align:left;
+    }
+  }
+
+  @media (max-width:420px){
+    header h1{font-size:14px;}
+    .hero h2{font-size:17px;}
+    .hero-badge .n{font-size:17px;}
+    .grid.cols-4, .grid.cols-3, .grid.cols-2{grid-template-columns:1fr;}
+  }
+</style>
 </head>
 <body>
- 
-<div id="network-status">⚠️ MODO OFFLINE ATIVO</div>
- 
-<div id="modal-grafico-expandido" class="chart-fullscreen-modal">
-    <div class="modal-header">
-        <h2 id="modal-grafico-titulo" style="font-weight:900; letter-spacing:-1px;">Gráfico Expandido</h2>
-        <button class="btn-action" style="padding:10px 20px; background:var(--primary);" onclick="fecharGraficoExpandido()">Fechar Voltar ✕</button>
+
+<div id="uploadingOverlay">
+  <div style="flex:1; min-width:0;">
+    <span id="uploadText">Enviando evidências (0/0)...</span>
+    <div style="width:100%; height:5px; background:rgba(255,255,255,.25); border-radius:3px; margin-top:6px; overflow:hidden;">
+      <div id="uploadProgressFill" style="height:100%; width:0%; background:#fff; border-radius:3px; transition:width .25s;"></div>
     </div>
-    <div class="canvas-container">
-        <canvas id="canvas-expanded-render"></canvas>
-    </div>
-</div>
- 
-<div id="sidebar" class="sidebar">
-    <div style="padding: 30px; font-weight: 900; color: #fff; font-size: 22px; letter-spacing: -1.5px; display: flex; align-items: center; gap: 10px;">
-        <div style="width: 12px; height: 12px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 10px var(--primary);"></div>
-        INFINITY WMS
-    </div>
-    <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ANALYTICS</button>
-    <button id="btn-nav-lx03" onclick="abrirLX03()" style="display: none;">🏭 LX03 - ESTOQUE POR POSIÇÃO</button>
-    <button id="btn-nav-ls24" onclick="abrirLS24()" style="display: none;">🔍 LS24 - LOCALIZAR MATERIAL</button>
-    <button id="btn-nav-ls25" onclick="abrirLS25()" style="display: none;">📦 LS25 - CONTEÚDO DO BIN</button>
-    <button id="btn-nav-ls26" onclick="abrirLS26()" style="display: none;">📈 LS26 - ESTOQUE TOTAL DO MATERIAL</button>
-    <button id="btn-nav-ls03n" onclick="abrirLS03N()" style="display: none;">🗂️ LS03N - CADASTRO DO BIN</button>
-    <button onclick="navegar('retirar')">📦 PESQUISAR ESTOQUE</button>
-    <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
-        <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
-    <button onclick="navegar('movimentacao_drive_in')">🚚 MOVIMENTAÇÃO DRIVE IN</button>
-    
-    <button onclick="logout()" style="color: var(--retido); margin-top: 40px; border-top: 1px solid var(--glass-border); border-radius: 0; width: 100%; opacity: 0.7;">🚪 ENCERRAR SESSÃO</button>
-</div>
- 
-<div id="login-screen">
-    <div style="height: 100dvh; display: flex; justify-content: center; align-items: center; padding: 20px;">
-        <div class="login-box glass-card" style="width: 100%; max-width: 380px; padding: 50px; text-align: center;">
-            <div style="width: 60px; height: 60px; background: var(--primary); border-radius: 20px; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 15px 30px var(--primary-glow);">W</div>
-            <h2 style="color: #fff; margin-bottom: 10px; font-weight: 900; font-size: 26px; letter-spacing: -1px;">WMS INFINITY</h2>
-            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 35px; text-transform: uppercase; letter-spacing: 1px;">Acesse sua conta</p>
-            <div class="form-group">
-                <div class="input-with-toggle" style="margin-bottom:15px;">
-                    <input type="text" inputmode="numeric" id="login-mat" placeholder="Matrícula" style="text-align: center;">
-                    <div class="toggle-kb-btn" onclick="toggleKB('login-mat')">Abc</div>
-                </div>
-                <input type="password" id="login-senha" placeholder="Senha" style="text-align: center;">
-            </div>
-            <button onclick="tentarLogin()" class="btn-action" style="width: 100%; padding: 20px; font-size: 15px; margin-top: 10px;">INICIAR OPERAÇÃO</button>
-        </div>
-    </div>
-</div>
- 
-<div id="app-screen" style="display: none;">
-    <div class="header">
-        <button class="menu-btn" onclick="toggleMenu()">☰</button>
-        <div style="flex-grow: 1;">
-            <div id="user-name" style="font-weight: 900; font-size: 18px; letter-spacing: -0.5px; color: #fff;"></div>
-            <div id="role-label" style="font-size: 9px; color: var(--primary); font-weight: 900; letter-spacing: 2px; text-transform: uppercase;"></div>
-        </div>
-        <div style="text-align: right;">
-            <div id="current-time" style="font-size: 12px; font-weight: 800;">00:00</div>
-            <div style="font-size: 9px; color: var(--text-secondary); text-transform: uppercase;">Online</div>
-        </div>
-    </div>
- 
-    <div class="container">
-        <div id="view-admin" style="display: none;">
-            <div class="stats-grid">
-                <div class="stat-card glass-card" onclick="navegarComFiltro('')"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
-                <div class="stat-card glass-card" onclick="navegarComFiltro('critico')"><h5>CRÍTICOS (30-60D)</h5><p id="st-critico" style="color: var(--critico);">0</p></div>
-                <div class="stat-card glass-card" onclick="navegarComFiltro('retido')"><h5>RETIDOS (&lt;30D)</h5><p id="st-retido" style="color: var(--retido);">0</p></div>
-                <div class="stat-card glass-card"><h5>GIRO HOJE</h5><p id="st-mov" style="color: var(--verde);">0</p></div>
-            </div>
- 
-            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
-                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">Filtros de Pesquisa do Histórico e Painéis Operacionais</h4>
-                <div class="filter-panel">
-                    <div class="form-group">
-                        <label>Tipo de Filtro Temporal</label>
-                        <select id="filtro-tipo-tempo" onchange="alternarCamposData()">
-                            <option value="mes">Por Mês Atual / Específico</option>
-                            <option value="dia">Por Dia Específico</option>
-                            <option value="periodo">Período Customizado</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="container-filtro-mes">
-                        <label>Mês / Ano de Análise</label>
-                        <input type="month" id="filtro-mes-valor" onchange="processarFiltragemHistorica()">
-                    </div>
-                    <div class="form-group" id="container-filtro-dia" style="display:none;">
-                        <label>Dia de Análise</label>
-                        <input type="date" id="filtro-dia-valor" onchange="processarFiltragemHistorica()">
-                    </div>
-                    <div class="form-group" id="container-filtro-de" style="display:none;">
-                        <label>Data Inicial</label>
-                        <input type="date" id="filtro-de-valor" onchange="processarFiltragemHistorica()">
-                    </div>
-                    <div class="form-group" id="container-filtro-ate" style="display:none;">
-                        <label>Data Final</label>
-                        <input type="date" id="filtro-ate-valor" onchange="processarFiltragemHistorica()">
-                    </div>
-                    <div class="form-group">
-                        <label>Buscar Material (Código/Nome)</label>
-                        <input type="text" id="filtro-material" placeholder="Filtrar tabela/ranking..." oninput="filtrarTabelasEDados()">
-                    </div>
-                </div>
-                <div style="display:flex; justify-content: flex-end;">
-                    <button class="btn-action" style="padding: 12px 24px; font-size:11px; background:var(--accent); box-shadow:0 5px 15px var(--accent-glow);" onclick="limparFiltrosHistoricos()">Limpar Filtros</button>
-                </div>
-            </div>
- 
-            <div class="dashboard-row">
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-fluxo-diario', '1. Movimentação de Paletes Diária')">Expandir ⛶</button>
-                    <div class="chart-title">📈 1. Movimentação de Paletes Diária <span>(Período Selecionado)</span></div>
-                    <canvas id="chart-fluxo-diario" style="max-height: 250px;"></canvas>
-                </div>
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-fluxo-mensal', '2. Histórico Mensal Acumulado')">Expandir ⛶</button>
-                    <div class="chart-title">🗓️ 2. Histórico Mensal Acumulado <span>(Giro Anual)</span></div>
-                    <canvas id="chart-fluxo-mensal" style="max-height: 250px;"></canvas>
-                </div>
-            </div>
- 
-            <div class="dashboard-grid-3">
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-setor-mensal', '6.1 Setores Abastecidos (Visão Mensal)')">Expandir ⛶</button>
-                    <div class="chart-title">🧱 6.1 Setores Abastecidos (Visão Mensal)</div>
-                    <canvas id="chart-setor-mensal" style="max-height: 230px;"></canvas>
-                </div>
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-setor-diario', '6.2 Setores Abastecidos (Visão Diária)')">Expandir ⛶</button>
-                    <div class="chart-title">⚡ 6.2 Setores Abastecidos (Visão Diária)</div>
-                    <canvas id="chart-setor-diario" style="max-height: 230px;"></canvas>
-                </div>
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-destinos-saida', 'Destino dos Fluxos de Saída')">Expandir ⛶</button>
-                    <div class="chart-title">🔄 Destino das Cargas (Fluxos de Saída)</div>
-                    <canvas id="chart-destinos-saida" style="max-height: 230px;"></canvas>
-                </div>
-            </div>
- 
-            
-            <div class="dashboard-fullrow">
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-apanha-setor', '7. Abastecimento APANHA por Setor')">Expandir ⛶</button>
-                    <div class="chart-title">📦 7. Abastecimento APANHA por Setor <span>(Fluxo APANHA)</span></div>
-                    <canvas id="chart-apanha-setor" style="max-height: 300px;"></canvas>
-                </div>
-            </div>
- 
-            <div class="dashboard-row">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">🏆 3. Materiais Mais Movimentados <span style="color:var(--accent);">Top 10</span></div>
-                    <div class="wms-table-container">
-                        <table class="wms-table">
-                            <thead>
-                                <tr><th>Código</th><th>Descrição</th><th>Qtd Movimentada (PL)</th></tr>
-                            </thead>
-                            <tbody id="table-ranking-materiais"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="chart-box glass-card">
-                    <div class="chart-title">👥 5. Produtividade por Colaborador <span style="color:var(--verde);">Ranking</span></div>
-                    <div class="wms-table-container">
-                        <table class="wms-table">
-                            <thead>
-                                <tr><th>Colaborador</th><th>Paletes Movimentados</th></tr>
-                            </thead>
-                            <tbody id="table-ranking-operadores"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
- 
-            <div class="dashboard-fullrow">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">
-                        <div>📋 Histórico Detalhado Consolidação Fluxos</div>
-                        <button class="btn-action" onclick="exportarRelatorioFiltradoExcel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">Exportar Planilha Filtrada</button>
-                    </div>
-                    <div class="wms-table-container">
-                        <table class="wms-table">
-                            <thead>
-                                <tr><th>Data</th><th>Hora</th><th>Fluxo/Ação</th><th>Material</th><th>Descrição</th><th>Setor</th><th>Qtd</th><th>Operador</th></tr>
-                            </thead>
-                            <tbody id="table-historico-consolidado"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
- 
-            <div class="dashboard-row">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">⚡ 4. Monitor de Atividades em Tempo Real (Controle FEFO)</div>
-                    <div id="activity-feed" class="activity-feed"></div>
-                </div>
-                <div class="chart-box glass-card">
-                    <button class="expand-btn" onclick="expandirGrafico('chart-status', 'Saúde Geral do Inventário')">Expandir ⛶</button>
-                    <div class="chart-title">📊 Saúde Geral do Inventário</div>
-                    <canvas id="chart-status" style="max-height: 250px;"></canvas>
-                </div>
-            </div>
- 
-            <div class="glass-card" style="padding: 35px; margin-bottom: 30px;">
-                <h3 style="font-size: 12px; color: #fff; margin-bottom: 25px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">Sistema e Sincronização</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="importarCSV(event)">
-                    <button class="btn-action" onclick="document.getElementById('csv-file').click()" style="background: var(--glass); border: 1px solid var(--glass-border); box-shadow: none;">ATUALIZAR ESTOQUE (CSV)</button>
-                    <button class="btn-action" onclick="exportarHistoricoExcel()" style="background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">EXPORTAR LOG COMPLETO DE AUDITORIA</button>
-                </div>
-                <button class="btn-action" onclick="sincronizarBaseMateriais()" style="width: 100%; margin-top: 15px; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">SINCRONIZAR BASE DE MATERIAIS (EXCEL)</button>
-                <button class="btn-action" onclick="abrirModalEditarBin()" style="width: 100%; margin-top: 15px; background: var(--primary); box-shadow: 0 10px 20px var(--primary-glow);">✏️ EDITAR POSIÇÃO / MATERIAL / VALIDADE / QTD</button>
-                <button class="btn-action" onclick="exportarBinsExcel()" style="width: 100%; margin-top: 15px; background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">📊 EXPORTAR TODOS OS BINS (EXCEL)</button>
-            </div>
-        </div>
-
-        <div id="view-lx03" style="display:none;">
-            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
-                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">LX03 — Estoque de Depósito por Posição (Bin)</h4>
-                <div class="filter-panel">
-                    <div class="form-group">
-                        <label>Depósito (Armazém)</label>
-                        <input type="text" id="lx03-filtro-deposito" value="ALB01" disabled style="opacity:0.6;">
-                    </div>
-                    <div class="form-group">
-                        <label>Posição / Bin</label>
-                        <input type="text" id="lx03-filtro-bin" placeholder="Ex: A-01 (deixe em branco p/ todos)" oninput="executarLX03()">
-                    </div>
-                    <div class="form-group">
-                        <label>Material</label>
-                        <input type="text" id="lx03-filtro-material" placeholder="Código ou descrição" oninput="executarLX03()">
-                    </div>
-                    <div class="form-group">
-                        <label>Status do Estoque</label>
-                        <select id="lx03-filtro-status" onchange="executarLX03()">
-                            <option value="">Todos</option>
-                            <option value="ocupado">Ocupado</option>
-                            <option value="bloqueado">Bloqueado</option>
-                            <option value="vazio">Vazio</option>
-                        </select>
-                    </div>
-                </div>
-                <div style="display:flex; justify-content: flex-end; gap: 15px;">
-                    <button class="btn-action" style="padding: 12px 24px; font-size:11px; background:var(--glass); border:1px solid var(--glass-border); box-shadow:none;" onclick="limparFiltrosLX03()">Limpar</button>
-                    <button class="btn-action" style="padding: 12px 24px; font-size:11px; background:var(--accent); box-shadow:0 5px 15px var(--accent-glow);" onclick="executarLX03()">▶ EXECUTAR (F8)</button>
-                </div>
-            </div>
-
-            <div class="glass-card" style="padding: 25px; margin-bottom: 24px;">
-                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:10px; letter-spacing:1px;">🗺️ Mapa Físico do Armazém (necessário para identificar BINs Vazios)</h4>
-                <p style="font-size:11px; color:var(--text-secondary); margin-bottom:15px; line-height:1.6;">Cole abaixo, uma posição por linha, todos os endereços físicos existentes no armazém (ex: A-01-01). Sem esse cadastro, o LX03 mostra apenas posições Ocupadas/Bloqueadas.</p>
-                <textarea id="lx03-mapa-textarea" placeholder="A-01-01&#10;A-01-02&#10;A-01-03..." style="width:100%; min-height:100px; background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-radius:16px; padding:15px; color:#fff; font-family:monospace; font-size:12px;"></textarea>
-                <button class="btn-action" style="width:100%; margin-top:15px; background:var(--accent); box-shadow:0 10px 20px var(--accent-glow);" onclick="salvarMapaBinsLX03()">SALVAR MAPA DE BINS</button>
-            </div>
-
-            <div class="stats-grid">
-                <div class="stat-card glass-card"><h5>POSIÇÕES ENCONTRADAS</h5><p id="lx03-total-posicoes">0</p></div>
-                <div class="stat-card glass-card"><h5>TOTAL DE PALLETS</h5><p id="lx03-total-pallets">0</p></div>
-            </div>
-
-            <div class="dashboard-fullrow">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">
-                        <div>📋 LX03 — Lista de Estoque por Depósito/Posição</div>
-                        <button class="btn-action" onclick="exportarLX03Excel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">Exportar Lista (Excel)</button>
-                    </div>
-                    <div class="wms-table-container">
-                        <table class="wms-table">
-                            <thead>
-                                <tr><th>Depósito</th><th>TD</th><th>Posição/Bin</th><th>Material</th><th>Descrição</th><th>UM</th><th>Quantidade</th><th>Validade Frente</th><th>Dias Vencto</th><th>Status</th></tr>
-                            </thead>
-                            <tbody id="lx03-tabela-resultado"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
- 
-        <div id="view-ls24" style="display:none;">
-            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
-                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">LS24 — Localizar Material no Armazém</h4>
-                <div class="form-group">
-                    <label>Código ou Descrição do Material</label>
-                    <input type="text" id="ls24-filtro-material" placeholder="Ex: 12345 ou Cerveja Lata (deixe em branco p/ ver tudo)" oninput="executarLS24()">
-                </div>
-            </div>
-            <div class="stats-grid">
-                <div class="stat-card glass-card"><h5>BINS ENCONTRADOS</h5><p id="ls24-total-bins">0</p></div>
-                <div class="stat-card glass-card"><h5>TOTAL DE PALLETS</h5><p id="ls24-total-pallets">0</p></div>
-            </div>
-            <div class="dashboard-fullrow">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">
-                        <div>📍 LS24 — Posições onde o Material Está Armazenado</div>
-                        <button class="btn-action" onclick="exportarLS24Excel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">Exportar (Excel)</button>
-                    </div>
-                    <div class="wms-table-container">
-                        <table class="wms-table">
-                            <thead><tr><th>Posição/Bin</th><th>Material</th><th>Descrição</th><th>Quantidade</th><th>Validade Frente</th><th>Dias Vencto</th><th>Status</th></tr></thead>
-                            <tbody id="ls24-tabela-resultado"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="view-ls25" style="display:none;">
-            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
-                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">LS25 — Conteúdo do BIN</h4>
-                <div class="form-group">
-                    <label>Posição / Bin</label>
-                    <input type="text" id="ls25-filtro-bin" placeholder="Ex: A-01-01" oninput="executarLS25()">
-                </div>
-            </div>
-            <div class="stats-grid">
-                <div class="stat-card glass-card"><h5>ITENS NO BIN</h5><p id="ls25-total-itens">0</p></div>
-                <div class="stat-card glass-card"><h5>TOTAL DE PALLETS NO BIN</h5><p id="ls25-total-pallets">0</p></div>
-            </div>
-            <div class="dashboard-fullrow">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">
-                        <div>📦 LS25 — Itens Armazenados no BIN</div>
-                        <button class="btn-action" onclick="exportarLS25Excel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">Exportar (Excel)</button>
-                    </div>
-                    <div class="wms-table-container">
-                        <table class="wms-table">
-                            <thead><tr><th>Posição/Bin</th><th>Material</th><th>Descrição</th><th>Quantidade</th><th>Validade Frente</th><th>Dias Vencto</th><th>Status</th></tr></thead>
-                            <tbody id="ls25-tabela-resultado"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="view-ls26" style="display:none;">
-            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
-                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">LS26 — Estoque Total do Material no Armazém</h4>
-                <div class="form-group">
-                    <label>Código ou Descrição do Material</label>
-                    <input type="text" id="ls26-filtro-material" placeholder="Ex: 12345 ou Cerveja Lata" oninput="executarLS26()">
-                </div>
-            </div>
-            <div class="stats-grid">
-                <div class="stat-card glass-card"><h5>TOTAL NO ARMAZÉM</h5><p id="ls26-total-pallets">0</p></div>
-                <div class="stat-card glass-card"><h5>BINS OCUPADOS</h5><p id="ls26-total-bins">0</p></div>
-                <div class="stat-card glass-card"><h5>PALLETS BLOQUEADOS</h5><p id="ls26-total-bloqueado" style="color: var(--retido);">0</p></div>
-                <div class="stat-card glass-card"><h5>PALLETS DISPONÍVEIS</h5><p id="ls26-total-disponivel" style="color: var(--verde);">0</p></div>
-            </div>
-            <div class="dashboard-fullrow">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">
-                        <div>📊 LS26 — Distribuição do Material por BIN</div>
-                        <button class="btn-action" onclick="exportarLS26Excel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">Exportar (Excel)</button>
-                    </div>
-                    <div class="wms-table-container">
-                        <table class="wms-table">
-                            <thead><tr><th>Posição/Bin</th><th>Material</th><th>Descrição</th><th>Quantidade</th><th>Validade Frente</th><th>Dias Vencto</th><th>Status</th></tr></thead>
-                            <tbody id="ls26-tabela-resultado"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="view-ls03n" style="display:none;">
-            <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
-                <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:15px; letter-spacing:1px;">LS03N — Dados Cadastrais do BIN</h4>
-                <div class="form-group">
-                    <label>Posição / Bin</label>
-                    <input type="text" id="ls03n-filtro-bin" placeholder="Ex: A-01-01" oninput="executarLS03N()">
-                </div>
-            </div>
-            <div id="ls03n-resultado" class="glass-card" style="padding: 35px; display:none;"></div>
-            <div id="ls03n-vazio" class="glass-card" style="padding:35px; text-align:center; color:var(--text-secondary); font-size:13px; display:block;">Informe uma posição para consultar os dados cadastrais do BIN.</div>
-        </div>
-
-        <div id="view-retirar">
-            <div class="search-wrapper input-with-toggle">
-                <input type="text" inputmode="numeric" id="search-input" placeholder="Pesquisar Código ou Posição..." oninput="renderizarEstoque()">
-                <div class="toggle-kb-btn" onclick="toggleKB('search-input')" style="right: 15px;">Abc</div>
-            </div>
-            <div id="lista-estoque"></div>
-        </div>
- 
-        <div id="view-entrada_bloco" style="display: none;">
-            <div class="form-box glass-card">
-                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Entrada no Bloco</h3>
-                <div class="form-group"><label>Fluxo de Origem</label><select id="eb-origem"><option value="DRIVE IN">DRIVE IN</option><option value="RECEBIMENTO">RECEBIMENTO</option></select></div>
-                <div class="form-group"><label>Endereço de Destino</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-ender" placeholder="Ex: 205-14"><div class="toggle-kb-btn" onclick="toggleKB('eb-ender')">Abc</div></div>
-                </div>
-                <div class="form-group" style="position: relative;"><label>Código do Material</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('eb-mat')">Abc</div></div>
-                    <div id="eb-mat-list" class="autocomplete-items"></div>
-                </div>
-                <div class="form-group"><label>Descrição do Material</label><input type="text" id="eb-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando código..."></div>
-                <div class="form-group"><label>Quantidade (Pallets)</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="eb-qtd" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('eb-qtd')">Abc</div></div>
-                </div>
-                <div class="form-group"><label>Data de Vencimento</label><input type="date" id="eb-venc" onchange="calcularDias(this.value, 'eb-label-dias')"><p id="eb-label-dias" style="color: var(--critico); font-size: 11px; margin-top: 12px; font-weight: 800; text-transform: uppercase;"></p></div>
-                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="salvarEntradaBloco()">CONFIRMAR ENTRADA</button>
-            </div>
-        </div>
- 
-        <div id="view-abertura_blocado" style="display: none;">
-            <div class="form-box glass-card">
-                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Transferência Interna</h3>
-                <div class="form-group"><label>Posição Origem</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-origem" placeholder="Ex: 201-14" onchange="carregarDadosOrigemAbertura(this.value)"><div class="toggle-kb-btn" onclick="toggleKB('ab-origem')">Abc</div></div>
-                </div>
-                <div class="form-group"><label>Material Identificado</label><input type="text" id="ab-mat" readonly style="opacity: 0.5;"></div>
-                <div class="form-group"><label>Posição de Destino</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-destino" placeholder="Ex: 205-20"><div class="toggle-kb-btn" onclick="toggleKB('ab-destino')">Abc</div></div>
-                </div>
-                <div class="form-group"><label>Qtd para Mover</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="ab-qtd" placeholder="Saldo: 0"><div class="toggle-kb-btn" onclick="toggleKB('ab-qtd')">Abc</div></div>
-                </div>
-                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="processarAberturaBlocado()">EXECUTAR MOVIMENTAÇÃO</button>
-            </div>
-        </div>
- 
- 
-<div id="view-movimentacao_drive_in" style="display: none;">
-            <div class="form-box glass-card">
-                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Movimentacao Drive In</h3>
-                <div class="form-group"><label>Fluxo de Origem</label><select id="mdi-origem"><option value="DRIVE IN">DRIVE IN</option></select></div>
-                <div class="form-group" style="position: relative;"><label>Codigo do Material</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="mdi-mat" placeholder="Codigo..." oninput="puxarDescricaoMovDriveIn(this.value, 'mdi-desc', 'mdi-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('mdi-mat')">Abc</div></div>
-                    <div id="mdi-mat-list" class="autocomplete-items"></div>
-                </div>
-                <div class="form-group"><label>Descricao do Material</label><input type="text" id="mdi-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando codigo..."></div>
-                <div class="form-group"><label>Quantidade (Pallets)</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="decimal" id="mdi-qtd" placeholder="0"><div class="toggle-kb-btn" onclick="toggleKB('mdi-qtd')">Abc</div></div>
-                </div>
-                <div class="form-group"><label>Data de Vencimento</label><input type="date" id="mdi-venc" onchange="calcularDiasMovDriveIn(this.value, 'mdi-label-dias')"><p id="mdi-label-dias" style="color: var(--critico); font-size: 11px; margin-top: 12px; font-weight: 800; text-transform: uppercase;"></p></div>
-                <div class="form-group"><label>Fluxo de Destino</label><select id="mdi-destino"><option value="APANHA">APANHA</option><option value="TRANSFERENCIA">TRANSFERENCIA</option></select></div>
-                <button class="btn-action" style="width: 100%; padding: 20px;" onclick="salvarMovimentacaoDriveIn()">CONFIRMAR MOVIMENTACAO</button>
-            </div>
-        </div>
-    </div>
-</div>
- 
-<div id="modal-retirada">
-    <div class="modal-content glass-card">
-        <h3 id="modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Retirada</h3>
-        <p id="modal-info" style="font-size:13px; color: var(--text-secondary); margin: 20px 0 30px; line-height: 1.6;"></p>
-        <div class="form-group"><label>Quantidade de Pallets:</label>
-            <div class="input-with-toggle">
-                <input type="text" id="modal-input-qtd" inputmode="decimal" placeholder="0" style="font-size:40px; text-align:center; background: rgba(255,255,255,0.02); border: 2px solid var(--primary); border-radius: 20px; height: 90px; font-weight: 900; color: #fff; width: 100%;">
-                <div class="toggle-kb-btn" onclick="toggleKB('modal-input-qtd')" style="height: 60px; width: 50px;">Abc</div>
-            </div>
-        </div>
-        <div class="form-group"><label>Destino da Carga:</label><select id="modal-destino-mov" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 18px; border-radius: 16px; color: #fff; width: 100%; font-weight: 600;"><option value="TRANSFERENCIA">TRANSFERENCIA</option><option value="APANHA">APANHA</option><option value="SEPARAÇÃO">SEPARAÇÃO</option></select></div>
-        <div style="display:flex; gap:15px; margin-top:35px;"><button onclick="fecharModal()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button><button id="btn-confirmar-modal" class="btn-action" style="flex:1;">CONFIRMAR</button></div>
-    </div>
+  </div>
 </div>
 
-<div id="modal-editar-bin">
-    <div class="modal-content glass-card" style="max-width: 480px;">
-        <h3 style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Editar Posição de Estoque</h3>
-        <p style="font-size:12px; color: var(--text-secondary); margin: 10px 0 20px; line-height: 1.6;">Busque a posição pelo endereço (COD_ENDER) ou pelo código do material para carregar os dados atuais.</p>
-        <div class="form-group">
-            <label>Buscar Posição / Material:</label>
-            <div class="input-with-toggle">
-                <input type="text" id="edit-bin-busca" placeholder="Ex: A-01-01 ou 12345" style="text-align:center;">
-                <div class="toggle-kb-btn" onclick="toggleKB('edit-bin-busca')">Abc</div>
-            </div>
-        </div>
-        <button class="btn-action" style="width:100%; background:var(--accent); box-shadow:0 5px 15px var(--accent-glow); margin-bottom: 20px;" onclick="buscarBinParaEditar()">LOCALIZAR POSIÇÃO</button>
-
-        <div id="edit-bin-campos" style="display:none;">
-            <div class="form-group"><label>Posição (COD_ENDER):</label><input type="text" id="edit-bin-ender" style="text-align:center;"></div>
-            <div class="form-group"><label>Código do Material:</label><input type="text" id="edit-bin-mat" style="text-align:center;"></div>
-            <div class="form-group"><label>Data de Validade (Frente):</label><input type="text" id="edit-bin-valfrente" placeholder="DD/MM/AAAA" style="text-align:center;"></div>
-            <div class="form-group"><label>Quantidade de Pallets:</label><input type="text" id="edit-bin-qtd" inputmode="decimal" style="text-align:center; font-size:24px; font-weight:900;"></div>
-        </div>
-
-        <div style="display:flex; gap:15px; margin-top:15px;">
-            <button onclick="fecharModalEditarBin()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button>
-            <button id="btn-salvar-edicao-bin" class="btn-action" style="flex:1; display:none;" onclick="salvarEdicaoBin()">SALVAR ALTERAÇÕES</button>
-        </div>
+<header>
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div style="min-width:0;">
+      <h1>Auditoria de Estoque</h1>
+      <div class="sub">Uberlândia Refrescos · Sistema de Gestão de Qualidade</div>
     </div>
+  </div>
+  <nav class="tabs">
+    <button id="tabFormBtn" class="active">Nova Auditoria</button>
+    <button id="tabDashBtn">Painel de Controle</button>
+  </nav>
+</header>
+
+<div class="hero" id="heroBand">
+  <div class="bubbles" id="heroBubbles"></div>
+  <div class="hero-inner">
+    <div>
+      <h2 id="heroTitle">Checklist de Conformidade — Área de Estoque</h2>
+      <p>Avalie os 12 pontos críticos de organização, segurança e giro de estoque. Cada item pesa proporcionalmente à sua criticidade operacional.</p>
+    </div>
+    <div class="hero-badge">
+      <div>
+        <div class="n" id="heroMetaBadge">–</div>
+        <div class="l">Meta UR</div>
+      </div>
+    </div>
+  </div>
 </div>
- 
+
+<main>
+  <div class="legend-strip">
+    <span><span class="legend-dot" style="background:var(--ok);"></span><b>Conforme</b> (100%)</span>
+    <span><span class="legend-dot" style="background:var(--mid);"></span><b>Parcial</b> (50%)</span>
+    <span><span class="legend-dot" style="background:var(--bad);"></span><b>Não Conforme</b> (0%)</span>
+    <span style="margin-left: auto; font-weight: 800; color: var(--primary);" id="legendMeta">Meta UR: –</span>
+  </div>
+
+  <section id="formSection">
+    <div class="card">
+      <h2 class="section-title"><span class="badge">1</span> Dados da Auditoria</h2>
+      <div class="grid cols-4">
+        <div class="field"><label>Data</label><input type="date" id="fData"></div>
+        <div class="field"><label>Turno</label>
+          <select id="fTurno">
+            <option value="">Selecione o Turno</option>
+            <option>Turno A</option>
+            <option>Turno B</option>
+            <option>Turno Intermediário</option>
+            <option>Turno C</option>
+          </select>
+        </div>
+        <div class="field"><label>Auditor Responsável</label><input type="text" id="fAuditor" placeholder="Nome do auditor"></div>
+        <div class="field"><label>Área de Inspeção</label><input type="text" id="fArea" value="Logística / Estoque"></div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:20px 24px 6px;">
+      <h2 class="section-title" style="margin-bottom:14px;"><span class="badge">2</span> Checklist</h2>
+    </div>
+    <div id="checklistWrap"></div>
+
+    <div class="card">
+      <h2 class="section-title"><span class="badge">3</span> Plano de Ação & Observações</h2>
+      <div class="grid cols-2">
+        <div class="field"><label>Observações Gerais</label><textarea id="fObsGerais" placeholder="Descreva observações relevantes..."></textarea></div>
+        <div class="field"><label>Plano de Ação Imediato</label><textarea id="fPlanoAcao" placeholder="Quais ações serão tomadas?"></textarea></div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:16px; align-items:center; padding: 20px 0;">
+      <button class="primary" id="btnSubmit">Finalizar e Baixar PDF</button>
+      <span id="formMsg" style="font-size:14px; font-weight: 600;"></span>
+    </div>
+  </section>
+
+  <section id="dashboardSection" style="display:none;">
+    <div class="card">
+      <h2 class="section-title">Filtros</h2>
+      <div class="grid cols-4">
+        <div class="field"><label>Início</label><input type="date" id="fltDe"></div>
+        <div class="field"><label>Fim</label><input type="date" id="fltAte"></div>
+        <div class="field"><label>Turno</label>
+          <select id="fltTurno"><option value="">Todos</option><option>Turno A</option><option>Turno B</option><option>Turno Intermediário</option><option>Turno C</option></select>
+        </div>
+        <div class="field"><button class="secondary" id="btnFilter" style="width: 100%; margin-top: 24px;">Filtrar</button></div>
+      </div>
+    </div>
+
+    <div class="grid cols-4" id="kpiRow">
+      <div class="card kpi" style="--kpi-color:var(--primary);"><div class="val" id="kpiConform">0%</div><div class="lbl">Conformidade Média</div><div class="trend" id="kpiConformTrend"></div></div>
+      <div class="card kpi" style="--kpi-color:var(--ink);"><div class="val" id="kpiTotal">0</div><div class="lbl">Total de Auditorias</div></div>
+      <div class="card kpi" style="--kpi-color:var(--bad);"><div class="val" id="kpiDesvios">0</div><div class="lbl">Desvios Registrados</div></div>
+      <div class="card kpi" style="--kpi-color:var(--gold);"><div class="val" id="kpiTopItem" style="font-size:15px; line-height:1.3;">—</div><div class="lbl">Item Mais Recorrente</div></div>
+    </div>
+
+    <div class="grid cols-2">
+      <div class="card chart-card"><h3>Evolução da Conformidade (%)</h3><div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div></div>
+      <div class="card chart-card"><h3>Distribuição de Status dos Itens</h3><div class="chart-wrap"><canvas id="chartStatus"></canvas></div></div>
+    </div>
+    <div class="grid cols-2">
+      <div class="card chart-card"><h3>Conformidade Média por Turno</h3><div class="chart-wrap"><canvas id="chartTurno"></canvas></div></div>
+      <div class="card chart-card"><h3>Ranking de Desvios por Item</h3><div class="chart-wrap"><canvas id="chartRanking"></canvas></div></div>
+    </div>
+
+    <div class="card" style="padding: 0; overflow: hidden;">
+      <div style="padding:20px 24px 4px;"><h2 class="section-title" style="margin-bottom:6px;">Histórico de Auditorias</h2></div>
+      <div style="overflow-x:auto;">
+        <table class="responsive-table">
+          <thead><tr><th>Data</th><th>Turno</th><th>Auditor</th><th>Conformidade</th><th>Ação</th><th>PDF</th></tr></thead>
+          <tbody id="auditTableBody"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="empty" style="padding: 40px; text-align: center; color: var(--muted);">Nenhum registro encontrado.</div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast" style="display:none;"></div>
+
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
-        authDomain: "sistema-fefo.firebaseapp.com",
-        projectId: "sistema-fefo",
-        storageBucket: "sistema-fefo.firebasestorage.app",
-        messagingSenderId: "755801777693",
-        appId: "1:755801777693:web:a8a72a2fd483445a2d88f4"
+// ===================== META (fonte única) =====================
+// Preenchido logo abaixo, após CHECKLIST/META_CONFORMIDADE serem declarados,
+// via initMetaLabels() chamada no fim do arquivo.
+
+// ===================== HERO BUBBLES (decorativo) =====================
+(function renderBubbles(){
+  const wrap = document.getElementById("heroBubbles");
+  const n = 14;
+  for(let i=0;i<n;i++){
+    const s = document.createElement("span");
+    const size = 10 + Math.random()*46;
+    s.style.width = size+"px";
+    s.style.height = size+"px";
+    s.style.left = (Math.random()*100)+"%";
+    s.style.top = (Math.random()*100)+"%";
+    wrap.appendChild(s);
+  }
+})();
+
+// ===================== FIREBASE =====================
+const firebaseConfig = {
+  apiKey: "AIzaSyAKNghp24dikj2ABigCWeq-sH-RMTVOFO8",
+  authDomain: "auditoria-alb-f26bc.firebaseapp.com",
+  projectId: "auditoria-alb-f26bc",
+  storageBucket: "auditoria-alb-f26bc.firebasestorage.app",
+  messagingSenderId: "171045257228",
+  appId: "1:171045257228:web:77ce544c37c386cbf5ae29",
+  measurementId: "G-87RWNJPLH7"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+const COLLECTION = "auditorias_estoque_alb";
+const MAX_FOTOS_POR_ITEM = 6;
+
+// ===================== CHECKLIST CONFIG =====================
+const CHECKLIST = [
+  {id:1, titulo:"Paletes fora de posição / desalinhados", peso:5, desc:"Avaliar alinhamento nas demarcações de faixa."},
+  {id:2, titulo:"Organização 5S e Limpeza", peso:10, desc:"Limpeza geral, ausência de lixo ou poeira."},
+  {id:3, titulo:"Integridade dos Paletes (Avarias)", peso:10, desc:"Ripas quebradas ou pregos expostos."},
+  {id:4, titulo:"Bloqueio de Equipamentos de Emergência", peso:10, desc:"Acesso livre a extintores e saídas."},
+  {id:5, titulo:"Blocado Misturado (SKU/Lote)", peso:10, desc:"Produtos diferentes no mesmo empilhamento."},
+  {id:6, titulo:"Retirada Lateral Incorreta", peso:5, desc:"Retirada que deixe o blocado instável."},
+  {id:7, titulo:"Identificação de Produtos (Etiquetas)", peso:5, desc:"Presença e legibilidade das etiquetas."},
+  {id:8, titulo:"Organização da Área de Picking", peso:10, desc:"Posições de apanha desobstruídas."},
+  {id:9, titulo:"Respeito à Regra FEFO", peso:10, desc:"Validade próxima deve sair primeiro."},
+  {id:10, titulo:"Organização das Gaiolas", peso:5, desc:"Abastecimento conforme etiquetas."},
+  {id:11, titulo:"Espaçamento de Segurança (50cm)", peso:10, desc:"Espaçamento obrigatório entre blocados."},
+  {id:12, titulo:"Abastecimento do Setor de Apanha", peso:10, desc:"Setor devidamente abastecido para operação."}
+];
+const PESO_TOTAL = CHECKLIST.reduce((s,i) => s + i.peso, 0);
+
+// Meta mínima de conformidade da UR. Único ponto de configuração — todo o
+// resto do sistema (hero, legenda, gráficos, tabela, PDF) lê deste valor,
+// para nunca mais haver divergência entre telas.
+const META_CONFORMIDADE = 60;
+
+// ===================== IMAGE COMPRESSION =====================
+// Detecta suporte a WebP uma única vez (é mais leve que JPEG na mesma
+// qualidade percebida, o que acelera diretamente o upload em segundo
+// plano — a etapa que mais pesava no tempo total de salvamento).
+let _webpSupportCache = null;
+function supportsWebP(){
+  if(_webpSupportCache !== null) return _webpSupportCache;
+  const c = document.createElement('canvas');
+  c.width = c.height = 1;
+  _webpSupportCache = c.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+  return _webpSupportCache;
+}
+
+/**
+ * Comprime e redimensiona a foto capturada. Retorna DOIS artefatos a
+ * partir do mesmo canvas (sem re-ler o arquivo):
+ *  - storageBlob/storageMime/storageExt: o que sobe para o Firebase Storage.
+ *    Usa WebP (quando suportado) em ~1280px de lado maior — bem mais leve
+ *    que o JPEG anterior, o que reduz diretamente o tempo de upload.
+ *  - pdfBase64: JPEG (jsPDF não garante suporte a WEBP em addImage em
+ *    todas as versões), usado apenas para montar o PDF localmente.
+ */
+async function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Falha ao ler o arquivo de imagem.'));
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Falha ao decodificar a imagem.'));
+      img.src = event.target.result;
+      img.onload = () => {
+        const MAX_DIM = 1280; // conforme solicitado: no máximo 1280px no maior lado
+        let width = img.width;
+        let height = img.height;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width >= height) { height = Math.round(height * MAX_DIM / width); width = MAX_DIM; }
+          else { width = Math.round(width * MAX_DIM / height); height = MAX_DIM; }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const useWebp = supportsWebP();
+        const storageMime = useWebp ? 'image/webp' : 'image/jpeg';
+        const storageExt = useWebp ? 'webp' : 'jpg';
+        const pdfBase64 = canvas.toDataURL('image/jpeg', 0.55);
+
+        canvas.toBlob((blob) => {
+          if(!blob){ reject(new Error('Falha ao comprimir a imagem.')); return; }
+          resolve({ storageBlob: blob, storageMime, storageExt, pdfBase64 });
+        }, storageMime, 0.62);
+      };
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
-    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
-    const auth = firebase.auth();
- 
-    // Registrar globalmente o plugin de rótulos do Chart.js
-    Chart.register(ChartDataLabels);
- 
-    // Configuração de Estilos de Fonte Padrão para os Textos Internos dos Gráficos
-    Chart.defaults.color = '#64748b';
-    Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
-    Chart.defaults.font.weight = '700';
- 
-    let estoqueCompleto = [];
-    let baseMateriais = [];
-    let todasMovimentacoes = [];
-    let movimentacoesFiltradas = [];
-    let usuarioLogado = null;
-    let diasCalculados = 0;
-    let itemParaRetirar = null;
-    let itemOrigemAbertura = null;
- 
-    // Instâncias Globais de Gráficos
-    let chartDiarioInst = null;
-    let chartMensalInst = null;
-    let chartSetorMInst = null;
-    let chartSetorDInst = null;
-    let chartDestinosInst = null;
-    let chartApanhaSetorInst = null;
-    let chartStatus = null;
-    let chartExpandidoInst = null; // Instância temporária do modal de ampliação
- 
-    const SETORES_LISTA = ["ALCOÓLICO", "AVULSO", "LATA", "PET", "SUCO", "VIDRO"];
- 
-    setInterval(() => { document.getElementById('current-time').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }, 1000);
-    window.addEventListener('online', () => document.getElementById('network-status').style.display = 'none');
-    window.addEventListener('offline', () => document.getElementById('network-status').style.display = 'block');
- 
-    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
-    function logout() { auth.signOut().then(() => { localStorage.removeItem('wms_session'); location.reload(); }); }
- 
-    async function tentarLogin() {
-        const mat = document.getElementById('login-mat').value.trim();
-        const senha = document.getElementById('login-senha').value.trim();
-        const email = mat.toLowerCase() + "@alb.com";
-        try {
-            await auth.signInWithEmailAndPassword(email, senha);
-            const doc = await db.collection("usuarios_wms").doc(email).get();
-            usuarioLogado = doc.exists ? { ...doc.data(), email } : { nome: mat, perfil: "OPERADOR", email };
-            localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
-            iniciarApp();
-        } catch (e) { alert("Credenciais incorretas."); }
+  });
+}
+
+function blobToBase64(blob){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (evt) => resolve(evt.target.result);
+    reader.onerror = () => reject(new Error('Falha ao converter arquivo para base64.'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function urlToBase64(url){
+  try{
+    const res = await fetch(url, { mode: 'cors' });
+    if(!res.ok) throw new Error(`HTTP ${res.status} ao buscar ${url}`);
+    const blob = await res.blob();
+    return await blobToBase64(blob);
+  } catch(err){
+    // Causa mais comum aqui: o bucket do Firebase Storage não tem CORS
+    // configurado para o domínio do app, o que faz fetch() falhar mesmo
+    // com a URL sendo válida (uma tag <img> funcionaria, fetch não).
+    console.error(`[PDF] Falha ao baixar evidência para reconstrução do PDF: ${url}`, err);
+    throw err;
+  }
+}
+
+// ===================== RENDER CHECKLIST =====================
+const checklistWrap = document.getElementById("checklistWrap");
+const itemState = {};
+
+CHECKLIST.forEach(item=>{
+  itemState[item.id] = {status:null, obs:"", evidencias:[]}; // evidencias: [{blob, base64}]
+  const card = document.createElement("div");
+  card.className = "item-card";
+  card.id = `itemcard-${item.id}`;
+  card.innerHTML = `
+    <div class="cap-badge" data-n="${String(item.id).padStart(2,"0")}"></div>
+    <div class="item-body">
+      <div class="item-head">
+        <div>
+          <div class="item-title">${item.titulo}</div>
+          <div class="item-desc">${item.desc}</div>
+        </div>
+        <div class="peso-chip">PESO ${item.peso}</div>
+      </div>
+      <div class="status-row" data-item="${item.id}">
+        <button type="button" class="status-btn ok" data-val="conforme">Conforme</button>
+        <button type="button" class="status-btn mid" data-val="parcial">Parcial</button>
+        <button type="button" class="status-btn bad" data-val="nao_conforme">Não Conforme</button>
+      </div>
+      <div class="item-extra">
+        <div class="field"><label>Observação</label><textarea data-obs="${item.id}" placeholder="Descreva o desvio..."></textarea></div>
+        <div class="field">
+          <label>Fotos (até ${MAX_FOTOS_POR_ITEM})</label>
+          <input type="file" accept="image/*" multiple capture="environment" data-evidencia="${item.id}">
+          <div class="thumb-gallery" id="gallery-${item.id}"></div>
+          <div class="photo-count" id="count-${item.id}">0/${MAX_FOTOS_POR_ITEM} fotos</div>
+        </div>
+      </div>
+    </div>
+  `;
+  checklistWrap.appendChild(card);
+});
+
+checklistWrap.addEventListener("click", (e)=>{
+  const rm = e.target.closest("[data-remove]");
+  if(rm){
+    const id = rm.dataset.remove;
+    const idx = parseInt(rm.dataset.idx, 10);
+    itemState[id].evidencias.splice(idx, 1);
+    renderGallery(id);
+    return;
+  }
+  const btn = e.target.closest(".status-btn");
+  if(!btn) return;
+  const row = btn.closest(".status-row");
+  const itemId = row.dataset.item;
+  row.querySelectorAll(".status-btn").forEach(b=>b.classList.remove("selected"));
+  btn.classList.add("selected");
+  itemState[itemId].status = btn.dataset.val;
+  document.getElementById(`itemcard-${itemId}`).className = `item-card state-${btn.dataset.val}`;
+});
+
+checklistWrap.addEventListener("input", (e)=>{
+  if(e.target.dataset.obs) itemState[e.target.dataset.obs].obs = e.target.value;
+});
+
+checklistWrap.addEventListener("change", async (e)=>{
+  if(e.target.dataset.evidencia){
+    const id = e.target.dataset.evidencia;
+    const files = Array.from(e.target.files || []);
+    if(!files.length) return;
+
+    const st = itemState[id];
+    const spaceLeft = MAX_FOTOS_POR_ITEM - st.evidencias.length;
+    const filesToAdd = files.slice(0, Math.max(spaceLeft, 0));
+
+    if(files.length > filesToAdd.length){
+      showToast(`Limite de ${MAX_FOTOS_POR_ITEM} fotos por item. Apenas ${filesToAdd.length} foto(s) adicionada(s).`);
     }
- 
-    function iniciarApp() {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-screen').style.display = 'block';
-        document.getElementById('user-name').innerText = usuarioLogado.nome;
-        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
-        document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
-        document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
-        
-        const hoje = new Date();
-        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
-        document.getElementById('filtro-dia-valor').value = hoje.toISOString().substring(0, 10);
-        document.getElementById('filtro-de-valor').value = hoje.toISOString().substring(0, 10);
-        document.getElementById('filtro-ate-valor').value = hoje.toISOString().substring(0, 10);
- 
-        conectarFirebase();
-        carregarBaseMateriais();
-        navegar(isAdmin ? 'admin' : 'retirar');
-        
-        // Ativar Screen Wake Lock
-        requestWakeLock();
+
+    for(const file of filesToAdd){
+      try{
+        const compressed = await compressImage(file);
+        st.evidencias.push(compressed);
+      } catch(err){
+        console.error('Falha ao processar foto selecionada:', err);
+        showToast('⚠ Não foi possível processar uma das fotos. Tente novamente.');
+      }
     }
- 
-    function navegar(tela) {
-        ['admin', 'retirar', 'entrada_bloco', 'abertura_blocado', 'movimentacao_drive_in'].forEach(t => document.getElementById('view-' + t).style.display = 'none');
-        document.getElementById('view-' + tela).style.display = 'block';
-        document.getElementById('sidebar').classList.remove('active');
-        if(tela === 'admin') carregarDadosDashboard();
+
+    e.target.value = "";
+    renderGallery(id);
+  }
+});
+
+function renderGallery(id){
+  const st = itemState[id];
+  const gallery = document.getElementById(`gallery-${id}`);
+  const count = document.getElementById(`count-${id}`);
+  const input = document.querySelector(`input[data-evidencia="${id}"]`);
+
+  gallery.innerHTML = st.evidencias.map((ev, idx) => `
+    <div class="thumb-item">
+      <img src="${ev.pdfBase64}" alt="Evidência ${idx+1}" loading="lazy">
+      <button type="button" class="rm" data-remove="${id}" data-idx="${idx}" aria-label="Remover foto">×</button>
+    </div>
+  `).join("");
+
+  const atMax = st.evidencias.length >= MAX_FOTOS_POR_ITEM;
+  count.textContent = `${st.evidencias.length}/${MAX_FOTOS_POR_ITEM} fotos`;
+  count.className = "photo-count" + (atMax ? " full" : "");
+  if(input) input.disabled = atMax;
+}
+
+// ===================== PDF GENERATION (MODERNO, COM CAPA) =====================
+const UR_RED = [200,16,46];
+const UR_GREEN = [0,132,61];
+const UR_INK = [16,21,28];
+const UR_MUTED = [107,118,134];
+
+function statusLabel(s){
+  return s === 'conforme' ? 'Conforme' : (s === 'parcial' ? 'Parcial' : 'Não Conforme');
+}
+function statusColors(s){
+  if(s === 'conforme') return {bg:[226,245,234], fg:UR_GREEN};
+  if(s === 'parcial') return {bg:[254,242,220], fg:[180,120,10]};
+  return {bg:[251,229,233], fg:UR_RED};
+}
+
+function pdfCover(doc, auditData){
+  const w = doc.internal.pageSize.getWidth();
+  const h = doc.internal.pageSize.getHeight();
+
+  doc.setFillColor(...UR_INK);
+  doc.rect(0, 0, w, h, 'F');
+  doc.setFillColor(...UR_RED);
+  doc.rect(0, 0, w, 5, 'F');
+  doc.setFillColor(...UR_GREEN);
+  doc.rect(0, h-5, w, 5, 'F');
+
+  // bolhas decorativas (motivo "refresco gaseificado")
+  const bubblePositions = [[26,40,7],[46,66,4],[170,30,5],[186,60,3],[24,190,4],[178,210,6],[150,150,3],[40,140,3]];
+  bubblePositions.forEach(([bx,by,br], idx) => {
+    const alpha = idx % 2 === 0 ? UR_RED : UR_GREEN;
+    doc.setFillColor(alpha[0], alpha[1], alpha[2]);
+    doc.circle(bx, by, br, 'F');
+  });
+  doc.setGState && doc.setGState(new doc.GState({opacity:1}));
+
+  // marca
+  doc.setFillColor(...UR_RED);
+  doc.circle(w/2, 58, 15, 'F');
+  doc.setTextColor(255,255,255);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(13);
+  doc.text("UR", w/2, 62, {align:"center"});
+
+  doc.setFontSize(11);
+  doc.setFont("helvetica","bold");
+  doc.setTextColor(230,230,235);
+  doc.text("UBERLÂNDIA REFRESCOS", w/2, 84, {align:"center"});
+  doc.setFontSize(23);
+  doc.setTextColor(255,255,255);
+  doc.text("Relatório de Auditoria", w/2, 98, {align:"center"});
+  doc.text("de Estoque", w/2, 108, {align:"center"});
+
+  // selo de conformidade
+  const meta = auditData.percConformidade >= META_CONFORMIDADE;
+  const badgeColor = meta ? UR_GREEN : UR_RED;
+  doc.setFillColor(...badgeColor);
+  doc.circle(w/2, 148, 22, 'F');
+  doc.setFillColor(255,255,255);
+  doc.circle(w/2, 148, 17.5, 'F');
+  doc.setTextColor(...badgeColor);
+  doc.setFontSize(20);
+  doc.setFont("helvetica","bold");
+  doc.text(`${auditData.percConformidade}%`, w/2, 152, {align:"center"});
+  doc.setFontSize(8);
+  doc.setTextColor(...UR_MUTED);
+  doc.setFont("helvetica","normal");
+  doc.text("CONFORMIDADE", w/2, 178, {align:"center"});
+  doc.setFontSize(8.5);
+  doc.setTextColor(220,220,225);
+  doc.text(meta ? `Dentro da meta UR (${META_CONFORMIDADE}%)` : `Abaixo da meta UR (${META_CONFORMIDADE}%)`, w/2, 185, {align:"center"});
+
+  // ficha rápida
+  doc.setDrawColor(255,255,255);
+  doc.setLineWidth(0.2);
+  const fichaY = 205;
+  doc.line(40, fichaY, w-40, fichaY);
+  doc.setFontSize(9);
+  doc.setTextColor(255,255,255);
+  const cols = [
+    ["DATA", auditData.data], ["TURNO", auditData.turno],
+    ["AUDITOR", auditData.auditor], ["ÁREA", auditData.area]
+  ];
+  const colW = (w-80)/4;
+  cols.forEach((c, i) => {
+    const cx = 40 + colW*i;
+    doc.setFont("helvetica","bold"); doc.setFontSize(7.5); doc.setTextColor(190,190,198);
+    doc.text(c[0], cx, fichaY+10);
+    doc.setFont("helvetica","normal"); doc.setFontSize(9.5); doc.setTextColor(255,255,255);
+    doc.text(doc.splitTextToSize(c[1] || "—", colW-4), cx, fichaY+17);
+  });
+
+  doc.setFontSize(8);
+  doc.setTextColor(180,180,188);
+  doc.text(`Gerado em ${new Date().toLocaleString('pt-BR')}`, w/2, h-14, {align:"center"});
+}
+
+function pdfHeader(doc, title, subtitle){
+  const w = doc.internal.pageSize.getWidth();
+  doc.setFillColor(...UR_INK);
+  doc.rect(0, 0, w, 34, 'F');
+  doc.setFillColor(...UR_RED);
+  doc.rect(0, 34, w, 3, 'F');
+  doc.setFillColor(...UR_GREEN);
+  doc.rect(0, 37, w, 1.4, 'F');
+
+  doc.setFillColor(...UR_RED);
+  doc.circle(18, 17, 9, 'F');
+  doc.setFillColor(255,255,255);
+  doc.setFontSize(9);
+  doc.setFont("helvetica","bold");
+  doc.text("UR", 18, 19.5, {align:"center"});
+
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(15);
+  doc.setFont("helvetica", "bold");
+  doc.text(title, 34, 15);
+  doc.setFontSize(9.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(220,220,225);
+  doc.text(subtitle, 34, 22);
+}
+
+function pdfFooter(doc){
+  const pageCount = doc.internal.getNumberOfPages();
+  const w = doc.internal.pageSize.getWidth();
+  const h = doc.internal.pageSize.getHeight();
+  for(let i=2;i<=pageCount;i++){
+    doc.setPage(i);
+    doc.setDrawColor(230,230,230);
+    doc.line(15, h-14, w-15, h-14);
+    doc.setFontSize(8);
+    doc.setTextColor(...UR_MUTED);
+    doc.setFont("helvetica","normal");
+    doc.text("Uberlândia Refrescos · Sistema de Gestão de Qualidade", 15, h-9);
+    doc.text(`Página ${i-1} de ${pageCount-1}`, w-15, h-9, {align:"right"});
+  }
+}
+
+// Gera o PDF e RETORNA o objeto jsPDF (não salva automaticamente).
+function generateAuditPDF(auditData, imagesMap){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  pdfCover(doc, auditData);
+
+  doc.addPage();
+  pdfHeader(doc, "Checklist da Auditoria", `Uberlândia Refrescos  ·  ${auditData.data}  ·  ${auditData.turno}`);
+
+  doc.autoTable({
+    startY: 46,
+    theme: 'grid',
+    styles:{ fontSize:9.5, cellPadding:5, lineColor:[228,232,239], lineWidth:0.2 },
+    headStyles:{ fillColor: UR_INK, textColor:255, fontStyle:'bold' },
+    body: [
+      ['Data', auditData.data, 'Turno', auditData.turno],
+      ['Auditor', auditData.auditor, 'Área', auditData.area],
+      ['Conformidade', `${auditData.percConformidade}%`, 'Desvios', String(auditData.naoConformidades)]
+    ],
+    columnStyles:{0:{fontStyle:'bold', textColor:UR_MUTED, cellWidth:30}, 2:{fontStyle:'bold', textColor:UR_MUTED, cellWidth:30}}
+  });
+
+  let y = doc.lastAutoTable.finalY + 10;
+
+  doc.autoTable({
+    startY: y,
+    head: [['#', 'Item', 'Status', 'Pontuação']],
+    body: auditData.items.map(i => [String(i.id).padStart(2,'0'), i.titulo, statusLabel(i.status), `${i.scoreObtido}/${i.peso}`]),
+    theme:'striped',
+    styles:{ fontSize:9, cellPadding:{top:6,bottom:6,left:5,right:5} },
+    headStyles:{ fillColor: UR_INK, textColor:255, fontStyle:'bold' },
+    columnStyles:{0:{cellWidth:10, halign:'center'}, 2:{cellWidth:34, halign:'center'}, 3:{cellWidth:24, halign:'center'}},
+    didParseCell: (data) => {
+      if(data.section === 'body' && data.column.index === 2){
+        data.cell.text = [];
+        data.cell.styles.fillColor = 255;
+      }
+    },
+    didDrawCell: (data) => {
+      if(data.section === 'body' && data.column.index === 2){
+        const raw = auditData.items[data.row.index].status;
+        const c = statusColors(raw);
+        const padX = 3, padY = 2.2;
+        doc.setFillColor(...c.bg);
+        doc.roundedRect(data.cell.x+padX, data.cell.y+padY, data.cell.width-padX*2, data.cell.height-padY*2, 2.5, 2.5, 'F');
+        doc.setTextColor(...c.fg);
+        doc.setFont("helvetica","bold");
+        doc.setFontSize(8.2);
+        doc.text(statusLabel(raw), data.cell.x + data.cell.width/2, data.cell.y + data.cell.height/2 + 1.2, {align:'center'});
+      }
     }
- 
-    function navegarComFiltro(tipo) {
-        navegar('retirar');
-        const input = document.getElementById('search-input');
-        input.value = tipo === 'critico' ? '60' : (tipo === 'retido' ? '30' : '');
-        renderizarEstoque();
+  });
+
+  // ---- summary page ----
+  doc.addPage();
+  pdfHeader(doc, "Resumo Detalhado de Desvios", "Uberlândia Refrescos");
+  let sy = 46;
+  const desvios = auditData.items.filter(i => i.status !== 'conforme');
+  if(desvios.length > 0){
+    desvios.forEach(d => {
+      const c = statusColors(d.status);
+      doc.setFillColor(...c.bg);
+      doc.roundedRect(15, sy-5, doc.internal.pageSize.getWidth()-30, d.obs ? 20 : 12, 2, 2, 'F');
+      doc.setTextColor(...c.fg);
+      doc.setFontSize(10.5);
+      doc.setFont("helvetica","bold");
+      doc.text(`${statusLabel(d.status)}  ·  ${d.titulo}`, 19, sy);
+      if(d.obs){
+        doc.setFontSize(9);
+        doc.setFont("helvetica","normal");
+        doc.setTextColor(...UR_INK);
+        doc.text(doc.splitTextToSize(`Nota: ${d.obs}`, doc.internal.pageSize.getWidth()-42), 19, sy+7);
+        sy += 8;
+      }
+      sy += 18;
+      if(sy > 260){ doc.addPage(); pdfHeader(doc, "Resumo Detalhado de Desvios", "Uberlândia Refrescos"); sy = 46; }
+    });
+  } else {
+    doc.setTextColor(...UR_GREEN);
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(11);
+    doc.text("Nenhum desvio encontrado — operação 100% conforme.", 15, sy);
+  }
+
+  if(auditData.observacoesGerais || auditData.planoAcao){
+    sy += 6;
+    if(sy > 240){ doc.addPage(); pdfHeader(doc, "Resumo Detalhado de Desvios", "Uberlândia Refrescos"); sy = 46; }
+    doc.setDrawColor(228,232,239);
+    doc.line(15, sy, doc.internal.pageSize.getWidth()-15, sy);
+    sy += 10;
+    doc.setTextColor(...UR_INK);
+    doc.setFontSize(10.5);
+    doc.setFont("helvetica","bold");
+    doc.text("Observações Gerais", 15, sy); sy += 6;
+    doc.setFont("helvetica","normal"); doc.setFontSize(9.5);
+    doc.text(doc.splitTextToSize(auditData.observacoesGerais || "—", 180), 15, sy);
+    sy += 18;
+    doc.setFont("helvetica","bold"); doc.setFontSize(10.5);
+    doc.text("Plano de Ação Imediato", 15, sy); sy += 6;
+    doc.setFont("helvetica","normal"); doc.setFontSize(9.5);
+    doc.text(doc.splitTextToSize(auditData.planoAcao || "—", 180), 15, sy);
+  }
+
+  // ---- photo evidence ----
+  const ids = Object.keys(imagesMap);
+  if(ids.length > 0){
+    doc.addPage();
+    pdfHeader(doc, "Evidências Fotográficas", "Uberlândia Refrescos");
+    let px = 15, py = 46, col = 0;
+    ids.forEach(id => {
+      const item = CHECKLIST.find(c => String(c.id) === String(id));
+      const fotos = imagesMap[id];
+      fotos.forEach((imgB64, i) => {
+        if(py > 230){ doc.addPage(); pdfHeader(doc, "Evidências Fotográficas", "Uberlândia Refrescos"); py = 46; px = 15; col = 0; }
+        doc.setDrawColor(228,232,239);
+        doc.roundedRect(px, py, 88, 68, 3, 3, 'S');
+        doc.addImage(imgB64, 'JPEG', px+4, py+4, 80, 50);
+        doc.setFontSize(8.5);
+        doc.setTextColor(...UR_INK);
+        doc.setFont("helvetica","bold");
+        doc.text(doc.splitTextToSize(`Item ${String(id).padStart(2,'0')} — Foto ${i+1}/${fotos.length} — ${item ? item.titulo : ''}`, 80), px+4, py+62);
+        col++;
+        if(col === 2){ col = 0; px = 15; py += 76; } else { px = 108; }
+      });
+    });
+  }
+
+  pdfFooter(doc);
+  return doc;
+}
+
+// ===================== SUBMIT =====================
+// Fluxo redesenhado para responder em segundos:
+//   1) grava no Firestore só os dados leves da auditoria (sem fotos) —
+//      isso é o que estava lento antes, pois o registro só era salvo
+//      DEPOIS do PDF inteiro (com todas as fotos) já ter sido montado.
+//   2) gera o PDF localmente (rápido — já não há mais rede envolvida
+//      até aqui) e dispara o download.
+//   3) devolve o formulário para o usuário imediatamente (reset local,
+//      sem F5 — o reload antigo podia abortar uploads em andamento).
+//   4) fotos + PDF sobem em paralelo em segundo plano, com 1 única
+//      escrita final no Firestore (em vez de uma escrita por foto).
+document.getElementById("btnSubmit").addEventListener("click", async ()=>{
+  const data = document.getElementById("fData").value;
+  const turno = document.getElementById("fTurno").value;
+  const auditor = document.getElementById("fAuditor").value.trim();
+  const area = document.getElementById("fArea").value.trim();
+
+  if(!data || !turno || !auditor) return alert("Preencha os campos obrigatórios!");
+  if(CHECKLIST.some(i => !itemState[i.id].status)) return alert("Responda todo o checklist!");
+
+  const btn = document.getElementById("btnSubmit");
+  const msg = document.getElementById("formMsg");
+  btn.disabled = true;
+  btn.textContent = "Salvando...";
+  msg.textContent = "Salvando auditoria...";
+
+  // Snapshot do estado atual ANTES de qualquer reset — o upload em
+  // segundo plano passa a trabalhar só com esta cópia local, então o
+  // formulário pode ser limpo/reutilizado sem afetar o envio pendente.
+  const snapshotItems = [];
+  const evidenceSnapshot = {}; // itemId -> [{storageBlob,storageMime,storageExt,pdfBase64}]
+  const pdfImagesMap = {};     // itemId -> [pdfBase64,...] (para montar o PDF local)
+  let pesoObtido = 0;
+
+  CHECKLIST.forEach(item => {
+    const st = itemState[item.id];
+    const score = st.status === 'conforme' ? item.peso : (st.status === 'parcial' ? item.peso/2 : 0);
+    pesoObtido += score;
+    snapshotItems.push({
+      id: item.id, titulo: item.titulo, peso: item.peso,
+      status: st.status, scoreObtido: score, obs: st.obs
+    });
+    if(st.evidencias.length){
+      evidenceSnapshot[item.id] = st.evidencias.slice();
+      pdfImagesMap[item.id] = st.evidencias.map(ev => ev.pdfBase64);
     }
- 
-    function alternarCamposData() {
-        const tipo = document.getElementById('filtro-tipo-tempo').value;
-        document.getElementById('container-filtro-mes').style.display = tipo === 'mes' ? 'block' : 'none';
-        document.getElementById('container-filtro-dia').style.display = tipo === 'dia' ? 'block' : 'none';
-        document.getElementById('container-filtro-de').style.display = tipo === 'periodo' ? 'block' : 'none';
-        document.getElementById('container-filtro-ate').style.display = tipo === 'periodo' ? 'block' : 'none';
-        processarFiltragemHistorica();
+  });
+
+  const auditData = {
+    data, turno, auditor, area,
+    items: snapshotItems,
+    observacoesGerais: document.getElementById("fObsGerais").value,
+    planoAcao: document.getElementById("fPlanoAcao").value,
+    percConformidade: Math.round((pesoObtido/PESO_TOTAL)*100),
+    naoConformidades: snapshotItems.filter(i => i.status !== 'conforme').length,
+    statusAcao: document.getElementById("fPlanoAcao").value ? "pendente" : "concluído",
+    pdfURL: null,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  let docRef;
+  try {
+    // Escrita LEVE (sem fotos) — é isso que garante o "salvar em poucos
+    // segundos" pedido no critério de aceite, independente de quantas
+    // fotos existam no checklist.
+    docRef = await db.collection(COLLECTION).add(auditData);
+  } catch(err) {
+    console.error("Falha ao salvar o registro da auditoria:", err);
+    alert("Não foi possível salvar a auditoria. Verifique sua conexão e tente novamente.");
+    btn.disabled = false;
+    btn.textContent = "Finalizar e Baixar PDF";
+    msg.textContent = "";
+    return;
+  }
+
+  msg.textContent = "✓ Auditoria salva! Gerando PDF...";
+  showToast("✓ Auditoria salva com sucesso!");
+
+  // Geração do PDF é 100% local (CPU), não depende de rede — roda rápido
+  // mesmo com 6 fotos, pois as imagens já estão comprimidas em memória.
+  let pdfBlob = null;
+  try {
+    const doc = generateAuditPDF(auditData, pdfImagesMap);
+    doc.save(`Auditoria_UR_${auditData.data}.pdf`);
+    pdfBlob = doc.output('blob');
+    msg.textContent = "✓ PDF baixado! Enviando fotos em segundo plano...";
+  } catch(err) {
+    console.error("Falha ao gerar o PDF localmente:", err);
+    msg.textContent = "✓ Auditoria salva (o PDF poderá ser gerado depois pelo Painel).";
+  }
+
+  // Dispara o upload em segundo plano SEM aguardar (fire-and-forget) e
+  // devolve o formulário na hora — nada de location.reload(), que antes
+  // podia cortar o upload de fotos/PDF pela metade.
+  backgroundUpload(docRef.id, auditData, pdfBlob, evidenceSnapshot);
+  resetForm();
+
+  btn.disabled = false;
+  btn.textContent = "Finalizar e Baixar PDF";
+});
+
+/**
+ * Envia PDF + fotos em paralelo (Promise.all) e faz UMA única atualização
+ * final no Firestore (em vez de uma escrita por foto, como antes), o que
+ * reduz drasticamente o número de round-trips à rede.
+ */
+async function backgroundUpload(auditId, auditData, pdfBlob, evidenceSnapshot) {
+  const overlay = document.getElementById("uploadingOverlay");
+  const text = document.getElementById("uploadText");
+  const bar = document.getElementById("uploadProgressFill");
+  overlay.style.background = "";
+  overlay.style.display = "flex";
+  if(bar) bar.style.width = "0%";
+
+  const totalPhotos = Object.values(evidenceSnapshot).reduce((s,arr)=>s+arr.length, 0);
+  let doneCount = 0;
+  const updateProgress = () => {
+    if(!totalPhotos){ if(bar) bar.style.width = "100%"; return; }
+    const pct = Math.round((doneCount/totalPhotos)*100);
+    if(bar) bar.style.width = pct + "%";
+    text.textContent = `Enviando evidências (${doneCount}/${totalPhotos})...`;
+  };
+  updateProgress();
+
+  // ---- upload do PDF (em paralelo com as fotos) ----
+  const pdfTask = (async () => {
+    if(!pdfBlob) return null;
+    try{
+      const pdfPath = `ur_auditoria_pdfs/${auditId}.pdf`;
+      const pdfRef = storage.ref().child(pdfPath);
+      const snap = await pdfRef.put(pdfBlob, {
+        contentType: 'application/pdf',
+        // Sem isso o navegador tende a ABRIR o PDF inline (visualizador)
+        // em vez de baixar — era uma das causas do "erro" percebido ao
+        // clicar em "Baixar PDF" no Painel, especialmente no celular.
+        contentDisposition: `attachment; filename="Auditoria_UR_${auditData.data}.pdf"`
+      });
+      return await snap.ref.getDownloadURL();
+    } catch(err){
+      console.error("[Upload] Falha ao enviar PDF ao Storage:", err);
+      return null;
     }
- 
-    function conectarFirebase() {
-        db.collection("estoque_blocado").onSnapshot(snap => {
-            estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if(usuarioLogado?.perfil?.toUpperCase() === "ADMIN") { atualizarEstatisticas(); carregarDadosDashboard(); }
-            renderizarEstoque();
-        });
- 
-        db.collection("movimentacoes_wms").orderBy("timestamp", "desc").onSnapshot(snap => {
-            todasMovimentacoes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            processarFiltragemHistorica();
-        });
-    }
- 
-    async function carregarBaseMateriais() {
-        const cache = localStorage.getItem('base_materiais');
-        if (cache) baseMateriais = JSON.parse(cache);
-        if (navigator.onLine) {
-            const snap = await db.collection("base_materiais").get();
-            if (!snap.empty) { 
-                baseMateriais = snap.docs.map(doc => doc.data()); 
-                localStorage.setItem('base_materiais', JSON.stringify(baseMateriais));
-            }
+  })();
+
+  // ---- upload de TODAS as fotos em paralelo (Promise.all) ----
+  const photoResults = {}; // itemId -> array de URLs (mesma ordem das evidências)
+  const photoTasks = [];
+  Object.entries(evidenceSnapshot).forEach(([itemId, evidencias]) => {
+    photoResults[itemId] = new Array(evidencias.length).fill(null);
+    evidencias.forEach((ev, idx) => {
+      const path = `ur_auditoria/${auditId}_${itemId}_${idx}.${ev.storageExt}`;
+      const task = storage.ref().child(path).put(ev.storageBlob, { contentType: ev.storageMime })
+        .then(snap => snap.ref.getDownloadURL())
+        .then(url => { photoResults[itemId][idx] = url; })
+        .catch(err => {
+          console.error(`[Upload] Falha ao enviar foto ${idx+1} do item ${itemId}:`, err);
+        })
+        .finally(() => { doneCount++; updateProgress(); });
+      photoTasks.push(task);
+    });
+  });
+
+  const [pdfURL] = await Promise.all([pdfTask, Promise.all(photoTasks)]);
+
+  const photosOk = Object.values(photoResults).every(urls => urls.every(u => u !== null));
+  const updatedItems = auditData.items.map(it => {
+    const urls = (photoResults[it.id] || []).filter(Boolean);
+    return urls.length ? { ...it, evidenciasURLs: urls } : it;
+  });
+
+  // UMA única escrita final consolidando PDF + fotos, em vez de N escritas.
+  try {
+    await db.collection(COLLECTION).doc(auditId).update({
+      pdfURL: pdfURL || null,
+      items: updatedItems
+    });
+  } catch(err) {
+    console.error("Falha ao consolidar PDF/fotos no registro da auditoria:", err);
+    overlay.style.background = "#F5A524";
+    text.textContent = "⚠ Auditoria salva, mas houve falha ao registrar PDF/fotos.";
+    setTimeout(() => overlay.style.display = "none", 4500);
+    return;
+  }
+
+  if(pdfURL && photosOk){
+    overlay.style.background = "#00843D";
+    text.textContent = "✓ Sincronização concluída! PDF disponível no Painel.";
+  } else if(pdfURL){
+    overlay.style.background = "#F5A524";
+    text.textContent = "✓ PDF sincronizado. Algumas fotos falharam — tente reenviar pelo Painel.";
+  } else {
+    overlay.style.background = "#F5A524";
+    text.textContent = "PDF será gerado sob demanda no Painel (envio automático falhou).";
+  }
+  setTimeout(() => overlay.style.display = "none", 4500);
+}
+
+/**
+ * Reseta o formulário localmente (sem location.reload()). O reload
+ * antigo derrubava qualquer upload de fotos/PDF ainda em andamento em
+ * segundo plano — trocado por uma limpeza de estado in-page.
+ */
+function resetForm(){
+  CHECKLIST.forEach(item => {
+    itemState[item.id] = {status:null, obs:"", evidencias:[]};
+    const card = document.getElementById(`itemcard-${item.id}`);
+    if(card) card.className = "item-card";
+    const row = document.querySelector(`.status-row[data-item="${item.id}"]`);
+    if(row) row.querySelectorAll(".status-btn").forEach(b=>b.classList.remove("selected"));
+    const obsField = document.querySelector(`textarea[data-obs="${item.id}"]`);
+    if(obsField) obsField.value = "";
+    renderGallery(item.id);
+  });
+  document.getElementById("fObsGerais").value = "";
+  document.getElementById("fPlanoAcao").value = "";
+  document.getElementById("fAuditor").value = "";
+  document.getElementById("fTurno").value = "";
+  document.getElementById("fData").valueAsDate = new Date();
+  document.getElementById("formMsg").textContent = "";
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ===================== UTILS =====================
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.style.display = "block";
+  setTimeout(() => t.style.display = "none", 4000);
+}
+
+document.getElementById("tabFormBtn").onclick = () => {
+  // Antes usava location.reload(), o que podia abortar um upload de
+  // fotos/PDF ainda em andamento em segundo plano. Agora é só uma troca
+  // de visão dentro da página.
+  document.getElementById("dashboardSection").style.display = "none";
+  document.getElementById("formSection").style.display = "block";
+  document.getElementById("heroTitle").textContent = "Checklist de Conformidade — Área de Estoque";
+  document.getElementById("tabFormBtn").classList.add("active");
+  document.getElementById("tabDashBtn").classList.remove("active");
+};
+document.getElementById("tabDashBtn").onclick = () => {
+  document.getElementById("formSection").style.display = "none";
+  document.getElementById("dashboardSection").style.display = "block";
+  document.getElementById("heroTitle").textContent = "Painel de Controle — Conformidade de Estoque";
+  document.getElementById("tabDashBtn").classList.add("active");
+  document.getElementById("tabFormBtn").classList.remove("active");
+  loadDashboard();
+};
+
+// ===================== DASHBOARD & CHARTS =====================
+let charts = {};
+let auditsById = {};
+function destroyCharts(){ Object.values(charts).forEach(c => c && c.destroy()); charts = {}; }
+
+async function ensurePdfForRow(auditId){
+  const audit = auditsById[auditId];
+  if(!audit) return;
+  const btn = document.getElementById(`pdfbtn-${auditId}`);
+  if(btn){ btn.disabled = true; btn.textContent = "Gerando..."; }
+
+  // Causa raiz do "erro ao baixar PDF" no celular: este fluxo precisa
+  // buscar as fotos (fetch) de forma assíncrona ANTES de gerar o PDF.
+  // Depois de um await/fetch, vários navegadores móveis (Chrome/Android,
+  // Samsung Internet) deixam de considerar a ação como "gesto do
+  // usuário" e bloqueiam o download programático (doc.save()).
+  // Solução: abrir a aba de destino de forma SÍNCRONA, ainda dentro do
+  // clique, e só preencher o conteúdo dela quando o PDF estiver pronto.
+  const pendingTab = window.open('', '_blank');
+  if(pendingTab){
+    pendingTab.document.write(
+      '<!doctype html><meta charset="utf-8"><body style="font-family:sans-serif;padding:24px;color:#444;">Gerando o PDF, aguarde…</body>'
+    );
+  }
+
+  try {
+    const imagesMap = {};
+    for(const item of (audit.items || [])){
+      if(item.evidenciasURLs && item.evidenciasURLs.length){
+        const base64s = [];
+        for(const url of item.evidenciasURLs){
+          try {
+            base64s.push(await urlToBase64(url));
+          } catch(err){
+            // Log detalhado, conforme pedido: item, URL e erro original.
+            console.error(`[PDF] Item ${item.id} — não foi possível carregar a evidência (verifique a configuração de CORS do bucket do Firebase Storage se o erro for "Failed to fetch"):`, url, err);
+          }
         }
-    }
- 
-    function atualizarEstatisticas() {
-        document.getElementById('st-total').innerText = estoqueCompleto.reduce((a, b) => a + (parseInt(b.qtd) || 0), 0);
-        document.getElementById('st-critico').innerText = estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length;
-        document.getElementById('st-retido').innerText = estoqueCompleto.filter(i => i.dias <= 30).length;
-    }
- 
-    function processarFiltragemHistorica() {
-        if (todasMovimentacoes.length === 0) return;
- 
-        const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
-        const filtroMes = document.getElementById('filtro-mes-valor').value; 
-        const filtroDia = document.getElementById('filtro-dia-valor').value; 
-        const filtroDe = document.getElementById('filtro-de-valor').value;
-        const filtroAte = document.getElementById('filtro-ate-valor').value;
- 
-        movimentacoesFiltradas = todasMovimentacoes.filter(mov => {
-            if (!mov.data) return false;
-            const partes = mov.data.split('/');
-            const dataMov = new Date(partes[2], partes[1] - 1, partes[0]);
-            
-            if (tipoTempo === 'mes' && filtroMes) {
-                const [ano, mes] = filtroMes.split('-');
-                return dataMov.getFullYear() === parseInt(ano) && (dataMov.getMonth() + 1) === parseInt(mes);
-            } else if (tipoTempo === 'dia' && filtroDia) {
-                const [ano, mes, dia] = filtroDia.split('-');
-                return dataMov.getFullYear() === parseInt(ano) && (dataMov.getMonth() + 1) === parseInt(mes) && dataMov.getDate() === parseInt(dia);
-            } else if (tipoTempo === 'periodo' && filtroDe && filtroAte) {
-                const dInit = new Date(filtroDe + "T00:00:00");
-                const dEnd = new Date(filtroAte + "T23:59:59");
-                return dataMov >= dInit && dataMov <= dEnd;
-            }
-            return true;
-        });
- 
-        filtrarTabelasEDados();
-    }
- 
-    function limparFiltrosHistoricos() {
-        document.getElementById('filtro-tipo-tempo').value = 'mes';
-        document.getElementById('filtro-material').value = '';
-        const hoje = new Date();
-        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
-        alternarCamposData();
-    }
- 
-    function filtrarTabelasEDados() {
-        const queryMat = document.getElementById('filtro-material').value.toLowerCase().trim();
-        
-        let dadosExibicao = movimentacoesFiltradas;
-        if (queryMat) {
-            dadosExibicao = movimentacoesFiltradas.filter(m => {
-                const materialCod = m.material ? m.material.toString().toLowerCase() : "";
-                const descMat = buscarDescricaoLocal(m.material).toLowerCase();
-                return materialCod.includes(queryMat) || descMat.includes(queryMat);
-            });
-        }
- 
-        renderizarPaineisEGraticos(dadosExibicao);
-    }
- 
-    function buscarDescricaoLocal(cod) {
-        const match = baseMateriais.find(m => m.mat.toString() === cod?.toString());
-        return match ? match.desc : "N/A";
-    }
- 
-    function buscarSetorLocal(cod) {
-        const match = baseMateriais.find(m => m.mat.toString() === cod?.toString());
-        return match && match.categoria ? match.categoria.toUpperCase() : "AVULSO";
-    }
- 
-    // COMANDO PARA EXPANDIR GRÁFICOS (MODAL FULLSCREEN)
-    function expandirGrafico(chartId, titulo) {
-        const modal = document.getElementById('modal-grafico-expandido');
-        document.getElementById('modal-grafico-titulo').innerText = titulo;
-        modal.style.display = 'flex';
- 
-        // Captura a instância original do gráfico ativo
-        let graficoOriginal = null;
-        if (chartId === 'chart-fluxo-diario') graficoOriginal = chartDiarioInst;
-        if (chartId === 'chart-fluxo-mensal') graficoOriginal = chartMensalInst;
-        if (chartId === 'chart-setor-mensal') graficoOriginal = chartSetorMInst;
-        if (chartId === 'chart-setor-diario') graficoOriginal = chartSetorDInst;
-        if (chartId === 'chart-destinos-saida') graficoOriginal = chartDestinosInst;
-        if (chartId === 'chart-apanha-setor') graficoOriginal = chartApanhaSetorInst;
-        if (chartId === 'chart-status') graficoOriginal = chartStatus;
- 
-        if (!graficoOriginal) return;
- 
-        const ctxExpanded = document.getElementById('canvas-expanded-render').getContext('2d');
-        if (chartExpandidoInst) chartExpandidoInst.destroy();
- 
-        // Clona a estrutura do gráfico com escala e fontes maiores para exibição em TV
-        chartExpandidoInst = new Chart(ctxExpanded, {
-            type: graficoOriginal.config.type,
-            data: JSON.parse(JSON.stringify(graficoOriginal.config.data)),
-            options: {
-                ...graficoOriginal.config.options,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "#fff", font: { size: 14, weight: "700" } } },
-                    x: { grid: { display: false }, ticks: { color: "#fff", font: { size: 14, weight: "800" } } }
-                },
-                plugins: {
-                    ...graficoOriginal.config.options.plugins,
-                    legend: {
-                        display: graficoOriginal.config.options.plugins?.legend?.display !== false,
-                        position: 'bottom',
-                        labels: { color: '#fff', font: { size: 16, weight: '800' } }
-                    },
-                    datalabels: {
-                        color: '#fff',
-                        font: { size: 16, weight: '900' },
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        borderRadius: 6,
-                        padding: 8,
-                        formatter: (val, ctx) => {
-                            let label = ctx.chart.data.labels[ctx.dataIndex] || '';
-                            return graficoOriginal.config.type === 'doughnut' ? `${label}: ${val}` : val;
-                        }
-                    }
-                }
-            }
-        });
-    }
- 
-    function fecharGraficoExpandido() {
-        document.getElementById('modal-grafico-expandido').style.display = 'none';
-        if (chartExpandidoInst) { chartExpandidoInst.destroy(); chartExpandidoInst = null; }
-    }
- 
-    function renderizarPaineisEGraticos(dados) {
-        const hojeStr = new Date().toLocaleDateString('pt-BR');
-        let movHojeContagem = todasMovimentacoes.filter(m => m.data === hojeStr).length;
-        document.getElementById('st-mov').innerText = movHojeContagem;
- 
-        // FEED TEMPO REAL
-        const feed = document.getElementById('activity-feed');
-        feed.innerHTML = '';
-        todasMovimentacoes.slice(0, 15).forEach(d => {
-            const loginLimpo = d.login ? d.login.split('@')[0].toUpperCase() : 'SISTEMA';
-            const tagCor = (d.quantidade && d.quantidade.toString().includes('+')) ? 'var(--verde)' : 'var(--primary)';
-            const desc = buscarDescricaoLocal(d.material);
-            const estCorrespondente = estoqueCompleto.find(e => e.mat === d.material && e.ender === d.endereco);
-            const validadeInfo = estCorrespondente ? estCorrespondente.valFrente : (d.validade || "Não Informada");
- 
-            const item = document.createElement('div');
-            item.className = 'activity-item';
-            item.innerHTML = `
-                <div class="activity-icon-box" style="color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? '📥' : '📤'}</div>
-                <div class="activity-content">
-                    <span class="activity-tag" style="background: ${tagCor}20; color: ${tagCor}">${(d.quantidade && d.quantidade.toString().includes('+')) ? 'Entrada' : 'Saída'}</span>
-                    <br>Op: <b>${loginLimpo}</b> | Material: <b>${d.material} - ${desc}</b>
-                    <br>Endereço: <b>${d.endereco || 'N/A'}</b> | Vol: <b>${d.quantidade || '0'}</b>
-                    <span class="activity-time">Vencimento (FEFO): <span style="color:var(--critico); font-weight:700;">${validadeInfo}</span> às ${d.hora || '00:00'} - ${d.data}</span>
-                </div>`;
-            feed.appendChild(item);
-        });
- 
-        // ESTRUTURAÇÃO DE DADOS DOS GRAFICOS
-        const volumeDiario = {};
-        const volumeMensal = {};
-        const rankingMateriais = {};
-        const rankingOperadores = {};
-        
-        const setorMensalAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
-        const setorDiarioAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
-        
-        // Objeto para controle do novo gráfico de saídas solicitadas
-        const fluxosDestinoAcumulado = { "TRANSFERENCIA": 0, "APANHA": 0, "SEPARAÇÃO": 0 };
-        const apanhaSetorAcumulado = { "ALCOÓLICO": 0, "AVULSO": 0, "LATA": 0, "PET": 0, "SUCO": 0, "VIDRO": 0 };
- 
- 
-        const dataAtualObjeto = new Date();
-        const anoAtualStr = dataAtualObjeto.getFullYear().toString();
- 
-        dados.forEach(mov => {
-            const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
-            const dataMov = mov.data; 
-            if (!dataMov) return;
- 
-            const partes = dataMov.split('/');
- 
-            volumeDiario[dataMov] = (volumeDiario[dataMov] || 0) + qtdAbsoluta;
-            rankingMateriais[mov.material] = (rankingMateriais[mov.material] || 0) + qtdAbsoluta;
-            const operadorChave = mov.login ? mov.login.split('@')[0].toUpperCase() : "SISTEMA";
-            rankingOperadores[operadorChave] = (rankingOperadores[operadorChave] || 0) + qtdAbsoluta;
- 
-            const setorMat = buscarSetorLocal(mov.material);
-            if (setorMensalAcumulado[setorMat] !== undefined) {
-                setorMensalAcumulado[setorMat] += qtdAbsoluta;
-            }
- 
-            // Alimentação do Novo Gráfico de Destinos de Carga (Apenas Fluxos de Saída)
-            const fluxoNormalizado = mov.fluxo ? mov.fluxo.toUpperCase().trim() : "";
-            
-            if (fluxoNormalizado === "APANHA") {
-                if (apanhaSetorAcumulado[setorMat] !== undefined) {
-                    apanhaSetorAcumulado[setorMat] += qtdAbsoluta;
-                }
-            }
- 
-            if (fluxosDestinoAcumulado[fluxoNormalizado] !== undefined) {
-                fluxosDestinoAcumulado[fluxoNormalizado] += qtdAbsoluta;
-            }
- 
-            const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
-            const filtroDiaSel = document.getElementById('filtro-dia-valor').value;
-            let diaAlvoStr = new Date().toISOString().substring(0,10);
-            if(tipoTempo === 'dia' && filtroDiaSel) diaAlvoStr = filtroDiaSel;
-            
-            const [aA, mM, dD] = diaAlvoStr.split('-');
-            const dataFormatadaComp = `${dD}/${mM}/${aA}`;
- 
-            if(dataMov === dataFormatadaComp) {
-                if (setorDiarioAcumulado[setorMat] !== undefined) {
-                    setorDiarioAcumulado[setorMat] += qtdAbsoluta;
-                }
-            }
-        });
- 
-        todasMovimentacoes.forEach(mov => {
-            if(!mov.data) return;
-            const partes = mov.data.split('/');
-            if(partes[2] === anoAtualStr) {
-                const qtdAbsoluta = Math.abs(parseInt(mov.quantidade) || 0);
-                volumeMensal[partes[1]] = (volumeMensal[partes[1]] || 0) + qtdAbsoluta;
-            }
-        });
- 
-        // CONFIGURAÇÃO DOS PLUGINS DE LABELS VISUAIS DIRETOS NOS GRÁFICOS
-        const padraoDatalabelsBarra = {
-            anchor: 'end',
-            align: 'top',
-            color: '#fff',
-            font: { weight: '800', size: 10 },
-            formatter: (val) => val > 0 ? val : ''
-        };
- 
-        const padraoDatalabelsRosca = {
-            color: '#fff',
-            font: { weight: '900', size: 11 },
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            borderRadius: 4,
-            padding: 4,
-            formatter: (val, ctx) => {
-                return val > 0 ? `${ctx.chart.data.labels[ctx.dataIndex]}\n${val} PL` : '';
-            }
-        };
- 
-        // 1. RENDER GRÁFICO DIÁRIO
-        const labelsDias = Object.keys(volumeDiario).sort((a, b) => new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-')));
-        const ctxD = document.getElementById('chart-fluxo-diario').getContext('2d');
-        if (chartDiarioInst) chartDiarioInst.destroy();
-        chartDiarioInst = new Chart(ctxD, {
-            type: 'bar',
-            data: { labels: labelsDias, datasets: [{ label: 'Paletes', data: labelsDias.map(lbl => volumeDiario[lbl]), backgroundColor: '#6366f1' }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra }, scales: { y: { grid: { color: 'rgba(255,255,255,0.03)' } } } }
-        });
- 
-        // 2. RENDER GRÁFICO MENSAL ACUMULADO
-        const mesesLabelsReduzidos = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-        const ctxM = document.getElementById('chart-fluxo-mensal').getContext('2d');
-        if (chartMensalInst) chartMensalInst.destroy();
-        chartMensalInst = new Chart(ctxM, {
-            type: 'line',
-            data: { labels: mesesLabelsReduzidos, datasets: [{ data: ["01","02","03","04","05","06","07","08","09","10","11","12"].map(m => volumeMensal[m] || 0), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', fill: true, tension: 0.2 }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: { ...padraoDatalabelsBarra, align: 'right' } } }
-        });
- 
-        // 6.1 GRÁFICO SETOR MENSAL
-        const ctxSM = document.getElementById('chart-setor-mensal').getContext('2d');
-        if (chartSetorMInst) chartSetorMInst.destroy();
-        chartSetorMInst = new Chart(ctxSM, {
-            type: 'doughnut',
-            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorMensalAcumulado[s]), backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'] }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } }
-        });
- 
-        // 6.2 GRÁFICO SETOR DIÁRIO
-        const ctxSD = document.getElementById('chart-setor-diario').getContext('2d');
-        if (chartSetorDInst) chartSetorDInst.destroy();
-        chartSetorDInst = new Chart(ctxSD, {
-            type: 'bar',
-            data: { labels: SETORES_LISTA, datasets: [{ data: SETORES_LISTA.map(s => setorDiarioAcumulado[s]), backgroundColor: 'rgba(255, 62, 62, 0.4)', borderColor: '#ff3e3e', borderWidth: 1 }] },
-            options: { responsive: true, plugins: { legend: { display: false }, datalabels: padraoDatalabelsBarra } }
-        });
- 
-        // NOVO GRÁFICO: DESTINO DAS CARGAS (TRANSFERENCIA, APANHA, SEPARAÇÃO)
-        const ctxDest = document.getElementById('chart-destinos-saida').getContext('2d');
-        if (chartDestinosInst) chartDestinosInst.destroy();
-        chartDestinosInst = new Chart(ctxDest, {
-            type: 'doughnut',
-            data: { 
-                labels: ["TRANSFERENCIA", "APANHA", "SEPARAÇÃO"], 
-                datasets: [{ 
-                    data: [fluxosDestinoAcumulado["TRANSFERENCIA"], fluxosDestinoAcumulado["APANHA"], fluxosDestinoAcumulado["SEPARAÇÃO"]], 
-                    backgroundColor: ['#00f2ff', '#fbbf24', '#6366f1'] 
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                plugins: { 
-                    legend: { display: false }, 
-                    datalabels: padraoDatalabelsRosca 
-                } 
-            }
-        });
- 
-        
-        
-        // 7. RENDER GRÁFICO APANHA POR SETOR
-        const ctxApanha = document.getElementById('chart-apanha-setor').getContext('2d');
-        if (chartApanhaSetorInst) chartApanhaSetorInst.destroy();
-        chartApanhaSetorInst = new Chart(ctxApanha, {
-            type: 'bar',
-            data: { 
-                labels: SETORES_LISTA, 
-                datasets: [{ 
-                    label: 'Paletes Abastecidos',
-                    data: SETORES_LISTA.map(s => apanhaSetorAcumulado[s]), 
-                    backgroundColor: ['#ff3e3e','#6366f1','#fbbf24','#10b981','#00f2ff','#ec4899'],
-                    borderRadius: 8
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                plugins: { 
-                    legend: { display: false }, 
-                    datalabels: {
-                        anchor: 'center',
-                        align: 'center',
-                        color: '#fff',
-                        font: { weight: '900', size: 14 },
-                        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                        borderRadius: 4,
-                        padding: 4,
-                        formatter: (val) => val > 0 ? val : '0'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#ffffff', font: { weight: '600' } }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: '#ffffff', font: { weight: '800', size: 11 } }
-                    }
-                }
-            }
-        });
- 
- 
- 
-        // GRÁFICO DE SAÚDE INVENTÁRIO
-        const ctxS = document.getElementById('chart-status').getContext('2d');
-        if (chartStatus) chartStatus.destroy();
-        chartStatus = new Chart(ctxS, { 
-            type: 'doughnut', 
-            data: { labels: ['Boa', 'Crítica', 'Retida'], datasets: [{ data: [estoqueCompleto.filter(i => i.dias > 60).length, estoqueCompleto.filter(i => i.dias > 30 && i.dias <= 60).length, estoqueCompleto.filter(i => i.dias <= 30).length], backgroundColor: ['#10b981', '#fbbf24', '#f87171'] }] }, 
-            options: { responsive: true, cutout: '75%', plugins: { legend: { display: false }, datalabels: padraoDatalabelsRosca } } 
-        });
- 
-        // RENDERIZAR TABELAS OPERACIONAIS
-        const tbodyHist = document.getElementById('table-historico-consolidado');
-        tbodyHist.innerHTML = '';
-        dados.slice(0, 5).forEach(m => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
-            tbodyHist.appendChild(tr);
-        });
- 
-        const tbodyMat = document.getElementById('table-ranking-materiais');
-        tbodyMat.innerHTML = '';
-        Object.entries(rankingMateriais).sort((a,b) => b[1] - a[1]).slice(0, 10).forEach(item => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><b>${item[0]}</b></td><td>${buscarDescricaoLocal(item[0])}</td><td><span style="color:var(--primary); font-weight:900;">${item[1]} PL</span></td>`;
-            tbodyMat.appendChild(tr);
-        });
- 
-        const tbodyOp = document.getElementById('table-ranking-operadores');
-        tbodyOp.innerHTML = '';
-        Object.entries(rankingOperadores).sort((a,b) => b[1] - a[1]).forEach((op, index) => {
-            const medalha = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${medalha}<b>${op[0]}</b></td><td><span style="color:var(--verde); font-weight:800;">${op[1]} Paletes</span></td>`;
-            tbodyOp.appendChild(tr);
-        });
-    }
- 
-    function carregarDadosDashboard() { processarFiltragemHistorica(); }
- 
-    function renderizarEstoque() {
-        const termo = document.getElementById('search-input').value.toLowerCase().trim();
-        const lista = document.getElementById('lista-estoque');
-        lista.innerHTML = '';
-        if (!termo) return;
-        const isAdmin = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
-        let filtrados = estoqueCompleto.filter(i => {
-            if (parseInt(i.qtd) <= 0) return false;
-            if (termo === '60') return i.dias > 30 && i.dias <= 60;
-            if (termo === '30') return i.dias <= 30;
-            const mat = i.mat?.toString().toLowerCase() || "";
-            const ender = i.ender?.toString().toLowerCase() || "";
-            return /^\d+$/.test(termo) ? mat === termo : ender.includes(termo);
-        });
-        if (!isAdmin) filtrados = filtrados.filter(item => item.dias > 30);
-        if (filtrados.length === 0) return;
-        // Prioridade: CRÍTICO (31-60d) → RETIDO (≤30d) → DATA BOA (>60d)
-        function prioridade(dias) {
-            const d = parseInt(dias) || 0;
-            if (d > 30 && d <= 60) return 1;
-            if (d <= 30) return 2;
-            return 3;
-        }
-        filtrados.sort((a, b) => {
-            const pa = prioridade(a.dias), pb = prioridade(b.dias);
-            if (pa !== pb) return pa - pb;
-            return (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0);
-        });
-        if (/^\d+$/.test(termo) && termo !== '60' && termo !== '30') filtrados = [filtrados[0]];
-        filtrados.forEach(item => {
-            let status = item.dias <= 30 ? "RETIDO" : (item.dias <= 60 ? "CRÍTICO" : "DATA BOA");
-            let cor = item.dias <= 30 ? "var(--retido)" : (item.dias <= 60 ? "var(--critico)" : "var(--verde)");
-            const card = document.createElement('div');
-            card.className = `item-card`;
-            card.style.borderLeft = `8px solid ${cor}`;
-            card.innerHTML = `<div><span class="badge badge-ender">${item.ender}</span><span class="badge" style="background: ${cor}20; color: ${cor}; border: 1px solid ${cor}40; margin-left: 5px;">${status}</span><div style="font-weight:900; font-size:24px; margin-top:15px; letter-spacing:-1px; color: #fff;">${item.mat}</div><div style="font-size:12px; color:var(--text-secondary); margin-top:5px; font-weight:600;">${item.desc || "---"}</div><div style="font-size:10px; margin-top:15px; color: var(--text-secondary); font-weight: 800;">VALIDADE: <b style="color: ${cor}">${item.dias} DIAS</b></div></div><div style="text-align: right;"><div style="font-size:32px; font-weight:900; margin-bottom:15px; color: #fff;">${item.qtd}<span style="font-size:12px; color:var(--text-secondary); margin-left:5px;">PL</span></div><button class="btn-action" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button></div>`;
-            lista.appendChild(card);
-        });
-    }
- 
-    function puxarDescricaoObrigatoria(val, inputDescId, listId) {
-        const list = document.getElementById(listId);
-        const descInput = document.getElementById(inputDescId);
-        list.innerHTML = '';
-        if (!val) { descInput.value = ''; return; }
-        const matches = baseMateriais.filter(m => m.mat.toString().startsWith(val)).slice(0, 5);
-        matches.forEach(m => {
-            const div = document.createElement('div');
-            div.className = 'autocomplete-item';
-            div.innerHTML = `<strong>${m.mat}</strong> - ${m.desc}`;
-            div.onclick = () => { document.getElementById('eb-mat').value = m.mat; descInput.value = m.desc; list.innerHTML = ''; };
-            list.appendChild(div);
-        });
-        const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
-        if (exact) { descInput.value = exact.desc; descInput.style.color = "var(--verde)"; } 
-        else { descInput.value = "MATERIAL NÃO CADASTRADO"; descInput.style.color = "var(--retido)"; }
-    }
- 
-    document.addEventListener('click', e => { if (e.target.id !== 'eb-mat') { const l = document.getElementById('eb-mat-list'); if(l) l.innerHTML = ''; } });
-    
-    function retirarMaterial(id, qtdAtual, mat, ender, val) {
-        itemParaRetirar = { id, qtdAtual, mat, ender, val };
-        document.getElementById('modal-titulo').innerText = mat;
-        document.getElementById('modal-info').innerHTML = `Posição: <b>${ender}</b><br>Saldo Atual: <b>${qtdAtual} Pallets</b>`;
-        document.getElementById('modal-input-qtd').value = '';
-        document.getElementById('modal-retirada').style.display = 'flex';
-        setTimeout(() => document.getElementById('modal-input-qtd').focus(), 150);
-        document.getElementById('btn-confirmar-modal').onclick = processarRetirada;
-    }
- 
-    function fecharModal() { document.getElementById('modal-retirada').style.display = 'none'; }
- 
-    async function processarRetirada() {
-        const v = parseInt(document.getElementById('modal-input-qtd').value);
-        if (isNaN(v) || v <= 0 || v > itemParaRetirar.qtdAtual) return alert("Quantidade inválida.");
-        try {
-            if (v === itemParaRetirar.qtdAtual) { await db.collection("estoque_blocado").doc(itemParaRetirar.id).delete(); } 
-            else { await db.collection("estoque_blocado").doc(itemParaRetirar.id).update({ qtd: itemParaRetirar.qtdAtual - v }); }
-            registrarMovimentacao(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, `-${v} PL`, document.getElementById('modal-destino-mov').value);
-            fecharModal();
-        } catch (e) { alert("Erro ao processar retirada."); }
-    }
- 
-    async function salvarEntradaBloco() {
-        const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
-        const mat = document.getElementById('eb-mat').value.trim();
-        const desc = document.getElementById('eb-desc').value;
-        const qtd = parseInt(document.getElementById('eb-qtd').value);
-        const inputVenc = document.getElementById('eb-venc').value;
-        if(!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos.");
-        if(desc === "MATERIAL NÃO CADASTRADO") return alert("Código não cadastrado na base.");
-        const val = inputVenc.split('-').reverse().join('/');
-        const ocupante = estoqueCompleto.find(i => i.ender === ender);
-        if (ocupante && ocupante.mat !== mat) return alert("Posição ocupada por outro material.");
-        if (ocupante) { await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: ocupante.qtd + qtd }); } 
-        else { await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: diasCalculados, valFrente: val, desc: desc }); }
-        registrarMovimentacao(ender, mat, val, `+${qtd} PL`, `ENTRADA VIA ${document.getElementById('eb-origem').value}`);
-        ['eb-ender', 'eb-mat', 'eb-desc', 'eb-qtd', 'eb-venc'].forEach(id => document.getElementById(id).value = '');
-        navegar('retirar');
-    }
- 
-    function carregarDadosOrigemAbertura(ender) {
-        const item = estoqueCompleto.find(i => i.ender.toLowerCase() === ender.toLowerCase().trim());
-        if (item) { itemOrigemAbertura = item; document.getElementById('ab-mat').value = item.mat; document.getElementById('ab-qtd').placeholder = `Max: ${item.qtd}`; } 
-        else { itemOrigemAbertura = null; document.getElementById('ab-mat').value = ''; }
-    }
- 
-    async function processarAberturaBlocado() {
-        const dest = document.getElementById('ab-destino').value.toUpperCase().trim();
-        const qtd = parseInt(document.getElementById('ab-qtd').value);
-        if(!itemOrigemAbertura || isNaN(qtd) || qtd <= 0 || qtd > itemOrigemAbertura.qtd || !dest) return alert("Dados inválidos.");
-        const ocup = estoqueCompleto.find(i => i.ender === dest);
-        if (ocup && ocup.mat !== itemOrigemAbertura.mat) return alert("Destino ocupado.");
-        if (qtd === itemOrigemAbertura.qtd) { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).delete(); } 
-        else { await db.collection("estoque_blocado").doc(itemOrigemAbertura.id).update({ qtd: itemOrigemAbertura.qtd - qtd }); }
-        if (ocup) { await db.collection("estoque_blocado").doc(ocup.id).update({ qtd: ocup.qtd + qtd }); } 
-        else { await db.collection("estoque_blocado").add({ ender: dest, mat: itemOrigemAbertura.mat, desc: itemOrigemAbertura.desc, qtd, dias: itemOrigemAbertura.dias, valFrente: itemOrigemAbertura.valFrente }); }
-        registrarMovimentacao(itemOrigemAbertura.ender, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `-${qtd} PL`, `PARA ${dest}`);
-        registrarMovimentacao(dest, itemOrigemAbertura.mat, itemOrigemAbertura.valFrente, `+${qtd} PL`, `DE ${itemOrigemAbertura.ender}`);
-        navegar('retirar');
-    }
- 
-    function calcularDias(data, labelId) {
-        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
-        document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
-    }
- 
-    async function registrarMovimentacao(ender, mat, val, qtd, fluxo) {
-        const agora = new Date();
-        await db.collection("movimentacoes_wms").add({ 
-            endereco: ender, 
-            material: mat, 
-            validade: val, 
-            quantidade: qtd, 
-            fluxo, 
-            login: usuarioLogado.email, 
-            data: agora.toLocaleDateString('pt-BR'), 
-            hora: agora.toLocaleTimeString('pt-BR'), 
-            timestamp: agora 
-        });
-    }
- 
-    function exportarRelatorioFiltradoExcel() {
-        if(movimentacoesFiltradas.length === 0) return alert("Não existem dados no período filtrado para exportar.");
-        const dadosPlanilha = movimentacoesFiltradas.map(m => ({ "Data": m.data, "Horário": m.hora, "Fluxo / Ação": m.fluxo, "Código Material": m.material, "Descrição": buscarDescricaoLocal(m.material), "Setor Logístico": buscarSetorLocal(m.material), "Quantidade (PL)": m.quantidade, "Operador Responsável": m.login ? m.login.split('@')[0].toUpperCase() : 'N/A' }));
-        const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Relatório_Filtrado");
-        XLSX.writeFile(wb, `WMS_Relatorio_Consolidado_${new Date().getTime()}.xlsx`);
-    }
- 
-    async function exportarHistoricoExcel() {
-        const snap = await db.collection("movimentacoes_wms").orderBy("timestamp", "desc").get();
-        const dados = snap.docs.map(doc => { const d = doc.data(); return { "Endereço": d.endereco, "Material": d.material, "Validade": d.validade, "Qtd": d.quantidade, "Ação": d.fluxo, "Login": d.login, "Data": d.data, "Hora": d.hora }; });
-        const ws = XLSX.utils.json_to_sheet(dados);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Infinity_Log");
-        XLSX.writeFile(wb, `Infinity_WMS_Log_Completo_${new Date().getTime()}.xlsx`);
-    }
- 
-    let itemEditandoBinId = null;
-
-    function abrirModalEditarBin() {
-        document.getElementById('edit-bin-busca').value = '';
-        document.getElementById('edit-bin-campos').style.display = 'none';
-        document.getElementById('btn-salvar-edicao-bin').style.display = 'none';
-        itemEditandoBinId = null;
-        document.getElementById('modal-editar-bin').style.display = 'flex';
+        if(base64s.length) imagesMap[item.id] = base64s;
+      }
     }
 
-    function fecharModalEditarBin() {
-        document.getElementById('modal-editar-bin').style.display = 'none';
+    const doc = generateAuditPDF(audit, imagesMap);
+    const blob = doc.output('blob');
+    const blobUrl = URL.createObjectURL(blob);
+    const filename = `Auditoria_UR_${audit.data}.pdf`;
+
+    if(pendingTab && !pendingTab.closed){
+      // Aba já estava aberta desde o clique: só trocamos a URL. Isso
+      // funciona de forma confiável em Chrome/Edge desktop e Android.
+      pendingTab.location.href = blobUrl;
+    }
+    // Dispara também o download padrão via link (funciona em paralelo
+    // no desktop e como reforço no mobile quando pop-ups são permitidos).
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+
+    try {
+      const pdfPath = `ur_auditoria_pdfs/${auditId}.pdf`;
+      const pdfRef = storage.ref().child(pdfPath);
+      const snap = await pdfRef.put(blob, {
+        contentType: 'application/pdf',
+        contentDisposition: `attachment; filename="${filename}"`
+      });
+      const pdfURL = await snap.ref.getDownloadURL();
+      await db.collection(COLLECTION).doc(auditId).update({ pdfURL });
+    } catch(syncErr){
+      console.error("[PDF] Não foi possível salvar o PDF gerado para acesso futuro (o download local ainda funcionou):", syncErr);
     }
 
-    function buscarBinParaEditar() {
-        const termo = document.getElementById('edit-bin-busca').value.trim().toLowerCase();
-        if (!termo) return alert("Informe a posição (COD_ENDER) ou o código do material para buscar.");
-        const item = estoqueCompleto.find(i => (i.ender && i.ender.toLowerCase() === termo) || (i.mat && i.mat.toString().toLowerCase() === termo));
-        if (!item) return alert("Nenhuma posição encontrada com esse endereço ou material.");
-        itemEditandoBinId = item.id;
-        document.getElementById('edit-bin-ender').value = item.ender || '';
-        document.getElementById('edit-bin-mat').value = item.mat || '';
-        document.getElementById('edit-bin-valfrente').value = item.valFrente || '';
-        document.getElementById('edit-bin-qtd').value = item.qtd || 0;
-        document.getElementById('edit-bin-campos').style.display = 'block';
-        document.getElementById('btn-salvar-edicao-bin').style.display = 'block';
-    }
+    showToast("✓ PDF gerado a partir dos dados salvos.");
+    loadDashboard();
+  } catch(e){
+    console.error("[PDF] Falha ao gerar PDF sob demanda:", e);
+    if(pendingTab && !pendingTab.closed) pendingTab.close();
+    showToast("⚠ Não foi possível gerar o PDF agora. Veja o console para detalhes.");
+    if(btn){ btn.disabled = false; btn.textContent = "Gerar PDF"; }
+  }
+}
 
-    async function salvarEdicaoBin() {
-        if (!itemEditandoBinId) return;
-        const novoEnder = document.getElementById('edit-bin-ender').value.trim();
-        const novoMat = document.getElementById('edit-bin-mat').value.trim();
-        const novaValidade = document.getElementById('edit-bin-valfrente').value.trim();
-        const novaQtd = parseInt(document.getElementById('edit-bin-qtd').value) || 0;
+// Limite de segurança para a consulta do Painel. Sem isso, a cada troca
+// de filtro ou clique em "Filtrar" o app baixava a coleção INTEIRA do
+// Firestore, o que fica cada vez mais lento (e mais caro) à medida que
+// o histórico de auditorias cresce. 500 registros mais recentes cobre
+// bem mais de um ano de auditorias diárias por turno.
+const DASHBOARD_QUERY_LIMIT = 500;
+let _dashboardLoading = false;
 
-        if (!novoEnder || !novoMat) return alert("Posição e Material são obrigatórios.");
+async function loadDashboard(){
+  if(_dashboardLoading) return; // evita disparos concorrentes (ex.: duplo toque no filtro)
+  _dashboardLoading = true;
+  const filterBtn = document.getElementById("btnFilter");
+  if(filterBtn) filterBtn.disabled = true;
 
-        const itemAtual = estoqueCompleto.find(i => i.id === itemEditandoBinId);
-        const descLookup = buscarDescricaoLocal(novoMat);
-        const novaDesc = descLookup !== "N/A" ? descLookup : (itemAtual ? itemAtual.desc : '');
+  try{
+  const de = document.getElementById("fltDe").value;
+  const ate = document.getElementById("fltAte").value;
+  const turno = document.getElementById("fltTurno").value;
 
-        await db.collection("estoque_blocado").doc(itemEditandoBinId).update({
-            ender: novoEnder,
-            mat: novoMat,
-            desc: novaDesc,
-            valFrente: novaValidade,
-            qtd: novaQtd
-        });
+  const query = db.collection(COLLECTION)
+    .orderBy("data","desc")
+    .limit(DASHBOARD_QUERY_LIMIT);
+  const snap = await query.get();
+  let audits = snap.docs.map(d => ({id:d.id, ...d.data()})).reverse(); // volta para ordem cronológica ascendente
 
-        alert("Posição atualizada com sucesso!");
-        fecharModalEditarBin();
-    }
+  if(de) audits = audits.filter(a => a.data >= de);
+  if(ate) audits = audits.filter(a => a.data <= ate);
+  if(turno) audits = audits.filter(a => a.turno === turno);
 
-    function exportarBinsExcel() {
-        if (estoqueCompleto.length === 0) return alert("Não há posições de estoque para exportar.");
-        const dadosPlanilha = estoqueCompleto.map(item => ({
-            "COD_ENDER": item.ender || '',
-            "MATERIAL": item.mat || '',
-            "DESCRIÇÃO": item.desc || buscarDescricaoLocal(item.mat),
-            "VALIDADE FRENTE": item.valFrente || '',
-            "QUANTIDADE DE PALLETS": item.qtd || 0,
-            "DIAS PARA VENCIMENTO": item.dias || 0
-        }));
-        const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Bins_Estoque");
-        XLSX.writeFile(wb, `WMS_Bins_Estoque_${new Date().getTime()}.xlsx`);
-    }
+  auditsById = {};
+  audits.forEach(a => auditsById[a.id] = a);
 
-    // ===== MÓDULO LX03 — Estoque por Depósito/Posição (aditivo, não altera navegar()/iniciarApp() originais) =====
-    let lx03ResultadosAtuais = [];
-    let mapaBinsArmazem = [];
+  const total = audits.length;
+  const mediaConf = total ? Math.round(audits.reduce((s,a)=>s+(a.percConformidade||0),0)/total) : 0;
+  const desviosTotais = audits.reduce((s,a)=>s+(a.naoConformidades||0),0);
 
-    function abrirLX03() {
-        document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.style.display = 'none');
-        document.getElementById('view-lx03').style.display = 'block';
-        document.getElementById('sidebar').classList.remove('active');
-        executarLX03();
-    }
+  document.getElementById("kpiConform").textContent = `${mediaConf}%`;
+  document.getElementById("kpiTotal").textContent = total;
+  document.getElementById("kpiDesvios").textContent = desviosTotais;
 
-    function extrairTipoDepositoLX03(ender) {
-        if (!ender) return "N/A";
-        const partes = ender.toString().split('-');
-        return partes[0] || "N/A";
-    }
+  const trendEl = document.getElementById("kpiConformTrend");
+  if(total >= 2){
+    const half = Math.floor(total/2);
+    const firstHalf = audits.slice(0, half);
+    const secondHalf = audits.slice(half);
+    const avg = arr => arr.length ? arr.reduce((s,a)=>s+(a.percConformidade||0),0)/arr.length : 0;
+    const diff = Math.round(avg(secondHalf) - avg(firstHalf));
+    trendEl.textContent = diff >= 0 ? `▲ ${diff}% vs. período anterior` : `▼ ${Math.abs(diff)}% vs. período anterior`;
+    trendEl.className = "trend " + (diff >= 0 ? "up" : "down");
+  } else {
+    trendEl.textContent = "";
+  }
 
-    function limparFiltrosLX03() {
-        document.getElementById('lx03-filtro-bin').value = '';
-        document.getElementById('lx03-filtro-material').value = '';
-        document.getElementById('lx03-filtro-status').value = '';
-        executarLX03();
-    }
+  const itemDesvioCount = {};
+  CHECKLIST.forEach(c => itemDesvioCount[c.id] = 0);
+  audits.forEach(a => (a.items||[]).forEach(it => {
+    if(it.status !== 'conforme') itemDesvioCount[it.id] = (itemDesvioCount[it.id]||0) + 1;
+  }));
+  const rankedItems = Object.entries(itemDesvioCount).sort((a,b)=>b[1]-a[1]);
+  const topItemId = rankedItems.length && rankedItems[0][1] > 0 ? rankedItems[0][0] : null;
+  const topItem = topItemId ? CHECKLIST.find(c => String(c.id) === String(topItemId)) : null;
+  document.getElementById("kpiTopItem").textContent = topItem ? topItem.titulo : "Sem desvios";
 
-    function carregarMapaBinsLX03() {
-        db.collection("lx03_mapa_bins").onSnapshot(snap => {
-            mapaBinsArmazem = snap.docs.map(doc => doc.id);
-            if (document.getElementById('view-lx03').style.display === 'block') executarLX03();
-        });
-    }
+  let confCount=0, parCount=0, naoCount=0;
+  audits.forEach(a => (a.items||[]).forEach(it => {
+    if(it.status === 'conforme') confCount++;
+    else if(it.status === 'parcial') parCount++;
+    else naoCount++;
+  }));
 
-    async function salvarMapaBinsLX03() {
-        const raw = document.getElementById('lx03-mapa-textarea').value;
-        const posicoes = [...new Set(raw.split(/\r?\n/).map(l => l.trim()).filter(l => l !== ''))];
-        if (posicoes.length === 0) return alert("Informe ao menos uma posição, uma por linha.");
-        if (!confirm(`Confirmar cadastro de ${posicoes.length} posições como mapa físico do armazém? Isso substituirá o cadastro atual de bins.`)) return;
-        const snapshot = await db.collection("lx03_mapa_bins").get();
-        if (!snapshot.empty) {
-            let batchDel = db.batch();
-            snapshot.docs.forEach((doc, idx) => { batchDel.delete(doc.ref); if ((idx + 1) % 400 === 0) { batchDel.commit(); batchDel = db.batch(); } });
-            await batchDel.commit();
-        }
-        let batch = db.batch();
-        posicoes.forEach((pos, i) => {
-            batch.set(db.collection("lx03_mapa_bins").doc(pos), { ender: pos });
-            if ((i + 1) % 400 === 0) { batch.commit(); batch = db.batch(); }
-        });
-        await batch.commit();
-        alert("Mapa de bins do armazém atualizado com sucesso!");
-    }
+  const turnos = ["Turno A","Turno B","Turno Intermediário","Turno C"];
+  const porTurno = turnos.map(t => {
+    const arr = audits.filter(a => a.turno === t);
+    return arr.length ? Math.round(arr.reduce((s,a)=>s+(a.percConformidade||0),0)/arr.length) : 0;
+  });
 
-    function executarLX03() {
-        const filtroBin = document.getElementById('lx03-filtro-bin').value.trim().toLowerCase();
-        const filtroMat = document.getElementById('lx03-filtro-material').value.trim().toLowerCase();
-        const filtroStatus = document.getElementById('lx03-filtro-status').value;
+  destroyCharts();
+  const gridColor = "#E4E8EF";
 
-        const posicoesOcupadas = new Map();
-        estoqueCompleto.forEach(item => {
-            const key = (item.ender || '').toString();
-            if (!posicoesOcupadas.has(key)) posicoesOcupadas.set(key, []);
-            posicoesOcupadas.get(key).push(item);
-        });
+  charts.evolucao = new Chart(document.getElementById("chartEvolucao"), {
+    type:'line',
+    data:{
+      labels: audits.map(a=>a.data),
+      datasets:[{
+        label:'Conformidade %', data: audits.map(a=>a.percConformidade||0),
+        borderColor:'#C8102E', backgroundColor:'rgba(200,16,46,0.08)', fill:true, tension:0.35, pointRadius:3
+      },{
+        label:'Meta', data: audits.map(()=>META_CONFORMIDADE),
+        borderColor:'#00843D', borderDash:[6,4], pointRadius:0
+      }]
+    },
+    options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{min:0,max:100, grid:{color:gridColor}}, x:{grid:{display:false}} }, plugins:{legend:{position:'bottom'}} }
+  });
 
-        const todasPosicoes = new Set([...posicoesOcupadas.keys(), ...mapaBinsArmazem]);
+  charts.status = new Chart(document.getElementById("chartStatus"), {
+    type:'doughnut',
+    data:{
+      labels:['Conforme','Parcial','Não Conforme'],
+      datasets:[{ data:[confCount,parCount,naoCount], backgroundColor:['#00843D','#F5A524','#C8102E'], borderWidth:0 }]
+    },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}} }
+  });
 
-        let linhas = [];
-        todasPosicoes.forEach(pos => {
-            const itensNaPosicao = posicoesOcupadas.get(pos);
-            if (itensNaPosicao && itensNaPosicao.length > 0) {
-                itensNaPosicao.forEach(item => {
-                    linhas.push({ ender: pos, mat: item.mat, desc: item.desc || buscarDescricaoLocal(item.mat), qtd: item.qtd, valFrente: item.valFrente, dias: item.dias, status: item.dias <= 30 ? 'bloqueado' : 'ocupado' });
-                });
-            } else {
-                linhas.push({ ender: pos, mat: '', desc: '', qtd: 0, valFrente: '', dias: '', status: 'vazio' });
-            }
-        });
+  charts.turno = new Chart(document.getElementById("chartTurno"), {
+    type:'bar',
+    data:{
+      labels: turnos,
+      datasets:[{ label:'Conformidade média %', data: porTurno, backgroundColor:'#10151C', borderRadius:6 }]
+    },
+    options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{min:0,max:100, grid:{color:gridColor}}, x:{grid:{display:false}} }, plugins:{legend:{display:false}} }
+  });
 
-        lx03ResultadosAtuais = linhas.filter(l => {
-            if (filtroBin && !l.ender.toString().toLowerCase().includes(filtroBin)) return false;
-            if (filtroMat) {
-                if (l.status === 'vazio') return false;
-                const descL = (l.desc || '').toString().toLowerCase();
-                if (!(l.mat || '').toString().toLowerCase().includes(filtroMat) && !descL.includes(filtroMat)) return false;
-            }
-            if (filtroStatus && l.status !== filtroStatus) return false;
-            return true;
-        });
+  charts.ranking = new Chart(document.getElementById("chartRanking"), {
+    type:'bar',
+    data:{
+      labels: rankedItems.slice(0,6).map(([id])=>{ const it = CHECKLIST.find(c=>String(c.id)===String(id)); return it ? (it.titulo.length>28 ? it.titulo.slice(0,26)+'…' : it.titulo) : id; }),
+      datasets:[{ label:'Desvios', data: rankedItems.slice(0,6).map(([,c])=>c), backgroundColor:'#C8102E', borderRadius:6 }]
+    },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, scales:{ x:{grid:{color:gridColor}}, y:{grid:{display:false}} }, plugins:{legend:{display:false}} }
+  });
 
-        const tbody = document.getElementById('lx03-tabela-resultado');
-        tbody.innerHTML = '';
-        let totalPallets = 0;
-        lx03ResultadosAtuais.forEach(l => {
-            totalPallets += parseInt(l.qtd) || 0;
-            const cor = l.status === 'bloqueado' ? 'var(--retido)' : (l.status === 'vazio' ? 'var(--text-secondary)' : 'var(--verde)');
-            const label = l.status === 'bloqueado' ? 'BLOQUEADO' : (l.status === 'vazio' ? 'VAZIO' : 'OCUPADO');
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>ALB01</td><td>${extrairTipoDepositoLX03(l.ender)}</td><td><b>${l.ender}</b></td><td>${l.mat || '-'}</td><td>${l.desc || '-'}</td><td>${l.status === 'vazio' ? '-' : 'PAL'}</td><td><b>${l.qtd || 0}</b></td><td>${l.valFrente || '-'}</td><td>${l.dias !== '' ? l.dias : '-'}</td><td><span class="badge" style="background:${cor}20; color:${cor}; border:1px solid ${cor}40;">${label}</span></td>`;
-            tbody.appendChild(tr);
-        });
+  const tbody = document.getElementById("auditTableBody");
+  tbody.innerHTML = "";
+  document.getElementById("emptyState").style.display = audits.length ? "none" : "block";
 
-        document.getElementById('lx03-total-posicoes').innerText = lx03ResultadosAtuais.length;
-        document.getElementById('lx03-total-pallets').innerText = totalPallets;
-    }
+  audits.slice().reverse().forEach(a => {
+    const tr = document.createElement("tr");
+    const pdfCell = a.pdfURL
+      ? `<a class="pillbtn ready" href="${a.pdfURL}" target="_blank" rel="noopener" download="Auditoria_UR_${a.data}.pdf">Baixar PDF</a>`
+      : `<button type="button" class="pillbtn" id="pdfbtn-${a.id}" onclick="ensurePdfForRow('${a.id}')">Gerar PDF</button>`;
+    tr.innerHTML = `
+      <td data-label="Data">${a.data}</td>
+      <td data-label="Turno">${a.turno}</td>
+      <td data-label="Auditor">${a.auditor}</td>
+      <td data-label="Conformidade"><span class="tag ${a.percConformidade>=META_CONFORMIDADE?'ok':'bad'}">${a.percConformidade}%</span></td>
+      <td data-label="Ação">${a.statusAcao}</td>
+      <td data-label="PDF">${pdfCell}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  } finally {
+    _dashboardLoading = false;
+    if(filterBtn) filterBtn.disabled = false;
+  }
+}
 
-    function exportarLX03Excel() {
-        if (lx03ResultadosAtuais.length === 0) return alert("Nenhum resultado para exportar. Execute a consulta primeiro.");
-        const dadosPlanilha = lx03ResultadosAtuais.map(l => ({
-            "Depósito": "ALB01",
-            "TD": extrairTipoDepositoLX03(l.ender),
-            "Posição/Bin": l.ender || '',
-            "Material": l.mat || '',
-            "Descrição": l.desc || '',
-            "UM": l.status === 'vazio' ? '' : 'PAL',
-            "Quantidade": l.qtd || 0,
-            "Validade Frente": l.valFrente || '',
-            "Dias Vencimento": l.dias !== '' ? l.dias : '',
-            "Status": l.status === 'bloqueado' ? 'BLOQUEADO' : (l.status === 'vazio' ? 'VAZIO' : 'OCUPADO')
-        }));
-        const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "LX03");
-        XLSX.writeFile(wb, `LX03_Estoque_Posicao_${new Date().getTime()}.xlsx`);
-    }
+document.getElementById("btnFilter").addEventListener("click", loadDashboard);
+document.getElementById("fData").valueAsDate = new Date();
 
-    // ===== LS24 — Localizar Material no Armazém =====
-    let ls24ResultadosAtuais = [];
-
-    function abrirLS24() {
-        document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.style.display = 'none');
-        document.getElementById('view-ls24').style.display = 'block';
-        document.getElementById('sidebar').classList.remove('active');
-        document.getElementById('ls24-filtro-material').value = '';
-        executarLS24();
-    }
-
-    function executarLS24() {
-        const termo = document.getElementById('ls24-filtro-material').value.trim().toLowerCase();
-        ls24ResultadosAtuais = estoqueCompleto.filter(item => {
-            if (!termo) return true;
-            const desc = (item.desc || buscarDescricaoLocal(item.mat) || '').toString().toLowerCase();
-            return (item.mat || '').toString().toLowerCase().includes(termo) || desc.includes(termo);
-        });
-        const tbody = document.getElementById('ls24-tabela-resultado');
-        tbody.innerHTML = '';
-        let total = 0;
-        ls24ResultadosAtuais.forEach(item => {
-            total += parseInt(item.qtd) || 0;
-            const status = item.dias <= 30 ? 'BLOQUEADO' : 'OCUPADO';
-            const cor = item.dias <= 30 ? 'var(--retido)' : 'var(--verde)';
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><b>${item.ender || 'N/A'}</b></td><td>${item.mat || 'N/A'}</td><td>${item.desc || buscarDescricaoLocal(item.mat)}</td><td><b>${item.qtd || 0}</b></td><td>${item.valFrente || 'N/A'}</td><td>${item.dias ?? 'N/A'}</td><td><span class="badge" style="background:${cor}20; color:${cor}; border:1px solid ${cor}40;">${status}</span></td>`;
-            tbody.appendChild(tr);
-        });
-        document.getElementById('ls24-total-bins').innerText = ls24ResultadosAtuais.length;
-        document.getElementById('ls24-total-pallets').innerText = total;
-    }
-
-    function exportarLS24Excel() {
-        if (ls24ResultadosAtuais.length === 0) return alert("Nenhum resultado para exportar.");
-        const dados = ls24ResultadosAtuais.map(item => ({
-            "Posição/Bin": item.ender || '', "Material": item.mat || '', "Descrição": item.desc || buscarDescricaoLocal(item.mat),
-            "Quantidade": item.qtd || 0, "Validade Frente": item.valFrente || '', "Dias Vencimento": item.dias ?? '',
-            "Status": item.dias <= 30 ? 'BLOQUEADO' : 'OCUPADO'
-        }));
-        const ws = XLSX.utils.json_to_sheet(dados);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "LS24");
-        XLSX.writeFile(wb, `LS24_Localizacao_Material_${new Date().getTime()}.xlsx`);
-    }
-
-    // ===== LS25 — Conteúdo do BIN =====
-    let ls25ResultadosAtuais = [];
-
-    function abrirLS25() {
-        document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.style.display = 'none');
-        document.getElementById('view-ls25').style.display = 'block';
-        document.getElementById('sidebar').classList.remove('active');
-        document.getElementById('ls25-filtro-bin').value = '';
-        executarLS25();
-    }
-
-    function executarLS25() {
-        const termo = document.getElementById('ls25-filtro-bin').value.trim().toLowerCase();
-        ls25ResultadosAtuais = !termo ? [] : estoqueCompleto.filter(item => (item.ender || '').toString().toLowerCase().includes(termo));
-        const tbody = document.getElementById('ls25-tabela-resultado');
-        tbody.innerHTML = '';
-        let total = 0;
-        ls25ResultadosAtuais.forEach(item => {
-            total += parseInt(item.qtd) || 0;
-            const status = item.dias <= 30 ? 'BLOQUEADO' : 'OCUPADO';
-            const cor = item.dias <= 30 ? 'var(--retido)' : 'var(--verde)';
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><b>${item.ender || 'N/A'}</b></td><td>${item.mat || 'N/A'}</td><td>${item.desc || buscarDescricaoLocal(item.mat)}</td><td><b>${item.qtd || 0}</b></td><td>${item.valFrente || 'N/A'}</td><td>${item.dias ?? 'N/A'}</td><td><span class="badge" style="background:${cor}20; color:${cor}; border:1px solid ${cor}40;">${status}</span></td>`;
-            tbody.appendChild(tr);
-        });
-        document.getElementById('ls25-total-itens').innerText = ls25ResultadosAtuais.length;
-        document.getElementById('ls25-total-pallets').innerText = total;
-        if (termo && ls25ResultadosAtuais.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-secondary); padding: 20px;">BIN vazio ou não encontrado.</td></tr>';
-        }
-    }
-
-    function exportarLS25Excel() {
-        if (ls25ResultadosAtuais.length === 0) return alert("Nenhum resultado para exportar.");
-        const dados = ls25ResultadosAtuais.map(item => ({
-            "Posição/Bin": item.ender || '', "Material": item.mat || '', "Descrição": item.desc || buscarDescricaoLocal(item.mat),
-            "Quantidade": item.qtd || 0, "Validade Frente": item.valFrente || '', "Dias Vencimento": item.dias ?? '',
-            "Status": item.dias <= 30 ? 'BLOQUEADO' : 'OCUPADO'
-        }));
-        const ws = XLSX.utils.json_to_sheet(dados);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "LS25");
-        XLSX.writeFile(wb, `LS25_Conteudo_Bin_${new Date().getTime()}.xlsx`);
-    }
-
-    // ===== LS26 — Estoque Total do Material no Armazém =====
-    let ls26ResultadosAtuais = [];
-
-    function abrirLS26() {
-        document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.style.display = 'none');
-        document.getElementById('view-ls26').style.display = 'block';
-        document.getElementById('sidebar').classList.remove('active');
-        document.getElementById('ls26-filtro-material').value = '';
-        executarLS26();
-    }
-
-    function executarLS26() {
-        const termo = document.getElementById('ls26-filtro-material').value.trim().toLowerCase();
-        ls26ResultadosAtuais = !termo ? [] : estoqueCompleto.filter(item => {
-            const desc = (item.desc || buscarDescricaoLocal(item.mat) || '').toString().toLowerCase();
-            return (item.mat || '').toString().toLowerCase().includes(termo) || desc.includes(termo);
-        });
-        const tbody = document.getElementById('ls26-tabela-resultado');
-        tbody.innerHTML = '';
-        let totalGeral = 0, totalBloqueado = 0, totalDisponivel = 0;
-        ls26ResultadosAtuais.forEach(item => {
-            const qtd = parseInt(item.qtd) || 0;
-            totalGeral += qtd;
-            const bloqueado = item.dias <= 30;
-            if (bloqueado) totalBloqueado += qtd; else totalDisponivel += qtd;
-            const status = bloqueado ? 'BLOQUEADO' : 'OCUPADO';
-            const cor = bloqueado ? 'var(--retido)' : 'var(--verde)';
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><b>${item.ender || 'N/A'}</b></td><td>${item.mat || 'N/A'}</td><td>${item.desc || buscarDescricaoLocal(item.mat)}</td><td><b>${qtd}</b></td><td>${item.valFrente || 'N/A'}</td><td>${item.dias ?? 'N/A'}</td><td><span class="badge" style="background:${cor}20; color:${cor}; border:1px solid ${cor}40;">${status}</span></td>`;
-            tbody.appendChild(tr);
-        });
-        document.getElementById('ls26-total-pallets').innerText = totalGeral;
-        document.getElementById('ls26-total-bins').innerText = ls26ResultadosAtuais.length;
-        document.getElementById('ls26-total-bloqueado').innerText = totalBloqueado;
-        document.getElementById('ls26-total-disponivel').innerText = totalDisponivel;
-    }
-
-    function exportarLS26Excel() {
-        if (ls26ResultadosAtuais.length === 0) return alert("Nenhum resultado para exportar.");
-        const dados = ls26ResultadosAtuais.map(item => ({
-            "Posição/Bin": item.ender || '', "Material": item.mat || '', "Descrição": item.desc || buscarDescricaoLocal(item.mat),
-            "Quantidade": item.qtd || 0, "Validade Frente": item.valFrente || '', "Dias Vencimento": item.dias ?? '',
-            "Status": item.dias <= 30 ? 'BLOQUEADO' : 'OCUPADO'
-        }));
-        const ws = XLSX.utils.json_to_sheet(dados);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "LS26");
-        XLSX.writeFile(wb, `LS26_Estoque_Total_Material_${new Date().getTime()}.xlsx`);
-    }
-
-    // ===== LS03N — Dados Cadastrais do BIN =====
-    function abrirLS03N() {
-        document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.style.display = 'none');
-        document.getElementById('view-ls03n').style.display = 'block';
-        document.getElementById('sidebar').classList.remove('active');
-        document.getElementById('ls03n-filtro-bin').value = '';
-        executarLS03N();
-    }
-
-    function executarLS03N() {
-        const termo = document.getElementById('ls03n-filtro-bin').value.trim();
-        const painel = document.getElementById('ls03n-resultado');
-        const vazioMsg = document.getElementById('ls03n-vazio');
-        if (!termo) { painel.style.display = 'none'; vazioMsg.style.display = 'block'; return; }
-
-        const itens = estoqueCompleto.filter(item => (item.ender || '').toString().toLowerCase() === termo.toLowerCase());
-        const cadastrado = mapaBinsArmazem.some(p => p.toLowerCase() === termo.toLowerCase());
-
-        let status, corStatus, conteudoHtml;
-        if (itens.length > 0) {
-            const bloqueado = itens.some(i => i.dias <= 30);
-            status = bloqueado ? 'BLOQUEADO' : 'OCUPADO';
-            corStatus = bloqueado ? 'var(--retido)' : 'var(--verde)';
-            conteudoHtml = itens.map(i => `
-                <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid var(--glass-border);">
-                    <div><b style="color:#fff;">${i.mat || 'N/A'}</b><div style="font-size:11px; color:var(--text-secondary); margin-top:3px;">${i.desc || buscarDescricaoLocal(i.mat)}</div></div>
-                    <div style="text-align:right;"><b style="color:#fff;">${i.qtd || 0} PL</b><div style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Validade: ${i.valFrente || 'N/A'} (${i.dias ?? 'N/A'} dias)</div></div>
-                </div>`).join('');
-        } else {
-            status = 'VAZIO';
-            corStatus = 'var(--text-secondary)';
-            conteudoHtml = `<div style="text-align:center; padding:20px; color:var(--text-secondary); font-size:13px;">Nenhum material armazenado nesta posição.</div>`;
-        }
-
-        painel.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
-                <div>
-                    <div style="font-size:28px; font-weight:900; color:#fff; letter-spacing:-1px;">${termo}</div>
-                    <div style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Tipo de Depósito: <b style="color:#fff;">${extrairTipoDepositoLX03(termo)}</b> &nbsp;|&nbsp; Depósito: <b style="color:#fff;">ALB01</b></div>
-                </div>
-                <span class="badge" style="background:${corStatus}20; color:${corStatus}; border:1px solid ${corStatus}40; font-size:12px; padding:10px 18px;">${status}</span>
-            </div>
-            <div style="font-size:11px; color:var(--text-secondary); margin-bottom:15px;">Cadastrado no mapa físico do armazém: <b style="color:#fff;">${cadastrado ? 'SIM' : 'NÃO REGISTRADO'}</b></div>
-            ${conteudoHtml}
-        `;
-        painel.style.display = 'block';
-        vazioMsg.style.display = 'none';
-    }
-
-    // Envolve navegar() e iniciarApp() por fora, sem alterar uma linha sequer das funções originais:
-    const _navegarOriginalLX03 = navegar;
-    navegar = function(tela) {
-        ['view-lx03', 'view-ls24', 'view-ls25', 'view-ls26', 'view-ls03n'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
-        _navegarOriginalLX03(tela);
-    };
-
-    const _iniciarAppOriginalLX03 = iniciarApp;
-    iniciarApp = function() {
-        _iniciarAppOriginalLX03();
-        const isAdminLX03 = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
-        ['btn-nav-lx03', 'btn-nav-ls24', 'btn-nav-ls25', 'btn-nav-ls26', 'btn-nav-ls03n'].forEach(id => { document.getElementById(id).style.display = isAdminLX03 ? 'block' : 'none'; });
-        carregarMapaBinsLX03();
-    };
-
-    async function importarCSV(event) {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const linhas = e.target.result.split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
-            if (!confirm(`Confirmar reset de estoque para ${linhas.length} itens?`)) return;
-            const snapshot = await db.collection("estoque_blocado").get();
-            if (!snapshot.empty) {
-                let batchDel = db.batch();
-                snapshot.docs.forEach((doc, idx) => { batchDel.delete(doc.ref); if ((idx + 1) % 400 === 0) { batchDel.commit(); batchDel = db.batch(); } });
-                await batchDel.commit();
-            }
-            let batch = db.batch();
-            linhas.forEach((linha, i) => {
-                const c = linha.split(";");
-                if (c.length >= 6) {
-                    batch.set(db.collection("estoque_blocado").doc(), { ender: c[0].trim(), mat: c[1].trim(), desc: c[2].trim(), valFrente: c[3].trim(), qtd: parseInt(c[5].replace(/\D/g, '')) || 0, dias: parseInt(c[7].replace(/\D/g, '')) || 0 });
-                    if((i+1)%400===0) { batch.commit(); batch = db.batch(); }
-                }
-            });
-            await batch.commit();
-            alert("Estoque Infinity Updated!");
-        };
-        reader.readAsText(event.target.files[0]);
-    }
- 
-    async function sincronizarBaseMateriais() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.xlsx, .xls';
-        input.onchange = async (e) => {
-            const reader = new FileReader();
-            reader.onload = async (ev) => {
-                const data = new Uint8Array(ev.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                let batch = db.batch();
-                let count = 0;
-                for(const item of json) {
-                    const mat = item['Cód. Material'];
-                    if(mat) {
-                        batch.set(db.collection("base_materiais").doc(mat.toString()), { mat, desc: item['Descrição'] || '', qtd_base: item['Quantidade'] || 0, categoria: item['Categoria'] || '', vasilhame: item['Vasilhame'] || '', lastro: item['Lastro'] || null, camada: item['Camada'] || null });
-                        count++;
-                        if(count % 400 === 0) { await batch.commit(); batch = db.batch(); }
-                    }
-                }
-                await batch.commit();
-                alert("Base de Dados Infinity Sincronizada!");
-                carregarBaseMateriais();
-            };
-            reader.readAsArrayBuffer(e.target.files[0]);
-        };
-        input.click();
-    }
- 
-    function toggleKB(id) {
-        const input = document.getElementById(id);
-        const btn = event.currentTarget;
-        if (input.inputMode === 'numeric' || input.inputMode === 'decimal') {
-            input.inputMode = 'text';
-            btn.innerText = '123';
-            btn.style.background = 'var(--primary)';
-            btn.style.color = '#fff';
-        } else {
-            input.inputMode = id.includes('qtd') ? 'decimal' : 'numeric';
-            btn.innerText = 'Abc';
-            btn.style.background = 'var(--glass)';
-            btn.style.color = 'var(--text-secondary)';
-        }
-        input.focus();
-    }
- 
-    
-window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
- 
-    // SCREEN WAKE LOCK - Mantém a tela sempre ativa
-    let wakeLock = null;
- 
-    async function requestWakeLock() {
-        try {
-            if ('wakeLock' in navigator) {
-                wakeLock = await navigator.wakeLock.request('screen');
-                console.log('Screen Wake Lock ativado com sucesso');
-                
-                // Reativar Wake Lock se o documento ficar visível novamente
-                document.addEventListener('visibilitychange', async () => {
-                    if (document.hidden) {
-                        if (wakeLock !== null) {
-                            wakeLock.release();
-                            wakeLock = null;
-                        }
-                    } else {
-                        try {
-                            wakeLock = await navigator.wakeLock.request('screen');
-                            console.log('Screen Wake Lock reativado');
-                        } catch (err) {
-                            console.error(`Erro ao reativar Wake Lock: ${err.name}, ${err.message}`);
-                        }
-                    }
-                });
-            } else {
-                console.warn('Screen Wake Lock API não suportada neste navegador');
-            }
-        } catch (err) {
-            console.error(`Erro ao solicitar Wake Lock: ${err.name}, ${err.message}`);
-        }
-    }
- 
-    // Ativar Wake Lock quando o aplicativo iniciar
-    function iniciarAppComWakeLock() {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-screen').style.display = 'block';
-        document.getElementById('user-name').innerText = usuarioLogado.nome;
-        const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
-        document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
-        document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
-        
-        const hoje = new Date();
-        document.getElementById('filtro-mes-valor').value = hoje.toISOString().substring(0, 7);
-        document.getElementById('filtro-dia-valor').value = hoje.toISOString().substring(0, 10);
-        document.getElementById('filtro-de-valor').value = hoje.toISOString().substring(0, 10);
-        document.getElementById('filtro-ate-valor').value = hoje.toISOString().substring(0, 10);
- 
-        conectarFirebase();
-        carregarBaseMateriais();
-        navegar(isAdmin ? 'admin' : 'retirar');
-        
-        // Ativar Screen Wake Lock
-        requestWakeLock();
-    }
- 
-    function puxarDescricaoMovDriveIn(val, inputDescId, listId) {
-        const list = document.getElementById(listId);
-        const descInput = document.getElementById(inputDescId);
-        list.innerHTML = '';
-        if (!val) { descInput.value = ''; return; }
-        const matches = baseMateriais.filter(m => m.mat.toString().startsWith(val)).slice(0, 5);
-        matches.forEach(m => {
-            const div = document.createElement('div');
-            div.className = 'autocomplete-item';
-            div.innerHTML = `<strong>${m.mat}</strong> - ${m.desc}`;
-            div.onclick = () => { document.getElementById('mdi-mat').value = m.mat; descInput.value = m.desc; list.innerHTML = ''; };
-            list.appendChild(div);
-        });
-        const exact = baseMateriais.find(m => m.mat.toString() === val.trim());
-        if (exact) { descInput.value = exact.desc; descInput.style.color = "var(--verde)"; } 
-        else { descInput.value = "MATERIAL NAO CADASTRADO"; descInput.style.color = "var(--retido)"; }
-    }
- 
-    document.addEventListener('click', e => { if (e.target.id !== 'mdi-mat') { const l = document.getElementById('mdi-mat-list'); if(l) l.innerHTML = ''; } });
- 
-    function calcularDiasMovDriveIn(data, labelId) {
-        diasCalculados = Math.ceil((new Date(data) - new Date()) / (1000 * 60 * 60 * 24));
-        document.getElementById(labelId).innerText = `VENCIMENTO EM ${diasCalculados} DIAS`;
-    }
- 
-    async function salvarMovimentacaoDriveIn() {
-        const mat       = document.getElementById('mdi-mat').value.trim();
-        const desc      = document.getElementById('mdi-desc').value;
-        const qtd       = parseInt(document.getElementById('mdi-qtd').value);
-        const inputVenc = document.getElementById('mdi-venc').value;
-        const destino   = document.getElementById('mdi-destino').value;
- 
-        if (!mat || isNaN(qtd) || qtd <= 0 || !inputVenc || !destino)
-            return alert("Preencha todos os campos.");
-        if (desc === "MATERIAL NAO CADASTRADO")
-            return alert("Codigo nao cadastrado na base.");
- 
-        const val = inputVenc.split('-').reverse().join('/');
- 
-        try {
-            // Registra APENAS a saída do Drive In (valor negativo) — sem gerar entrada
-            await registrarMovimentacao("DRIVE-IN", mat, val, `-${qtd} PL`, destino);
-            alert("Movimentacao Drive In registrada com sucesso!");
-            ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('mdi-label-dias').innerText = '';
-            document.getElementById('mdi-destino').value = 'APANHA';
-        } catch (e) {
-            alert("Erro ao registrar movimentacao: " + e.message);
-        }
-    }
+// Preenche os textos de meta a partir da única constante META_CONFORMIDADE,
+// eliminando os valores "85%" que ficavam hardcoded em HTML/PDF/gráficos.
+(function initMetaLabels(){
+  document.getElementById("heroMetaBadge").textContent = `${META_CONFORMIDADE}%`;
+  document.getElementById("legendMeta").textContent = `Meta UR: ${META_CONFORMIDADE}%`;
+})();
 </script>
 </body>
 </html>
