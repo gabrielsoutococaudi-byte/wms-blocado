@@ -411,6 +411,7 @@
                 <button class="btn-action" onclick="sincronizarBaseMateriais()" style="width: 100%; margin-top: 15px; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">SINCRONIZAR BASE DE MATERIAIS (EXCEL)</button>
                 <button class="btn-action" onclick="abrirModalEditarBin()" style="width: 100%; margin-top: 15px; background: var(--primary); box-shadow: 0 10px 20px var(--primary-glow);">✏️ EDITAR POSIÇÃO / MATERIAL / VALIDADE / QTD</button>
                 <button class="btn-action" onclick="exportarBinsExcel()" style="width: 100%; margin-top: 15px; background: #107c41; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.15);">📊 EXPORTAR TODOS OS BINS (EXCEL)</button>
+                <button id="btn-processar-historico-fefo" class="btn-action" onclick="processarHistoricoFEFO()" style="width: 100%; margin-top: 15px; background: var(--accent); box-shadow: 0 10px 20px var(--accent-glow);">🔍 PROCESSAR HISTÓRICO FEFO (ANÁLISE RETROATIVA)</button>
             </div>
         </div>
 
@@ -1992,7 +1993,8 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
                 login: login || null,
                 data: agora.toLocaleDateString('pt-BR'),
                 hora: agora.toLocaleTimeString('pt-BR'),
-                timestamp: agora
+                timestamp: agora,
+                origem: 'live'
             });
         } catch (e) { console.error("Erro ao registrar conformidade FEFO:", e); }
     }
@@ -2134,6 +2136,103 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
     }
 
     conectarMonitorFEFO();
+
+    // ================= ANÁLISE RETROATIVA FEFO (BACKFILL) - MÓDULO ADITIVO =================
+    const FLUXOS_EXPEDICAO_FEFO = ['SEPARAÇÃO', 'APANHA', 'TRANSFERENCIA'];
+
+    async function processarHistoricoFEFO() {
+        const btn = document.getElementById('btn-processar-historico-fefo');
+        if (btn) { btn.disabled = true; btn.innerText = 'PROCESSANDO ANÁLISE RETROATIVA...'; }
+        try {
+            const snapMov = await db.collection("movimentacoes_wms").orderBy("timestamp", "asc").get();
+            const movimentos = snapMov.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            const snapExistente = await db.collection("fefo_conformidade").where("origem", "==", "historico").get();
+            const jaProcessados = new Set(snapExistente.docs.map(doc => doc.data().origemMovId));
+
+            const stockMap = {}; // stockMap[material][validade] = qtd (reconstrução do estoque ao longo do tempo)
+            const resultados = [];
+
+            function getLotesDisponiveis(material) {
+                const lotes = stockMap[material] || {};
+                return Object.entries(lotes)
+                    .filter(([, qty]) => qty > 0)
+                    .map(([validade, qty]) => ({ validade, qty, _data: parseDataBRFEFO(validade) }))
+                    .sort((a, b) => a._data - b._data);
+            }
+
+            movimentos.forEach(mov => {
+                const material = mov.material;
+                const validade = mov.validade;
+                const qtdStr = (mov.quantidade || '').toString();
+                const match = qtdStr.match(/([+-])\s*(\d+)/);
+                if (!material || !validade || !match) return;
+                const sinal = match[1];
+                const qtd = parseInt(match[2]);
+                if (!stockMap[material]) stockMap[material] = {};
+                if (!stockMap[material][validade]) stockMap[material][validade] = 0;
+
+                if (sinal === '+') {
+                    stockMap[material][validade] += qtd;
+                    return;
+                }
+
+                if (FLUXOS_EXPEDICAO_FEFO.includes(mov.fluxo) && !jaProcessados.has(mov.id)) {
+                    const lotes = getLotesDisponiveis(material);
+                    let status = 'N/A', loteAntigo = null;
+                    if (lotes.length > 0) {
+                        const loteMaisAntigo = lotes[0];
+                        loteAntigo = loteMaisAntigo.validade;
+                        if (validade === loteMaisAntigo.validade) {
+                            status = 'OK';
+                        } else {
+                            const dataEscolhida = parseDataBRFEFO(validade);
+                            if (dataEscolhida > loteMaisAntigo._data) {
+                                status = loteMaisAntigo.qty >= qtd ? 'FURO' : 'PARCIAL';
+                            } else {
+                                status = 'OK';
+                            }
+                        }
+                    }
+                    resultados.push({
+                        endereco: mov.endereco || null,
+                        material,
+                        quantidade: qtd,
+                        fluxo: mov.fluxo,
+                        status,
+                        valEscolhido: validade,
+                        valLoteAntigo: loteAntigo,
+                        login: mov.login || null,
+                        data: mov.data,
+                        hora: mov.hora,
+                        timestamp: mov.timestamp,
+                        origem: 'historico',
+                        origemMovId: mov.id
+                    });
+                }
+
+                stockMap[material][validade] -= qtd;
+                if (stockMap[material][validade] < 0) stockMap[material][validade] = 0;
+            });
+
+            for (let i = 0; i < resultados.length; i += 450) {
+                const lote = resultados.slice(i, i + 450);
+                const batch = db.batch();
+                lote.forEach(r => {
+                    const ref = db.collection("fefo_conformidade").doc();
+                    batch.set(ref, r);
+                });
+                await batch.commit();
+            }
+
+            alert(`Análise retroativa concluída: ${resultados.length} expedições históricas processadas.`);
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao processar histórico FEFO: " + e.message);
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerText = '🔍 PROCESSAR HISTÓRICO FEFO (ANÁLISE RETROATIVA)'; }
+        }
+    }
 
 </script>
 </body>
