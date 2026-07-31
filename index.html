@@ -220,6 +220,8 @@
                 <div class="stat-card glass-card" onclick="navegarComFiltro('critico')"><h5>CRÍTICOS (30-60D)</h5><p id="st-critico" style="color: var(--critico);">0</p></div>
                 <div class="stat-card glass-card" onclick="navegarComFiltro('retido')"><h5>RETIDOS (&lt;30D)</h5><p id="st-retido" style="color: var(--retido);">0</p></div>
                 <div class="stat-card glass-card"><h5>GIRO HOJE</h5><p id="st-mov" style="color: var(--verde);">0</p></div>
+                <div class="stat-card glass-card"><h5>ICF - CONFORMIDADE FEFO</h5><p id="st-icf" style="color: var(--verde);">100.0%</p></div>
+                <div class="stat-card glass-card"><h5>FUROS/PARCIAIS FEFO</h5><p id="st-icf-furos" style="color: var(--retido);">0</p></div>
             </div>
  
             <div class="glass-card style-form" style="padding: 25px; margin-bottom: 24px;">
@@ -350,6 +352,52 @@
                     <button class="expand-btn" onclick="expandirGrafico('chart-status', 'Saúde Geral do Inventário')">Expandir ⛶</button>
                     <div class="chart-title">📊 Saúde Geral do Inventário</div>
                     <canvas id="chart-status" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+ 
+            <div class="dashboard-row">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🎯 Indicador de Conformidade FEFO (ICF) <span style="color:var(--verde);">Distribuição</span></div>
+                    <canvas id="chart-fefo-status" style="max-height: 250px;"></canvas>
+                </div>
+                <div class="chart-box glass-card">
+                    <div class="chart-title">👥 Ranking de Conformidade FEFO por Operador</div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead>
+                                <tr><th>Operador</th><th>Expedições</th><th>Furos/Parciais</th><th>% Conformidade</th></tr>
+                            </thead>
+                            <tbody id="table-ranking-fefo-operadores"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+ 
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">📦 Materiais com Mais Furos de FEFO <span style="color:var(--retido);">Top 10</span></div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead>
+                                <tr><th>Código</th><th>Descrição</th><th>Expedições</th><th>Furos/Parciais</th></tr>
+                            </thead>
+                            <tbody id="table-ranking-fefo-materiais"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+ 
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">⚠️ Detalhamento de Não Conformidades FEFO <span style="color:var(--critico);">Últimas 50</span></div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead>
+                                <tr><th>Data</th><th>Hora</th><th>Material</th><th>Endereço</th><th>Fluxo</th><th>Operador</th><th>Lote Escolhido</th><th>Lote Mais Antigo</th><th>Status</th></tr>
+                            </thead>
+                            <tbody id="table-fefo-detalhado"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
  
@@ -1240,6 +1288,7 @@
             if (v === itemParaRetirar.qtdAtual) { await db.collection("estoque_blocado").doc(itemParaRetirar.id).delete(); } 
             else { await db.collection("estoque_blocado").doc(itemParaRetirar.id).update({ qtd: itemParaRetirar.qtdAtual - v }); }
             registrarMovimentacao(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, `-${v} PL`, document.getElementById('modal-destino-mov').value);
+            registrarConformidadeFEFO(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, v, document.getElementById('modal-destino-mov').value, usuarioLogado?.email);
             fecharModal();
         } catch (e) { alert("Erro ao processar retirada."); }
     }
@@ -1891,6 +1940,7 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         try {
             // Registra APENAS a saída do Drive In (valor negativo) — sem gerar entrada
             await registrarMovimentacao("DRIVE-IN", mat, val, `-${qtd} PL`, destino);
+            await registrarConformidadeFEFO("DRIVE-IN", mat, val, qtd, destino, usuarioLogado?.email);
             alert("Movimentacao Drive In registrada com sucesso!");
             ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('mdi-label-dias').innerText = '';
@@ -1899,6 +1949,192 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
             alert("Erro ao registrar movimentacao: " + e.message);
         }
     }
+    // ================= INDICADOR DE CONFORMIDADE FEFO (ICF) - MÓDULO ADITIVO =================
+    let todasConformidadesFEFO = [];
+    let conformidadesFiltradasFEFO = [];
+    let chartFefoStatusInst = null;
+
+    function parseDataBRFEFO(str) {
+        if (!str) return new Date(0);
+        const p = str.split('/');
+        if (p.length < 3) return new Date(0);
+        return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
+    }
+
+    function avaliarConformidadeFEFO(mat, valEscolhido, qtdRetirada) {
+        const lotes = estoqueCompleto
+            .filter(i => i.mat === mat && (parseInt(i.qtd) || 0) > 0)
+            .map(i => ({ ...i, _dataOrdenacao: parseDataBRFEFO(i.valFrente) }))
+            .sort((a, b) => a._dataOrdenacao - b._dataOrdenacao);
+        if (lotes.length === 0) return { status: 'N/A', loteAntigo: null };
+        const loteMaisAntigo = lotes[0];
+        if (valEscolhido === loteMaisAntigo.valFrente) return { status: 'OK', loteAntigo: loteMaisAntigo.valFrente };
+        const dataEscolhida = parseDataBRFEFO(valEscolhido);
+        if (dataEscolhida > loteMaisAntigo._dataOrdenacao) {
+            const saldoAntigo = parseInt(loteMaisAntigo.qtd) || 0;
+            return { status: saldoAntigo >= qtdRetirada ? 'FURO' : 'PARCIAL', loteAntigo: loteMaisAntigo.valFrente };
+        }
+        return { status: 'OK', loteAntigo: loteMaisAntigo.valFrente };
+    }
+
+    async function registrarConformidadeFEFO(ender, mat, valEscolhido, qtdRetirada, fluxo, login) {
+        try {
+            const avaliacao = avaliarConformidadeFEFO(mat, valEscolhido, qtdRetirada);
+            const agora = new Date();
+            await db.collection("fefo_conformidade").add({
+                endereco: ender,
+                material: mat,
+                quantidade: qtdRetirada,
+                fluxo,
+                status: avaliacao.status,
+                valEscolhido: valEscolhido || null,
+                valLoteAntigo: avaliacao.loteAntigo,
+                login: login || null,
+                data: agora.toLocaleDateString('pt-BR'),
+                hora: agora.toLocaleTimeString('pt-BR'),
+                timestamp: agora
+            });
+        } catch (e) { console.error("Erro ao registrar conformidade FEFO:", e); }
+    }
+
+    function conectarMonitorFEFO() {
+        db.collection("fefo_conformidade").orderBy("timestamp", "desc").onSnapshot(snap => {
+            todasConformidadesFEFO = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            aplicarFiltroFEFO();
+        });
+    }
+
+    function aplicarFiltroFEFO() {
+        if (todasConformidadesFEFO.length === 0) { renderizarPainelFEFO([]); return; }
+        const tipoTempoEl = document.getElementById('filtro-tipo-tempo');
+        if (!tipoTempoEl) { renderizarPainelFEFO(todasConformidadesFEFO); return; }
+        const filtroMesEl = document.getElementById('filtro-mes-valor');
+        const filtroDiaEl = document.getElementById('filtro-dia-valor');
+        const filtroDeEl = document.getElementById('filtro-de-valor');
+        const filtroAteEl = document.getElementById('filtro-ate-valor');
+        const filtroMatEl = document.getElementById('filtro-material');
+
+        const tipoTempo = tipoTempoEl.value;
+        const filtroMes = filtroMesEl ? filtroMesEl.value : '';
+        const filtroDia = filtroDiaEl ? filtroDiaEl.value : '';
+        const filtroDe = filtroDeEl ? filtroDeEl.value : '';
+        const filtroAte = filtroAteEl ? filtroAteEl.value : '';
+        const queryMat = filtroMatEl ? filtroMatEl.value.toLowerCase().trim() : '';
+
+        conformidadesFiltradasFEFO = todasConformidadesFEFO.filter(c => {
+            if (!c.data) return false;
+            const partes = c.data.split('/');
+            const dataC = new Date(partes[2], partes[1] - 1, partes[0]);
+            let passaTempo = true;
+            if (tipoTempo === 'mes' && filtroMes) {
+                const [ano, mes] = filtroMes.split('-');
+                passaTempo = dataC.getFullYear() === parseInt(ano) && (dataC.getMonth() + 1) === parseInt(mes);
+            } else if (tipoTempo === 'dia' && filtroDia) {
+                const [ano, mes, dia] = filtroDia.split('-');
+                passaTempo = dataC.getFullYear() === parseInt(ano) && (dataC.getMonth() + 1) === parseInt(mes) && dataC.getDate() === parseInt(dia);
+            } else if (tipoTempo === 'periodo' && filtroDe && filtroAte) {
+                const dInit = new Date(filtroDe + "T00:00:00");
+                const dEnd = new Date(filtroAte + "T23:59:59");
+                passaTempo = dataC >= dInit && dataC <= dEnd;
+            }
+            if (!passaTempo) return false;
+            if (queryMat) {
+                const materialCod = c.material ? c.material.toString().toLowerCase() : "";
+                const descMat = buscarDescricaoLocal(c.material).toLowerCase();
+                if (!materialCod.includes(queryMat) && !descMat.includes(queryMat)) return false;
+            }
+            return true;
+        });
+
+        renderizarPainelFEFO(conformidadesFiltradasFEFO);
+    }
+
+    function renderizarPainelFEFO(dados) {
+        const stEl = document.getElementById('st-icf');
+        const total = dados.filter(d => d.status !== 'N/A').length;
+        const ok = dados.filter(d => d.status === 'OK').length;
+        const furo = dados.filter(d => d.status === 'FURO').length;
+        const parcial = dados.filter(d => d.status === 'PARCIAL').length;
+        const icf = total > 0 ? ((ok / total) * 100).toFixed(1) : '100.0';
+        if (stEl) { stEl.innerText = `${icf}%`; stEl.style.color = icf >= 90 ? 'var(--verde)' : icf >= 70 ? 'var(--critico)' : 'var(--retido)'; }
+        const stFuroEl = document.getElementById('st-icf-furos');
+        if (stFuroEl) stFuroEl.innerText = furo + parcial;
+
+        const ctx = document.getElementById('chart-fefo-status');
+        if (ctx) {
+            if (chartFefoStatusInst) chartFefoStatusInst.destroy();
+            chartFefoStatusInst = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['FEFO OK', 'Furo de FEFO', 'FEFO Parcial'],
+                    datasets: [{ data: [ok, furo, parcial], backgroundColor: ['#10b981', '#f87171', '#fbbf24'], borderWidth: 0 }]
+                },
+                options: {
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#fff', font: { size: 11, weight: '700' } } },
+                        datalabels: { color: '#fff', font: { weight: '900' }, formatter: (val) => val > 0 ? val : '' }
+                    }
+                }
+            });
+        }
+
+        const rankOp = {};
+        dados.forEach(d => {
+            if (d.status === 'N/A') return;
+            const nome = d.login ? d.login.split('@')[0].toUpperCase() : 'N/A';
+            if (!rankOp[nome]) rankOp[nome] = { total: 0, ok: 0, furos: 0 };
+            rankOp[nome].total++;
+            if (d.status === 'OK') rankOp[nome].ok++; else rankOp[nome].furos++;
+        });
+        const tbodyOp = document.getElementById('table-ranking-fefo-operadores');
+        if (tbodyOp) {
+            tbodyOp.innerHTML = '';
+            Object.entries(rankOp).sort((a, b) => b[1].furos - a[1].furos).slice(0, 10).forEach(([nome, v]) => {
+                const pct = v.total > 0 ? ((v.ok / v.total) * 100).toFixed(0) : 100;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${nome}</td><td>${v.total}</td><td>${v.furos}</td><td style="color:${pct >= 90 ? 'var(--verde)' : pct >= 70 ? 'var(--critico)' : 'var(--retido)'}; font-weight:800;">${pct}%</td>`;
+                tbodyOp.appendChild(tr);
+            });
+        }
+
+        const rankMat = {};
+        dados.forEach(d => {
+            if (d.status === 'N/A') return;
+            const cod = d.material || 'N/A';
+            if (!rankMat[cod]) rankMat[cod] = { total: 0, furos: 0 };
+            rankMat[cod].total++;
+            if (d.status !== 'OK') rankMat[cod].furos++;
+        });
+        const tbodyMat = document.getElementById('table-ranking-fefo-materiais');
+        if (tbodyMat) {
+            tbodyMat.innerHTML = '';
+            Object.entries(rankMat).filter(([, v]) => v.furos > 0).sort((a, b) => b[1].furos - a[1].furos).slice(0, 10).forEach(([cod, v]) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${cod}</td><td>${buscarDescricaoLocal(cod)}</td><td>${v.total}</td><td style="color:var(--retido); font-weight:800;">${v.furos}</td>`;
+                tbodyMat.appendChild(tr);
+            });
+        }
+
+        const tbodyDet = document.getElementById('table-fefo-detalhado');
+        if (tbodyDet) {
+            tbodyDet.innerHTML = '';
+            dados.filter(d => d.status === 'FURO' || d.status === 'PARCIAL').slice(0, 50).forEach(d => {
+                const tr = document.createElement('tr');
+                const cor = d.status === 'FURO' ? 'var(--retido)' : 'var(--critico)';
+                tr.innerHTML = `<td>${d.data}</td><td>${d.hora}</td><td>${d.material} - ${buscarDescricaoLocal(d.material)}</td><td>${d.endereco}</td><td>${d.fluxo}</td><td>${d.login ? d.login.split('@')[0].toUpperCase() : 'N/A'}</td><td>${d.valEscolhido || '-'}</td><td>${d.valLoteAntigo || '-'}</td><td style="color:${cor}; font-weight:800;">${d.status}</td>`;
+                tbodyDet.appendChild(tr);
+            });
+        }
+    }
+
+    // Encadeia a atualização do painel FEFO aos filtros já existentes do histórico, sem alterar seu código original
+    if (typeof filtrarTabelasEDados === 'function') {
+        const _origFiltrarTabelasEDadosFEFO = filtrarTabelasEDados;
+        filtrarTabelasEDados = function () { _origFiltrarTabelasEDadosFEFO(); aplicarFiltroFEFO(); };
+    }
+
+    conectarMonitorFEFO();
+
 </script>
 </body>
 </html>
