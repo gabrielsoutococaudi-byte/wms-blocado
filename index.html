@@ -2234,6 +2234,84 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         }
     }
 
+    // ================= VALIDADE EM DIAS CALCULADA PELA DATA DE HOJE + CRITICIDADE NO CARD - MÓDULO ADITIVO =================
+    // Calcula os dias para vencer a partir de valFrente (DD/MM/AAAA) comparando com hoje (meia-noite local)
+    function calcularDiasValidade(valFrente, fallback) {
+        if (valFrente && /^\d{2}\/\d{2}\/\d{4}$/.test(valFrente)) {
+            const [d, m, a] = valFrente.split('/').map(Number);
+            const venc = new Date(a, m - 1, d);
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            return Math.round((venc - hoje) / 86400000);
+        }
+        return parseInt(fallback) || 0;
+    }
+
+    // Recalcula o campo dias de todo o estoque em memória (não grava no Firebase)
+    function recalcularDiasEstoque() {
+        estoqueCompleto.forEach(i => { i.dias = calcularDiasValidade(i.valFrente, i.dias); });
+    }
+
+    // Segundo listener do estoque: depois do snapshot original, corrige os dias e reatualiza KPIs, dashboard e lista
+    const _conectarFirebaseOriginalValidade = conectarFirebase;
+    conectarFirebase = function () {
+        _conectarFirebaseOriginalValidade();
+        db.collection("estoque_blocado").onSnapshot(() => {
+            recalcularDiasEstoque();
+            if (usuarioLogado?.perfil?.toUpperCase() === "ADMIN") { atualizarEstatisticas(); carregarDadosDashboard(); }
+            renderizarEstoque();
+        });
+    };
+
+    // Redefine a renderização dos cards da tela Pesquisar Estoque: mesma lógica/ordenação/filtros, agora com vencimento, dias e criticidade
+    renderizarEstoque = function () {
+        const termo = document.getElementById('search-input').value.toLowerCase().trim();
+        const lista = document.getElementById('lista-estoque');
+        lista.innerHTML = '';
+        if (!termo) return;
+        recalcularDiasEstoque();
+        const isAdmin = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
+        let filtrados = estoqueCompleto.filter(i => {
+            if (parseInt(i.qtd) <= 0) return false;
+            if (termo === '60') return i.dias > 30 && i.dias <= 60;
+            if (termo === '30') return i.dias <= 30;
+            const mat = i.mat?.toString().toLowerCase() || "";
+            const ender = i.ender?.toString().toLowerCase() || "";
+            return /^\d+$/.test(termo) ? mat === termo : ender.includes(termo);
+        });
+        if (!isAdmin) filtrados = filtrados.filter(item => item.dias > 30);
+        if (filtrados.length === 0) return;
+        // Prioridade: CRÍTICO (31-60d) → RETIDO (≤30d) → DATA BOA (>60d)
+        function prioridade(dias) {
+            const d = parseInt(dias) || 0;
+            if (d > 30 && d <= 60) return 1;
+            if (d <= 30) return 2;
+            return 3;
+        }
+        filtrados.sort((a, b) => {
+            const pa = prioridade(a.dias), pb = prioridade(b.dias);
+            if (pa !== pb) return pa - pb;
+            return (parseInt(a.dias) || 0) - (parseInt(b.dias) || 0);
+        });
+        if (/^\d+$/.test(termo) && termo !== '60' && termo !== '30') filtrados = [filtrados[0]];
+        filtrados.forEach(item => {
+            const dias = item.dias;
+            let status, cor;
+            if (dias < 0)        { status = "VENCIDO";  cor = "var(--retido)"; }
+            else if (dias <= 30) { status = "RETIDO";   cor = "var(--retido)"; }
+            else if (dias <= 60) { status = "CRÍTICO";  cor = "var(--critico)"; }
+            else                 { status = "DATA BOA"; cor = "var(--verde)"; }
+            const textoDias = dias < 0 ? `VENCIDO HÁ ${Math.abs(dias)} DIAS`
+                            : dias === 0 ? 'VENCE HOJE'
+                            : `${dias} DIAS PARA VENCER`;
+            const card = document.createElement('div');
+            card.className = `item-card`;
+            card.style.borderLeft = `8px solid ${cor}`;
+            card.innerHTML = `<div><span class="badge badge-ender">${item.ender}</span><span class="badge" style="background: ${cor}20; color: ${cor}; border: 1px solid ${cor}40; margin-left: 5px;">${status}</span><div style="font-weight:900; font-size:24px; margin-top:15px; letter-spacing:-1px; color: #fff;">${item.mat}</div><div style="font-size:12px; color:var(--text-secondary); margin-top:5px; font-weight:600;">${item.desc || "---"}</div><div style="font-size:10px; margin-top:15px; color: var(--text-secondary); font-weight: 800; line-height:1.8;">VENCIMENTO: <b style="color: ${cor}">${item.valFrente || 'N/D'}</b><br>PRAZO: <b style="color: ${cor}">${textoDias}</b></div></div><div style="text-align: right;"><div style="font-size:32px; font-weight:900; margin-bottom:15px; color: #fff;">${item.qtd}<span style="font-size:12px; color:var(--text-secondary); margin-left:5px;">PL</span></div><button class="btn-action" onclick="retirarMaterial('${item.id}', ${item.qtd}, '${item.mat}', '${item.ender}', '${item.valFrente}')">RETIRAR</button></div>`;
+            lista.appendChild(card);
+        });
+    };
+
 </script>
 </body>
 </html>
