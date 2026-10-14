@@ -17,7 +17,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -137,22 +136,6 @@
         .autocomplete-items { position: absolute; border: 1px solid var(--glass-border); border-top: none; z-index: 99; top: 100%; left: 0; right: 0; background: #080808; max-height: 250px; overflow-y: auto; border-radius: 0 0 20px 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
         .autocomplete-item { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid var(--glass-border); font-size: 13px; }
         .autocomplete-item:hover { background-color: var(--primary); color: #fff; }
-        .shared-device-note { display:flex; align-items:flex-start; gap:10px; text-align:left; margin:18px 0 8px; padding:13px; border:1px solid rgba(0,242,255,.24); border-radius:14px; background:rgba(0,242,255,.05); color:#cbd5e1; font-size:11px; line-height:1.5; }
-        .shared-device-note input { width:18px; height:18px; accent-color:var(--neon-blue); flex:0 0 auto; margin-top:1px; }
-        .shared-device-badge { display:inline-block; margin-top:5px; padding:4px 8px; color:var(--neon-blue); border:1px solid rgba(0,242,255,.25); border-radius:8px; font-size:8px; letter-spacing:1px; font-weight:900; }
-        .header-switch-user { border:1px solid var(--glass-border); background:var(--glass); color:#fff; border-radius:11px; padding:9px 11px; font-size:10px; font-weight:800; cursor:pointer; }
-        .scan-btn { flex:0 0 auto; min-width:48px; min-height:48px; padding:10px 12px; border:1px solid rgba(0,242,255,.28); border-radius:14px; background:rgba(0,242,255,.08); color:var(--neon-blue); font-size:20px; cursor:pointer; }
-        .mic-btn { flex:0 0 auto; min-width:48px; min-height:48px; padding:10px; border:1px solid rgba(251,191,36,.34); border-radius:14px; background:rgba(251,191,36,.08); color:var(--critico); font-size:19px; cursor:pointer; }
-        .mic-btn.is-listening { background:rgba(255,62,62,.18); color:#fff; border-color:var(--primary); animation:micPulse 1s infinite; }
-        @keyframes micPulse { 50% { box-shadow:0 0 0 7px rgba(255,62,62,.12); } }
-        .scan-inline { display:flex; gap:9px; align-items:center; }
-        .scan-inline input { min-width:0; flex:1; }
-        #modal-scanner { display:none; position:fixed; inset:0; z-index:7000; background:rgba(0,0,0,.96); align-items:center; justify-content:center; padding:16px; }
-        .scanner-card { width:100%; max-width:520px; padding:22px; border-color:var(--neon-blue); }
-        #qr-reader { width:100%; min-height:260px; overflow:hidden; border-radius:16px; background:#080808; }
-        #qr-reader video { border-radius:16px; object-fit:cover; }
-        #qr-reader__dashboard_section_csr button, #qr-reader__dashboard_section_swaplink { color:#fff !important; }
-        @media (max-width:600px) { .header { padding-left:14px; padding-right:14px; gap:9px; } .header-switch-user { padding:8px; font-size:9px; } .form-box { padding:22px; } .scanner-card { padding:16px; } }
  
         .wms-table-container { width: 100%; overflow-x: auto; margin-top: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid var(--glass-border); }
         .wms-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
@@ -212,7 +195,6 @@
                 </div>
                 <input type="password" id="login-senha" placeholder="Senha" style="text-align: center;">
             </div>
-            <label class="shared-device-note"><input type="checkbox" id="login-aparelho-compartilhado" checked><span><b style="color:#fff;">Celular corporativo compartilhado</b><br>Encerra a sessão ao fechar o navegador. Entre com sua matrícula individual para manter a identificação de cada operação.</span></label>
             <button onclick="tentarLogin()" class="btn-action" style="width: 100%; padding: 20px; font-size: 15px; margin-top: 10px;">INICIAR OPERAÇÃO</button>
         </div>
     </div>
@@ -224,9 +206,7 @@
         <div style="flex-grow: 1;">
             <div id="user-name" style="font-weight: 900; font-size: 18px; letter-spacing: -0.5px; color: #fff;"></div>
             <div id="role-label" style="font-size: 9px; color: var(--primary); font-weight: 900; letter-spacing: 2px; text-transform: uppercase;"></div>
-            <div id="device-mode-badge" class="shared-device-badge">SESSÃO OPERACIONAL</div>
         </div>
-        <button class="header-switch-user" onclick="logout()" title="Finalizar operador atual e permitir outro acesso">TROCAR<br>OPERADOR</button>
         <div style="text-align: right;">
             <div id="current-time" style="font-size: 12px; font-weight: 800;">00:00</div>
             <div style="font-size: 9px; color: var(--text-secondary); text-transform: uppercase;">Online</div>
@@ -596,12 +576,10 @@
         </div>
 
         <div id="view-retirar">
-            <div class="search-wrapper scan-inline">
-                <input type="text" inputmode="numeric" id="search-input" placeholder="Pesquise ou leia material / posição..." oninput="renderizarEstoque()" onkeydown="if(event.key==='Enter') renderizarEstoque()">
-                <button class="scan-btn" onclick="abrirScanner('search-input')" aria-label="Ler material ou posição com a câmera" title="Ler QR ou código de barras">▦</button>
-                <div class="toggle-kb-btn" onclick="toggleKB('search-input')" style="right: 72px;">Abc</div>
+            <div class="search-wrapper input-with-toggle">
+                <input type="text" inputmode="numeric" id="search-input" placeholder="Pesquisar Código ou Posição..." oninput="renderizarEstoque()">
+                <div class="toggle-kb-btn" onclick="toggleKB('search-input')" style="right: 15px;">Abc</div>
             </div>
-            <p style="color:var(--text-secondary); font-size:10px; margin:-12px 4px 18px;">Use a câmera do celular ou um leitor Bluetooth/USB (leitura seguida de Enter). A baixa exige confirmação manual.</p>
             <div id="lista-estoque"></div>
         </div>
  
@@ -610,10 +588,10 @@
                 <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Entrada no Bloco</h3>
                 <div class="form-group"><label>Fluxo de Origem</label><select id="eb-origem"><option value="DRIVE IN">DRIVE IN</option><option value="RECEBIMENTO">RECEBIMENTO</option></select></div>
                 <div class="form-group"><label>Endereço de Destino</label>
-                    <div class="scan-inline"><div class="input-with-toggle" style="flex:1;"><input type="text" inputmode="numeric" id="eb-ender" placeholder="Ex: 301-14-2" onblur="normalizarCampoPosicao(this)"><div class="toggle-kb-btn" onclick="toggleKB('eb-ender')">Abc</div></div><button type="button" class="mic-btn" id="mic-btn-eb-ender" onclick="iniciarDitadoPosicao('eb-ender')" aria-label="Ditado por voz do endereço de destino" title="Ditar endereço">🎙</button><button type="button" class="scan-btn" onclick="abrirScanner('eb-ender')" aria-label="Ler endereço de destino">▦</button></div>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-ender" placeholder="Ex: 205-14"><div class="toggle-kb-btn" onclick="toggleKB('eb-ender')">Abc</div></div>
                 </div>
                 <div class="form-group" style="position: relative;"><label>Código do Material</label>
-                    <div class="scan-inline"><div class="input-with-toggle" style="flex:1;"><input type="text" inputmode="numeric" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('eb-mat')">Abc</div></div><button class="scan-btn" onclick="abrirScanner('eb-mat')" aria-label="Ler código do material">▦</button></div>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('eb-mat')">Abc</div></div>
                     <div id="eb-mat-list" class="autocomplete-items"></div>
                 </div>
                 <div class="form-group"><label>Descrição do Material</label><input type="text" id="eb-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando código..."></div>
@@ -627,14 +605,13 @@
  
         <div id="view-abertura_blocado" style="display: none;">
             <div class="form-box glass-card">
-                <h3 style="color: #fff; margin-bottom: 12px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Transferência Interna</h3>
-                <p style="color:var(--text-secondary); font-size:11px; line-height:1.6; margin-bottom:24px;">Digite, escaneie ou toque no microfone e diga os seis algarismos um por um (ex.: <b style="color:#fff;">2-0-1-2-0-1</b> → <b style="color:var(--neon-blue);">201-20-1</b>).</p>
+                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Transferência Interna</h3>
                 <div class="form-group"><label>Posição Origem</label>
-                    <div class="scan-inline"><div class="input-with-toggle" style="flex:1;"><input type="text" inputmode="numeric" id="ab-origem" placeholder="Ex: 201-20-1" onblur="normalizarCampoPosicao(this)" onchange="carregarDadosOrigemAbertura(this.value)"><div class="toggle-kb-btn" onclick="toggleKB('ab-origem')">Abc</div></div><button type="button" class="mic-btn" id="mic-btn-ab-origem" onclick="iniciarDitadoPosicao('ab-origem')" aria-label="Ditado por voz da posição de origem" title="Ditar posição">🎙</button><button type="button" class="scan-btn" onclick="abrirScanner('ab-origem')" aria-label="Ler posição de origem">▦</button></div>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-origem" placeholder="Ex: 201-14" onchange="carregarDadosOrigemAbertura(this.value)"><div class="toggle-kb-btn" onclick="toggleKB('ab-origem')">Abc</div></div>
                 </div>
                 <div class="form-group"><label>Material Identificado</label><input type="text" id="ab-mat" readonly style="opacity: 0.5;"></div>
                 <div class="form-group"><label>Posição de Destino</label>
-                    <div class="scan-inline"><div class="input-with-toggle" style="flex:1;"><input type="text" inputmode="numeric" id="ab-destino" placeholder="Ex: 301-14-2" onblur="normalizarCampoPosicao(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();normalizarCampoPosicao(this);}"><div class="toggle-kb-btn" onclick="toggleKB('ab-destino')">Abc</div></div><button type="button" class="mic-btn" id="mic-btn-ab-destino" onclick="iniciarDitadoPosicao('ab-destino')" aria-label="Ditado por voz da posição de destino" title="Ditar posição">🎙</button><button type="button" class="scan-btn" onclick="abrirScanner('ab-destino')" aria-label="Ler posição de destino">▦</button></div>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-destino" placeholder="Ex: 205-20"><div class="toggle-kb-btn" onclick="toggleKB('ab-destino')">Abc</div></div>
                 </div>
                 <div class="form-group"><label>Qtd para Mover</label>
                     <div class="input-with-toggle"><input type="text" inputmode="decimal" id="ab-qtd" placeholder="Saldo: 0"><div class="toggle-kb-btn" onclick="toggleKB('ab-qtd')">Abc</div></div>
@@ -649,7 +626,7 @@
                 <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Movimentacao Drive In</h3>
                 <div class="form-group"><label>Fluxo de Origem</label><select id="mdi-origem"><option value="DRIVE IN">DRIVE IN</option></select></div>
                 <div class="form-group" style="position: relative;"><label>Codigo do Material</label>
-                    <div class="scan-inline"><div class="input-with-toggle" style="flex:1;"><input type="text" inputmode="numeric" id="mdi-mat" placeholder="Codigo..." oninput="puxarDescricaoMovDriveIn(this.value, 'mdi-desc', 'mdi-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('mdi-mat')">Abc</div></div><button class="scan-btn" onclick="abrirScanner('mdi-mat')" aria-label="Ler código do material">▦</button></div>
+                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="mdi-mat" placeholder="Codigo..." oninput="puxarDescricaoMovDriveIn(this.value, 'mdi-desc', 'mdi-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('mdi-mat')">Abc</div></div>
                     <div id="mdi-mat-list" class="autocomplete-items"></div>
                 </div>
                 <div class="form-group"><label>Descricao do Material</label><input type="text" id="mdi-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando codigo..."></div>
@@ -664,15 +641,6 @@
     </div>
 </div>
  
-<div id="modal-scanner" role="dialog" aria-modal="true" aria-labelledby="scanner-title">
-    <div class="scanner-card glass-card">
-        <h3 id="scanner-title" style="font-weight:900; margin-bottom:8px;">Leitor QR / Código de barras</h3>
-        <p id="scanner-status" style="font-size:12px; color:var(--text-secondary); margin-bottom:14px;">Aponte a câmera para a etiqueta. O código será preenchido no campo selecionado.</p>
-        <div id="qr-reader"></div>
-        <button class="btn-action" style="width:100%; margin-top:16px; background:#334155; box-shadow:none;" onclick="fecharScanner()">CANCELAR LEITURA</button>
-    </div>
-</div>
-
 <div id="modal-retirada">
     <div class="modal-content glass-card">
         <h3 id="modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Retirada</h3>
@@ -746,11 +714,6 @@
     let diasCalculados = 0;
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
-    let leitorCodigo = null;
-    let campoAlvoScanner = null;
-    let processandoLeitura = false;
-    let reconhecimentoAtivo = null;
-    let alvoDitadoAtivo = null;
  
     // Instâncias Globais de Gráficos
     let chartDiarioInst = null;
@@ -769,190 +732,7 @@
     window.addEventListener('offline', () => document.getElementById('network-status').style.display = 'block');
  
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
-    function logout() {
-        sessionStorage.removeItem('wms_session');
-        localStorage.removeItem('wms_session');
-        auth.signOut().finally(() => location.reload());
-    }
-
-    function iniciarSessaoOperador(usuario) {
-        const compartilhado = document.getElementById('login-aparelho-compartilhado')?.checked !== false;
-        sessionStorage.removeItem('wms_session');
-        localStorage.removeItem('wms_session');
-        (compartilhado ? sessionStorage : localStorage).setItem('wms_session', JSON.stringify(usuario));
-    }
-
-    function extrairCodigoLido(valor, alvo) {
-        let codigo = String(valor || '').trim();
-        if (!codigo) return '';
-        try {
-            const dados = JSON.parse(codigo);
-            if (dados && typeof dados === 'object') {
-                const alvoMaterial = /mat|material|mdi-mat/i.test(alvo || '');
-                const chaves = alvoMaterial
-                    ? ['mat','material','codigo','código','code','gtin','ean','barcode']
-                    : ['ender','bin','posicao','posição','local','location','codigo','código','code','mat','material'];
-                const chave = chaves.find(k => dados[k] !== undefined && dados[k] !== null && String(dados[k]).trim());
-                if (chave) codigo = String(dados[chave]).trim();
-            }
-        } catch (_) {}
-        if (/^https?:\/\//i.test(codigo)) {
-            try {
-                const url = new URL(codigo);
-                const candidatas = ['code','codigo','código','mat','material','bin','ender','posicao'];
-                for (const chave of candidatas) { const valorUrl = url.searchParams.get(chave); if (valorUrl) { codigo = valorUrl.trim(); break; } }
-            } catch (_) {}
-        }
-        codigo = codigo.replace(/^(?:BIN|ENDER|POSI[CÇ][AÃ]O|LOCAL|MAT(?:ERIAL)?|COD(?:IGO)?)\s*[:=]\s*/i, '').trim();
-        return codigo;
-    }
-
-    function normalizarPosicaoWms(valor) {
-        const original = String(valor ?? '').trim();
-        const compacto = original.replace(/[\s-]/g, '');
-        if (/^\d{6}$/.test(compacto)) return `${compacto.slice(0,3)}-${compacto.slice(3,5)}-${compacto.slice(5,6)}`;
-        return original.toUpperCase();
-    }
-
-    function normalizarCampoPosicao(campo) {
-        if (campo) campo.value = normalizarPosicaoWms(campo.value);
-    }
-
-    function digitosDaFala(transcricao) {
-        const texto = String(transcricao || '').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, ' ');
-        const numeros = texto.match(/\d/g)?.join('') || '';
-        if (numeros.length === 6) return numeros;
-        const mapa = { zero:'0', um:'1', uma:'1', dois:'2', duas:'2', tres:'3', quatro:'4', cinco:'5', seis:'6', meia:'6', sete:'7', oito:'8', nove:'9' };
-        const palavras = texto.replace(/\b(posicao|endereco|bin|local|codigo|e|hifen|traco)\b/g, ' ').match(/[a-z]+/g) || [];
-        if (palavras.length && palavras.every(p => mapa[p] !== undefined)) {
-            const falados = palavras.map(p => mapa[p]).join('');
-            if (falados.length === 6) return falados;
-        }
-        const valores = { zero:0, um:1, uma:1, dois:2, duas:2, tres:3, quatro:4, cinco:5, seis:6, sete:7, oito:8, nove:9, dez:10, onze:11, doze:12, treze:13, quatorze:14, catorze:14, quinze:15, dezesseis:16, dezessete:17, dezoito:18, dezenove:19, vinte:20, trinta:30, quarenta:40, cinquenta:50, sessenta:60, setenta:70, oitenta:80, noventa:90, cem:100, cento:100, duzentos:200, trezentos:300, quatrocentos:400, quinhentos:500, seiscentos:600, setecentos:700, oitocentos:800, novecentos:900 };
-        if (palavras.length && palavras.every(p => p === 'mil' || valores[p] !== undefined)) {
-            let total = 0, grupo = 0;
-            for (const palavra of palavras) {
-                if (palavra === 'mil') { total += (grupo || 1) * 1000; grupo = 0; }
-                else grupo += valores[palavra];
-            }
-            const numeroFalado = total + grupo;
-            if (numeroFalado >= 100000 && numeroFalado <= 999999) return String(numeroFalado);
-        }
-        return '';
-    }
-
-    function aplicarDitadoPosicao(alvo, transcricao) {
-        const campo = document.getElementById(alvo);
-        if (!campo) return;
-        const digitos = digitosDaFala(transcricao);
-        if (digitos.length !== 6) {
-            alert('Não consegui reconhecer os seis algarismos. Diga-os um por um, por exemplo: dois, zero, um, dois, zero, um.');
-            campo.focus();
-            return;
-        }
-        campo.value = normalizarPosicaoWms(digitos);
-        campo.dispatchEvent(new Event('input', { bubbles: true }));
-        campo.dispatchEvent(new Event('change', { bubbles: true }));
-        campo.focus({ preventScroll: true });
-    }
-
-    function iniciarDitadoPosicao(alvo) {
-        const Reconhecimento = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!Reconhecimento) return alert('O ditado por voz não está disponível neste navegador. Use Chrome/Edge em HTTPS, ou digite/escaneie a posição.');
-        if (reconhecimentoAtivo) {
-            try { reconhecimentoAtivo.abort(); } catch (_) {}
-            reconhecimentoAtivo = null;
-        }
-        const reconhecimento = new Reconhecimento();
-        reconhecimento.lang = 'pt-BR';
-        reconhecimento.interimResults = false;
-        reconhecimento.maxAlternatives = 5;
-        reconhecimentoAtivo = reconhecimento;
-        alvoDitadoAtivo = alvo;
-        const botao = document.getElementById(`mic-btn-${alvo}`);
-        if (botao) { botao.classList.add('is-listening'); botao.textContent = '●'; botao.setAttribute('aria-label', 'Ouvindo posição'); }
-        reconhecimento.onresult = evento => {
-            const alternativas = Array.from(evento.results?.[0] || []).map(item => item.transcript);
-            const melhor = alternativas.find(texto => digitosDaFala(texto).length === 6) || alternativas[0] || '';
-            aplicarDitadoPosicao(alvoDitadoAtivo, melhor);
-        };
-        reconhecimento.onerror = evento => {
-            const mensagens = { 'not-allowed':'Permita o acesso ao microfone nas configurações do navegador.', 'no-speech':'Não detectei fala. Toque no microfone e tente novamente.', 'audio-capture':'Não encontrei um microfone disponível.' };
-            if (evento.error !== 'aborted') alert(mensagens[evento.error] || `Falha no ditado: ${evento.error || 'verifique o microfone'}.`);
-        };
-        reconhecimento.onend = () => {
-            if (botao) { botao.classList.remove('is-listening'); botao.textContent = '🎙'; botao.setAttribute('aria-label', 'Ditado por voz da posição'); }
-            if (reconhecimentoAtivo === reconhecimento) reconhecimentoAtivo = null;
-        };
-        try { reconhecimento.start(); }
-        catch (erro) {
-            if (botao) { botao.classList.remove('is-listening'); botao.textContent = '🎙'; }
-            reconhecimentoAtivo = null;
-            alert('Não foi possível iniciar o microfone. Aguarde um instante e tente novamente.');
-        }
-    }
-
-    function aplicarCodigoLido(valor, alvo) {
-        const campo = document.getElementById(alvo);
-        if (!campo) return alert('Campo de leitura não encontrado.');
-        let codigo = extrairCodigoLido(valor, alvo);
-        if (['eb-ender','ab-origem','ab-destino'].includes(alvo)) codigo = normalizarPosicaoWms(codigo);
-        if (!codigo) return alert('A etiqueta não contém um código válido.');
-        campo.value = codigo;
-        campo.dispatchEvent(new Event('input', { bubbles: true }));
-        campo.dispatchEvent(new Event('change', { bubbles: true }));
-        campo.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-        if (alvo === 'search-input') renderizarEstoque();
-        campo.focus({ preventScroll: true });
-    }
-
-    async function abrirScanner(alvo) {
-        campoAlvoScanner = alvo;
-        const modal = document.getElementById('modal-scanner');
-        const status = document.getElementById('scanner-status');
-        modal.style.display = 'flex';
-        status.textContent = 'Iniciando câmera...';
-        if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
-            status.textContent = 'Câmera indisponível neste endereço. Use HTTPS e permita o acesso à câmera, ou conecte um leitor Bluetooth/USB.';
-            return;
-        }
-        if (!window.Html5Qrcode) {
-            status.textContent = 'A biblioteca do leitor não carregou. Conecte um leitor Bluetooth/USB e leia o código diretamente no campo.';
-            return;
-        }
-        try {
-            if (leitorCodigo) { try { await leitorCodigo.stop(); } catch (_) {} try { leitorCodigo.clear(); } catch (_) {} leitorCodigo = null; }
-            const formatos = window.Html5QrcodeSupportedFormats;
-            const suportados = ['QR_CODE','EAN_13','EAN_8','UPC_A','UPC_E','CODE_128','CODE_39','ITF','DATA_MATRIX','CODABAR']
-                .map(nome => formatos?.[nome]).filter(valor => valor !== undefined);
-            leitorCodigo = new Html5Qrcode('qr-reader', { formatsToSupport: suportados, verbose: false });
-            await leitorCodigo.start({ facingMode: 'environment' }, { fps: 12, qrbox: (w,h) => ({ width: Math.min(w * 0.82, 320), height: Math.min(h * 0.42, 220) }), aspectRatio: 1.4 }, async (texto) => {
-                if (processandoLeitura) return;
-                processandoLeitura = true;
-                const alvoAtual = campoAlvoScanner;
-                await fecharScanner();
-                aplicarCodigoLido(texto, alvoAtual);
-                processandoLeitura = false;
-            }, () => {});
-            status.textContent = 'Câmera ativa. Aponte para o QR code ou código de barras.';
-        } catch (erro) {
-            status.textContent = erro?.name === 'NotAllowedError'
-                ? 'Permita o acesso à câmera nas configurações do navegador para continuar.'
-                : 'Não foi possível iniciar a câmera. Verifique a permissão e se o endereço usa HTTPS; leitor Bluetooth/USB também funciona.';
-            console.warn('Scanner indisponível:', erro);
-        }
-    }
-
-    async function fecharScanner() {
-        const modal = document.getElementById('modal-scanner');
-        if (leitorCodigo) {
-            try { if (leitorCodigo.isScanning) await leitorCodigo.stop(); } catch (_) {}
-            try { leitorCodigo.clear(); } catch (_) {}
-            leitorCodigo = null;
-        }
-        if (modal) modal.style.display = 'none';
-    }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('modal-scanner')?.style.display === 'flex') fecharScanner(); });
+    function logout() { auth.signOut().then(() => { localStorage.removeItem('wms_session'); location.reload(); }); }
  
     async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
@@ -962,7 +742,7 @@
             await auth.signInWithEmailAndPassword(email, senha);
             const doc = await db.collection("usuarios_wms").doc(email).get();
             usuarioLogado = doc.exists ? { ...doc.data(), email } : { nome: mat, perfil: "OPERADOR", email };
-            iniciarSessaoOperador(usuarioLogado);
+            localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
             iniciarApp();
         } catch (e) { alert("Credenciais incorretas."); }
     }
@@ -973,8 +753,6 @@
         document.getElementById('user-name').innerText = usuarioLogado.nome;
         const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
         document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
-        const badgeDispositivo = document.getElementById('device-mode-badge');
-        if (badgeDispositivo) badgeDispositivo.innerText = sessionStorage.getItem('wms_session') ? 'CELULAR COMPARTILHADO · SESSÃO TEMPORÁRIA' : 'SESSÃO PESSOAL · MANTIDA NESTE DISPOSITIVO';
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
         
         const hoje = new Date();
@@ -1510,15 +1288,14 @@
         try {
             if (v === itemParaRetirar.qtdAtual) { await db.collection("estoque_blocado").doc(itemParaRetirar.id).delete(); } 
             else { await db.collection("estoque_blocado").doc(itemParaRetirar.id).update({ qtd: itemParaRetirar.qtdAtual - v }); }
-            await registrarMovimentacao(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, `-${v} PL`, document.getElementById('modal-destino-mov').value);
-            await registrarConformidadeFEFO(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, v, document.getElementById('modal-destino-mov').value, usuarioLogado?.email);
+            registrarMovimentacao(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, `-${v} PL`, document.getElementById('modal-destino-mov').value);
+            registrarConformidadeFEFO(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, v, document.getElementById('modal-destino-mov').value, usuarioLogado?.email);
             fecharModal();
         } catch (e) { alert("Erro ao processar retirada."); }
     }
  
     async function salvarEntradaBloco() {
-        const ender = normalizarPosicaoWms(document.getElementById('eb-ender').value);
-        document.getElementById('eb-ender').value = ender;
+        const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
         const mat = document.getElementById('eb-mat').value.trim();
         const desc = document.getElementById('eb-desc').value;
         const qtd = parseInt(document.getElementById('eb-qtd').value);
@@ -1536,16 +1313,13 @@
     }
  
     function carregarDadosOrigemAbertura(ender) {
-        ender = normalizarPosicaoWms(ender);
-        document.getElementById('ab-origem').value = ender;
         const item = estoqueCompleto.find(i => i.ender.toLowerCase() === ender.toLowerCase().trim());
         if (item) { itemOrigemAbertura = item; document.getElementById('ab-mat').value = item.mat; document.getElementById('ab-qtd').placeholder = `Max: ${item.qtd}`; } 
         else { itemOrigemAbertura = null; document.getElementById('ab-mat').value = ''; }
     }
  
     async function processarAberturaBlocado() {
-        const dest = normalizarPosicaoWms(document.getElementById('ab-destino').value);
-        document.getElementById('ab-destino').value = dest;
+        const dest = document.getElementById('ab-destino').value.toUpperCase().trim();
         const qtd = parseInt(document.getElementById('ab-qtd').value);
         if(!itemOrigemAbertura || isNaN(qtd) || qtd <= 0 || qtd > itemOrigemAbertura.qtd || !dest) return alert("Dados inválidos.");
         const ocup = estoqueCompleto.find(i => i.ender === dest);
@@ -2067,7 +1841,7 @@
     }
  
     
-window.onload = () => { const session = sessionStorage.getItem('wms_session') || localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
+window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
  
     // SCREEN WAKE LOCK - Mantém a tela sempre ativa
     let wakeLock = null;
@@ -2109,8 +1883,6 @@ window.onload = () => { const session = sessionStorage.getItem('wms_session') ||
         document.getElementById('user-name').innerText = usuarioLogado.nome;
         const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
         document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
-        const badgeDispositivo = document.getElementById('device-mode-badge');
-        if (badgeDispositivo) badgeDispositivo.innerText = sessionStorage.getItem('wms_session') ? 'CELULAR COMPARTILHADO · SESSÃO TEMPORÁRIA' : 'SESSÃO PESSOAL · MANTIDA NESTE DISPOSITIVO';
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
         
         const hoje = new Date();
@@ -2363,6 +2135,7 @@ window.onload = () => { const session = sessionStorage.getItem('wms_session') ||
         filtrarTabelasEDados = function () { _origFiltrarTabelasEDadosFEFO(); aplicarFiltroFEFO(); };
     }
 
+    const _conectarMonitorFEFOOriginal = conectarMonitorFEFO; conectarMonitorFEFO = function () {}; // adiado: iniciado apos o login (somente ADMIN) em conectarFirebase()
     conectarMonitorFEFO();
 
     // ================= ANÁLISE RETROATIVA FEFO (BACKFILL) - MÓDULO ADITIVO =================
@@ -2539,6 +2312,481 @@ window.onload = () => { const session = sessionStorage.getItem('wms_session') ||
             lista.appendChild(card);
         });
     };
+
+    // ================= REVISÃO DE COERÊNCIA + AGILIDADE (v2) - MÓDULO ADITIVO =================
+    // Mantém todo o código original; apenas redefine/encapsula funções (mesmo padrão dos módulos anteriores).
+
+    // ---- Utilitários ----
+    function hojeISOLocal(d) {
+        const x = d || new Date();
+        return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');
+    }
+    function normTxt(s) { return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim(); }
+    function mesmoEnder(a, b) { return (a || '').toString().trim().toUpperCase() === (b || '').toString().trim().toUpperCase(); }
+    function ehPernaEntradaTransf(m) { return normTxt(m && m.fluxo).startsWith('DE '); } // 2ª perna (+) de uma transferência interna
+    function ehExpedicao(m) { return FLUXOS_EXPEDICAO_FEFO.includes((m && m.fluxo ? m.fluxo : '').toString().toUpperCase().trim()); }
+    function qtdAbs(m) { return Math.abs(parseInt(m.quantidade) || 0); }
+    function setorParaGrafico(cod) {
+        const s = normTxt(buscarSetorLocal(cod));
+        return SETORES_LISTA.find(x => normTxt(x) === s) || 'AVULSO';
+    }
+    function errMsg(e) { return (e && e.message) ? e.message : String(e); }
+
+    // ---- Busca de material/setor via índice (O(1) em vez de varrer a base a cada linha) ----
+    let _idxMatRef = null, _idxMatLen = -1, _idxMat = new Map();
+    function _indiceMateriais() {
+        if (_idxMatRef !== baseMateriais || _idxMatLen !== baseMateriais.length) {
+            _idxMat = new Map();
+            baseMateriais.forEach(m => { if (m && m.mat !== undefined && m.mat !== null) _idxMat.set(m.mat.toString(), m); });
+            _idxMatRef = baseMateriais; _idxMatLen = baseMateriais.length;
+        }
+        return _idxMat;
+    }
+    buscarDescricaoLocal = function (cod) {
+        const m = _indiceMateriais().get((cod === undefined || cod === null) ? '' : cod.toString());
+        return m ? m.desc : "N/A";
+    };
+    buscarSetorLocal = function (cod) {
+        const m = _indiceMateriais().get((cod === undefined || cod === null) ? '' : cod.toString());
+        return m && m.categoria ? m.categoria.toUpperCase() : "AVULSO";
+    };
+
+    // Base de materiais carrega de forma assíncrona: ao terminar, redesenha (antes o dashboard ficava com "N/A"/AVULSO até a próxima movimentação)
+    const _carregarBaseMateriaisOriginal = carregarBaseMateriais;
+    carregarBaseMateriais = async function () {
+        await _carregarBaseMateriaisOriginal();
+        _idxMatRef = null;
+        try { processarFiltragemHistorica(); renderizarEstoque(); } catch (e) {}
+    };
+
+    // ---- KPIs de estoque: tudo em PALETES (Total = Boa + Crítica + Retida) ----
+    function _paletesPorFaixa() {
+        let boa = 0, crit = 0, ret = 0;
+        estoqueCompleto.forEach(i => {
+            const q = parseInt(i.qtd) || 0; if (q <= 0) return;
+            if (i.dias > 60) boa += q; else if (i.dias > 30) crit += q; else ret += q;
+        });
+        return { boa, crit, ret, total: boa + crit + ret };
+    }
+    atualizarEstatisticas = function () {
+        recalcularDiasEstoque();
+        const f = _paletesPorFaixa();
+        document.getElementById('st-total').innerText = f.total;
+        document.getElementById('st-critico').innerText = f.crit;
+        document.getElementById('st-retido').innerText = f.ret;
+    };
+
+    // ---- Estoque: dias sempre recalculados (também ao abrir consultas LX03/LS*) ----
+    ['executarLX03', 'executarLS24', 'executarLS25', 'executarLS26', 'executarLS03N'].forEach(nome => {
+        const orig = window[nome];
+        window[nome] = function () { recalcularDiasEstoque(); return orig.apply(this, arguments); };
+    });
+    function atualizarConsultasAbertas() {
+        [['view-lx03', executarLX03], ['view-ls24', executarLS24], ['view-ls25', executarLS25], ['view-ls26', executarLS26], ['view-ls03n', executarLS03N]]
+            .forEach(([id, fn]) => { const el = document.getElementById(id); if (el && el.style.display === 'block') fn(); });
+    }
+
+    // ---- Redesenho do dashboard agrupado (vários snapshots seguidos = 1 render) ----
+    let _timerDash = null;
+    carregarDadosDashboard = function () {
+        clearTimeout(_timerDash);
+        _timerDash = setTimeout(() => processarFiltragemHistorica(), 120);
+    };
+
+    // ---- Conexão Firebase única; histórico/FEFO só para ADMIN (operador não precisa baixar todo o histórico) ----
+    let _listenersAtivos = false;
+    conectarFirebase = function () {
+        if (_listenersAtivos) return;
+        _listenersAtivos = true;
+        const isAdmin = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
+        db.collection("estoque_blocado").onSnapshot(snap => {
+            estoqueCompleto = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            recalcularDiasEstoque();
+            if (isAdmin) { atualizarEstatisticas(); carregarDadosDashboard(); }
+            renderizarEstoque();
+            atualizarConsultasAbertas();
+        }, err => console.error('Erro estoque_blocado:', err));
+        if (isAdmin) {
+            db.collection("movimentacoes_wms").orderBy("timestamp", "desc").onSnapshot(snap => {
+                todasMovimentacoes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                carregarDadosDashboard();
+            }, err => console.error('Erro movimentacoes_wms:', err));
+            _conectarMonitorFEFOOriginal();
+        }
+    };
+
+    // ---- Datas locais (toISOString usa UTC: após 21h o filtro "hoje/mês" apontava para amanhã) + rótulos dos KPIs ----
+    const _iniciarAppOriginalV2 = iniciarApp;
+    iniciarApp = function () {
+        _iniciarAppOriginalV2();
+        const hoje = hojeISOLocal();
+        document.getElementById('filtro-mes-valor').value = hoje.substring(0, 7);
+        document.getElementById('filtro-dia-valor').value = hoje;
+        document.getElementById('filtro-de-valor').value = hoje;
+        document.getElementById('filtro-ate-valor').value = hoje;
+        const rot = { 'st-critico': 'CRÍTICOS (31-60D) · PL', 'st-retido': 'RETIDOS (≤30D) · PL', 'st-mov': 'GIRO HOJE · PL EXPEDIDOS' };
+        Object.entries(rot).forEach(([id, txt]) => { const h = document.getElementById(id)?.previousElementSibling; if (h) h.textContent = txt; });
+        processarFiltragemHistorica();
+    };
+    const _limparFiltrosOriginalV2 = limparFiltrosHistoricos;
+    limparFiltrosHistoricos = function () {
+        _limparFiltrosOriginalV2();
+        document.getElementById('filtro-mes-valor').value = hojeISOLocal().substring(0, 7);
+        processarFiltragemHistorica();
+    };
+
+    // ---- Dashboard: coerência entre KPIs, gráficos e tabelas ----
+    const _renderPaineisOriginalV2 = renderizarPaineisEGraticos;
+    renderizarPaineisEGraticos = function (dados) {
+        // A transferência interna gera 2 registros (-/+). Para volume/produtividade conta-se 1 vez (a perna "DE ..." fica só no log).
+        const base = dados.filter(m => !ehPernaEntradaTransf(m));
+        _renderPaineisOriginalV2(base);
+        try { corrigirPaineisDashboard(base, dados); } catch (e) { console.error('corrigirPaineisDashboard', e); }
+    };
+
+    function corrigirPaineisDashboard(base, dadosTodos) {
+        const queryMat = (document.getElementById('filtro-material').value || '').toLowerCase().trim();
+        const passaMat = m => {
+            if (!queryMat) return true;
+            return (m.material ? m.material.toString().toLowerCase() : '').includes(queryMat) || buscarDescricaoLocal(m.material).toLowerCase().includes(queryMat);
+        };
+        const hojeStr = new Date().toLocaleDateString('pt-BR');
+
+        // KPI: giro = paletes expedidos hoje (APANHA / TRANSFERENCIA / SEPARAÇÃO)
+        document.getElementById('st-mov').innerText = todasMovimentacoes.filter(m => m.data === hojeStr && ehExpedicao(m)).reduce((a, m) => a + qtdAbs(m), 0);
+
+        // 2. Mensal acumulado: respeita o filtro de material, ano corrente, sem dupla contagem
+        const ano = new Date().getFullYear().toString();
+        const mensal = {};
+        todasMovimentacoes.forEach(m => {
+            if (!m.data || ehPernaEntradaTransf(m) || !passaMat(m)) return;
+            const p = m.data.split('/'); if (p[2] !== ano) return;
+            mensal[p[1]] = (mensal[p[1]] || 0) + qtdAbs(m);
+        });
+        const cM = chartMensalInst;
+        if (cM) { cM.data.datasets[0].data = ["01","02","03","04","05","06","07","08","09","10","11","12"].map(k => mensal[k] || 0); cM.update(); }
+
+        // 6.1 / 6.2 / 7: "abastecimento" = saídas de expedição; setores fora da lista (acento/categoria nova) caem em AVULSO e o total fecha
+        const zera = () => Object.fromEntries(SETORES_LISTA.map(s => [s, 0]));
+        const sMes = zera(), sDia = zera(), sApanha = zera();
+        base.filter(ehExpedicao).forEach(m => {
+            const s = setorParaGrafico(m.material);
+            sMes[s] += qtdAbs(m);
+            if ((m.fluxo || '').toUpperCase().trim() === 'APANHA') sApanha[s] += qtdAbs(m);
+        });
+        const tipoTempo = document.getElementById('filtro-tipo-tempo').value;
+        const diaSel = document.getElementById('filtro-dia-valor').value;
+        const diaAlvo = (tipoTempo === 'dia' && diaSel) ? diaSel : hojeISOLocal();
+        const [aA, mM, dD] = diaAlvo.split('-'); const diaAlvoBR = `${dD}/${mM}/${aA}`;
+        todasMovimentacoes.filter(m => m.data === diaAlvoBR && ehExpedicao(m) && passaMat(m)).forEach(m => { sDia[setorParaGrafico(m.material)] += qtdAbs(m); });
+        const aplica = (inst, obj) => { if (inst) { inst.data.datasets[0].data = SETORES_LISTA.map(s => obj[s]); inst.update(); } };
+        aplica(chartSetorMInst, sMes); aplica(chartSetorDInst, sDia); aplica(chartApanhaSetorInst, sApanha);
+        const t62 = document.getElementById('chart-setor-diario')?.parentElement?.querySelector('.chart-title');
+        if (t62) t62.innerHTML = `⚡ 6.2 Setores Abastecidos (Visão Diária) <span>${diaAlvoBR}</span>`;
+
+        // Saúde do inventário em paletes (fecha com TOTAL PALLETS)
+        if (chartStatus) { const f = _paletesPorFaixa(); chartStatus.data.datasets[0].data = [f.boa, f.crit, f.ret]; chartStatus.update(); }
+
+        // Histórico consolidado: 50 linhas (eram 5) e mostra as duas pernas da transferência
+        const tb = document.getElementById('table-historico-consolidado');
+        tb.innerHTML = '';
+        dadosTodos.slice(0, 50).forEach(m => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${m.data}</td><td>${m.hora}</td><td><span style="color:${m.quantidade.toString().includes('+') ? 'var(--verde)' : 'var(--primary)'}; font-weight:700;">${m.fluxo}</span></td><td><b>${m.material}</b></td><td>${buscarDescricaoLocal(m.material)}</td><td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff">${buscarSetorLocal(m.material)}</span></td><td><b>${m.quantidade}</b></td><td>${m.login ? m.login.split('@')[0].toUpperCase() : 'N/A'}</td>`;
+            tb.appendChild(tr);
+        });
+    }
+
+    // ---- Registro de movimentação devolve o id (permite ligar FEFO ↔ movimento e evitar duplicidade no backfill) ----
+    registrarMovimentacao = async function (ender, mat, val, qtd, fluxo) {
+        const agora = new Date();
+        const ref = await db.collection("movimentacoes_wms").add({
+            endereco: ender, material: mat, validade: val, quantidade: qtd, fluxo,
+            login: usuarioLogado.email, data: agora.toLocaleDateString('pt-BR'), hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora
+        });
+        return ref.id;
+    };
+
+    registrarConformidadeFEFO = async function (ender, mat, valEscolhido, qtdRetirada, fluxo, login, extra) {
+        try {
+            extra = extra || {};
+            const avaliacao = extra.avaliacao || avaliarConformidadeFEFO(mat, valEscolhido, qtdRetirada);
+            const agora = new Date();
+            const doc = {
+                endereco: ender, material: mat, quantidade: qtdRetirada, fluxo, status: avaliacao.status,
+                valEscolhido: valEscolhido || null, valLoteAntigo: avaliacao.loteAntigo, login: login || null,
+                data: agora.toLocaleDateString('pt-BR'), hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora, origem: 'live'
+            };
+            if (extra.movId) doc.origemMovId = extra.movId;
+            await db.collection("fefo_conformidade").add(doc);
+        } catch (e) { console.error("Erro ao registrar conformidade FEFO:", e); }
+    };
+
+    // ---- RETIRADA: transação (sem perder baixa de outro operador), trava de duplo toque, FEFO avaliado ANTES da baixa ----
+    let _retiradaEmCurso = false;
+    processarRetirada = async function () {
+        if (_retiradaEmCurso || !itemParaRetirar) return;
+        const inp = document.getElementById('modal-input-qtd');
+        const v = parseInt(inp.value);
+        if (isNaN(v) || v <= 0 || v > itemParaRetirar.qtdAtual) return alert("Quantidade inválida.");
+        if (!navigator.onLine) return alert("Sem conexão. Aguarde o sinal voltar para confirmar a retirada.");
+        const destino = document.getElementById('modal-destino-mov').value;
+        const btn = document.getElementById('btn-confirmar-modal');
+        _retiradaEmCurso = true; if (btn) btn.disabled = true;
+        const it = itemParaRetirar;
+        try {
+            const aval = avaliarConformidadeFEFO(it.mat, it.val, v); // estado do estoque no momento da movimentação
+            const ref = db.collection("estoque_blocado").doc(it.id);
+            await db.runTransaction(async tx => {
+                const snap = await tx.get(ref);
+                if (!snap.exists) throw new Error("Esta posição já foi esvaziada por outro operador.");
+                const atual = parseInt(snap.data().qtd) || 0;
+                if (v > atual) throw new Error(`Saldo atual da posição é ${atual} PL (alterado por outro operador).`);
+                if (v === atual) tx.delete(ref); else tx.update(ref, { qtd: atual - v });
+            });
+            try { localStorage.setItem('wms_ultimo_destino', destino); } catch (e) {}
+            fecharModal();
+            const movId = await registrarMovimentacao(it.ender, it.mat, it.val, `-${v} PL`, destino);
+            await registrarConformidadeFEFO(it.ender, it.mat, it.val, v, destino, usuarioLogado?.email, { avaliacao: aval, movId });
+        } catch (e) { alert("Erro ao processar retirada: " + errMsg(e)); }
+        finally { _retiradaEmCurso = false; if (btn) btn.disabled = false; }
+    };
+    const _retirarMaterialOriginalV2 = retirarMaterial;
+    retirarMaterial = function () {
+        _retirarMaterialOriginalV2.apply(this, arguments);
+        _retiradaEmCurso = false;
+        try { const u = localStorage.getItem('wms_ultimo_destino'); if (u) document.getElementById('modal-destino-mov').value = u; } catch (e) {}
+    };
+
+    // ---- ENTRADA NO BLOCO ----
+    let _entradaEmCurso = false;
+    salvarEntradaBloco = async function () {
+        if (_entradaEmCurso) return;
+        const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
+        const mat = document.getElementById('eb-mat').value.trim();
+        const desc = document.getElementById('eb-desc').value;
+        const qtd = parseInt(document.getElementById('eb-qtd').value);
+        const inputVenc = document.getElementById('eb-venc').value;
+        if (!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos.");
+        if (qtd <= 0) return alert("Quantidade deve ser maior que zero.");
+        if (desc === "MATERIAL NÃO CADASTRADO") return alert("Código não cadastrado na base.");
+        const val = inputVenc.split('-').reverse().join('/');
+        const ocupante = estoqueCompleto.find(i => mesmoEnder(i.ender, ender));
+        const ocupado = ocupante && (parseInt(ocupante.qtd) || 0) > 0;
+        if (ocupado && ocupante.mat.toString() !== mat) return alert("Posição ocupada por outro material.");
+        if (ocupado && ocupante.valFrente !== val) return alert(`Posição já contém este material com validade ${ocupante.valFrente}. Use outra posição para a validade ${val} (não misturar lotes).`);
+        _entradaEmCurso = true;
+        try {
+            if (ocupante && ocupado) await db.collection("estoque_blocado").doc(ocupante.id).update({ qtd: firebase.firestore.FieldValue.increment(qtd) });
+            else if (ocupante) await db.collection("estoque_blocado").doc(ocupante.id).update({ ender, mat, qtd, dias: calcularDiasValidade(val, 0), valFrente: val, desc });
+            else await db.collection("estoque_blocado").add({ ender, mat, qtd, dias: calcularDiasValidade(val, 0), valFrente: val, desc });
+            await registrarMovimentacao(ender, mat, val, `+${qtd} PL`, `ENTRADA VIA ${document.getElementById('eb-origem').value}`);
+            ['eb-ender', 'eb-mat', 'eb-desc', 'eb-qtd', 'eb-venc'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('eb-label-dias').innerText = '';
+            navegar('retirar');
+        } catch (e) { alert("Erro ao salvar entrada: " + errMsg(e)); }
+        finally { _entradaEmCurso = false; }
+    };
+
+    // ---- TRANSFERÊNCIA INTERNA: atômica (origem e destino na mesma transação), sem destino=origem, sem misturar validades ----
+    let _transfEmCurso = false;
+    processarAberturaBlocado = async function () {
+        if (_transfEmCurso) return;
+        const dest = document.getElementById('ab-destino').value.toUpperCase().trim();
+        const qtd = parseInt(document.getElementById('ab-qtd').value);
+        const o = itemOrigemAbertura;
+        if (!o || isNaN(qtd) || qtd <= 0 || qtd > o.qtd || !dest) return alert("Dados inválidos.");
+        if (mesmoEnder(dest, o.ender)) return alert("Destino igual à origem.");
+        if (!navigator.onLine) return alert("Sem conexão. Aguarde o sinal voltar para confirmar a transferência.");
+        const ocup = estoqueCompleto.find(i => mesmoEnder(i.ender, dest) && i.id !== o.id && (parseInt(i.qtd) || 0) > 0);
+        if (ocup && ocup.mat.toString() !== o.mat.toString()) return alert("Destino ocupado.");
+        if (ocup && ocup.valFrente !== o.valFrente) return alert(`Destino já contém este material com validade ${ocup.valFrente} (origem: ${o.valFrente}). Não misture lotes.`);
+        _transfEmCurso = true;
+        try {
+            const refO = db.collection("estoque_blocado").doc(o.id);
+            const refD = ocup ? db.collection("estoque_blocado").doc(ocup.id) : db.collection("estoque_blocado").doc();
+            await db.runTransaction(async tx => {
+                const sO = await tx.get(refO);
+                if (!sO.exists) throw new Error("A posição de origem foi alterada por outro operador.");
+                const atualO = parseInt(sO.data().qtd) || 0;
+                if (qtd > atualO) throw new Error(`Saldo atual da origem é ${atualO} PL.`);
+                let sD = null; if (ocup) { sD = await tx.get(refD); if (!sD.exists) throw new Error("O destino foi alterado por outro operador."); }
+                if (qtd === atualO) tx.delete(refO); else tx.update(refO, { qtd: atualO - qtd });
+                if (sD) tx.update(refD, { qtd: (parseInt(sD.data().qtd) || 0) + qtd });
+                else tx.set(refD, { ender: dest, mat: o.mat, desc: o.desc, qtd, dias: calcularDiasValidade(o.valFrente, o.dias), valFrente: o.valFrente });
+            });
+            await registrarMovimentacao(o.ender, o.mat, o.valFrente, `-${qtd} PL`, `PARA ${dest}`);
+            await registrarMovimentacao(dest, o.mat, o.valFrente, `+${qtd} PL`, `DE ${o.ender}`);
+            ['ab-origem', 'ab-mat', 'ab-destino', 'ab-qtd'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('ab-qtd').placeholder = 'Saldo: 0';
+            itemOrigemAbertura = null;
+            navegar('retirar');
+        } catch (e) { alert("Erro na transferência: " + errMsg(e)); }
+        finally { _transfEmCurso = false; }
+    };
+
+    // ---- MOVIMENTAÇÃO DRIVE IN: liga o FEFO ao movimento e trava duplo toque ----
+    let _driveInEmCurso = false;
+    salvarMovimentacaoDriveIn = async function () {
+        if (_driveInEmCurso) return;
+        const mat = document.getElementById('mdi-mat').value.trim();
+        const desc = document.getElementById('mdi-desc').value;
+        const qtd = parseInt(document.getElementById('mdi-qtd').value);
+        const inputVenc = document.getElementById('mdi-venc').value;
+        const destino = document.getElementById('mdi-destino').value;
+        if (!mat || isNaN(qtd) || qtd <= 0 || !inputVenc || !destino) return alert("Preencha todos os campos.");
+        if (desc === "MATERIAL NAO CADASTRADO") return alert("Codigo nao cadastrado na base.");
+        const val = inputVenc.split('-').reverse().join('/');
+        _driveInEmCurso = true;
+        try {
+            const aval = avaliarConformidadeFEFO(mat, val, qtd);
+            const movId = await registrarMovimentacao("DRIVE-IN", mat, val, `-${qtd} PL`, destino);
+            await registrarConformidadeFEFO("DRIVE-IN", mat, val, qtd, destino, usuarioLogado?.email, { avaliacao: aval, movId });
+            alert("Movimentacao Drive In registrada com sucesso!");
+            ['mdi-mat', 'mdi-desc', 'mdi-qtd', 'mdi-venc'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('mdi-label-dias').innerText = '';
+            document.getElementById('mdi-destino').value = 'APANHA';
+        } catch (e) { alert("Erro ao registrar movimentacao: " + errMsg(e)); }
+        finally { _driveInEmCurso = false; }
+    };
+
+    // ---- EDIÇÃO ADMIN DE BIN: valida data, quantidade e conflito de posição ----
+    salvarEdicaoBin = async function () {
+        if (!itemEditandoBinId) return;
+        const novoEnder = document.getElementById('edit-bin-ender').value.trim().toUpperCase();
+        const novoMat = document.getElementById('edit-bin-mat').value.trim();
+        const novaValidade = document.getElementById('edit-bin-valfrente').value.trim();
+        const novaQtd = parseInt(document.getElementById('edit-bin-qtd').value);
+        if (!novoEnder || !novoMat) return alert("Posição e Material são obrigatórios.");
+        if (isNaN(novaQtd) || novaQtd < 0) return alert("Quantidade inválida.");
+        if (!/^\d{2}\/\d{2}\/\d{4}$/.test(novaValidade)) return alert("Validade deve estar no formato DD/MM/AAAA.");
+        const conflito = estoqueCompleto.find(i => i.id !== itemEditandoBinId && mesmoEnder(i.ender, novoEnder) && (parseInt(i.qtd) || 0) > 0);
+        if (conflito) return alert(`A posição ${novoEnder} já está ocupada (${conflito.mat}).`);
+        const itemAtual = estoqueCompleto.find(i => i.id === itemEditandoBinId);
+        const descLookup = buscarDescricaoLocal(novoMat);
+        const novaDesc = descLookup !== "N/A" ? descLookup : (itemAtual ? itemAtual.desc : '');
+        try {
+            await db.collection("estoque_blocado").doc(itemEditandoBinId).update({ ender: novoEnder, mat: novoMat, desc: novaDesc, valFrente: novaValidade, qtd: novaQtd, dias: calcularDiasValidade(novaValidade, 0) });
+            alert("Posição atualizada com sucesso!");
+            fecharModalEditarBin();
+        } catch (e) { alert("Erro ao salvar: " + errMsg(e)); }
+    };
+
+    // ---- IMPORTAR CSV: valida TUDO antes de apagar o estoque (antes, linha com <8 colunas dava erro DEPOIS de apagar) ----
+    importarCSV = async function (event) {
+        const arq = event.target.files[0];
+        if (!arq) return;
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const linhas = e.target.result.replace(/^\uFEFF/, '').split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
+                const validos = [], rejeitadas = [];
+                linhas.forEach((linha, idx) => {
+                    const c = linha.split(";");
+                    const ender = (c[0] || '').trim().toUpperCase(), mat = (c[1] || '').trim();
+                    const qtd = parseInt(((c[5] || '')).replace(/\D/g, ''));
+                    if (c.length < 6 || !ender || !mat || isNaN(qtd)) { rejeitadas.push(idx + 2); return; }
+                    const valFrente = (c[3] || '').trim();
+                    validos.push({ ender, mat, desc: (c[2] || '').trim(), valFrente, qtd, dias: calcularDiasValidade(valFrente, parseInt(((c[7] || '')).replace(/\D/g, '')) || 0) });
+                });
+                if (validos.length === 0) return alert("Nenhuma linha válida encontrada. O estoque NÃO foi alterado.");
+                const aviso = rejeitadas.length ? `\n\n⚠️ ${rejeitadas.length} linha(s) inválida(s) serão ignoradas (ex.: linha ${rejeitadas.slice(0, 5).join(', ')}).` : '';
+                if (!confirm(`Confirmar reset de estoque para ${validos.length} itens?${aviso}`)) return;
+                const snapshot = await db.collection("estoque_blocado").get();
+                let n = 0, b = db.batch();
+                for (const doc of snapshot.docs) { b.delete(doc.ref); if (++n % 400 === 0) { await b.commit(); b = db.batch(); } }
+                for (const v of validos) { b.set(db.collection("estoque_blocado").doc(), v); if (++n % 400 === 0) { await b.commit(); b = db.batch(); } }
+                await b.commit();
+                alert("Estoque Infinity Updated!");
+            } catch (err) { alert("Erro na importação: " + errMsg(err)); }
+            finally { event.target.value = ''; }
+        };
+        reader.readAsText(arq);
+    };
+
+    // ---- BACKFILL FEFO: não duplica expedições já registradas ao vivo ----
+    processarHistoricoFEFO = async function () {
+        const btn = document.getElementById('btn-processar-historico-fefo');
+        if (btn) { btn.disabled = true; btn.innerText = 'PROCESSANDO ANÁLISE RETROATIVA...'; }
+        try {
+            const snapMov = await db.collection("movimentacoes_wms").orderBy("timestamp", "asc").get();
+            const movimentos = snapMov.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const snapFefo = await db.collection("fefo_conformidade").get();
+            const jaProcessados = new Set();
+            const liveSemId = {}; // registros "live" antigos (sem origemMovId): casa por data+material+login+qtd e horário (±3s)
+            const segs = h => { const p = (h || '0:0:0').split(':').map(Number); return (p[0] || 0) * 3600 + (p[1] || 0) * 60 + (p[2] || 0); };
+            snapFefo.docs.forEach(doc => {
+                const d = doc.data();
+                if (d.origemMovId) jaProcessados.add(d.origemMovId);
+                else if (d.origem === 'live') { const k = `${d.data}|${d.material}|${d.login}|${parseInt(d.quantidade)}`; (liveSemId[k] = liveSemId[k] || []).push(segs(d.hora)); }
+            });
+            const casaLive = mov => {
+                const m = (mov.quantidade || '').toString().match(/(\d+)/);
+                const arr = liveSemId[`${mov.data}|${mov.material}|${mov.login}|${m ? parseInt(m[1]) : NaN}`];
+                if (!arr) return false;
+                const t = segs(mov.hora); const i = arr.findIndex(s => Math.abs(s - t) <= 3);
+                if (i >= 0) { arr.splice(i, 1); return true; }
+                return false;
+            };
+
+            const stockMap = {}; const resultados = [];
+            const lotesDisp = material => Object.entries(stockMap[material] || {}).filter(([, q]) => q > 0)
+                .map(([validade, qty]) => ({ validade, qty, _data: parseDataBRFEFO(validade) })).sort((a, b) => a._data - b._data);
+
+            movimentos.forEach(mov => {
+                const material = mov.material, validade = mov.validade;
+                const match = (mov.quantidade || '').toString().match(/([+-])\s*(\d+)/);
+                if (!material || !validade || !match) return;
+                const sinal = match[1], qtd = parseInt(match[2]);
+                stockMap[material] = stockMap[material] || {};
+                stockMap[material][validade] = stockMap[material][validade] || 0;
+                if (sinal === '+') { stockMap[material][validade] += qtd; return; }
+                if (FLUXOS_EXPEDICAO_FEFO.includes((mov.fluxo || '').toString().toUpperCase().trim()) && !jaProcessados.has(mov.id) && !casaLive(mov)) {
+                    const lotes = lotesDisp(material);
+                    let status = 'N/A', loteAntigo = null;
+                    if (lotes.length > 0) {
+                        const antigo = lotes[0]; loteAntigo = antigo.validade;
+                        if (validade === antigo.validade) status = 'OK';
+                        else if (parseDataBRFEFO(validade) > antigo._data) status = antigo.qty >= qtd ? 'FURO' : 'PARCIAL';
+                        else status = 'OK';
+                    }
+                    resultados.push({ endereco: mov.endereco || null, material, quantidade: qtd, fluxo: mov.fluxo, status, valEscolhido: validade, valLoteAntigo: loteAntigo, login: mov.login || null, data: mov.data, hora: mov.hora, timestamp: mov.timestamp, origem: 'historico', origemMovId: mov.id });
+                }
+                stockMap[material][validade] = Math.max(0, stockMap[material][validade] - qtd);
+            });
+            for (let i = 0; i < resultados.length; i += 450) {
+                const batch = db.batch();
+                resultados.slice(i, i + 450).forEach(r => batch.set(db.collection("fefo_conformidade").doc(), r));
+                await batch.commit();
+            }
+            alert(`Análise retroativa concluída: ${resultados.length} expedições históricas novas processadas.`);
+        } catch (e) { console.error(e); alert("Erro ao processar histórico FEFO: " + e.message); }
+        finally { if (btn) { btn.disabled = false; btn.innerText = '🔍 PROCESSAR HISTÓRICO FEFO (ANÁLISE RETROATIVA)'; } }
+    };
+
+    // Limpeza opcional (rodar no console UMA vez se o backfill antigo já foi executado): remove do histórico as expedições que já existem "live"
+    window.limparDuplicadosFEFO = async function () {
+        const snap = await db.collection("fefo_conformidade").get();
+        const segs = h => { const p = (h || '0:0:0').split(':').map(Number); return (p[0] || 0) * 3600 + (p[1] || 0) * 60 + (p[2] || 0); };
+        const live = {}; snap.docs.forEach(d => { const x = d.data(); if (x.origem === 'live') { const k = `${x.data}|${x.material}|${x.login}|${parseInt(x.quantidade)}`; (live[k] = live[k] || []).push(segs(x.hora)); } });
+        const dup = snap.docs.filter(d => { const x = d.data(); if (x.origem !== 'historico') return false; const arr = live[`${x.data}|${x.material}|${x.login}|${parseInt(x.quantidade)}`]; if (!arr) return false; const i = arr.findIndex(s => Math.abs(s - segs(x.hora)) <= 3); if (i >= 0) { arr.splice(i, 1); return true; } return false; });
+        if (!confirm(`${dup.length} registro(s) históricos duplicados de registros ao vivo. Remover?`)) return dup.length;
+        for (let i = 0; i < dup.length; i += 400) { const b = db.batch(); dup.slice(i, i + 400).forEach(d => b.delete(d.ref)); await b.commit(); }
+        return dup.length;
+    };
+
+    // ---- Agilidade operacional ----
+    const _navegarOriginalV2 = navegar;
+    navegar = function (tela) {
+        _navegarOriginalV2(tela);
+        if (tela === 'retirar') { const el = document.getElementById('search-input'); if (el) setTimeout(() => el.focus({ preventScroll: true }), 50); }
+    };
+    // Enter confirma (login, retirada) — evita buscar o botão na tela
+    [['login-mat', () => document.getElementById('login-senha').focus()], ['login-senha', () => tentarLogin()],
+     ['modal-input-qtd', () => processarRetirada()]].forEach(([id, fn]) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); fn(); } });
+    });
 
 </script>
 </body>
