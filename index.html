@@ -17,6 +17,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -136,6 +137,22 @@
         .autocomplete-items { position: absolute; border: 1px solid var(--glass-border); border-top: none; z-index: 99; top: 100%; left: 0; right: 0; background: #080808; max-height: 250px; overflow-y: auto; border-radius: 0 0 20px 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
         .autocomplete-item { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid var(--glass-border); font-size: 13px; }
         .autocomplete-item:hover { background-color: var(--primary); color: #fff; }
+        .shared-device-note { display:flex; align-items:flex-start; gap:10px; text-align:left; margin:18px 0 8px; padding:13px; border:1px solid rgba(0,242,255,.24); border-radius:14px; background:rgba(0,242,255,.05); color:#cbd5e1; font-size:11px; line-height:1.5; }
+        .shared-device-note input { width:18px; height:18px; accent-color:var(--neon-blue); flex:0 0 auto; margin-top:1px; }
+        .shared-device-badge { display:inline-block; margin-top:5px; padding:4px 8px; color:var(--neon-blue); border:1px solid rgba(0,242,255,.25); border-radius:8px; font-size:8px; letter-spacing:1px; font-weight:900; }
+        .header-switch-user { border:1px solid var(--glass-border); background:var(--glass); color:#fff; border-radius:11px; padding:9px 11px; font-size:10px; font-weight:800; cursor:pointer; }
+        .scan-btn { flex:0 0 auto; min-width:48px; min-height:48px; padding:10px 12px; border:1px solid rgba(0,242,255,.28); border-radius:14px; background:rgba(0,242,255,.08); color:var(--neon-blue); font-size:20px; cursor:pointer; }
+        .mic-btn { flex:0 0 auto; min-width:48px; min-height:48px; padding:10px; border:1px solid rgba(251,191,36,.34); border-radius:14px; background:rgba(251,191,36,.08); color:var(--critico); font-size:19px; cursor:pointer; }
+        .mic-btn.is-listening { background:rgba(255,62,62,.18); color:#fff; border-color:var(--primary); animation:micPulse 1s infinite; }
+        @keyframes micPulse { 50% { box-shadow:0 0 0 7px rgba(255,62,62,.12); } }
+        .scan-inline { display:flex; gap:9px; align-items:center; }
+        .scan-inline input { min-width:0; flex:1; }
+        #modal-scanner { display:none; position:fixed; inset:0; z-index:7000; background:rgba(0,0,0,.96); align-items:center; justify-content:center; padding:16px; }
+        .scanner-card { width:100%; max-width:520px; padding:22px; border-color:var(--neon-blue); }
+        #qr-reader { width:100%; min-height:260px; overflow:hidden; border-radius:16px; background:#080808; }
+        #qr-reader video { border-radius:16px; object-fit:cover; }
+        #qr-reader__dashboard_section_csr button, #qr-reader__dashboard_section_swaplink { color:#fff !important; }
+        @media (max-width:600px) { .header { padding-left:14px; padding-right:14px; gap:9px; } .header-switch-user { padding:8px; font-size:9px; } .form-box { padding:22px; } .scanner-card { padding:16px; } }
  
         .wms-table-container { width: 100%; overflow-x: auto; margin-top: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid var(--glass-border); }
         .wms-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
@@ -195,6 +212,7 @@
                 </div>
                 <input type="password" id="login-senha" placeholder="Senha" style="text-align: center;">
             </div>
+            <label class="shared-device-note"><input type="checkbox" id="login-aparelho-compartilhado" checked><span><b style="color:#fff;">Celular corporativo compartilhado</b><br>Encerra a sessão ao fechar o navegador. Entre com sua matrícula individual para manter a identificação de cada operação.</span></label>
             <button onclick="tentarLogin()" class="btn-action" style="width: 100%; padding: 20px; font-size: 15px; margin-top: 10px;">INICIAR OPERAÇÃO</button>
         </div>
     </div>
@@ -206,7 +224,9 @@
         <div style="flex-grow: 1;">
             <div id="user-name" style="font-weight: 900; font-size: 18px; letter-spacing: -0.5px; color: #fff;"></div>
             <div id="role-label" style="font-size: 9px; color: var(--primary); font-weight: 900; letter-spacing: 2px; text-transform: uppercase;"></div>
+            <div id="device-mode-badge" class="shared-device-badge">SESSÃO OPERACIONAL</div>
         </div>
+        <button class="header-switch-user" onclick="logout()" title="Finalizar operador atual e permitir outro acesso">TROCAR<br>OPERADOR</button>
         <div style="text-align: right;">
             <div id="current-time" style="font-size: 12px; font-weight: 800;">00:00</div>
             <div style="font-size: 9px; color: var(--text-secondary); text-transform: uppercase;">Online</div>
@@ -576,10 +596,12 @@
         </div>
 
         <div id="view-retirar">
-            <div class="search-wrapper input-with-toggle">
-                <input type="text" inputmode="numeric" id="search-input" placeholder="Pesquisar Código ou Posição..." oninput="renderizarEstoque()">
-                <div class="toggle-kb-btn" onclick="toggleKB('search-input')" style="right: 15px;">Abc</div>
+            <div class="search-wrapper scan-inline">
+                <input type="text" inputmode="numeric" id="search-input" placeholder="Pesquise ou leia material / posição..." oninput="renderizarEstoque()" onkeydown="if(event.key==='Enter') renderizarEstoque()">
+                <button class="scan-btn" onclick="abrirScanner('search-input')" aria-label="Ler material ou posição com a câmera" title="Ler QR ou código de barras">▦</button>
+                <div class="toggle-kb-btn" onclick="toggleKB('search-input')" style="right: 72px;">Abc</div>
             </div>
+            <p style="color:var(--text-secondary); font-size:10px; margin:-12px 4px 18px;">Use a câmera do celular ou um leitor Bluetooth/USB (leitura seguida de Enter). A baixa exige confirmação manual.</p>
             <div id="lista-estoque"></div>
         </div>
  
@@ -588,10 +610,10 @@
                 <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Entrada no Bloco</h3>
                 <div class="form-group"><label>Fluxo de Origem</label><select id="eb-origem"><option value="DRIVE IN">DRIVE IN</option><option value="RECEBIMENTO">RECEBIMENTO</option></select></div>
                 <div class="form-group"><label>Endereço de Destino</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-ender" placeholder="Ex: 205-14"><div class="toggle-kb-btn" onclick="toggleKB('eb-ender')">Abc</div></div>
+                    <div class="scan-inline"><div class="input-with-toggle" style="flex:1;"><input type="text" inputmode="numeric" id="eb-ender" placeholder="Ex: 301-14-2" onblur="normalizarCampoPosicao(this)"><div class="toggle-kb-btn" onclick="toggleKB('eb-ender')">Abc</div></div><button type="button" class="mic-btn" id="mic-btn-eb-ender" onclick="iniciarDitadoPosicao('eb-ender')" aria-label="Ditado por voz do endereço de destino" title="Ditar endereço">🎙</button><button type="button" class="scan-btn" onclick="abrirScanner('eb-ender')" aria-label="Ler endereço de destino">▦</button></div>
                 </div>
                 <div class="form-group" style="position: relative;"><label>Código do Material</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('eb-mat')">Abc</div></div>
+                    <div class="scan-inline"><div class="input-with-toggle" style="flex:1;"><input type="text" inputmode="numeric" id="eb-mat" placeholder="Código..." oninput="puxarDescricaoObrigatoria(this.value, 'eb-desc', 'eb-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('eb-mat')">Abc</div></div><button class="scan-btn" onclick="abrirScanner('eb-mat')" aria-label="Ler código do material">▦</button></div>
                     <div id="eb-mat-list" class="autocomplete-items"></div>
                 </div>
                 <div class="form-group"><label>Descrição do Material</label><input type="text" id="eb-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando código..."></div>
@@ -605,13 +627,14 @@
  
         <div id="view-abertura_blocado" style="display: none;">
             <div class="form-box glass-card">
-                <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Transferência Interna</h3>
+                <h3 style="color: #fff; margin-bottom: 12px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Transferência Interna</h3>
+                <p style="color:var(--text-secondary); font-size:11px; line-height:1.6; margin-bottom:24px;">Digite, escaneie ou toque no microfone e diga os seis algarismos um por um (ex.: <b style="color:#fff;">2-0-1-2-0-1</b> → <b style="color:var(--neon-blue);">201-20-1</b>).</p>
                 <div class="form-group"><label>Posição Origem</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-origem" placeholder="Ex: 201-14" onchange="carregarDadosOrigemAbertura(this.value)"><div class="toggle-kb-btn" onclick="toggleKB('ab-origem')">Abc</div></div>
+                    <div class="scan-inline"><div class="input-with-toggle" style="flex:1;"><input type="text" inputmode="numeric" id="ab-origem" placeholder="Ex: 201-20-1" onblur="normalizarCampoPosicao(this)" onchange="carregarDadosOrigemAbertura(this.value)"><div class="toggle-kb-btn" onclick="toggleKB('ab-origem')">Abc</div></div><button type="button" class="mic-btn" id="mic-btn-ab-origem" onclick="iniciarDitadoPosicao('ab-origem')" aria-label="Ditado por voz da posição de origem" title="Ditar posição">🎙</button><button type="button" class="scan-btn" onclick="abrirScanner('ab-origem')" aria-label="Ler posição de origem">▦</button></div>
                 </div>
                 <div class="form-group"><label>Material Identificado</label><input type="text" id="ab-mat" readonly style="opacity: 0.5;"></div>
                 <div class="form-group"><label>Posição de Destino</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="ab-destino" placeholder="Ex: 205-20"><div class="toggle-kb-btn" onclick="toggleKB('ab-destino')">Abc</div></div>
+                    <div class="scan-inline"><div class="input-with-toggle" style="flex:1;"><input type="text" inputmode="numeric" id="ab-destino" placeholder="Ex: 301-14-2" onblur="normalizarCampoPosicao(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();normalizarCampoPosicao(this);}"><div class="toggle-kb-btn" onclick="toggleKB('ab-destino')">Abc</div></div><button type="button" class="mic-btn" id="mic-btn-ab-destino" onclick="iniciarDitadoPosicao('ab-destino')" aria-label="Ditado por voz da posição de destino" title="Ditar posição">🎙</button><button type="button" class="scan-btn" onclick="abrirScanner('ab-destino')" aria-label="Ler posição de destino">▦</button></div>
                 </div>
                 <div class="form-group"><label>Qtd para Mover</label>
                     <div class="input-with-toggle"><input type="text" inputmode="decimal" id="ab-qtd" placeholder="Saldo: 0"><div class="toggle-kb-btn" onclick="toggleKB('ab-qtd')">Abc</div></div>
@@ -626,7 +649,7 @@
                 <h3 style="color: #fff; margin-bottom: 30px; font-weight: 900; font-size: 22px; letter-spacing: -1px;">Movimentacao Drive In</h3>
                 <div class="form-group"><label>Fluxo de Origem</label><select id="mdi-origem"><option value="DRIVE IN">DRIVE IN</option></select></div>
                 <div class="form-group" style="position: relative;"><label>Codigo do Material</label>
-                    <div class="input-with-toggle"><input type="text" inputmode="numeric" id="mdi-mat" placeholder="Codigo..." oninput="puxarDescricaoMovDriveIn(this.value, 'mdi-desc', 'mdi-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('mdi-mat')">Abc</div></div>
+                    <div class="scan-inline"><div class="input-with-toggle" style="flex:1;"><input type="text" inputmode="numeric" id="mdi-mat" placeholder="Codigo..." oninput="puxarDescricaoMovDriveIn(this.value, 'mdi-desc', 'mdi-mat-list')"><div class="toggle-kb-btn" onclick="toggleKB('mdi-mat')">Abc</div></div><button class="scan-btn" onclick="abrirScanner('mdi-mat')" aria-label="Ler código do material">▦</button></div>
                     <div id="mdi-mat-list" class="autocomplete-items"></div>
                 </div>
                 <div class="form-group"><label>Descricao do Material</label><input type="text" id="mdi-desc" readonly style="opacity: 0.6; background: rgba(0,0,0,0.2);" placeholder="Aguardando codigo..."></div>
@@ -641,6 +664,15 @@
     </div>
 </div>
  
+<div id="modal-scanner" role="dialog" aria-modal="true" aria-labelledby="scanner-title">
+    <div class="scanner-card glass-card">
+        <h3 id="scanner-title" style="font-weight:900; margin-bottom:8px;">Leitor QR / Código de barras</h3>
+        <p id="scanner-status" style="font-size:12px; color:var(--text-secondary); margin-bottom:14px;">Aponte a câmera para a etiqueta. O código será preenchido no campo selecionado.</p>
+        <div id="qr-reader"></div>
+        <button class="btn-action" style="width:100%; margin-top:16px; background:#334155; box-shadow:none;" onclick="fecharScanner()">CANCELAR LEITURA</button>
+    </div>
+</div>
+
 <div id="modal-retirada">
     <div class="modal-content glass-card">
         <h3 id="modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Retirada</h3>
@@ -714,6 +746,11 @@
     let diasCalculados = 0;
     let itemParaRetirar = null;
     let itemOrigemAbertura = null;
+    let leitorCodigo = null;
+    let campoAlvoScanner = null;
+    let processandoLeitura = false;
+    let reconhecimentoAtivo = null;
+    let alvoDitadoAtivo = null;
  
     // Instâncias Globais de Gráficos
     let chartDiarioInst = null;
@@ -732,7 +769,190 @@
     window.addEventListener('offline', () => document.getElementById('network-status').style.display = 'block');
  
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
-    function logout() { auth.signOut().then(() => { localStorage.removeItem('wms_session'); location.reload(); }); }
+    function logout() {
+        sessionStorage.removeItem('wms_session');
+        localStorage.removeItem('wms_session');
+        auth.signOut().finally(() => location.reload());
+    }
+
+    function iniciarSessaoOperador(usuario) {
+        const compartilhado = document.getElementById('login-aparelho-compartilhado')?.checked !== false;
+        sessionStorage.removeItem('wms_session');
+        localStorage.removeItem('wms_session');
+        (compartilhado ? sessionStorage : localStorage).setItem('wms_session', JSON.stringify(usuario));
+    }
+
+    function extrairCodigoLido(valor, alvo) {
+        let codigo = String(valor || '').trim();
+        if (!codigo) return '';
+        try {
+            const dados = JSON.parse(codigo);
+            if (dados && typeof dados === 'object') {
+                const alvoMaterial = /mat|material|mdi-mat/i.test(alvo || '');
+                const chaves = alvoMaterial
+                    ? ['mat','material','codigo','código','code','gtin','ean','barcode']
+                    : ['ender','bin','posicao','posição','local','location','codigo','código','code','mat','material'];
+                const chave = chaves.find(k => dados[k] !== undefined && dados[k] !== null && String(dados[k]).trim());
+                if (chave) codigo = String(dados[chave]).trim();
+            }
+        } catch (_) {}
+        if (/^https?:\/\//i.test(codigo)) {
+            try {
+                const url = new URL(codigo);
+                const candidatas = ['code','codigo','código','mat','material','bin','ender','posicao'];
+                for (const chave of candidatas) { const valorUrl = url.searchParams.get(chave); if (valorUrl) { codigo = valorUrl.trim(); break; } }
+            } catch (_) {}
+        }
+        codigo = codigo.replace(/^(?:BIN|ENDER|POSI[CÇ][AÃ]O|LOCAL|MAT(?:ERIAL)?|COD(?:IGO)?)\s*[:=]\s*/i, '').trim();
+        return codigo;
+    }
+
+    function normalizarPosicaoWms(valor) {
+        const original = String(valor ?? '').trim();
+        const compacto = original.replace(/[\s-]/g, '');
+        if (/^\d{6}$/.test(compacto)) return `${compacto.slice(0,3)}-${compacto.slice(3,5)}-${compacto.slice(5,6)}`;
+        return original.toUpperCase();
+    }
+
+    function normalizarCampoPosicao(campo) {
+        if (campo) campo.value = normalizarPosicaoWms(campo.value);
+    }
+
+    function digitosDaFala(transcricao) {
+        const texto = String(transcricao || '').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, ' ');
+        const numeros = texto.match(/\d/g)?.join('') || '';
+        if (numeros.length === 6) return numeros;
+        const mapa = { zero:'0', um:'1', uma:'1', dois:'2', duas:'2', tres:'3', quatro:'4', cinco:'5', seis:'6', meia:'6', sete:'7', oito:'8', nove:'9' };
+        const palavras = texto.replace(/\b(posicao|endereco|bin|local|codigo|e|hifen|traco)\b/g, ' ').match(/[a-z]+/g) || [];
+        if (palavras.length && palavras.every(p => mapa[p] !== undefined)) {
+            const falados = palavras.map(p => mapa[p]).join('');
+            if (falados.length === 6) return falados;
+        }
+        const valores = { zero:0, um:1, uma:1, dois:2, duas:2, tres:3, quatro:4, cinco:5, seis:6, sete:7, oito:8, nove:9, dez:10, onze:11, doze:12, treze:13, quatorze:14, catorze:14, quinze:15, dezesseis:16, dezessete:17, dezoito:18, dezenove:19, vinte:20, trinta:30, quarenta:40, cinquenta:50, sessenta:60, setenta:70, oitenta:80, noventa:90, cem:100, cento:100, duzentos:200, trezentos:300, quatrocentos:400, quinhentos:500, seiscentos:600, setecentos:700, oitocentos:800, novecentos:900 };
+        if (palavras.length && palavras.every(p => p === 'mil' || valores[p] !== undefined)) {
+            let total = 0, grupo = 0;
+            for (const palavra of palavras) {
+                if (palavra === 'mil') { total += (grupo || 1) * 1000; grupo = 0; }
+                else grupo += valores[palavra];
+            }
+            const numeroFalado = total + grupo;
+            if (numeroFalado >= 100000 && numeroFalado <= 999999) return String(numeroFalado);
+        }
+        return '';
+    }
+
+    function aplicarDitadoPosicao(alvo, transcricao) {
+        const campo = document.getElementById(alvo);
+        if (!campo) return;
+        const digitos = digitosDaFala(transcricao);
+        if (digitos.length !== 6) {
+            alert('Não consegui reconhecer os seis algarismos. Diga-os um por um, por exemplo: dois, zero, um, dois, zero, um.');
+            campo.focus();
+            return;
+        }
+        campo.value = normalizarPosicaoWms(digitos);
+        campo.dispatchEvent(new Event('input', { bubbles: true }));
+        campo.dispatchEvent(new Event('change', { bubbles: true }));
+        campo.focus({ preventScroll: true });
+    }
+
+    function iniciarDitadoPosicao(alvo) {
+        const Reconhecimento = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Reconhecimento) return alert('O ditado por voz não está disponível neste navegador. Use Chrome/Edge em HTTPS, ou digite/escaneie a posição.');
+        if (reconhecimentoAtivo) {
+            try { reconhecimentoAtivo.abort(); } catch (_) {}
+            reconhecimentoAtivo = null;
+        }
+        const reconhecimento = new Reconhecimento();
+        reconhecimento.lang = 'pt-BR';
+        reconhecimento.interimResults = false;
+        reconhecimento.maxAlternatives = 5;
+        reconhecimentoAtivo = reconhecimento;
+        alvoDitadoAtivo = alvo;
+        const botao = document.getElementById(`mic-btn-${alvo}`);
+        if (botao) { botao.classList.add('is-listening'); botao.textContent = '●'; botao.setAttribute('aria-label', 'Ouvindo posição'); }
+        reconhecimento.onresult = evento => {
+            const alternativas = Array.from(evento.results?.[0] || []).map(item => item.transcript);
+            const melhor = alternativas.find(texto => digitosDaFala(texto).length === 6) || alternativas[0] || '';
+            aplicarDitadoPosicao(alvoDitadoAtivo, melhor);
+        };
+        reconhecimento.onerror = evento => {
+            const mensagens = { 'not-allowed':'Permita o acesso ao microfone nas configurações do navegador.', 'no-speech':'Não detectei fala. Toque no microfone e tente novamente.', 'audio-capture':'Não encontrei um microfone disponível.' };
+            if (evento.error !== 'aborted') alert(mensagens[evento.error] || `Falha no ditado: ${evento.error || 'verifique o microfone'}.`);
+        };
+        reconhecimento.onend = () => {
+            if (botao) { botao.classList.remove('is-listening'); botao.textContent = '🎙'; botao.setAttribute('aria-label', 'Ditado por voz da posição'); }
+            if (reconhecimentoAtivo === reconhecimento) reconhecimentoAtivo = null;
+        };
+        try { reconhecimento.start(); }
+        catch (erro) {
+            if (botao) { botao.classList.remove('is-listening'); botao.textContent = '🎙'; }
+            reconhecimentoAtivo = null;
+            alert('Não foi possível iniciar o microfone. Aguarde um instante e tente novamente.');
+        }
+    }
+
+    function aplicarCodigoLido(valor, alvo) {
+        const campo = document.getElementById(alvo);
+        if (!campo) return alert('Campo de leitura não encontrado.');
+        let codigo = extrairCodigoLido(valor, alvo);
+        if (['eb-ender','ab-origem','ab-destino'].includes(alvo)) codigo = normalizarPosicaoWms(codigo);
+        if (!codigo) return alert('A etiqueta não contém um código válido.');
+        campo.value = codigo;
+        campo.dispatchEvent(new Event('input', { bubbles: true }));
+        campo.dispatchEvent(new Event('change', { bubbles: true }));
+        campo.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        if (alvo === 'search-input') renderizarEstoque();
+        campo.focus({ preventScroll: true });
+    }
+
+    async function abrirScanner(alvo) {
+        campoAlvoScanner = alvo;
+        const modal = document.getElementById('modal-scanner');
+        const status = document.getElementById('scanner-status');
+        modal.style.display = 'flex';
+        status.textContent = 'Iniciando câmera...';
+        if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+            status.textContent = 'Câmera indisponível neste endereço. Use HTTPS e permita o acesso à câmera, ou conecte um leitor Bluetooth/USB.';
+            return;
+        }
+        if (!window.Html5Qrcode) {
+            status.textContent = 'A biblioteca do leitor não carregou. Conecte um leitor Bluetooth/USB e leia o código diretamente no campo.';
+            return;
+        }
+        try {
+            if (leitorCodigo) { try { await leitorCodigo.stop(); } catch (_) {} try { leitorCodigo.clear(); } catch (_) {} leitorCodigo = null; }
+            const formatos = window.Html5QrcodeSupportedFormats;
+            const suportados = ['QR_CODE','EAN_13','EAN_8','UPC_A','UPC_E','CODE_128','CODE_39','ITF','DATA_MATRIX','CODABAR']
+                .map(nome => formatos?.[nome]).filter(valor => valor !== undefined);
+            leitorCodigo = new Html5Qrcode('qr-reader', { formatsToSupport: suportados, verbose: false });
+            await leitorCodigo.start({ facingMode: 'environment' }, { fps: 12, qrbox: (w,h) => ({ width: Math.min(w * 0.82, 320), height: Math.min(h * 0.42, 220) }), aspectRatio: 1.4 }, async (texto) => {
+                if (processandoLeitura) return;
+                processandoLeitura = true;
+                const alvoAtual = campoAlvoScanner;
+                await fecharScanner();
+                aplicarCodigoLido(texto, alvoAtual);
+                processandoLeitura = false;
+            }, () => {});
+            status.textContent = 'Câmera ativa. Aponte para o QR code ou código de barras.';
+        } catch (erro) {
+            status.textContent = erro?.name === 'NotAllowedError'
+                ? 'Permita o acesso à câmera nas configurações do navegador para continuar.'
+                : 'Não foi possível iniciar a câmera. Verifique a permissão e se o endereço usa HTTPS; leitor Bluetooth/USB também funciona.';
+            console.warn('Scanner indisponível:', erro);
+        }
+    }
+
+    async function fecharScanner() {
+        const modal = document.getElementById('modal-scanner');
+        if (leitorCodigo) {
+            try { if (leitorCodigo.isScanning) await leitorCodigo.stop(); } catch (_) {}
+            try { leitorCodigo.clear(); } catch (_) {}
+            leitorCodigo = null;
+        }
+        if (modal) modal.style.display = 'none';
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('modal-scanner')?.style.display === 'flex') fecharScanner(); });
  
     async function tentarLogin() {
         const mat = document.getElementById('login-mat').value.trim();
@@ -742,7 +962,7 @@
             await auth.signInWithEmailAndPassword(email, senha);
             const doc = await db.collection("usuarios_wms").doc(email).get();
             usuarioLogado = doc.exists ? { ...doc.data(), email } : { nome: mat, perfil: "OPERADOR", email };
-            localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
+            iniciarSessaoOperador(usuarioLogado);
             iniciarApp();
         } catch (e) { alert("Credenciais incorretas."); }
     }
@@ -753,6 +973,8 @@
         document.getElementById('user-name').innerText = usuarioLogado.nome;
         const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
         document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
+        const badgeDispositivo = document.getElementById('device-mode-badge');
+        if (badgeDispositivo) badgeDispositivo.innerText = sessionStorage.getItem('wms_session') ? 'CELULAR COMPARTILHADO · SESSÃO TEMPORÁRIA' : 'SESSÃO PESSOAL · MANTIDA NESTE DISPOSITIVO';
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
         
         const hoje = new Date();
@@ -1288,14 +1510,15 @@
         try {
             if (v === itemParaRetirar.qtdAtual) { await db.collection("estoque_blocado").doc(itemParaRetirar.id).delete(); } 
             else { await db.collection("estoque_blocado").doc(itemParaRetirar.id).update({ qtd: itemParaRetirar.qtdAtual - v }); }
-            registrarMovimentacao(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, `-${v} PL`, document.getElementById('modal-destino-mov').value);
-            registrarConformidadeFEFO(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, v, document.getElementById('modal-destino-mov').value, usuarioLogado?.email);
+            await registrarMovimentacao(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, `-${v} PL`, document.getElementById('modal-destino-mov').value);
+            await registrarConformidadeFEFO(itemParaRetirar.ender, itemParaRetirar.mat, itemParaRetirar.val, v, document.getElementById('modal-destino-mov').value, usuarioLogado?.email);
             fecharModal();
         } catch (e) { alert("Erro ao processar retirada."); }
     }
  
     async function salvarEntradaBloco() {
-        const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
+        const ender = normalizarPosicaoWms(document.getElementById('eb-ender').value);
+        document.getElementById('eb-ender').value = ender;
         const mat = document.getElementById('eb-mat').value.trim();
         const desc = document.getElementById('eb-desc').value;
         const qtd = parseInt(document.getElementById('eb-qtd').value);
@@ -1313,13 +1536,16 @@
     }
  
     function carregarDadosOrigemAbertura(ender) {
+        ender = normalizarPosicaoWms(ender);
+        document.getElementById('ab-origem').value = ender;
         const item = estoqueCompleto.find(i => i.ender.toLowerCase() === ender.toLowerCase().trim());
         if (item) { itemOrigemAbertura = item; document.getElementById('ab-mat').value = item.mat; document.getElementById('ab-qtd').placeholder = `Max: ${item.qtd}`; } 
         else { itemOrigemAbertura = null; document.getElementById('ab-mat').value = ''; }
     }
  
     async function processarAberturaBlocado() {
-        const dest = document.getElementById('ab-destino').value.toUpperCase().trim();
+        const dest = normalizarPosicaoWms(document.getElementById('ab-destino').value);
+        document.getElementById('ab-destino').value = dest;
         const qtd = parseInt(document.getElementById('ab-qtd').value);
         if(!itemOrigemAbertura || isNaN(qtd) || qtd <= 0 || qtd > itemOrigemAbertura.qtd || !dest) return alert("Dados inválidos.");
         const ocup = estoqueCompleto.find(i => i.ender === dest);
@@ -1841,7 +2067,7 @@
     }
  
     
-window.onload = () => { const session = localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
+window.onload = () => { const session = sessionStorage.getItem('wms_session') || localStorage.getItem('wms_session'); if (session) { usuarioLogado = JSON.parse(session); iniciarApp(); } };
  
     // SCREEN WAKE LOCK - Mantém a tela sempre ativa
     let wakeLock = null;
@@ -1883,6 +2109,8 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         document.getElementById('user-name').innerText = usuarioLogado.nome;
         const isAdmin = usuarioLogado.perfil?.toUpperCase() === "ADMIN";
         document.getElementById('role-label').innerText = isAdmin ? "OPERADOR MASTER" : "OPERADOR LOGÍSTICO";
+        const badgeDispositivo = document.getElementById('device-mode-badge');
+        if (badgeDispositivo) badgeDispositivo.innerText = sessionStorage.getItem('wms_session') ? 'CELULAR COMPARTILHADO · SESSÃO TEMPORÁRIA' : 'SESSÃO PESSOAL · MANTIDA NESTE DISPOSITIVO';
         document.getElementById('btn-nav-admin').style.display = isAdmin ? 'block' : 'none';
         
         const hoje = new Date();
