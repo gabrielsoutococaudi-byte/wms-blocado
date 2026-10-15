@@ -281,6 +281,14 @@
                 </div>
             </div>
  
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <button class="expand-btn" onclick="expandirOcupacao()">Expandir ⛶</button>
+                    <div class="chart-title">🏭 Ocupação do Armazém por Dia <span id="ocup-resumo">(Capacidade máx. 14.000 PL)</span></div>
+                    <canvas id="chart-ocupacao-dia" style="max-height: 280px;"></canvas>
+                </div>
+            </div>
+
             <div class="dashboard-grid-3">
                 <div class="chart-box glass-card">
                     <button class="expand-btn" onclick="expandirGrafico('chart-setor-mensal', '6.1 Setores Abastecidos (Visão Mensal)')">Expandir ⛶</button>
@@ -3340,6 +3348,102 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
             renderizarEstoque();
             setTimeout(() => busca.focus({ preventScroll: true }), 50);
         }
+    };
+
+    // ================= OCUPAÇÃO DO ARMAZÉM POR DIA (capacidade máxima 14.000 PL) - MÓDULO ADITIVO =================
+    // Saldo de fim de dia reconstruído de trás para frente: hoje = estoque atual; dia anterior = saldo do dia − movimentação líquida do dia.
+    // Considera entradas (+) e saídas (−) do bloco; transferências internas se anulam; DRIVE-IN não entra (nunca esteve no estoque do bloco).
+    const CAPACIDADE_MAX_PL = 14000;
+    let chartOcupacaoInst = null;
+
+    function ocupacaoAtualPL() { return estoqueCompleto.reduce((a, i) => a + Math.max(0, parseInt(i.qtd) || 0), 0); }
+
+    function faixaOcupacao() {
+        const tipo = document.getElementById('filtro-tipo-tempo').value, hoje = hojeISOLocal();
+        let ini, fim;
+        if (tipo === 'periodo') {
+            ini = document.getElementById('filtro-de-valor').value || hoje; fim = document.getElementById('filtro-ate-valor').value || hoje;
+        } else { // mês selecionado (ou o mês do dia escolhido)
+            const ym = (tipo === 'dia' ? (document.getElementById('filtro-dia-valor').value || hoje).substring(0, 7) : (document.getElementById('filtro-mes-valor').value || hoje.substring(0, 7)));
+            const [y, m] = ym.split('-').map(Number);
+            ini = `${ym}-01`; fim = hojeISOLocal(new Date(y, m, 0));
+        }
+        if (fim > hoje) fim = hoje;
+        if (ini > fim) ini = fim;
+        return { ini, fim };
+    }
+
+    function calcularOcupacaoDiaria(isoIni) {
+        const delta = {};
+        todasMovimentacoes.forEach(m => {
+            if (!m.data || (m.endereco || '').toString().toUpperCase() === 'DRIVE-IN') return;
+            const mt = (m.quantidade || '').toString().match(/([+-])\s*(\d+)/); if (!mt) return;
+            const [d, mo, a] = m.data.split('/'); const iso = `${a}-${mo}-${d}`;
+            delta[iso] = (delta[iso] || 0) + (mt[1] === '-' ? -1 : 1) * parseInt(mt[2]);
+        });
+        const mapa = {}; let ocup = ocupacaoAtualPL();
+        for (let cur = new Date(hojeISOLocal() + 'T12:00:00'); hojeISOLocal(cur) >= isoIni; cur = new Date(cur.getTime() - 86400000)) {
+            const iso = hojeISOLocal(cur); mapa[iso] = Math.max(0, ocup); ocup -= (delta[iso] || 0);
+        }
+        return mapa;
+    }
+
+    function opcoesOcupacao(grande, nDias) {
+        const cor = grande ? '#fff' : '#94a3b8';
+        const pct = v => (v / CAPACIDADE_MAX_PL * 100);
+        return {
+            responsive: true, maintainAspectRatio: !grande,
+            plugins: {
+                legend: { display: true, position: grande ? 'bottom' : 'top', labels: { color: cor, font: { size: grande ? 16 : 11, weight: '800' } } },
+                tooltip: { callbacks: { label: c => c.dataset.type === 'line' ? `Capacidade: ${CAPACIDADE_MAX_PL.toLocaleString('pt-BR')} PL` : `${c.parsed.y.toLocaleString('pt-BR')} PL (${pct(c.parsed.y).toFixed(1).replace('.', ',')}% da capacidade)` } },
+                datalabels: { display: c => c.datasetIndex === 0 && nDias <= (grande ? 31 : 16), color: '#fff', anchor: 'end', align: 'end', font: { size: grande ? 13 : 10, weight: '900' }, formatter: v => Math.round(pct(v)) + '%' }
+            },
+            scales: {
+                y: { min: 0, suggestedMax: CAPACIDADE_MAX_PL * 1.08, grid: { color: grande ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.03)' }, ticks: { color: grande ? '#fff' : undefined, callback: v => v.toLocaleString('pt-BR') } },
+                x: { grid: { display: false }, ticks: { color: grande ? '#fff' : undefined } }
+            }
+        };
+    }
+
+    function renderizarOcupacao() {
+        const canvas = document.getElementById('chart-ocupacao-dia'); if (!canvas) return;
+        const { ini, fim } = faixaOcupacao();
+        const mapa = calcularOcupacaoDiaria(ini);
+        const dias = [];
+        for (let c = new Date(ini + 'T12:00:00'); hojeISOLocal(c) <= fim && dias.length < 366; c = new Date(c.getTime() + 86400000)) dias.push(hojeISOLocal(c));
+        const valores = dias.map(d => mapa[d] ?? 0);
+        const cores = valores.map(v => v >= CAPACIDADE_MAX_PL * 0.95 ? '#f87171' : (v >= CAPACIDADE_MAX_PL * 0.8 ? '#fbbf24' : '#34d399'));
+        if (chartOcupacaoInst) chartOcupacaoInst.destroy();
+        chartOcupacaoInst = new Chart(canvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: dias.map(d => `${d.substring(8, 10)}/${d.substring(5, 7)}`),
+                datasets: [
+                    { type: 'bar', label: 'Ocupação (PL)', data: valores, backgroundColor: cores, order: 2 },
+                    { type: 'line', label: `Capacidade máx. (${CAPACIDADE_MAX_PL.toLocaleString('pt-BR')} PL)`, data: valores.map(() => CAPACIDADE_MAX_PL), borderColor: '#f87171', borderDash: [6, 6], borderWidth: 2, pointRadius: 0, fill: false, order: 1 }
+                ]
+            },
+            options: opcoesOcupacao(false, dias.length)
+        });
+        const atual = ocupacaoAtualPL(), p = atual / CAPACIDADE_MAX_PL * 100;
+        const resumo = document.getElementById('ocup-resumo');
+        if (resumo) resumo.textContent = `(Hoje: ${atual.toLocaleString('pt-BR')} PL · ${p.toFixed(1).replace('.', ',')}% de ${CAPACIDADE_MAX_PL.toLocaleString('pt-BR')}${atual > CAPACIDADE_MAX_PL ? ' ⚠️ ACIMA DA CAPACIDADE' : ''})`;
+    }
+
+    function expandirOcupacao() {
+        if (!chartOcupacaoInst) return;
+        document.getElementById('modal-grafico-titulo').innerText = 'Ocupação do Armazém por Dia';
+        document.getElementById('modal-grafico-expandido').style.display = 'flex';
+        if (chartExpandidoInst) chartExpandidoInst.destroy();
+        chartExpandidoInst = new Chart(document.getElementById('canvas-expanded-render').getContext('2d'), {
+            type: 'bar', data: JSON.parse(JSON.stringify(chartOcupacaoInst.config.data)), options: opcoesOcupacao(true, chartOcupacaoInst.config.data.labels.length)
+        });
+    }
+
+    const _renderPaineisOriginalV5 = renderizarPaineisEGraticos;
+    renderizarPaineisEGraticos = function (dados) {
+        _renderPaineisOriginalV5(dados);
+        try { renderizarOcupacao(); } catch (e) { console.error('renderizarOcupacao', e); }
     };
 
 </script>
