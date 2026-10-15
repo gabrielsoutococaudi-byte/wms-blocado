@@ -3329,6 +3329,19 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         const v = $p('view-posicoes'); if (v && v.style.display === 'block') renderizarTabelaPosicoes();
     };
 
+    // ---- Após dar baixa com sucesso: limpa a busca e deixa o campo pronto para o próximo código ----
+    const _processarRetiradaV3 = processarRetirada;
+    processarRetirada = async function () {
+        await _processarRetiradaV3.apply(this, arguments);
+        const modal = document.getElementById('modal-retirada');
+        if (modal && modal.style.display === 'none') { // modal só fecha quando a baixa foi concluída
+            const busca = document.getElementById('search-input');
+            busca.value = '';
+            renderizarEstoque();
+            setTimeout(() => busca.focus({ preventScroll: true }), 50);
+        }
+    };
+
 </script>
 </body>
 </html>
