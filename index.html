@@ -148,6 +148,12 @@
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
     </style>
+<style>
+    /* Menu lateral: rolagem quando há muitas opções e "Encerrar sessão" sempre visível no rodapé */
+    .sidebar { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding-bottom: env(safe-area-inset-bottom); }
+    .sidebar button[onclick="logout()"] { position: sticky; bottom: 0; margin-top: 16px !important; padding-bottom: calc(16px + env(safe-area-inset-bottom)); background: rgba(5, 5, 5, 0.98); z-index: 2; }
+    @media (max-height: 760px) { .sidebar button { padding-top: 11px; padding-bottom: 11px; margin-top: 4px; margin-bottom: 4px; } }
+</style>
 </head>
 <body>
  
