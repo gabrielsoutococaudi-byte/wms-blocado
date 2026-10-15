@@ -174,6 +174,7 @@
     <button id="btn-nav-ls25" onclick="abrirLS25()" style="display: none;">📦 LS25 - CONTEÚDO DO BIN</button>
     <button id="btn-nav-ls26" onclick="abrirLS26()" style="display: none;">📈 LS26 - ESTOQUE TOTAL DO MATERIAL</button>
     <button id="btn-nav-ls03n" onclick="abrirLS03N()" style="display: none;">🗂️ LS03N - CADASTRO DO BIN</button>
+    <button id="btn-nav-posicoes" onclick="abrirPosicoes()" style="display: none;">📍 POSIÇÕES E HISTÓRICO</button>
     <button onclick="navegar('retirar')">📦 PESQUISAR ESTOQUE</button>
     <button onclick="navegar('entrada_bloco')">🚙 ENTRADA NO BLOCO</button>
         <button onclick="navegar('abertura_blocado')">🔄 MOVIMENTAÇÃO INTERNA</button>
@@ -575,6 +576,55 @@
             <div id="ls03n-vazio" class="glass-card" style="padding:35px; text-align:center; color:var(--text-secondary); font-size:13px; display:block;">Informe uma posição para consultar os dados cadastrais do BIN.</div>
         </div>
 
+        <div id="view-posicoes" style="display: none;">
+            <div class="glass-card" style="padding: 25px; margin-bottom: 24px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); letter-spacing:1px;">Cadastro de Posições</h4>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="btn-action" onclick="abrirModalPosicao()" style="padding:10px 15px; font-size:10px; box-shadow:none;">＋ NOVA POSIÇÃO</button>
+                        <button class="btn-action" onclick="exportarPosicoesExcel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">EXPORTAR EXCEL</button>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:15px;">
+                    <label>Buscar (posição, material ou descrição)</label>
+                    <input type="text" id="pos-busca" oninput="renderizarTabelaPosicoes()">
+                </div>
+                <div class="wms-table-container">
+                    <table class="wms-table">
+                        <thead><tr><th>Posição</th><th>Material</th><th>Descrição</th><th>Qtd (PL)</th><th>Validade</th><th>Status</th><th>Atualizado em</th><th>Atualizado por</th><th></th></tr></thead>
+                        <tbody id="pos-tabela"></tbody>
+                    </table>
+                </div>
+                <div id="pos-contagem" style="font-size:11px; color:var(--text-secondary);"></div>
+            </div>
+
+            <div class="glass-card" style="padding: 25px; margin-bottom: 24px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); letter-spacing:1px;">Histórico de Alterações das Posições</h4>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="btn-action" onclick="consultarHistoricoPosicoes()" style="padding:10px 15px; font-size:10px; box-shadow:none;">CONSULTAR</button>
+                        <button class="btn-action" onclick="limparFiltrosHistoricoPosicoes()" style="padding:10px 15px; font-size:10px; background:var(--glass); border:1px solid var(--glass-border); box-shadow:none;">LIMPAR FILTROS</button>
+                        <button class="btn-action" onclick="exportarHistoricoPosicoesExcel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">EXPORTAR EXCEL</button>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; margin-top:15px;">
+                    <div class="form-group"><label>De</label><input type="date" id="hp-de"></div>
+                    <div class="form-group"><label>Até</label><input type="date" id="hp-ate"></div>
+                    <div class="form-group"><label>Posição</label><input type="text" id="hp-pos"></div>
+                    <div class="form-group"><label>Material</label><input type="text" id="hp-mat"></div>
+                    <div class="form-group"><label>Ação</label><select id="hp-acao"><option value="">TODAS</option></select></div>
+                    <div class="form-group"><label>Responsável</label><input type="text" id="hp-resp"></div>
+                </div>
+                <div class="wms-table-container">
+                    <table class="wms-table">
+                        <thead><tr><th>Data</th><th>Hora</th><th>Posição</th><th>Ação</th><th>Responsável</th><th>Antes</th><th>Depois</th></tr></thead>
+                        <tbody id="hp-tabela"></tbody>
+                    </table>
+                </div>
+                <div id="hp-contagem" style="font-size:11px; color:var(--text-secondary);"></div>
+            </div>
+        </div>
+
         <div id="view-retirar">
             <div class="search-wrapper input-with-toggle">
                 <input type="text" inputmode="numeric" id="search-input" placeholder="Pesquisar Código ou Posição..." oninput="renderizarEstoque()">
@@ -683,6 +733,24 @@
     </div>
 </div>
  
+<div id="modal-posicao" style="display:none; position:fixed; top:0; left:0; width:100%; height:100dvh; background:rgba(0,0,0,0.95); z-index:3000; align-items:center; justify-content:center; backdrop-filter: blur(20px); padding:20px;">
+    <div class="modal-content glass-card" style="max-width: 480px; max-height: 100%; overflow-y: auto;">
+        <h3 id="pos-modal-titulo" style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Nova Posição</h3>
+        <p style="font-size:12px; color: var(--text-secondary); margin: 10px 0 20px; line-height: 1.6;">Quantidade 0 deixa a posição livre. Todo salvamento é registrado no histórico com responsável, data, hora e valores anterior e atual.</p>
+        <div class="form-group"><label>Posição (COD_ENDER):</label><input type="text" id="pos-f-ender" style="text-align:center;"></div>
+        <div class="form-group"><label>Código do Material:</label><input type="text" id="pos-f-mat" onchange="preencherDescPosicao()" style="text-align:center;"></div>
+        <div class="form-group"><label>Descrição:</label><input type="text" id="pos-f-desc"></div>
+        <div class="form-group"><label>Quantidade de Pallets:</label><input type="text" id="pos-f-qtd" inputmode="numeric" style="text-align:center; font-size:24px; font-weight:900;"></div>
+        <div class="form-group"><label>Validade:</label><input type="date" id="pos-f-val"></div>
+        <div class="form-group"><label>Status:</label><select id="pos-f-status"><option value="ATIVA">ATIVA (livre/ocupada automático)</option><option value="BLOQUEADA">BLOQUEADA</option><option value="INATIVA">INATIVA</option></select></div>
+        <div class="form-group"><label>Observação (opcional):</label><input type="text" id="pos-f-obs"></div>
+        <div style="display:flex; gap:15px; margin-top:15px;">
+            <button onclick="fecharModalPosicao()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button>
+            <button class="btn-action" style="flex:1;" onclick="salvarPosicao()">SALVAR</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyBH5iSu56D2gUnSHwkweU9zVwWM_a-Yx0A",
@@ -2787,6 +2855,473 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         const el = document.getElementById(id);
         if (el) el.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); fn(); } });
     });
+
+    // ================= CADASTRO DE POSIÇÕES + HISTÓRICO DE ALTERAÇÕES (v3) - MÓDULO ADITIVO =================
+    // Coleções novas: bins_estoque (cadastro/status/última atualização) e historico_posicoes (trilha de auditoria, somente criação).
+    // Toda transação que muda uma posição grava o histórico NA MESMA transação (estoque + movimentação + histórico: tudo ou nada).
+    const $p = id => document.getElementById(id);
+    const HP_ACOES = ['CADASTRO DE POSIÇÃO', 'ALIMENTAÇÃO DE POSIÇÃO', 'ATUALIZAÇÃO ADMIN', 'ENTRADA NO BLOCO', 'RETIRADA', 'TRANSFERÊNCIA - SAÍDA', 'TRANSFERÊNCIA - ENTRADA', 'IMPORTAÇÃO CSV'];
+    let binsCadastro = new Map();     // idBin -> dados do cadastro (somente ADMIN carrega)
+    let _binsListenerAtivo = false;
+    let hpResultados = [];            // último resultado da consulta de histórico (usado na exportação)
+    let posLinhasVisiveis = [];       // linhas da tabela de posições (usado na edição e exportação)
+    let posEditando = null;           // { ender, itemId } quando editando linha existente
+    let _posSalvando = false;
+
+    function escH(s) { return (s === undefined || s === null ? '' : s).toString().replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+    function idBin(e) { return (e || '').toString().trim().toUpperCase().replace(/\//g, '_'); }
+    function refBin(e) { return db.collection('bins_estoque').doc(idBin(e)); }
+    function dadosResponsavel() { const em = usuarioLogado?.email || ''; const mat = em.split('@')[0]; return { responsavel: usuarioLogado?.nome || mat, login: em, matricula: mat }; }
+    function statusDoBin(snapBin) { return (snapBin && snapBin.exists && snapBin.data().status) || 'ATIVA'; }
+    function fotoPos(ender, o, status) {
+        o = o || {};
+        return { ender: (ender || '').toString(), mat: (o.mat || '').toString(), desc: o.desc || '', qtd: parseInt(o.qtd) || 0, validade: o.valFrente || '', status: status || 'ATIVA' };
+    }
+    function descreverMudancas(a, b) {
+        if (!a) return 'Posição criada';
+        const campos = [['ender', 'posição'], ['mat', 'material'], ['desc', 'descrição'], ['qtd', 'qtd'], ['validade', 'validade'], ['status', 'status']];
+        const v = x => (x === '' || x === undefined || x === null) ? '—' : x;
+        const m = campos.filter(([k]) => (a[k] ?? '') !== (b[k] ?? '')).map(([k, n]) => `${n}: ${v(a[k])} → ${v(b[k])}`);
+        return m.join('; ') || 'Sem alteração de dados';
+    }
+    function montarHistPosicao(acao, ender, antes, depois, extra) {
+        extra = extra || {};
+        const agora = extra.agora || new Date(); const r = dadosResponsavel();
+        const doc = {
+            ender, acao, responsavel: r.responsavel, login: r.login, matricula: r.matricula,
+            data: agora.toLocaleDateString('pt-BR'), hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora,
+            material: (depois && depois.mat) || (antes && antes.mat) || '', antes: antes || null, depois: depois || null,
+            alteracoes: descreverMudancas(antes, depois)
+        };
+        if (extra.obs) doc.obs = extra.obs;
+        if (extra.movId) doc.movId = extra.movId;
+        if (extra.enderAnterior) doc.enderAnterior = extra.enderAnterior;
+        return doc;
+    }
+    function metaBin(ender, status, novo) {
+        const r = dadosResponsavel(); const agora = new Date();
+        const d = { ender: ender.toString().trim().toUpperCase(), atualizadoEm: agora, atualizadoPor: r.responsavel, atualizadoPorLogin: r.login };
+        if (status) d.status = status;
+        if (novo) { d.criadoEm = agora; d.criadoPor = r.responsavel; }
+        return d;
+    }
+    function dadosMovimentacao(ender, mat, val, qtd, fluxo, agora) {
+        agora = agora || new Date();
+        return { endereco: ender, material: mat, validade: val, quantidade: qtd, fluxo, login: usuarioLogado.email, data: agora.toLocaleDateString('pt-BR'), hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora };
+    }
+
+    // ---- RETIRADA: estoque + movimentação + histórico (antes/depois) em uma única transação ----
+    processarRetirada = async function () {
+        if (_retiradaEmCurso || !itemParaRetirar) return;
+        const inp = document.getElementById('modal-input-qtd');
+        const v = parseInt(inp.value);
+        if (isNaN(v) || v <= 0 || v > itemParaRetirar.qtdAtual) return alert("Quantidade inválida.");
+        if (!navigator.onLine) return alert("Sem conexão. Aguarde o sinal voltar para confirmar a retirada.");
+        const destino = document.getElementById('modal-destino-mov').value;
+        const btn = document.getElementById('btn-confirmar-modal');
+        _retiradaEmCurso = true; if (btn) btn.disabled = true;
+        const it = itemParaRetirar;
+        try {
+            const aval = avaliarConformidadeFEFO(it.mat, it.val, v);
+            const refS = db.collection("estoque_blocado").doc(it.id), refB = refBin(it.ender);
+            const refM = db.collection("movimentacoes_wms").doc(), refH = db.collection("historico_posicoes").doc();
+            await db.runTransaction(async tx => {
+                const sS = await tx.get(refS), sB = await tx.get(refB);
+                if (!sS.exists) throw new Error("Esta posição já foi esvaziada por outro operador.");
+                const d = sS.data(); const atual = parseInt(d.qtd) || 0;
+                if (v > atual) throw new Error(`Saldo atual da posição é ${atual} PL (alterado por outro operador).`);
+                const st = statusDoBin(sB);
+                const antes = fotoPos(it.ender, d, st);
+                let depois;
+                if (v === atual) { tx.delete(refS); depois = fotoPos(it.ender, null, st); }
+                else { tx.update(refS, { qtd: atual - v }); depois = fotoPos(it.ender, Object.assign({}, d, { qtd: atual - v }), st); }
+                tx.set(refM, dadosMovimentacao(it.ender, d.mat, d.valFrente, `-${v} PL`, destino));
+                tx.set(refB, metaBin(it.ender), { merge: true });
+                tx.set(refH, montarHistPosicao('RETIRADA', it.ender, antes, depois, { obs: `Destino: ${destino}`, movId: refM.id }));
+            });
+            try { localStorage.setItem('wms_ultimo_destino', destino); } catch (e) {}
+            fecharModal();
+            await registrarConformidadeFEFO(it.ender, it.mat, it.val, v, destino, usuarioLogado?.email, { avaliacao: aval, movId: refM.id });
+        } catch (e) { alert("Erro ao processar retirada: " + errMsg(e)); }
+        finally { _retiradaEmCurso = false; if (btn) btn.disabled = false; }
+    };
+
+    // ---- ENTRADA NO BLOCO ----
+    salvarEntradaBloco = async function () {
+        if (_entradaEmCurso) return;
+        const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
+        const mat = document.getElementById('eb-mat').value.trim();
+        const desc = document.getElementById('eb-desc').value;
+        const qtd = parseInt(document.getElementById('eb-qtd').value);
+        const inputVenc = document.getElementById('eb-venc').value;
+        if (!ender || !mat || isNaN(qtd) || !inputVenc) return alert("Preencha todos os campos.");
+        if (qtd <= 0) return alert("Quantidade deve ser maior que zero.");
+        if (desc === "MATERIAL NÃO CADASTRADO") return alert("Código não cadastrado na base.");
+        if (!navigator.onLine) return alert("Sem conexão. Aguarde o sinal voltar para confirmar a entrada.");
+        const val = inputVenc.split('-').reverse().join('/');
+        const ocupante = estoqueCompleto.find(i => mesmoEnder(i.ender, ender));
+        const ocupado = ocupante && (parseInt(ocupante.qtd) || 0) > 0;
+        if (ocupado && ocupante.mat.toString() !== mat) return alert("Posição ocupada por outro material.");
+        if (ocupado && ocupante.valFrente !== val) return alert(`Posição já contém este material com validade ${ocupante.valFrente}. Use outra posição para a validade ${val} (não misturar lotes).`);
+        _entradaEmCurso = true;
+        try {
+            const refS = ocupante ? db.collection("estoque_blocado").doc(ocupante.id) : db.collection("estoque_blocado").doc();
+            const refB = refBin(ender), refM = db.collection("movimentacoes_wms").doc(), refH = db.collection("historico_posicoes").doc();
+            const origem = document.getElementById('eb-origem').value;
+            await db.runTransaction(async tx => {
+                const sS = ocupante ? await tx.get(refS) : null; const sB = await tx.get(refB);
+                const st = statusDoBin(sB);
+                let atual = 0, dAnt = null;
+                if (sS && sS.exists) {
+                    dAnt = sS.data(); atual = parseInt(dAnt.qtd) || 0;
+                    if (atual > 0 && dAnt.mat.toString() !== mat) throw new Error("Posição ocupada por outro material (alterada por outro operador).");
+                    if (atual > 0 && dAnt.valFrente !== val) throw new Error(`Posição passou a conter validade ${dAnt.valFrente}. Não misture lotes.`);
+                }
+                const antes = fotoPos(ender, atual > 0 ? dAnt : null, st);
+                const novo = { ender, mat, desc, qtd: atual + qtd, dias: calcularDiasValidade(val, 0), valFrente: val };
+                if (sS && sS.exists && atual > 0) tx.update(refS, { qtd: atual + qtd });
+                else if (sS && sS.exists) tx.update(refS, novo);
+                else tx.set(refS, novo);
+                tx.set(refM, dadosMovimentacao(ender, mat, val, `+${qtd} PL`, `ENTRADA VIA ${origem}`));
+                tx.set(refB, metaBin(ender), { merge: true });
+                tx.set(refH, montarHistPosicao('ENTRADA NO BLOCO', ender, antes, fotoPos(ender, novo, st), { obs: `Origem: ${origem}`, movId: refM.id }));
+            });
+            ['eb-ender', 'eb-mat', 'eb-desc', 'eb-qtd', 'eb-venc'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('eb-label-dias').innerText = '';
+            navegar('retirar');
+        } catch (e) { alert("Erro ao salvar entrada: " + errMsg(e)); }
+        finally { _entradaEmCurso = false; }
+    };
+
+    // ---- TRANSFERÊNCIA INTERNA: origem + destino + 2 movimentações + 2 históricos (antes/depois) em uma transação ----
+    processarAberturaBlocado = async function () {
+        if (_transfEmCurso) return;
+        const dest = document.getElementById('ab-destino').value.toUpperCase().trim();
+        const qtd = parseInt(document.getElementById('ab-qtd').value);
+        const o = itemOrigemAbertura;
+        if (!o || isNaN(qtd) || qtd <= 0 || qtd > o.qtd || !dest) return alert("Dados inválidos.");
+        if (mesmoEnder(dest, o.ender)) return alert("Destino igual à origem.");
+        if (!navigator.onLine) return alert("Sem conexão. Aguarde o sinal voltar para confirmar a transferência.");
+        const ocup = estoqueCompleto.find(i => mesmoEnder(i.ender, dest) && i.id !== o.id && (parseInt(i.qtd) || 0) > 0);
+        if (ocup && ocup.mat.toString() !== o.mat.toString()) return alert("Destino ocupado.");
+        if (ocup && ocup.valFrente !== o.valFrente) return alert(`Destino já contém este material com validade ${ocup.valFrente} (origem: ${o.valFrente}). Não misture lotes.`);
+        _transfEmCurso = true;
+        try {
+            const refO = db.collection("estoque_blocado").doc(o.id);
+            const refD = ocup ? db.collection("estoque_blocado").doc(ocup.id) : db.collection("estoque_blocado").doc();
+            const refBO = refBin(o.ender), refBD = refBin(dest);
+            const refMS = db.collection("movimentacoes_wms").doc(), refME = db.collection("movimentacoes_wms").doc();
+            const refHS = db.collection("historico_posicoes").doc(), refHE = db.collection("historico_posicoes").doc();
+            const t0 = new Date(), t1 = new Date(t0.getTime() + 1);
+            await db.runTransaction(async tx => {
+                const sO = await tx.get(refO), sBO = await tx.get(refBO), sBD = await tx.get(refBD);
+                if (!sO.exists) throw new Error("A posição de origem foi alterada por outro operador.");
+                const dO = sO.data(); const atualO = parseInt(dO.qtd) || 0;
+                if (qtd > atualO) throw new Error(`Saldo atual da origem é ${atualO} PL.`);
+                let dD = null; if (ocup) { const sD = await tx.get(refD); if (!sD.exists) throw new Error("O destino foi alterado por outro operador."); dD = sD.data(); }
+                const atualD = dD ? (parseInt(dD.qtd) || 0) : 0;
+                const stO = statusDoBin(sBO), stD = statusDoBin(sBD);
+                const antesO = fotoPos(o.ender, dO, stO), antesD = fotoPos(dest, dD, stD);
+                let depoisO;
+                if (qtd === atualO) { tx.delete(refO); depoisO = fotoPos(o.ender, null, stO); }
+                else { tx.update(refO, { qtd: atualO - qtd }); depoisO = fotoPos(o.ender, Object.assign({}, dO, { qtd: atualO - qtd }), stO); }
+                const novoD = { ender: dest, mat: dO.mat, desc: dO.desc, qtd: atualD + qtd, dias: calcularDiasValidade(dO.valFrente, dO.dias), valFrente: dO.valFrente };
+                if (dD) tx.update(refD, { qtd: atualD + qtd }); else tx.set(refD, novoD);
+                tx.set(refMS, dadosMovimentacao(o.ender, dO.mat, dO.valFrente, `-${qtd} PL`, `PARA ${dest}`, t0));
+                tx.set(refME, dadosMovimentacao(dest, dO.mat, dO.valFrente, `+${qtd} PL`, `DE ${o.ender}`, t1));
+                tx.set(refBO, metaBin(o.ender), { merge: true });
+                tx.set(refBD, metaBin(dest), { merge: true });
+                tx.set(refHS, montarHistPosicao('TRANSFERÊNCIA - SAÍDA', o.ender, antesO, depoisO, { obs: `Destino: ${dest}`, movId: refMS.id, agora: t0 }));
+                tx.set(refHE, montarHistPosicao('TRANSFERÊNCIA - ENTRADA', dest, antesD, fotoPos(dest, novoD, stD), { obs: `Origem: ${o.ender}`, movId: refME.id, agora: t1 }));
+            });
+            ['ab-origem', 'ab-mat', 'ab-destino', 'ab-qtd'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('ab-qtd').placeholder = 'Saldo: 0';
+            itemOrigemAbertura = null;
+            navegar('retirar');
+        } catch (e) { alert("Erro na transferência: " + errMsg(e)); }
+        finally { _transfEmCurso = false; }
+    };
+
+    // ---- EDIÇÃO ADMIN (modal existente): atômica, com histórico antes/depois; quantidade 0 libera a posição ----
+    salvarEdicaoBin = async function () {
+        if (!itemEditandoBinId || _posSalvando) return;
+        const novoEnder = document.getElementById('edit-bin-ender').value.trim().toUpperCase();
+        const novoMat = document.getElementById('edit-bin-mat').value.trim();
+        const novaValidade = document.getElementById('edit-bin-valfrente').value.trim();
+        const novaQtd = parseInt(document.getElementById('edit-bin-qtd').value);
+        if (!novoEnder || !novoMat) return alert("Posição e Material são obrigatórios.");
+        if (novoEnder.includes('/')) return alert("Posição não pode conter '/'.");
+        if (isNaN(novaQtd) || novaQtd < 0) return alert("Quantidade inválida.");
+        if (novaQtd > 0 && !/^\d{2}\/\d{2}\/\d{4}$/.test(novaValidade)) return alert("Validade deve estar no formato DD/MM/AAAA.");
+        const conflito = estoqueCompleto.find(i => i.id !== itemEditandoBinId && mesmoEnder(i.ender, novoEnder) && (parseInt(i.qtd) || 0) > 0);
+        if (conflito) return alert(`A posição ${novoEnder} já está ocupada (${conflito.mat}).`);
+        const itemAtual = estoqueCompleto.find(i => i.id === itemEditandoBinId);
+        const descLookup = buscarDescricaoLocal(novoMat);
+        const novaDesc = descLookup !== "N/A" ? descLookup : (itemAtual ? itemAtual.desc : '');
+        _posSalvando = true;
+        try {
+            const refS = db.collection("estoque_blocado").doc(itemEditandoBinId);
+            const refHA = db.collection("historico_posicoes").doc();
+            await db.runTransaction(async tx => {
+                const sS = await tx.get(refS);
+                if (!sS.exists) throw new Error("Este registro não existe mais (alterado por outro usuário). Reabra a posição.");
+                const d = sS.data();
+                const sBA = await tx.get(refBin(d.ender)), sBN = mesmoEnder(d.ender, novoEnder) ? sBA : await tx.get(refBin(novoEnder));
+                const stA = statusDoBin(sBA), stN = statusDoBin(sBN);
+                const antes = fotoPos(d.ender, d, stA);
+                const depois = fotoPos(novoEnder, { mat: novoMat, desc: novaDesc, qtd: novaQtd, valFrente: novaQtd > 0 ? novaValidade : '' }, stN);
+                if (descreverMudancas(antes, depois) === 'Sem alteração de dados') throw new Error('__SEM_ALTERACAO__');
+                if (novaQtd === 0) tx.delete(refS);
+                else tx.update(refS, { ender: novoEnder, mat: novoMat, desc: novaDesc, valFrente: novaValidade, qtd: novaQtd, dias: calcularDiasValidade(novaValidade, 0) });
+                tx.set(refBin(novoEnder), metaBin(novoEnder, null, !sBN.exists), { merge: true });
+                if (!mesmoEnder(d.ender, novoEnder)) tx.set(refBin(d.ender), metaBin(d.ender), { merge: true });
+                tx.set(refHA, montarHistPosicao('ATUALIZAÇÃO ADMIN', novoEnder, antes, depois, mesmoEnder(d.ender, novoEnder) ? {} : { enderAnterior: d.ender }));
+            });
+            alert("Posição atualizada e registrada no histórico!");
+            fecharModalEditarBin();
+        } catch (e) { alert(errMsg(e) === '__SEM_ALTERACAO__' ? "Nenhuma alteração para salvar." : "Erro ao salvar: " + errMsg(e)); }
+        finally { _posSalvando = false; }
+    };
+
+    // ---- IMPORTAR CSV: além de validar antes de apagar, registra no histórico cada posição que mudou ----
+    importarCSV = async function (event) {
+        const arq = event.target.files[0];
+        if (!arq) return;
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const linhas = e.target.result.replace(/^\uFEFF/, '').split(/\r?\n/).filter(l => l.trim() !== "").slice(1);
+                const validos = [], rejeitadas = [];
+                linhas.forEach((linha, idx) => {
+                    const c = linha.split(";");
+                    const ender = (c[0] || '').trim().toUpperCase(), mat = (c[1] || '').trim();
+                    const qtd = parseInt(((c[5] || '')).replace(/\D/g, ''));
+                    if (c.length < 6 || !ender || !mat || isNaN(qtd)) { rejeitadas.push(idx + 2); return; }
+                    const valFrente = (c[3] || '').trim();
+                    validos.push({ ender, mat, desc: (c[2] || '').trim(), valFrente, qtd, dias: calcularDiasValidade(valFrente, parseInt(((c[7] || '')).replace(/\D/g, '')) || 0) });
+                });
+                if (validos.length === 0) return alert("Nenhuma linha válida encontrada. O estoque NÃO foi alterado.");
+                const aviso = rejeitadas.length ? `\n\n⚠️ ${rejeitadas.length} linha(s) inválida(s) serão ignoradas (ex.: linha ${rejeitadas.slice(0, 5).join(', ')}).` : '';
+                if (!confirm(`Confirmar reset de estoque para ${validos.length} itens?${aviso}`)) return;
+                // fotografia ANTES (primeiro item com saldo por posição) e DEPOIS, para o histórico
+                const antesMap = new Map(), depoisMap = new Map();
+                estoqueCompleto.forEach(i => { const k = idBin(i.ender); if ((parseInt(i.qtd) || 0) > 0 && !antesMap.has(k)) antesMap.set(k, i); });
+                validos.forEach(v => { const k = idBin(v.ender); if (!depoisMap.has(k)) depoisMap.set(k, v); });
+                const snapshot = await db.collection("estoque_blocado").get();
+                let n = 0, b = db.batch();
+                for (const doc of snapshot.docs) { b.delete(doc.ref); if (++n % 400 === 0) { await b.commit(); b = db.batch(); } }
+                for (const v of validos) { b.set(db.collection("estoque_blocado").doc(), v); if (++n % 400 === 0) { await b.commit(); b = db.batch(); } }
+                await b.commit();
+                const agora = new Date(); let alteradas = 0; n = 0; b = db.batch();
+                for (const k of new Set([...antesMap.keys(), ...depoisMap.keys()])) {
+                    const a = antesMap.get(k), d = depoisMap.get(k); const ender = (d || a).ender.toString().toUpperCase();
+                    const st = binsCadastro.get(k)?.status || 'ATIVA';
+                    const fa = fotoPos(ender, a, st), fd = fotoPos(ender, d, st);
+                    if (descreverMudancas(fa, fd) === 'Sem alteração de dados') continue;
+                    alteradas++;
+                    b.set(db.collection("historico_posicoes").doc(), montarHistPosicao('IMPORTAÇÃO CSV', ender, fa, fd, { obs: `Arquivo: ${arq.name}`, agora }));
+                    b.set(refBin(ender), metaBin(ender), { merge: true });
+                    if (++n % 200 === 0) { await b.commit(); b = db.batch(); }
+                }
+                await b.commit();
+                alert(`Estoque Infinity Updated! ${alteradas} posição(ões) alterada(s) registrada(s) no histórico.`);
+            } catch (err) { alert("Erro na importação: " + errMsg(err)); }
+            finally { event.target.value = ''; }
+        };
+        reader.readAsText(arq);
+    };
+
+    // ---- Cadastro de posições (ADMIN) ----
+    function carregarBinsCadastro() {
+        if (_binsListenerAtivo) return; _binsListenerAtivo = true;
+        db.collection('bins_estoque').onSnapshot(snap => {
+            binsCadastro = new Map(snap.docs.map(d => [d.id, d.data()]));
+            if ($p('view-posicoes').style.display === 'block') renderizarTabelaPosicoes();
+        }, err => console.error('Erro bins_estoque:', err));
+    }
+    function statusExibicaoPosicao(l) {
+        const st = binsCadastro.get(idBin(l.ender))?.status || 'ATIVA';
+        return st === 'ATIVA' ? ((parseInt(l.qtd) || 0) > 0 ? 'OCUPADA' : 'LIVRE') : st;
+    }
+    function fmtDataHora(ts) {
+        const d = ts && ts.toDate ? ts.toDate() : (ts ? new Date(ts) : null);
+        return d && !isNaN(d) ? d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR').substring(0, 5) : '—';
+    }
+    function linhasPosicoes() {
+        const porEnder = new Map();
+        const add = e => { const k = idBin(e); if (k && !porEnder.has(k)) porEnder.set(k, { ender: e.toString().toUpperCase(), itens: [] }); return porEnder.get(k); };
+        estoqueCompleto.forEach(i => { if (!i.ender) return; if ((parseInt(i.qtd) || 0) > 0) add(i.ender).itens.push(i); else add(i.ender); });
+        binsCadastro.forEach(b => { if (b.ender) add(b.ender); });
+        mapaBinsArmazem.forEach(p => add(p));
+        const linhas = [];
+        [...porEnder.values()].sort((a, b) => a.ender.localeCompare(b.ender, 'pt-BR', { numeric: true })).forEach(p => {
+            const cad = binsCadastro.get(idBin(p.ender)) || {};
+            const base = { ender: p.ender, atualizadoEm: cad.atualizadoEm, atualizadoPor: cad.atualizadoPor };
+            if (p.itens.length === 0) linhas.push(Object.assign({ mat: '', desc: '', qtd: 0, valFrente: '', dias: '', itemId: null }, base));
+            else p.itens.forEach(i => linhas.push(Object.assign({ mat: i.mat, desc: i.desc || buscarDescricaoLocal(i.mat), qtd: parseInt(i.qtd) || 0, valFrente: i.valFrente || '', dias: i.dias, itemId: i.id }, base)));
+        });
+        return linhas;
+    }
+    function renderizarTabelaPosicoes() {
+        recalcularDiasEstoque();
+        const termo = $p('pos-busca').value.trim().toLowerCase();
+        let linhas = linhasPosicoes();
+        if (termo) linhas = linhas.filter(l => l.ender.toLowerCase().includes(termo) || (l.mat || '').toString().toLowerCase().includes(termo) || (l.desc || '').toString().toLowerCase().includes(termo));
+        posLinhasVisiveis = linhas;
+        const tb = $p('pos-tabela'); tb.innerHTML = '';
+        const cor = { 'OCUPADA': 'var(--verde)', 'LIVRE': 'var(--text-secondary)', 'BLOQUEADA': 'var(--retido)', 'INATIVA': 'var(--critico)' };
+        linhas.slice(0, 500).forEach((l, i) => {
+            const st = statusExibicaoPosicao(l); const tr = document.createElement('tr');
+            tr.innerHTML = `<td><b>${escH(l.ender)}</b></td><td>${escH(l.mat) || '—'}</td><td>${escH(l.desc) || '—'}</td><td><b>${l.qtd}</b></td><td>${escH(l.valFrente) || '—'}</td><td><span class="badge" style="background:${cor[st]}20; color:${cor[st]}; border:1px solid ${cor[st]}40;">${st}</span></td><td>${fmtDataHora(l.atualizadoEm)}</td><td>${escH(l.atualizadoPor) || '—'}</td><td><button class="btn-action" style="padding:6px 12px; font-size:12px; box-shadow:none;" onclick="editarLinhaPosicao(${i})">✏️</button></td>`;
+            tb.appendChild(tr);
+        });
+        $p('pos-contagem').innerText = `${linhas.length} linha(s)` + (linhas.length > 500 ? ' — exibindo as 500 primeiras; refine a busca ou exporte para Excel.' : '');
+    }
+    function abrirPosicoes() {
+        document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.style.display = 'none');
+        $p('view-posicoes').style.display = 'block';
+        $p('sidebar').classList.remove('active');
+        if (!$p('hp-de').value) { const h = new Date(); const ini = new Date(h.getTime() - 6 * 86400000); $p('hp-de').value = hojeISOLocal(ini); $p('hp-ate').value = hojeISOLocal(h); }
+        if (!$p('hp-acao').options.length || $p('hp-acao').options.length === 1) { $p('hp-acao').innerHTML = '<option value="">TODAS</option>' + HP_ACOES.map(a => `<option>${a}</option>`).join(''); }
+        renderizarTabelaPosicoes();
+        consultarHistoricoPosicoes();
+    }
+    function abrirModalPosicao() {
+        posEditando = null;
+        $p('pos-modal-titulo').innerText = 'Nova Posição';
+        ['pos-f-ender', 'pos-f-mat', 'pos-f-desc', 'pos-f-qtd', 'pos-f-val', 'pos-f-obs'].forEach(id => $p(id).value = '');
+        $p('pos-f-ender').readOnly = false; $p('pos-f-status').value = 'ATIVA';
+        $p('modal-posicao').style.display = 'flex';
+    }
+    function editarLinhaPosicao(i) {
+        const l = posLinhasVisiveis[i]; if (!l) return;
+        posEditando = { ender: l.ender, itemId: l.itemId };
+        $p('pos-modal-titulo').innerText = 'Posição ' + l.ender;
+        $p('pos-f-ender').value = l.ender; $p('pos-f-ender').readOnly = true;
+        $p('pos-f-mat').value = l.mat || ''; $p('pos-f-desc').value = l.desc || ''; $p('pos-f-qtd').value = l.qtd || 0;
+        $p('pos-f-val').value = /^\d{2}\/\d{2}\/\d{4}$/.test(l.valFrente) ? l.valFrente.split('/').reverse().join('-') : '';
+        $p('pos-f-status').value = binsCadastro.get(idBin(l.ender))?.status || 'ATIVA';
+        $p('pos-f-obs').value = '';
+        $p('modal-posicao').style.display = 'flex';
+    }
+    function fecharModalPosicao() { $p('modal-posicao').style.display = 'none'; }
+    function preencherDescPosicao() { const d = buscarDescricaoLocal($p('pos-f-mat').value.trim()); if (d !== 'N/A') $p('pos-f-desc').value = d; }
+
+    async function salvarPosicao() {
+        if (_posSalvando) return;
+        const ender = $p('pos-f-ender').value.trim().toUpperCase();
+        let mat = $p('pos-f-mat').value.trim(), desc = $p('pos-f-desc').value.trim();
+        const qtd = parseInt($p('pos-f-qtd').value);
+        const valISO = $p('pos-f-val').value, status = $p('pos-f-status').value, obs = $p('pos-f-obs').value.trim();
+        if (!ender) return alert("Informe a posição.");
+        if (ender.includes('/')) return alert("Posição não pode conter '/'.");
+        if (isNaN(qtd) || qtd < 0) return alert("Informe a quantidade (0 para posição livre).");
+        if (qtd > 0) {
+            if (!mat) return alert("Informe o material.");
+            if (!valISO) return alert("Informe a validade.");
+            if (desc === '') { const d = buscarDescricaoLocal(mat); if (d === 'N/A') return alert("Material fora da base: informe a descrição."); desc = d; }
+        } else { mat = ''; desc = ''; }
+        if (!navigator.onLine) return alert("Sem conexão. Aguarde o sinal voltar para salvar.");
+        const itens = estoqueCompleto.filter(i => mesmoEnder(i.ender, ender) && (parseInt(i.qtd) || 0) > 0);
+        const existeCadastro = estoqueCompleto.some(i => mesmoEnder(i.ender, ender)) || binsCadastro.has(idBin(ender)) || mapaBinsArmazem.some(p => mesmoEnder(p, ender));
+        if (!posEditando && itens.length > 0) return alert("Esta posição já existe e possui estoque. Use o botão ✏️ na linha dela.");
+        const criando = !posEditando && !existeCadastro;
+        const itemId = posEditando ? posEditando.itemId : null;
+        const val = valISO ? valISO.split('-').reverse().join('/') : '';
+        _posSalvando = true;
+        try {
+            const refB = refBin(ender), refH = db.collection("historico_posicoes").doc();
+            const refS = itemId ? db.collection("estoque_blocado").doc(itemId) : (qtd > 0 ? db.collection("estoque_blocado").doc() : null);
+            await db.runTransaction(async tx => {
+                const sB = await tx.get(refB); const sS = itemId ? await tx.get(refS) : null;
+                if (itemId && !sS.exists) throw new Error("Este registro não existe mais (alterado por outro usuário). Reabra a posição.");
+                const antes = criando ? null : fotoPos(ender, sS ? sS.data() : null, statusDoBin(sB));
+                const depois = fotoPos(ender, qtd > 0 ? { mat, desc, qtd, valFrente: val } : null, status);
+                if (antes && descreverMudancas(antes, depois) === 'Sem alteração de dados') throw new Error('__SEM_ALTERACAO__');
+                if (itemId) { if (qtd > 0) tx.update(refS, { mat, desc, qtd, valFrente: val, dias: calcularDiasValidade(val, 0) }); else tx.delete(refS); }
+                else if (qtd > 0) tx.set(refS, { ender, mat, desc, qtd, valFrente: val, dias: calcularDiasValidade(val, 0) });
+                tx.set(refB, metaBin(ender, status, !sB.exists), { merge: true });
+                tx.set(db.collection('lx03_mapa_bins').doc(ender), { ender }, { merge: true }); // mantém LX03/LS03N enxergando a posição
+                const acao = criando ? 'CADASTRO DE POSIÇÃO' : ((antes && !antes.qtd && depois.qtd) ? 'ALIMENTAÇÃO DE POSIÇÃO' : 'ATUALIZAÇÃO ADMIN');
+                tx.set(refH, montarHistPosicao(acao, ender, antes, depois, { obs }));
+            });
+            fecharModalPosicao();
+            alert("Posição salva e registrada no histórico!");
+        } catch (e) { alert(errMsg(e) === '__SEM_ALTERACAO__' ? "Nenhuma alteração para salvar." : "Erro ao salvar posição: " + errMsg(e)); }
+        finally { _posSalvando = false; }
+    }
+
+    function exportarPosicoesExcel() {
+        const linhas = posLinhasVisiveis.length ? posLinhasVisiveis : linhasPosicoes();
+        if (linhas.length === 0) return alert("Não há posições para exportar.");
+        const dados = linhas.map(l => ({ "Posição": l.ender, "Material": l.mat || '', "Descrição": l.desc || '', "Quantidade (PL)": l.qtd, "Validade": l.valFrente || '', "Dias p/ vencer": l.dias === '' ? '' : l.dias, "Status": statusExibicaoPosicao(l), "Atualizado em": fmtDataHora(l.atualizadoEm), "Atualizado por": l.atualizadoPor || '' }));
+        const ws = XLSX.utils.json_to_sheet(dados); ws['!cols'] = [12, 12, 36, 14, 12, 14, 12, 18, 18].map(w => ({ wch: w }));
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Posições");
+        XLSX.writeFile(wb, `WMS_Posicoes_${hojeISOLocal()}.xlsx`);
+    }
+
+    // ---- Histórico de alterações: consulta por data (servidor filtra por período) + filtros + exportação Excel ----
+    function fmtFotoHist(f) { return f ? `${f.mat || '—'} · ${f.qtd} PL · ${f.validade || '—'} · ${f.status}` : '—'; }
+    async function consultarHistoricoPosicoes() {
+        const de = $p('hp-de').value, ate = $p('hp-ate').value;
+        if (!de || !ate) return alert("Informe o período (De / Até).");
+        const ini = new Date(de + 'T00:00:00'), fim = new Date(ate + 'T23:59:59.999');
+        if (fim < ini) return alert('Período inválido: "Até" anterior a "De".');
+        const fPos = $p('hp-pos').value.trim().toLowerCase(), fMat = $p('hp-mat').value.trim().toLowerCase();
+        const fAcao = $p('hp-acao').value, fResp = $p('hp-resp').value.trim().toLowerCase();
+        $p('hp-contagem').innerText = 'Consultando...';
+        try {
+            const LIM = 5000;
+            const snap = await db.collection('historico_posicoes').where('timestamp', '>=', ini).where('timestamp', '<=', fim).orderBy('timestamp', 'desc').limit(LIM).get();
+            hpResultados = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(h =>
+                (!fPos || (h.ender || '').toLowerCase().includes(fPos) || (h.enderAnterior || '').toLowerCase().includes(fPos)) &&
+                (!fMat || (h.material || '').toString().toLowerCase().includes(fMat) || ((h.depois && h.depois.desc) || (h.antes && h.antes.desc) || '').toLowerCase().includes(fMat)) &&
+                (!fAcao || h.acao === fAcao) &&
+                (!fResp || (h.responsavel || '').toLowerCase().includes(fResp) || (h.login || '').toLowerCase().includes(fResp)));
+            const tb = $p('hp-tabela'); tb.innerHTML = '';
+            hpResultados.slice(0, 200).forEach(h => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${escH(h.data)}</td><td>${escH(h.hora)}</td><td><b>${escH(h.ender)}</b>${h.enderAnterior ? `<div style="font-size:10px; color:var(--text-secondary);">antes: ${escH(h.enderAnterior)}</div>` : ''}</td><td>${escH(h.acao)}${h.obs ? `<div style="font-size:10px; color:var(--text-secondary);">${escH(h.obs)}</div>` : ''}</td><td>${escH(h.responsavel)}<div style="font-size:10px; color:var(--text-secondary);">${escH(h.matricula)}</div></td><td>${escH(fmtFotoHist(h.antes))}</td><td><b>${escH(fmtFotoHist(h.depois))}</b></td>`;
+                tb.appendChild(tr);
+            });
+            $p('hp-contagem').innerText = `${hpResultados.length} registro(s) no período` + (hpResultados.length > 200 ? ' — exibindo os 200 mais recentes; exporte para Excel para ver todos.' : '') + (snap.size >= LIM ? ` ⚠️ Limite de ${LIM} registros atingido: reduza o período.` : '');
+        } catch (e) { console.error(e); $p('hp-contagem').innerText = ''; alert("Erro ao consultar histórico: " + errMsg(e)); }
+    }
+    function limparFiltrosHistoricoPosicoes() { ['hp-pos', 'hp-mat', 'hp-resp'].forEach(id => $p(id).value = ''); $p('hp-acao').value = ''; consultarHistoricoPosicoes(); }
+    function exportarHistoricoPosicoesExcel() {
+        if (hpResultados.length === 0) return alert("Nenhum registro para exportar. Faça a consulta primeiro.");
+        const dados = hpResultados.map(h => {
+            const a = h.antes || {}, d = h.depois || {};
+            return {
+                "Data": h.data, "Hora": h.hora, "Posição": h.ender, "Posição anterior": h.enderAnterior || '', "Ação": h.acao,
+                "Responsável": h.responsavel || '', "Matrícula": h.matricula || '',
+                "Material (antes)": a.mat || '', "Descrição (antes)": a.desc || '', "Qtd (antes)": h.antes ? a.qtd : '', "Validade (antes)": a.validade || '', "Status (antes)": a.status || '',
+                "Material (depois)": d.mat || '', "Descrição (depois)": d.desc || '', "Qtd (depois)": h.depois ? d.qtd : '', "Validade (depois)": d.validade || '', "Status (depois)": d.status || '',
+                "Variação Qtd": (h.antes && h.depois) ? (d.qtd - a.qtd) : (h.depois ? d.qtd : ''),
+                "Campos alterados": h.alteracoes || '', "Observação": h.obs || '', "ID movimentação": h.movId || ''
+            };
+        });
+        const ws = XLSX.utils.json_to_sheet(dados);
+        ws['!cols'] = [11, 9, 12, 14, 24, 20, 12, 12, 30, 10, 12, 12, 12, 30, 10, 12, 12, 12, 40, 28, 22].map(w => ({ wch: w }));
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Histórico_Posições");
+        XLSX.writeFile(wb, `Historico_Posicoes_${$p('hp-de').value}_a_${$p('hp-ate').value}.xlsx`);
+    }
+
+    // ---- Encaixe na navegação / ciclo de vida (somente ADMIN vê o menu e carrega o cadastro) ----
+    const _navegarOriginalV3 = navegar;
+    navegar = function (tela) { const v = $p('view-posicoes'); if (v) v.style.display = 'none'; _navegarOriginalV3(tela); };
+    const _iniciarAppOriginalV3 = iniciarApp;
+    iniciarApp = function () {
+        _iniciarAppOriginalV3();
+        const isAdminP = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
+        $p('btn-nav-posicoes').style.display = isAdminP ? 'block' : 'none';
+        if (isAdminP) carregarBinsCadastro();
+    };
+    const _atualizarConsultasAbertasV3 = atualizarConsultasAbertas;
+    atualizarConsultasAbertas = function () {
+        _atualizarConsultasAbertasV3();
+        const v = $p('view-posicoes'); if (v && v.style.display === 'block') renderizarTabelaPosicoes();
+    };
 
 </script>
 </body>
