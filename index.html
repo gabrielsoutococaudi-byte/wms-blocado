@@ -596,7 +596,6 @@
                     <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); letter-spacing:1px;">Cadastro de Posições</h4>
                     <div style="display:flex; gap:10px; flex-wrap:wrap;">
                         <button class="btn-action" onclick="abrirModalPosicao()" style="padding:10px 15px; font-size:10px; box-shadow:none;">＋ NOVA POSIÇÃO</button>
-                        <button class="btn-action" onclick="abrirModalMassa()" style="padding:10px 15px; font-size:10px; background:var(--glass); border:1px solid var(--glass-border); box-shadow:none;">🗂️ ALTERAR TODAS (EXCEL)</button>
                         <button class="btn-action" onclick="exportarPosicoesExcel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">EXPORTAR EXCEL</button>
                     </div>
                 </div>
@@ -637,30 +636,6 @@
                     </table>
                 </div>
                 <div id="hp-contagem" style="font-size:11px; color:var(--text-secondary);"></div>
-            </div>
-
-            <div class="glass-card" style="padding: 25px; margin-bottom: 24px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                    <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); letter-spacing:1px;">⚠️ Divergências FEFO — Posições 301</h4>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                        <button class="btn-action" onclick="consultarDivergencias301()" style="padding:10px 15px; font-size:10px; box-shadow:none;">CONSULTAR</button>
-                        <button class="btn-action" onclick="exportarDivergencias301Excel()" style="padding:10px 15px; font-size:10px; background:#107c41; box-shadow:none;">EXPORTAR EXCEL</button>
-                    </div>
-                </div>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; margin-top:15px;">
-                    <div class="form-group"><label>De</label><input type="date" id="dv-de"></div>
-                    <div class="form-group"><label>Até</label><input type="date" id="dv-ate"></div>
-                    <div class="form-group"><label>Posição</label><input type="text" id="dv-pos"></div>
-                    <div class="form-group"><label>Material</label><input type="text" id="dv-mat"></div>
-                    <div class="form-group"><label>Responsável</label><input type="text" id="dv-resp"></div>
-                </div>
-                <div class="wms-table-container">
-                    <table class="wms-table">
-                        <thead><tr><th>Data</th><th>Hora</th><th>Posição</th><th>Material</th><th>Validade identificada</th><th>Validade prioritária</th><th>Tipo</th><th>Responsável</th></tr></thead>
-                        <tbody id="dv-tabela"></tbody>
-                    </table>
-                </div>
-                <div id="dv-contagem" style="font-size:11px; color:var(--text-secondary);"></div>
             </div>
         </div>
 
@@ -740,11 +715,6 @@
                 <div class="toggle-kb-btn" onclick="toggleKB('modal-input-qtd')" style="height: 60px; width: 50px;">Abc</div>
             </div>
         </div>
-        <div id="modal-paletes301" style="display:none; margin-bottom:20px; padding:15px; border:1px solid var(--glass-border); border-radius:16px; background: rgba(255,255,255,0.02); font-size:12px; line-height:1.7;">
-            <div id="modal-paletes301-info"></div>
-            <div style="font-size:10px; color:var(--text-secondary); margin-top:8px; font-weight:700;">Confirme a validade de cada palete retirado. O padrão já segue o FEFO; altere somente se o palete retirado for outro.</div>
-            <div id="modal-paletes301-sel"></div>
-        </div>
         <div class="form-group"><label>Destino da Carga:</label><select id="modal-destino-mov" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 18px; border-radius: 16px; color: #fff; width: 100%; font-weight: 600;"><option value="TRANSFERENCIA">TRANSFERENCIA</option><option value="APANHA">APANHA</option><option value="SEPARAÇÃO">SEPARAÇÃO</option></select></div>
         <div style="display:flex; gap:15px; margin-top:35px;"><button onclick="fecharModal()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button><button id="btn-confirmar-modal" class="btn-action" style="flex:1;">CONFIRMAR</button></div>
     </div>
@@ -786,26 +756,11 @@
         <div class="form-group"><label>Descrição:</label><input type="text" id="pos-f-desc"></div>
         <div class="form-group"><label>Quantidade de Pallets:</label><input type="text" id="pos-f-qtd" inputmode="numeric" style="text-align:center; font-size:24px; font-weight:900;"></div>
         <div class="form-group"><label>Validade:</label><input type="date" id="pos-f-val"></div>
-        <div class="form-group" id="pos-f-paletes-wrap" style="display:none;"><label>Paletes da posição 301 (validade de cada palete, até 12):</label><textarea id="pos-f-paletes" rows="5" placeholder="29/01/2027 x3&#10;30/01/2027&#10;14/02/2027" style="width:100%; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 14px; border-radius: 16px; color: #fff; font-weight: 600; font-family: inherit;"></textarea><div style="font-size:10px; color:var(--text-secondary); margin-top:6px;">Uma validade por linha (ou DD/MM/AAAA x3 para vários paletes iguais). A quantidade é calculada automaticamente.</div></div>
         <div class="form-group"><label>Status:</label><select id="pos-f-status"><option value="ATIVA">ATIVA (livre/ocupada automático)</option><option value="BLOQUEADA">BLOQUEADA</option><option value="INATIVA">INATIVA</option></select></div>
         <div class="form-group"><label>Observação (opcional):</label><input type="text" id="pos-f-obs"></div>
         <div style="display:flex; gap:15px; margin-top:15px;">
             <button onclick="fecharModalPosicao()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">CANCELAR</button>
             <button class="btn-action" style="flex:1;" onclick="salvarPosicao()">SALVAR</button>
-        </div>
-    </div>
-</div>
-
-<div id="modal-massa" style="display:none; position:fixed; top:0; left:0; width:100%; height:100dvh; background:rgba(0,0,0,0.95); z-index:3000; align-items:center; justify-content:center; backdrop-filter: blur(20px); padding:20px;">
-    <div class="modal-content glass-card" style="max-width: 640px; max-height: 100%; overflow-y: auto;">
-        <h3 style="margin-top:0; color:#fff; font-weight: 900; font-size: 24px; letter-spacing: -1px;">Alterar todas as posições</h3>
-        <p style="font-size:12px; color: var(--text-secondary); margin: 10px 0 20px; line-height: 1.7;">1) Baixe a planilha com todas as posições atuais. 2) Altere o que precisar (material, descrição, quantidade, validade, paletes das posições 301 e status) e acrescente linhas para posições novas. 3) Envie a planilha: o sistema mostra o que vai mudar antes de aplicar. Posições que não estiverem na planilha não são alteradas, e cada mudança fica registrada no histórico (antes/depois, responsável, data e hora).</p>
-        <button class="btn-action" onclick="baixarModeloMassa()" style="width:100%; padding:14px; font-size:11px; background:#107c41; box-shadow:none;">1. BAIXAR PLANILHA ATUAL (EXCEL)</button>
-        <div class="form-group" style="margin-top:18px;"><label>2. Enviar planilha alterada (.xlsx, .xls ou .csv):</label><input type="file" id="massa-arquivo" accept=".xlsx,.xls,.csv" onchange="lerArquivoMassa(event)"></div>
-        <div id="massa-preview" style="font-size:12px; line-height:1.7; margin-top:10px;"></div>
-        <div style="display:flex; gap:15px; margin-top:20px;">
-            <button onclick="fecharModalMassa()" style="flex:1; padding:18px; background:var(--glass); color:white; border:1px solid var(--glass-border); border-radius:16px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px;">FECHAR</button>
-            <button id="btn-aplicar-massa" class="btn-action" style="flex:1;" onclick="aplicarAlteracaoMassa()" disabled>3. APLICAR ALTERAÇÕES</button>
         </div>
     </div>
 </div>
@@ -2919,7 +2874,7 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
     // Coleções novas: bins_estoque (cadastro/status/última atualização) e historico_posicoes (trilha de auditoria, somente criação).
     // Toda transação que muda uma posição grava o histórico NA MESMA transação (estoque + movimentação + histórico: tudo ou nada).
     const $p = id => document.getElementById(id);
-    const HP_ACOES = ['CADASTRO DE POSIÇÃO', 'ALIMENTAÇÃO DE POSIÇÃO', 'ATUALIZAÇÃO ADMIN', 'ENTRADA NO BLOCO', 'RETIRADA', 'TRANSFERÊNCIA - SAÍDA', 'TRANSFERÊNCIA - ENTRADA', 'IMPORTAÇÃO CSV', 'ALTERAÇÃO EM MASSA'];
+    const HP_ACOES = ['CADASTRO DE POSIÇÃO', 'ALIMENTAÇÃO DE POSIÇÃO', 'ATUALIZAÇÃO ADMIN', 'ENTRADA NO BLOCO', 'RETIRADA', 'TRANSFERÊNCIA - SAÍDA', 'TRANSFERÊNCIA - ENTRADA', 'IMPORTAÇÃO CSV'];
     let binsCadastro = new Map();     // idBin -> dados do cadastro (somente ADMIN carrega)
     let _binsListenerAtivo = false;
     let hpResultados = [];            // último resultado da consulta de histórico (usado na exportação)
@@ -2934,13 +2889,11 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
     function statusDoBin(snapBin) { return (snapBin && snapBin.exists && snapBin.data().status) || 'ATIVA'; }
     function fotoPos(ender, o, status) {
         o = o || {};
-        const q = parseInt(o.qtd) || 0;
-        return { ender: (ender || '').toString(), mat: (o.mat || '').toString(), desc: o.desc || '', qtd: q, validade: o.valFrente || '', status: status || 'ATIVA',
-                 paletes: (eh301(ender) && q > 0) ? resumoPaletes(paletesDe(o)) : '' };
+        return { ender: (ender || '').toString(), mat: (o.mat || '').toString(), desc: o.desc || '', qtd: parseInt(o.qtd) || 0, validade: o.valFrente || '', status: status || 'ATIVA' };
     }
     function descreverMudancas(a, b) {
         if (!a) return 'Posição criada';
-        const campos = [['ender', 'posição'], ['mat', 'material'], ['desc', 'descrição'], ['qtd', 'qtd'], ['validade', 'validade'], ['paletes', 'paletes'], ['status', 'status']];
+        const campos = [['ender', 'posição'], ['mat', 'material'], ['desc', 'descrição'], ['qtd', 'qtd'], ['validade', 'validade'], ['status', 'status']];
         const v = x => (x === '' || x === undefined || x === null) ? '—' : x;
         const m = campos.filter(([k]) => (a[k] ?? '') !== (b[k] ?? '')).map(([k, n]) => `${n}: ${v(a[k])} → ${v(b[k])}`);
         return m.join('; ') || 'Sem alteração de dados';
@@ -2971,7 +2924,7 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         return { endereco: ender, material: mat, validade: val, quantidade: qtd, fluxo, login: usuarioLogado.email, data: agora.toLocaleDateString('pt-BR'), hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora };
     }
 
-    // ---- RETIRADA: estoque + movimentação + histórico (antes/depois) em uma única transação; posições 301 baixam palete a palete (FEFO) ----
+    // ---- RETIRADA: estoque + movimentação + histórico (antes/depois) em uma única transação ----
     processarRetirada = async function () {
         if (_retiradaEmCurso || !itemParaRetirar) return;
         const inp = document.getElementById('modal-input-qtd');
@@ -2980,25 +2933,12 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         if (!navigator.onLine) return alert("Sem conexão. Aguarde o sinal voltar para confirmar a retirada.");
         const destino = document.getElementById('modal-destino-mov').value;
         const btn = document.getElementById('btn-confirmar-modal');
-        const it = itemParaRetirar;
-        const e301 = eh301(it.ender);
-        let escolhidas = null, viol = null;
-        if (e301) { // validades dos paletes realmente retirados (padrão = sequência FEFO; operador só altera se retirou outro)
-            const itemLocal = estoqueCompleto.find(i => i.id === it.id); const pal = paletesDe(itemLocal);
-            let sels = [...document.querySelectorAll('#modal-paletes301-sel select[data-pal301]')];
-            if (sels.length !== v) { montarSelecoes301(); sels = [...document.querySelectorAll('#modal-paletes301-sel select[data-pal301]')]; }
-            escolhidas = sels.map(s => s.value);
-            if (escolhidas.length !== v || removerDatas(pal, escolhidas) === null) return alert("Seleção de paletes inválida: confira as validades escolhidas.");
-            viol = violaRetirada301(pal, escolhidas);
-            if (viol && !confirm(textoAlertaFefo301(it.mat, itemLocal && itemLocal.desc, it.ender, viol) + "\n\nConfirmar a retirada mesmo assim? A divergência ficará registrada.")) return;
-        }
         _retiradaEmCurso = true; if (btn) btn.disabled = true;
+        const it = itemParaRetirar;
         try {
-            const grupos = e301 ? agruparDatas(ordenarDatas(escolhidas)) : [[it.val, v]];
-            const avals = grupos.map(([dt, c]) => avaliarConformidadeFEFO(it.mat, dt, c)); // estado do estoque no momento da movimentação
+            const aval = avaliarConformidadeFEFO(it.mat, it.val, v);
             const refS = db.collection("estoque_blocado").doc(it.id), refB = refBin(it.ender);
-            const refsM = grupos.map(() => db.collection("movimentacoes_wms").doc()), refH = db.collection("historico_posicoes").doc();
-            const refDiv = viol ? db.collection("divergencias_fefo_301").doc() : null;
+            const refM = db.collection("movimentacoes_wms").doc(), refH = db.collection("historico_posicoes").doc();
             await db.runTransaction(async tx => {
                 const sS = await tx.get(refS), sB = await tx.get(refB);
                 if (!sS.exists) throw new Error("Esta posição já foi esvaziada por outro operador.");
@@ -3007,29 +2947,20 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
                 const st = statusDoBin(sB);
                 const antes = fotoPos(it.ender, d, st);
                 let depois;
-                if (e301) {
-                    const resto = removerDatas(paletesDe(d), escolhidas);
-                    if (resto === null) throw new Error("Os paletes selecionados não estão mais na posição (alterada por outro operador). Reabra a retirada.");
-                    if (resto.length === 0) { tx.delete(refS); depois = fotoPos(it.ender, null, st); }
-                    else { tx.update(refS, camposPaletes(resto)); depois = fotoPos(it.ender, Object.assign({}, d, camposPaletes(resto)), st); }
-                    grupos.forEach(([dt, c], k) => tx.set(refsM[k], dadosMovimentacao(it.ender, d.mat, dt, `-${c} PL`, destino)));
-                } else {
-                    if (v === atual) { tx.delete(refS); depois = fotoPos(it.ender, null, st); }
-                    else { tx.update(refS, { qtd: atual - v }); depois = fotoPos(it.ender, Object.assign({}, d, { qtd: atual - v }), st); }
-                    tx.set(refsM[0], dadosMovimentacao(it.ender, d.mat, d.valFrente, `-${v} PL`, destino));
-                }
+                if (v === atual) { tx.delete(refS); depois = fotoPos(it.ender, null, st); }
+                else { tx.update(refS, { qtd: atual - v }); depois = fotoPos(it.ender, Object.assign({}, d, { qtd: atual - v }), st); }
+                tx.set(refM, dadosMovimentacao(it.ender, d.mat, d.valFrente, `-${v} PL`, destino));
                 tx.set(refB, metaBin(it.ender), { merge: true });
-                tx.set(refH, montarHistPosicao('RETIRADA', it.ender, antes, depois, { obs: `Destino: ${destino}`, movId: refsM[0].id }));
-                if (refDiv) tx.set(refDiv, montarDivergencia301('RETIRADA', it.ender, d.mat, d.desc, viol, { paletesAntes: resumoPaletes(paletesDe(d)), movId: refsM[0].id, qtd: viol.qtdDivergentes }));
+                tx.set(refH, montarHistPosicao('RETIRADA', it.ender, antes, depois, { obs: `Destino: ${destino}`, movId: refM.id }));
             });
             try { localStorage.setItem('wms_ultimo_destino', destino); } catch (e) {}
             fecharModal();
-            for (let k = 0; k < grupos.length; k++) await registrarConformidadeFEFO(it.ender, it.mat, grupos[k][0], grupos[k][1], destino, usuarioLogado?.email, { avaliacao: avals[k], movId: refsM[k].id });
+            await registrarConformidadeFEFO(it.ender, it.mat, it.val, v, destino, usuarioLogado?.email, { avaliacao: aval, movId: refM.id });
         } catch (e) { alert("Erro ao processar retirada: " + errMsg(e)); }
         finally { _retiradaEmCurso = false; if (btn) btn.disabled = false; }
     };
 
-    // ---- ENTRADA NO BLOCO (posições 301: até 12 paletes com validades diferentes, validando a sequência FEFO) ----
+    // ---- ENTRADA NO BLOCO ----
     salvarEntradaBloco = async function () {
         if (_entradaEmCurso) return;
         const ender = document.getElementById('eb-ender').value.toUpperCase().trim();
@@ -3042,48 +2973,32 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         if (desc === "MATERIAL NÃO CADASTRADO") return alert("Código não cadastrado na base.");
         if (!navigator.onLine) return alert("Sem conexão. Aguarde o sinal voltar para confirmar a entrada.");
         const val = inputVenc.split('-').reverse().join('/');
-        const e301 = eh301(ender);
         const ocupante = estoqueCompleto.find(i => mesmoEnder(i.ender, ender));
         const ocupado = ocupante && (parseInt(ocupante.qtd) || 0) > 0;
         if (ocupado && ocupante.mat.toString() !== mat) return alert("Posição ocupada por outro material.");
-        let viol = null;
-        if (e301) {
-            const palLocal = ocupado ? paletesDe(ocupante) : [];
-            if (palLocal.length + qtd > CAP_301) return alert(`Posição 301 comporta no máximo ${CAP_301} paletes (atual: ${palLocal.length}; entrada: ${qtd}).`);
-            viol = violaSequencia301(palLocal, Array(qtd).fill(val));
-            if (viol && !confirm(textoAlertaFefo301(mat, desc, ender, viol) + "\n\nConfirmar a entrada mesmo assim? A divergência ficará registrada.")) return;
-        } else if (ocupado && ocupante.valFrente !== val) return alert(`Posição já contém este material com validade ${ocupante.valFrente}. Use outra posição para a validade ${val} (não misturar lotes).`);
+        if (ocupado && ocupante.valFrente !== val) return alert(`Posição já contém este material com validade ${ocupante.valFrente}. Use outra posição para a validade ${val} (não misturar lotes).`);
         _entradaEmCurso = true;
         try {
             const refS = ocupante ? db.collection("estoque_blocado").doc(ocupante.id) : db.collection("estoque_blocado").doc();
             const refB = refBin(ender), refM = db.collection("movimentacoes_wms").doc(), refH = db.collection("historico_posicoes").doc();
-            const refDiv = viol ? db.collection("divergencias_fefo_301").doc() : null;
             const origem = document.getElementById('eb-origem').value;
             await db.runTransaction(async tx => {
                 const sS = ocupante ? await tx.get(refS) : null; const sB = await tx.get(refB);
                 const st = statusDoBin(sB);
-                let atual = 0, dAnt = null, palAnt = [];
+                let atual = 0, dAnt = null;
                 if (sS && sS.exists) {
                     dAnt = sS.data(); atual = parseInt(dAnt.qtd) || 0;
                     if (atual > 0 && dAnt.mat.toString() !== mat) throw new Error("Posição ocupada por outro material (alterada por outro operador).");
-                    if (!e301 && atual > 0 && dAnt.valFrente !== val) throw new Error(`Posição passou a conter validade ${dAnt.valFrente}. Não misture lotes.`);
+                    if (atual > 0 && dAnt.valFrente !== val) throw new Error(`Posição passou a conter validade ${dAnt.valFrente}. Não misture lotes.`);
                 }
-                let novo, novoArr = null;
-                if (e301) {
-                    palAnt = atual > 0 ? paletesDe(dAnt) : [];
-                    if (palAnt.length + qtd > CAP_301) throw new Error(`Posição 301 comporta no máximo ${CAP_301} paletes (atual: ${palAnt.length}).`);
-                    if (!!violaSequencia301(palAnt, Array(qtd).fill(val)) !== !!viol) throw new Error("A posição foi alterada por outro operador. Confira a sequência FEFO e tente novamente.");
-                    novoArr = ordenarDatas(palAnt.concat(Array(qtd).fill(val)));
-                    novo = Object.assign({ ender, mat, desc }, camposPaletes(novoArr));
-                } else novo = { ender, mat, desc, qtd: atual + qtd, dias: calcularDiasValidade(val, 0), valFrente: val };
                 const antes = fotoPos(ender, atual > 0 ? dAnt : null, st);
-                if (sS && sS.exists && atual > 0) tx.update(refS, e301 ? camposPaletes(novoArr) : { qtd: atual + qtd });
+                const novo = { ender, mat, desc, qtd: atual + qtd, dias: calcularDiasValidade(val, 0), valFrente: val };
+                if (sS && sS.exists && atual > 0) tx.update(refS, { qtd: atual + qtd });
                 else if (sS && sS.exists) tx.update(refS, novo);
                 else tx.set(refS, novo);
                 tx.set(refM, dadosMovimentacao(ender, mat, val, `+${qtd} PL`, `ENTRADA VIA ${origem}`));
                 tx.set(refB, metaBin(ender), { merge: true });
                 tx.set(refH, montarHistPosicao('ENTRADA NO BLOCO', ender, antes, fotoPos(ender, novo, st), { obs: `Origem: ${origem}`, movId: refM.id }));
-                if (refDiv) tx.set(refDiv, montarDivergencia301('ENTRADA', ender, mat, desc, viol, { paletesAntes: resumoPaletes(palAnt), movId: refM.id, qtd: qtd }));
             });
             ['eb-ender', 'eb-mat', 'eb-desc', 'eb-qtd', 'eb-venc'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('eb-label-dias').innerText = '';
@@ -3092,7 +3007,7 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         finally { _entradaEmCurso = false; }
     };
 
-    // ---- TRANSFERÊNCIA INTERNA: origem + destino + movimentações + históricos em uma transação (301: paletes saem em ordem FEFO e entram validando a sequência) ----
+    // ---- TRANSFERÊNCIA INTERNA: origem + destino + 2 movimentações + 2 históricos (antes/depois) em uma transação ----
     processarAberturaBlocado = async function () {
         if (_transfEmCurso) return;
         const dest = document.getElementById('ab-destino').value.toUpperCase().trim();
@@ -3101,68 +3016,37 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         if (!o || isNaN(qtd) || qtd <= 0 || qtd > o.qtd || !dest) return alert("Dados inválidos.");
         if (mesmoEnder(dest, o.ender)) return alert("Destino igual à origem.");
         if (!navigator.onLine) return alert("Sem conexão. Aguarde o sinal voltar para confirmar a transferência.");
-        const o301 = eh301(o.ender), d301 = eh301(dest);
-        const itemO = estoqueCompleto.find(i => i.id === o.id) || o;
-        const palO = o301 ? paletesDe(itemO) : Array(parseInt(itemO.qtd) || 0).fill(itemO.valFrente);
-        const mover = palO.slice(0, qtd);                       // sempre sai primeiro o que vence primeiro
-        if (mover.length !== qtd) return alert("Dados inválidos.");
         const ocup = estoqueCompleto.find(i => mesmoEnder(i.ender, dest) && i.id !== o.id && (parseInt(i.qtd) || 0) > 0);
         if (ocup && ocup.mat.toString() !== o.mat.toString()) return alert("Destino ocupado.");
-        const palDLocal = ocup ? (d301 ? paletesDe(ocup) : Array(parseInt(ocup.qtd) || 0).fill(ocup.valFrente)) : [];
-        let viol = null;
-        if (d301) {
-            if (palDLocal.length + qtd > CAP_301) return alert(`Posição 301 comporta no máximo ${CAP_301} paletes (destino atual: ${palDLocal.length}; transferência: ${qtd}).`);
-            viol = violaSequencia301(palDLocal, mover);
-            if (viol && !confirm(textoAlertaFefo301(o.mat, o.desc, dest, viol) + "\n\nConfirmar a transferência mesmo assim? A divergência ficará registrada.")) return;
-        } else {
-            if (new Set(mover).size > 1) return alert("Os paletes a mover têm validades diferentes e o destino não é uma posição 301. Mova menos paletes ou escolha um destino 301.");
-            if (ocup && ocup.valFrente !== mover[0]) return alert(`Destino já contém este material com validade ${ocup.valFrente} (origem: ${mover[0]}). Não misture lotes.`);
-        }
+        if (ocup && ocup.valFrente !== o.valFrente) return alert(`Destino já contém este material com validade ${ocup.valFrente} (origem: ${o.valFrente}). Não misture lotes.`);
         _transfEmCurso = true;
         try {
             const refO = db.collection("estoque_blocado").doc(o.id);
             const refD = ocup ? db.collection("estoque_blocado").doc(ocup.id) : db.collection("estoque_blocado").doc();
             const refBO = refBin(o.ender), refBD = refBin(dest);
-            const grupos = agruparDatas(mover);
-            const refsMS = grupos.map(() => db.collection("movimentacoes_wms").doc()), refsME = grupos.map(() => db.collection("movimentacoes_wms").doc());
+            const refMS = db.collection("movimentacoes_wms").doc(), refME = db.collection("movimentacoes_wms").doc();
             const refHS = db.collection("historico_posicoes").doc(), refHE = db.collection("historico_posicoes").doc();
-            const refDiv = viol ? db.collection("divergencias_fefo_301").doc() : null;
             const t0 = new Date(), t1 = new Date(t0.getTime() + 1);
             await db.runTransaction(async tx => {
                 const sO = await tx.get(refO), sBO = await tx.get(refBO), sBD = await tx.get(refBD);
                 if (!sO.exists) throw new Error("A posição de origem foi alterada por outro operador.");
                 const dO = sO.data(); const atualO = parseInt(dO.qtd) || 0;
                 if (qtd > atualO) throw new Error(`Saldo atual da origem é ${atualO} PL.`);
-                const palOF = o301 ? paletesDe(dO) : Array(atualO).fill(dO.valFrente);
-                if (palOF.slice(0, qtd).join('|') !== mover.join('|')) throw new Error("Os paletes da origem foram alterados por outro operador. Refaça a transferência.");
                 let dD = null; if (ocup) { const sD = await tx.get(refD); if (!sD.exists) throw new Error("O destino foi alterado por outro operador."); dD = sD.data(); }
                 const atualD = dD ? (parseInt(dD.qtd) || 0) : 0;
-                const palDF = dD ? (d301 ? paletesDe(dD) : Array(atualD).fill(dD.valFrente)) : [];
-                if (d301) {
-                    if (palDF.length + qtd > CAP_301) throw new Error(`Posição 301 de destino comporta no máximo ${CAP_301} paletes.`);
-                    if (!!violaSequencia301(palDF, mover) !== !!viol) throw new Error("O destino foi alterado por outro operador. Confira a sequência FEFO e tente novamente.");
-                }
                 const stO = statusDoBin(sBO), stD = statusDoBin(sBD);
                 const antesO = fotoPos(o.ender, dO, stO), antesD = fotoPos(dest, dD, stD);
-                const restoO = palOF.slice(qtd);
                 let depoisO;
                 if (qtd === atualO) { tx.delete(refO); depoisO = fotoPos(o.ender, null, stO); }
-                else if (o301) { tx.update(refO, camposPaletes(restoO)); depoisO = fotoPos(o.ender, Object.assign({}, dO, camposPaletes(restoO)), stO); }
                 else { tx.update(refO, { qtd: atualO - qtd }); depoisO = fotoPos(o.ender, Object.assign({}, dO, { qtd: atualO - qtd }), stO); }
-                const novoPalD = ordenarDatas(palDF.concat(mover));
-                const novoD = d301 ? Object.assign({ ender: dest, mat: dO.mat, desc: dO.desc }, camposPaletes(novoPalD))
-                                   : { ender: dest, mat: dO.mat, desc: dO.desc, qtd: atualD + qtd, dias: calcularDiasValidade(dO.valFrente, dO.dias), valFrente: dO.valFrente };
-                if (dD) tx.update(refD, d301 ? camposPaletes(novoPalD) : { qtd: atualD + qtd }); else tx.set(refD, novoD);
-                const depoisD = dD ? fotoPos(dest, Object.assign({}, dD, d301 ? camposPaletes(novoPalD) : { qtd: atualD + qtd }), stD) : fotoPos(dest, novoD, stD);
-                grupos.forEach(([dt, c], k) => {
-                    tx.set(refsMS[k], dadosMovimentacao(o.ender, dO.mat, dt, `-${c} PL`, `PARA ${dest}`, t0));
-                    tx.set(refsME[k], dadosMovimentacao(dest, dO.mat, dt, `+${c} PL`, `DE ${o.ender}`, t1));
-                });
+                const novoD = { ender: dest, mat: dO.mat, desc: dO.desc, qtd: atualD + qtd, dias: calcularDiasValidade(dO.valFrente, dO.dias), valFrente: dO.valFrente };
+                if (dD) tx.update(refD, { qtd: atualD + qtd }); else tx.set(refD, novoD);
+                tx.set(refMS, dadosMovimentacao(o.ender, dO.mat, dO.valFrente, `-${qtd} PL`, `PARA ${dest}`, t0));
+                tx.set(refME, dadosMovimentacao(dest, dO.mat, dO.valFrente, `+${qtd} PL`, `DE ${o.ender}`, t1));
                 tx.set(refBO, metaBin(o.ender), { merge: true });
                 tx.set(refBD, metaBin(dest), { merge: true });
-                tx.set(refHS, montarHistPosicao('TRANSFERÊNCIA - SAÍDA', o.ender, antesO, depoisO, { obs: `Destino: ${dest}`, movId: refsMS[0].id, agora: t0 }));
-                tx.set(refHE, montarHistPosicao('TRANSFERÊNCIA - ENTRADA', dest, antesD, depoisD, { obs: `Origem: ${o.ender}`, movId: refsME[0].id, agora: t1 }));
-                if (refDiv) tx.set(refDiv, montarDivergencia301('TRANSFERÊNCIA', dest, dO.mat, dO.desc, viol, { paletesAntes: resumoPaletes(palDF), movId: refsME[0].id, qtd: qtd }));
+                tx.set(refHS, montarHistPosicao('TRANSFERÊNCIA - SAÍDA', o.ender, antesO, depoisO, { obs: `Destino: ${dest}`, movId: refMS.id, agora: t0 }));
+                tx.set(refHE, montarHistPosicao('TRANSFERÊNCIA - ENTRADA', dest, antesD, fotoPos(dest, novoD, stD), { obs: `Origem: ${o.ender}`, movId: refME.id, agora: t1 }));
             });
             ['ab-origem', 'ab-mat', 'ab-destino', 'ab-qtd'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('ab-qtd').placeholder = 'Saldo: 0';
@@ -3188,7 +3072,6 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         const itemAtual = estoqueCompleto.find(i => i.id === itemEditandoBinId);
         const descLookup = buscarDescricaoLocal(novoMat);
         const novaDesc = descLookup !== "N/A" ? descLookup : (itemAtual ? itemAtual.desc : '');
-        if (eh301(novoEnder) || (itemAtual && eh301(itemAtual.ender))) return alert("Posições 301 têm controle individual por palete. Edite em 📍 POSIÇÕES E HISTÓRICO (botão ✏️ da linha).");
         _posSalvando = true;
         try {
             const refS = db.collection("estoque_blocado").doc(itemEditandoBinId);
@@ -3231,7 +3114,6 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
                     const valFrente = (c[3] || '').trim();
                     validos.push({ ender, mat, desc: (c[2] || '').trim(), valFrente, qtd, dias: calcularDiasValidade(valFrente, parseInt(((c[7] || '')).replace(/\D/g, '')) || 0) });
                 });
-                const acima301 = agruparPaletes301(validos);
                 if (validos.length === 0) return alert("Nenhuma linha válida encontrada. O estoque NÃO foi alterado.");
                 const aviso = rejeitadas.length ? `\n\n⚠️ ${rejeitadas.length} linha(s) inválida(s) serão ignoradas (ex.: linha ${rejeitadas.slice(0, 5).join(', ')}).` : '';
                 if (!confirm(`Confirmar reset de estoque para ${validos.length} itens?${aviso}`)) return;
@@ -3256,7 +3138,7 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
                     if (++n % 200 === 0) { await b.commit(); b = db.batch(); }
                 }
                 await b.commit();
-                alert(`Estoque Infinity Updated! ${alteradas} posição(ões) alterada(s) registrada(s) no histórico.` + (acima301 ? `\n\n⚠️ ${acima301} posição(ões) 301 importada(s) com mais de ${CAP_301} paletes (conferir).` : ''));
+                alert(`Estoque Infinity Updated! ${alteradas} posição(ões) alterada(s) registrada(s) no histórico.`);
             } catch (err) { alert("Erro na importação: " + errMsg(err)); }
             finally { event.target.value = ''; }
         };
@@ -3289,8 +3171,8 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         [...porEnder.values()].sort((a, b) => a.ender.localeCompare(b.ender, 'pt-BR', { numeric: true })).forEach(p => {
             const cad = binsCadastro.get(idBin(p.ender)) || {};
             const base = { ender: p.ender, atualizadoEm: cad.atualizadoEm, atualizadoPor: cad.atualizadoPor };
-            if (p.itens.length === 0) linhas.push(Object.assign({ mat: '', desc: '', qtd: 0, valFrente: '', dias: '', itemId: null, paletes: [] }, base));
-            else p.itens.forEach(i => linhas.push(Object.assign({ mat: i.mat, desc: i.desc || buscarDescricaoLocal(i.mat), qtd: parseInt(i.qtd) || 0, valFrente: i.valFrente || '', dias: i.dias, itemId: i.id, paletes: eh301(i.ender) ? paletesDe(i) : [] }, base)));
+            if (p.itens.length === 0) linhas.push(Object.assign({ mat: '', desc: '', qtd: 0, valFrente: '', dias: '', itemId: null }, base));
+            else p.itens.forEach(i => linhas.push(Object.assign({ mat: i.mat, desc: i.desc || buscarDescricaoLocal(i.mat), qtd: parseInt(i.qtd) || 0, valFrente: i.valFrente || '', dias: i.dias, itemId: i.id }, base)));
         });
         return linhas;
     }
@@ -3304,7 +3186,7 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         const cor = { 'OCUPADA': 'var(--verde)', 'LIVRE': 'var(--text-secondary)', 'BLOQUEADA': 'var(--retido)', 'INATIVA': 'var(--critico)' };
         linhas.slice(0, 500).forEach((l, i) => {
             const st = statusExibicaoPosicao(l); const tr = document.createElement('tr');
-            tr.innerHTML = `<td><b>${escH(l.ender)}</b></td><td>${escH(l.mat) || '—'}</td><td>${escH(l.desc) || '—'}</td><td><b>${l.qtd}</b></td><td>${escH(l.valFrente) || '—'}${l.paletes.length ? `<div style="font-size:10px; color:var(--text-secondary);">301 · ${l.paletes.length}/${CAP_301} PL · ${agruparDatas(l.paletes).length} validade(s)</div>` : ''}</td><td><span class="badge" style="background:${cor[st]}20; color:${cor[st]}; border:1px solid ${cor[st]}40;">${st}</span></td><td>${fmtDataHora(l.atualizadoEm)}</td><td>${escH(l.atualizadoPor) || '—'}</td><td><button class="btn-action" style="padding:6px 12px; font-size:12px; box-shadow:none;" onclick="editarLinhaPosicao(${i})">✏️</button></td>`;
+            tr.innerHTML = `<td><b>${escH(l.ender)}</b></td><td>${escH(l.mat) || '—'}</td><td>${escH(l.desc) || '—'}</td><td><b>${l.qtd}</b></td><td>${escH(l.valFrente) || '—'}</td><td><span class="badge" style="background:${cor[st]}20; color:${cor[st]}; border:1px solid ${cor[st]}40;">${st}</span></td><td>${fmtDataHora(l.atualizadoEm)}</td><td>${escH(l.atualizadoPor) || '—'}</td><td><button class="btn-action" style="padding:6px 12px; font-size:12px; box-shadow:none;" onclick="editarLinhaPosicao(${i})">✏️</button></td>`;
             tb.appendChild(tr);
         });
         $p('pos-contagem').innerText = `${linhas.length} linha(s)` + (linhas.length > 500 ? ' — exibindo as 500 primeiras; refine a busca ou exporte para Excel.' : '');
@@ -3315,16 +3197,14 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         $p('sidebar').classList.remove('active');
         if (!$p('hp-de').value) { const h = new Date(); const ini = new Date(h.getTime() - 6 * 86400000); $p('hp-de').value = hojeISOLocal(ini); $p('hp-ate').value = hojeISOLocal(h); }
         if (!$p('hp-acao').options.length || $p('hp-acao').options.length === 1) { $p('hp-acao').innerHTML = '<option value="">TODAS</option>' + HP_ACOES.map(a => `<option>${a}</option>`).join(''); }
-        if (!$p('dv-de').value) { const h = new Date(); $p('dv-de').value = hojeISOLocal(new Date(h.getTime() - 29 * 86400000)); $p('dv-ate').value = hojeISOLocal(h); }
         renderizarTabelaPosicoes();
         consultarHistoricoPosicoes();
-        consultarDivergencias301();
     }
     function abrirModalPosicao() {
         posEditando = null;
         $p('pos-modal-titulo').innerText = 'Nova Posição';
-        ['pos-f-ender', 'pos-f-mat', 'pos-f-desc', 'pos-f-qtd', 'pos-f-val', 'pos-f-obs', 'pos-f-paletes'].forEach(id => $p(id).value = '');
-        $p('pos-f-ender').readOnly = false; $p('pos-f-status').value = 'ATIVA'; alternarCampoPaletes301();
+        ['pos-f-ender', 'pos-f-mat', 'pos-f-desc', 'pos-f-qtd', 'pos-f-val', 'pos-f-obs'].forEach(id => $p(id).value = '');
+        $p('pos-f-ender').readOnly = false; $p('pos-f-status').value = 'ATIVA';
         $p('modal-posicao').style.display = 'flex';
     }
     function editarLinhaPosicao(i) {
@@ -3336,8 +3216,6 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         $p('pos-f-val').value = /^\d{2}\/\d{2}\/\d{4}$/.test(l.valFrente) ? l.valFrente.split('/').reverse().join('-') : '';
         $p('pos-f-status').value = binsCadastro.get(idBin(l.ender))?.status || 'ATIVA';
         $p('pos-f-obs').value = '';
-        $p('pos-f-paletes').value = (l.paletes || []).length ? agruparDatas(l.paletes).map(([d, c]) => c > 1 ? `${d} x${c}` : d).join('\n') : '';
-        alternarCampoPaletes301();
         $p('modal-posicao').style.display = 'flex';
     }
     function fecharModalPosicao() { $p('modal-posicao').style.display = 'none'; }
@@ -3347,25 +3225,14 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         if (_posSalvando) return;
         const ender = $p('pos-f-ender').value.trim().toUpperCase();
         let mat = $p('pos-f-mat').value.trim(), desc = $p('pos-f-desc').value.trim();
-        let qtd = parseInt($p('pos-f-qtd').value);
+        const qtd = parseInt($p('pos-f-qtd').value);
         const valISO = $p('pos-f-val').value, status = $p('pos-f-status').value, obs = $p('pos-f-obs').value.trim();
         if (!ender) return alert("Informe a posição.");
         if (ender.includes('/')) return alert("Posição não pode conter '/'.");
-        const e301 = eh301(ender);
-        let paletesArr = null;
-        if (e301) { // posição 301: cada palete com sua validade (campo "Paletes") ou todos com a validade única informada
-            const txt = $p('pos-f-paletes').value.trim();
-            if (txt) {
-                const r = parsePaletesTexto(txt);
-                if (r.erros.length) return alert("Validades inválidas: " + r.erros.join(', ') + ". Use DD/MM/AAAA, ou DD/MM/AAAA x3 para vários paletes com a mesma validade.");
-                paletesArr = r.datas; qtd = paletesArr.length;
-            } else if (qtd > 0 && valISO) paletesArr = Array(qtd).fill(valISO.split('-').reverse().join('/'));
-            if (paletesArr && paletesArr.length > CAP_301) return alert(`Posição 301 comporta no máximo ${CAP_301} paletes (informados: ${paletesArr.length}).`);
-        }
         if (isNaN(qtd) || qtd < 0) return alert("Informe a quantidade (0 para posição livre).");
         if (qtd > 0) {
             if (!mat) return alert("Informe o material.");
-            if (!valISO && !(e301 && paletesArr)) return alert("Informe a validade.");
+            if (!valISO) return alert("Informe a validade.");
             if (desc === '') { const d = buscarDescricaoLocal(mat); if (d === 'N/A') return alert("Material fora da base: informe a descrição."); desc = d; }
         } else { mat = ''; desc = ''; }
         if (!navigator.onLine) return alert("Sem conexão. Aguarde o sinal voltar para salvar.");
@@ -3383,11 +3250,10 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
                 const sB = await tx.get(refB); const sS = itemId ? await tx.get(refS) : null;
                 if (itemId && !sS.exists) throw new Error("Este registro não existe mais (alterado por outro usuário). Reabra a posição.");
                 const antes = criando ? null : fotoPos(ender, sS ? sS.data() : null, statusDoBin(sB));
-                const docNovo = qtd > 0 ? (e301 ? Object.assign({ mat, desc }, camposPaletes(ordenarDatas(paletesArr))) : { mat, desc, qtd, valFrente: val, dias: calcularDiasValidade(val, 0) }) : null;
-                const depois = fotoPos(ender, docNovo, status);
+                const depois = fotoPos(ender, qtd > 0 ? { mat, desc, qtd, valFrente: val } : null, status);
                 if (antes && descreverMudancas(antes, depois) === 'Sem alteração de dados') throw new Error('__SEM_ALTERACAO__');
-                if (itemId) { if (qtd > 0) tx.update(refS, docNovo); else tx.delete(refS); }
-                else if (qtd > 0) tx.set(refS, Object.assign({ ender }, docNovo));
+                if (itemId) { if (qtd > 0) tx.update(refS, { mat, desc, qtd, valFrente: val, dias: calcularDiasValidade(val, 0) }); else tx.delete(refS); }
+                else if (qtd > 0) tx.set(refS, { ender, mat, desc, qtd, valFrente: val, dias: calcularDiasValidade(val, 0) });
                 tx.set(refB, metaBin(ender, status, !sB.exists), { merge: true });
                 tx.set(db.collection('lx03_mapa_bins').doc(ender), { ender }, { merge: true }); // mantém LX03/LS03N enxergando a posição
                 const acao = criando ? 'CADASTRO DE POSIÇÃO' : ((antes && !antes.qtd && depois.qtd) ? 'ALIMENTAÇÃO DE POSIÇÃO' : 'ATUALIZAÇÃO ADMIN');
@@ -3402,14 +3268,14 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
     function exportarPosicoesExcel() {
         const linhas = posLinhasVisiveis.length ? posLinhasVisiveis : linhasPosicoes();
         if (linhas.length === 0) return alert("Não há posições para exportar.");
-        const dados = linhas.map(l => ({ "Posição": l.ender, "Material": l.mat || '', "Descrição": l.desc || '', "Quantidade (PL)": l.qtd, "Validade (próxima a sair)": l.valFrente || '', "Paletes 301 (validades)": (l.paletes || []).length ? resumoPaletes(l.paletes) : '', "Dias p/ vencer": l.dias === '' ? '' : l.dias, "Status": statusExibicaoPosicao(l), "Atualizado em": fmtDataHora(l.atualizadoEm), "Atualizado por": l.atualizadoPor || '' }));
-        const ws = XLSX.utils.json_to_sheet(dados); ws['!cols'] = [12, 12, 36, 14, 14, 40, 14, 12, 18, 18].map(w => ({ wch: w }));
+        const dados = linhas.map(l => ({ "Posição": l.ender, "Material": l.mat || '', "Descrição": l.desc || '', "Quantidade (PL)": l.qtd, "Validade": l.valFrente || '', "Dias p/ vencer": l.dias === '' ? '' : l.dias, "Status": statusExibicaoPosicao(l), "Atualizado em": fmtDataHora(l.atualizadoEm), "Atualizado por": l.atualizadoPor || '' }));
+        const ws = XLSX.utils.json_to_sheet(dados); ws['!cols'] = [12, 12, 36, 14, 12, 14, 12, 18, 18].map(w => ({ wch: w }));
         const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Posições");
         XLSX.writeFile(wb, `WMS_Posicoes_${hojeISOLocal()}.xlsx`);
     }
 
     // ---- Histórico de alterações: consulta por data (servidor filtra por período) + filtros + exportação Excel ----
-    function fmtFotoHist(f) { return f ? `${f.mat || '—'} · ${f.qtd} PL · ${f.validade || '—'} · ${f.status}${f.paletes ? ` · [${f.paletes}]` : ''}` : '—'; }
+    function fmtFotoHist(f) { return f ? `${f.mat || '—'} · ${f.qtd} PL · ${f.validade || '—'} · ${f.status}` : '—'; }
     async function consultarHistoricoPosicoes() {
         const de = $p('hp-de').value, ate = $p('hp-ate').value;
         if (!de || !ate) return alert("Informe o período (De / Até).");
@@ -3443,14 +3309,14 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
             return {
                 "Data": h.data, "Hora": h.hora, "Posição": h.ender, "Posição anterior": h.enderAnterior || '', "Ação": h.acao,
                 "Responsável": h.responsavel || '', "Matrícula": h.matricula || '',
-                "Material (antes)": a.mat || '', "Descrição (antes)": a.desc || '', "Qtd (antes)": h.antes ? a.qtd : '', "Validade (antes)": a.validade || '', "Paletes 301 (antes)": a.paletes || '', "Status (antes)": a.status || '',
-                "Material (depois)": d.mat || '', "Descrição (depois)": d.desc || '', "Qtd (depois)": h.depois ? d.qtd : '', "Validade (depois)": d.validade || '', "Paletes 301 (depois)": d.paletes || '', "Status (depois)": d.status || '',
+                "Material (antes)": a.mat || '', "Descrição (antes)": a.desc || '', "Qtd (antes)": h.antes ? a.qtd : '', "Validade (antes)": a.validade || '', "Status (antes)": a.status || '',
+                "Material (depois)": d.mat || '', "Descrição (depois)": d.desc || '', "Qtd (depois)": h.depois ? d.qtd : '', "Validade (depois)": d.validade || '', "Status (depois)": d.status || '',
                 "Variação Qtd": (h.antes && h.depois) ? (d.qtd - a.qtd) : (h.depois ? d.qtd : ''),
                 "Campos alterados": h.alteracoes || '', "Observação": h.obs || '', "ID movimentação": h.movId || ''
             };
         });
         const ws = XLSX.utils.json_to_sheet(dados);
-        ws['!cols'] = [11, 9, 12, 14, 24, 20, 12, 12, 30, 10, 12, 34, 12, 12, 30, 10, 12, 34, 12, 12, 40, 28, 22].map(w => ({ wch: w }));
+        ws['!cols'] = [11, 9, 12, 14, 24, 20, 12, 12, 30, 10, 12, 12, 12, 30, 10, 12, 12, 12, 40, 28, 22].map(w => ({ wch: w }));
         const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Histórico_Posições");
         XLSX.writeFile(wb, `Historico_Posicoes_${$p('hp-de').value}_a_${$p('hp-ate').value}.xlsx`);
     }
@@ -3578,374 +3444,6 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
     renderizarPaineisEGraticos = function (dados) {
         _renderPaineisOriginalV5(dados);
         try { renderizarOcupacao(); } catch (e) { console.error('renderizarOcupacao', e); }
-    };
-
-    // ================= POSIÇÕES 301 — CONTROLE FEFO INDIVIDUAL DOS 12 PALETES - MÓDULO ADITIVO =================
-    // Posição 301: até 12 paletes, cada um com sua validade (campo "paletes" = lista ordenada da menor para a maior).
-    // qtd = nº de paletes e valFrente = próxima validade a sair (assim LX03, FEFO, dashboard e demais telas continuam funcionando).
-    const CAP_301 = 12;
-    let dvResultados = [];
-
-    function eh301(ender) { return (ender || '').toString().trim().toUpperCase().startsWith('301'); }
-    function dataValida(s) {
-        const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s || ''); if (!m) return false;
-        const d = +m[1], mo = +m[2]; return d >= 1 && d <= 31 && mo >= 1 && mo <= 12;
-    }
-    function ordenarDatas(arr) { return arr.slice().sort((a, b) => parseDataBRFEFO(a) - parseDataBRFEFO(b)); }
-    function paletesDe(item) {
-        if (!item) return [];
-        const q = parseInt(item.qtd) || 0; if (q <= 0) return [];
-        let arr = ordenarDatas(Array.isArray(item.paletes) ? item.paletes.filter(dataValida) : []);
-        const fill = item.valFrente || arr[0] || '';
-        while (arr.length < q) arr.push(fill);              // registro antigo (sem lista): todos os paletes com a validade da posição
-        if (arr.length > q) arr = arr.slice(0, q);
-        return ordenarDatas(arr);
-    }
-    function agruparDatas(arr) { const m = new Map(); arr.forEach(d => m.set(d, (m.get(d) || 0) + 1)); return [...m.entries()]; }
-    function resumoPaletes(arr) { return agruparDatas(arr).map(([d, c]) => c > 1 ? `${d} ×${c}` : d).join(' · '); }
-    function removerDatas(arr, datas) { const r = arr.slice(); for (const d of datas) { const i = r.indexOf(d); if (i < 0) return null; r.splice(i, 1); } return r; }
-    function difMultiset(a, b) { const r = a.slice(); b.forEach(d => { const i = r.indexOf(d); if (i >= 0) r.splice(i, 1); }); return r; }
-    function camposPaletes(arr) { return { qtd: arr.length, paletes: arr, valFrente: arr[0] || '', dias: calcularDiasValidade(arr[0], 0) }; }
-
-    // Entrada/transferência para 301: a menor validade que entra não pode ser anterior à última da sequência da posição
-    function violaSequencia301(existentes, novas) {
-        if (!existentes.length || !novas.length) return null;
-        const ult = existentes[existentes.length - 1], menor = ordenarDatas(novas)[0];
-        if (parseDataBRFEFO(menor) >= parseDataBRFEFO(ult)) return null;
-        return { identificada: menor, prioritaria: ult, motivo: `Validade anterior à última da sequência da posição (${ult}). O palete deve entrar com validade igual ou posterior.` };
-    }
-    // Retirada: os paletes retirados devem ser os de menor validade da posição
-    function violaRetirada301(pal, escolhidas) {
-        const ideal = pal.slice(0, escolhidas.length);
-        const extras = difMultiset(escolhidas, ideal), faltantes = difMultiset(ideal, escolhidas);
-        if (!extras.length) return null;
-        const pri = ordenarDatas(faltantes)[0];
-        return { identificada: ordenarDatas(extras)[0], prioritaria: pri, qtdDivergentes: extras.length, motivo: `Retirada fora da sequência FEFO. Deve sair primeiro o palete com validade ${pri}.` };
-    }
-    function textoAlertaFefo301(mat, desc, ender, v) {
-        return `⚠️ ALERTA: MATERIAL SOB FEFO INCORRETO!\n\nMaterial: ${mat} – ${desc || buscarDescricaoLocal(mat)}\nPosição: ${ender}\nValidade identificada: ${v.identificada}\nValidade prioritária: ${v.prioritaria}\n\n${v.motivo}`;
-    }
-    function montarDivergencia301(tipo, ender, mat, desc, v, extra) {
-        extra = extra || {}; const agora = new Date(), r = dadosResponsavel();
-        return {
-            tipo, ender, material: (mat || '').toString(), desc: desc || buscarDescricaoLocal(mat) || '',
-            validadeIdentificada: v.identificada, validadePrioritaria: v.prioritaria, qtdPaletes: extra.qtd || v.qtdDivergentes || 1, motivo: v.motivo,
-            paletesAntes: extra.paletesAntes || '', movId: extra.movId || '',
-            responsavel: r.responsavel, login: r.login, matricula: r.matricula,
-            data: agora.toLocaleDateString('pt-BR'), hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora
-        };
-    }
-    function parsePaletesTexto(txt) {
-        const out = [], erros = [];
-        (txt || '').split(/[\n,;·]+/).map(s => s.trim()).filter(Boolean).forEach(tok => {
-            const m = tok.match(/^(\d{2}\/\d{2}\/\d{4})\s*(?:[x×*]\s*(\d+))?$/i);
-            if (!m || !dataValida(m[1])) { erros.push(tok); return; }
-            for (let i = 0, c = m[2] ? parseInt(m[2]) : 1; i < c; i++) out.push(m[1]);
-        });
-        return { datas: ordenarDatas(out), erros };
-    }
-    // Importação CSV: linhas da mesma posição 301 + material viram UM registro com os paletes individuais
-    function agruparPaletes301(validos) {
-        const grupos = new Map(), finais = [];
-        validos.forEach(v => {
-            if (!eh301(v.ender) || !dataValida(v.valFrente)) { finais.push(v); return; }
-            const k = idBin(v.ender) + '|' + v.mat; let g = grupos.get(k);
-            if (!g) { g = { ender: v.ender, mat: v.mat, desc: v.desc, paletes: [] }; grupos.set(k, g); finais.push(g); }
-            for (let i = 0; i < v.qtd; i++) g.paletes.push(v.valFrente);
-        });
-        let acima = 0;
-        grupos.forEach(g => { Object.assign(g, camposPaletes(ordenarDatas(g.paletes))); if (g.qtd > CAP_301) acima++; });
-        validos.splice(0, validos.length, ...finais);
-        return acima;
-    }
-
-    // FEFO (ICF): lotes de posições 301 entram pelo palete (um lote por validade), não só pela menor validade da posição
-    avaliarConformidadeFEFO = function (mat, valEscolhido, qtdRetirada) {
-        const lotes = [];
-        estoqueCompleto.filter(i => i.mat === mat && (parseInt(i.qtd) || 0) > 0).forEach(i => {
-            if (eh301(i.ender)) agruparDatas(paletesDe(i)).forEach(([d, c]) => lotes.push({ valFrente: d, qtd: c }));
-            else lotes.push({ valFrente: i.valFrente, qtd: i.qtd });
-        });
-        lotes.forEach(l => { l._dataOrdenacao = parseDataBRFEFO(l.valFrente); });
-        lotes.sort((a, b) => a._dataOrdenacao - b._dataOrdenacao);
-        if (lotes.length === 0) return { status: 'N/A', loteAntigo: null };
-        const maisAntigo = lotes[0];
-        if (valEscolhido === maisAntigo.valFrente) return { status: 'OK', loteAntigo: maisAntigo.valFrente };
-        if (parseDataBRFEFO(valEscolhido) > maisAntigo._dataOrdenacao) {
-            const saldoAntigo = parseInt(maisAntigo.qtd) || 0;
-            return { status: saldoAntigo >= qtdRetirada ? 'FURO' : 'PARCIAL', loteAntigo: maisAntigo.valFrente };
-        }
-        return { status: 'OK', loteAntigo: maisAntigo.valFrente };
-    };
-
-    // ---- Modal de retirada: sequência da posição + escolha da validade de cada palete retirado (padrão = FEFO) ----
-    function montarSelecoes301() {
-        const box = document.getElementById('modal-paletes301'); if (!box) return;
-        const it = itemParaRetirar;
-        if (!it || !eh301(it.ender)) { box.style.display = 'none'; return; }
-        const pal = paletesDe(estoqueCompleto.find(i => i.id === it.id));
-        box.style.display = 'block';
-        document.getElementById('modal-paletes301-info').innerHTML = `🧱 <b>Posição 301 — ${pal.length}/${CAP_301} paletes</b><br>PRÓXIMO A SAIR (FEFO): <b style="color:var(--critico)">${pal[0] || '—'}</b><br><span style="color:var(--text-secondary)">Sequência: ${resumoPaletes(pal)}</span>`;
-        const n = Math.min(parseInt(document.getElementById('modal-input-qtd').value) || 0, pal.length);
-        const sel = document.getElementById('modal-paletes301-sel'); sel.innerHTML = '';
-        const distintas = agruparDatas(pal);
-        for (let i = 0; i < n; i++) {
-            const row = document.createElement('div'); row.style.cssText = 'display:flex; align-items:center; gap:10px; margin-top:8px;';
-            row.innerHTML = `<span style="font-size:11px; font-weight:800; min-width:72px;">Palete ${i + 1}</span><select data-pal301 style="flex:1; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 12px; border-radius: 12px; color: #fff; font-weight: 600;">` +
-                distintas.map(([d, c]) => `<option value="${d}"${d === pal[i] ? ' selected' : ''}>${d} (${c} na posição)</option>`).join('') + `</select>`;
-            sel.appendChild(row);
-        }
-    }
-    const _retirarMaterialV301 = retirarMaterial;
-    retirarMaterial = function () { _retirarMaterialV301.apply(this, arguments); montarSelecoes301(); };
-    document.getElementById('modal-input-qtd').addEventListener('input', montarSelecoes301);
-
-    // ---- Pesquisar Estoque: card da posição 301 mostra os paletes e o próximo a sair ----
-    const _renderizarEstoqueV301 = renderizarEstoque;
-    renderizarEstoque = function () {
-        _renderizarEstoqueV301();
-        document.querySelectorAll('#lista-estoque .item-card').forEach(card => {
-            const btn = card.querySelector('button[onclick^="retirarMaterial("]'); if (!btn) return;
-            const m = btn.getAttribute('onclick').match(/retirarMaterial\('([^']+)'/); if (!m) return;
-            const item = estoqueCompleto.find(i => i.id === m[1]); if (!item || !eh301(item.ender)) return;
-            const pal = paletesDe(item); const prox = agruparDatas(pal)[0];
-            const bloco = document.createElement('div');
-            bloco.style.cssText = 'font-size:10px; margin-top:12px; color: var(--text-secondary); font-weight: 800; line-height:1.8;';
-            bloco.innerHTML = `🧱 POSIÇÃO 301 · ${pal.length}/${CAP_301} PALETES<br>PRÓXIMO A SAIR: <b style="color:var(--critico)">${prox ? prox[0] : '—'}${prox ? ` (${prox[1]} PL)` : ''}</b><br>SEQUÊNCIA: <span style="color:#fff">${resumoPaletes(pal)}</span>`;
-            card.firstElementChild.appendChild(bloco);
-        });
-    };
-
-    // ---- Cadastro admin: campo "Paletes" só aparece para posições 301 ----
-    function alternarCampoPaletes301() { $p('pos-f-paletes-wrap').style.display = eh301($p('pos-f-ender').value) ? 'block' : 'none'; }
-    $p('pos-f-ender').addEventListener('input', alternarCampoPaletes301);
-    $p('pos-f-paletes').addEventListener('input', () => { const r = parsePaletesTexto($p('pos-f-paletes').value); if (!r.erros.length && r.datas.length) $p('pos-f-qtd').value = r.datas.length; });
-
-    // ---- Histórico de divergências FEFO (posições 301): consulta por data + Excel ----
-    async function consultarDivergencias301() {
-        const de = $p('dv-de').value, ate = $p('dv-ate').value;
-        if (!de || !ate) return alert("Informe o período das divergências (De / Até).");
-        const ini = new Date(de + 'T00:00:00'), fim = new Date(ate + 'T23:59:59.999');
-        if (fim < ini) return alert('Período inválido: "Até" anterior a "De".');
-        const fPos = $p('dv-pos').value.trim().toLowerCase(), fMat = $p('dv-mat').value.trim().toLowerCase(), fResp = $p('dv-resp').value.trim().toLowerCase();
-        $p('dv-contagem').innerText = 'Consultando...';
-        try {
-            const LIM = 5000;
-            const snap = await db.collection('divergencias_fefo_301').where('timestamp', '>=', ini).where('timestamp', '<=', fim).orderBy('timestamp', 'desc').limit(LIM).get();
-            dvResultados = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(h =>
-                (!fPos || (h.ender || '').toLowerCase().includes(fPos)) &&
-                (!fMat || (h.material || '').toLowerCase().includes(fMat) || (h.desc || '').toLowerCase().includes(fMat)) &&
-                (!fResp || (h.responsavel || '').toLowerCase().includes(fResp) || (h.login || '').toLowerCase().includes(fResp)));
-            const tb = $p('dv-tabela'); tb.innerHTML = '';
-            dvResultados.slice(0, 200).forEach(h => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${escH(h.data)}</td><td>${escH(h.hora)}</td><td><b>${escH(h.ender)}</b></td><td><b>${escH(h.material)}</b><div style="font-size:10px; color:var(--text-secondary);">${escH(h.desc)}</div></td><td style="color:var(--retido);"><b>${escH(h.validadeIdentificada)}</b></td><td style="color:var(--verde);"><b>${escH(h.validadePrioritaria)}</b></td><td>${escH(h.tipo)}${h.qtdPaletes > 1 ? ` · ${h.qtdPaletes} PL` : ''}</td><td>${escH(h.responsavel)}<div style="font-size:10px; color:var(--text-secondary);">${escH(h.matricula)}</div></td>`;
-                tb.appendChild(tr);
-            });
-            $p('dv-contagem').innerText = `${dvResultados.length} divergência(s) no período` + (dvResultados.length > 200 ? ' — exibindo as 200 mais recentes; exporte para Excel para ver todas.' : '') + (snap.size >= LIM ? ` ⚠️ Limite de ${LIM} registros atingido: reduza o período.` : '');
-        } catch (e) { console.error(e); $p('dv-contagem').innerText = ''; alert("Erro ao consultar divergências: " + errMsg(e)); }
-    }
-    function exportarDivergencias301Excel() {
-        if (dvResultados.length === 0) return alert("Nenhuma divergência para exportar. Faça a consulta primeiro.");
-        const dados = dvResultados.map(h => ({ "Data": h.data, "Hora": h.hora, "Posição": h.ender, "Material": h.material, "Descrição": h.desc || '', "Validade identificada": h.validadeIdentificada, "Validade prioritária": h.validadePrioritaria, "Tipo de movimentação": h.tipo, "Qtd paletes": h.qtdPaletes || 1, "Responsável": h.responsavel || '', "Matrícula": h.matricula || '', "Motivo": h.motivo || '', "Paletes da posição (antes)": h.paletesAntes || '', "ID movimentação": h.movId || '' }));
-        const ws = XLSX.utils.json_to_sheet(dados); ws['!cols'] = [11, 9, 12, 12, 34, 14, 14, 16, 10, 20, 12, 50, 50, 22].map(w => ({ wch: w }));
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Divergências_FEFO_301");
-        XLSX.writeFile(wb, `Divergencias_FEFO_301_${$p('dv-de').value}_a_${$p('dv-ate').value}.xlsx`);
-    }
-
-    // ================= ALTERAÇÃO EM MASSA DE POSIÇÕES (ADMIN) + MENSAGENS DE LOGIN - MÓDULO ADITIVO =================
-    let massaPlano = null, _massaAplicando = false;
-    const MASSA_ALIAS = {
-        ender: ['POSICAO', 'ENDER', 'ENDERECO', 'CODENDER', 'BIN'],
-        mat: ['MATERIAL', 'CODIGODOMATERIAL', 'CODMATERIAL', 'CODIGO'],
-        desc: ['DESCRICAO', 'DESC'],
-        qtd: ['QUANTIDADEPL', 'QUANTIDADE', 'QTD', 'QTDPL'],
-        val: ['VALIDADEPROXIMAASAIR', 'VALIDADE', 'VENCIMENTO'],
-        paletes: ['PALETES301VALIDADES', 'PALETES301', 'PALETES', 'VALIDADESPALETES'],
-        status: ['STATUS']
-    };
-    function colunaMassa(row, chave) {
-        for (const k of Object.keys(row)) if (MASSA_ALIAS[chave].includes(normTxt(k).replace(/[^A-Z0-9]/g, ''))) return row[k];
-        return '';
-    }
-    function dataDeCelula(v) { // texto DD/MM/AAAA, AAAA-MM-DD ou data serial do Excel -> DD/MM/AAAA ('' vazio, null inválido)
-        if (v === '' || v === null || v === undefined) return '';
-        if (typeof v === 'number') { const p = XLSX.SSF.parse_date_code(v); return p ? `${String(p.d).padStart(2, '0')}/${String(p.m).padStart(2, '0')}/${p.y}` : null; }
-        const s = v.toString().trim(); if (!s) return '';
-        if (dataValida(s)) return s;
-        let m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/); if (m) return `${m[3]}/${m[2]}/${m[1]}`;
-        m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if (m && dataValida(`${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}/${m[3]}`)) return `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}/${m[3]}`;
-        return null;
-    }
-    function posicaoExiste(ender) {
-        return estoqueCompleto.some(i => mesmoEnder(i.ender, ender)) || binsCadastro.has(idBin(ender)) || mapaBinsArmazem.some(p => mesmoEnder(p, ender));
-    }
-    function statusAtualPos(ender) { return binsCadastro.get(idBin(ender))?.status || 'ATIVA'; }
-    function estoqueUnicoDe(ender) { const a = estoqueCompleto.filter(i => mesmoEnder(i.ender, ender) && (parseInt(i.qtd) || 0) > 0); return a; }
-
-    function montarPlanoMassa(rows, nomeArquivo) {
-        const erros = [], grupos = new Map(), itens = []; let semAlteracao = 0;
-        const agora = new Date();
-        const lote = `${hojeISOLocal(agora).replace(/-/g, '')}-${agora.toLocaleTimeString('pt-BR').replace(/:/g, '')}`;
-        rows.forEach((row, idx) => {
-            if (Object.values(row).every(v => v === '' || v === null || v === undefined)) return;
-            const ender = colunaMassa(row, 'ender').toString().trim().toUpperCase();
-            const linha = idx + 2;
-            if (!ender) { erros.push(`Linha ${linha}: posição em branco.`); return; }
-            if (!grupos.has(ender)) grupos.set(ender, []);
-            grupos.get(ender).push({ row, linha });
-        });
-        grupos.forEach((lista, ender) => {
-            const erro = m => erros.push(`${ender} (linha ${lista[0].linha}): ${m}`);
-            if (lista.length > 1) return erro(`posição repetida na planilha (linhas ${lista.map(x => x.linha).join(', ')}). Nada foi alterado nela.`);
-            if (ender.includes('/')) return erro("a posição não pode conter '/'.");
-            const row = lista[0].row, e301 = eh301(ender);
-            const atuais = estoqueUnicoDe(ender);
-            if (atuais.length > 1) return erro("posição com mais de um registro de estoque; altere pelo ✏️ da linha na tela.");
-            const atual = atuais[0] || null, stAtual = statusAtualPos(ender);
-            const stTxt = normTxt(colunaMassa(row, 'status')).replace(/[^A-Z]/g, '');
-            const statusNovo = stTxt === '' ? stAtual : ({ ATIVA: 'ATIVA', ATIVO: 'ATIVA', BLOQUEADA: 'BLOQUEADA', BLOQUEADO: 'BLOQUEADA', INATIVA: 'INATIVA', INATIVO: 'INATIVA' }[stTxt]);
-            if (!statusNovo) return erro(`status inválido ("${colunaMassa(row, 'status')}"). Use ATIVA, BLOQUEADA ou INATIVA.`);
-            const qBruto = colunaMassa(row, 'qtd');
-            let qtd = (qBruto === '' || qBruto === null) ? NaN : Number(qBruto);
-            const pBruto = colunaMassa(row, 'paletes');
-            const pTxt = typeof pBruto === 'number' ? (dataDeCelula(pBruto) || '') : pBruto.toString().trim();
-            let mat = colunaMassa(row, 'mat').toString().trim(), desc = colunaMassa(row, 'desc').toString().trim();
-            const val = dataDeCelula(colunaMassa(row, 'val'));
-            let paletesArr = null;
-            if (e301 && pTxt) {
-                const r = parsePaletesTexto(pTxt);
-                if (r.erros.length) return erro(`paletes inválidos (${r.erros.join(', ')}). Use DD/MM/AAAA ou DD/MM/AAAA ×3.`);
-                paletesArr = r.datas;
-                if (!isNaN(qtd) && qtd !== paletesArr.length) return erro(`quantidade (${qtd}) diferente do nº de paletes listados (${paletesArr.length}). Ajuste uma das colunas.`);
-                qtd = paletesArr.length;
-            } else if (!e301 && pTxt) return erro("a coluna Paletes só vale para posições 301.");
-            if (isNaN(qtd) || !Number.isInteger(qtd) || qtd < 0) return erro("quantidade inválida (use inteiro; 0 libera a posição).");
-            if (qtd > 0) {
-                if (!mat) return erro("material em branco.");
-                if (desc === '') { const d = buscarDescricaoLocal(mat); if (d === 'N/A') return erro(`material ${mat} fora da base: informe a descrição.`); desc = d; }
-                if (e301) {
-                    if (!paletesArr) { if (!val) return erro("validade em branco ou inválida."); paletesArr = Array(qtd).fill(val); }
-                    if (paletesArr.length > CAP_301) return erro(`posição 301 comporta no máximo ${CAP_301} paletes (informados: ${paletesArr.length}).`);
-                } else if (!val) return erro("validade em branco ou inválida (use DD/MM/AAAA).");
-            } else { mat = ''; desc = ''; }
-            const docNovo = qtd > 0 ? (e301 ? Object.assign({ mat, desc }, camposPaletes(ordenarDatas(paletesArr))) : { mat, desc, qtd, valFrente: val, dias: calcularDiasValidade(val, 0) }) : null;
-            const existe = posicaoExiste(ender);
-            const antes = existe ? fotoPos(ender, atual, stAtual) : null;
-            const depois = fotoPos(ender, docNovo, statusNovo);
-            if (antes && descreverMudancas(antes, depois) === 'Sem alteração de dados') { semAlteracao++; return; }
-            const tipo = !existe ? 'NOVA' : (!atual && docNovo ? 'ALIMENTADA' : (atual && !docNovo ? 'LIBERADA' : 'ATUALIZADA'));
-            itens.push({ linha: lista[0].linha, ender, itemId: atual ? atual.id : null, docNovo, antes, depois, statusNovo, binExiste: binsCadastro.has(idBin(ender)), tipo, alteracoes: descreverMudancas(antes, depois) });
-        });
-        return { arquivo: nomeArquivo, lote, itens, erros, semAlteracao };
-    }
-
-    function renderPreviewMassa() {
-        const p = massaPlano, box = $p('massa-preview'), btn = $p('btn-aplicar-massa');
-        const cont = t => p.itens.filter(i => i.tipo === t).length;
-        let h = `<b>${p.itens.length}</b> posição(ões) a alterar (${cont('NOVA')} nova(s), ${cont('ALIMENTADA')} alimentada(s), ${cont('ATUALIZADA')} atualizada(s), ${cont('LIBERADA')} liberada(s)) · ${p.semAlteracao} sem alteração · <b style="color:var(--retido)">${p.erros.length}</b> com erro (não serão aplicadas).`;
-        if (p.itens.length) h += `<div style="margin-top:10px; max-height:160px; overflow-y:auto; background:rgba(255,255,255,0.02); padding:10px; border-radius:12px; font-size:11px;">` + p.itens.slice(0, 40).map(i => `<div><b>${escH(i.ender)}</b> · ${i.tipo} · ${escH(i.alteracoes)}</div>`).join('') + (p.itens.length > 40 ? `<div>… e mais ${p.itens.length - 40}</div>` : '') + `</div>`;
-        if (p.erros.length) h += `<div style="margin-top:10px; max-height:140px; overflow-y:auto; color:var(--retido); font-size:11px;">` + p.erros.slice(0, 30).map(e => `<div>⚠️ ${escH(e)}</div>`).join('') + (p.erros.length > 30 ? `<div>… e mais ${p.erros.length - 30}</div>` : '') + `</div>`;
-        box.innerHTML = h; btn.disabled = p.itens.length === 0;
-        btn.innerText = p.itens.length ? `3. APLICAR ${p.itens.length} ALTERAÇÃO(ÕES)` : '3. APLICAR ALTERAÇÕES';
-    }
-
-    function abrirModalMassa() {
-        if (usuarioLogado?.perfil?.toUpperCase() !== "ADMIN") return alert("Somente administrador.");
-        massaPlano = null; $p('massa-preview').innerHTML = ''; $p('massa-arquivo').value = ''; $p('btn-aplicar-massa').disabled = true;
-        $p('modal-massa').style.display = 'flex';
-    }
-    function fecharModalMassa() { $p('modal-massa').style.display = 'none'; }
-
-    function baixarModeloMassa() {
-        const linhas = linhasPosicoes();
-        if (!linhas.length) return alert("Não há posições para exportar.");
-        const dados = linhas.map(l => ({ "Posição": l.ender, "Material": l.mat || '', "Descrição": l.desc || '', "Quantidade (PL)": l.qtd, "Validade (próxima a sair)": l.valFrente || '', "Paletes 301 (validades)": (l.paletes || []).length ? resumoPaletes(l.paletes) : '', "Status": statusAtualPos(l.ender) }));
-        const ws = XLSX.utils.json_to_sheet(dados); ws['!cols'] = [14, 12, 36, 15, 22, 46, 12].map(w => ({ wch: w }));
-        const ajuda = XLSX.utils.json_to_sheet([
-            { "Como usar": "Altere somente as colunas Material, Descrição, Quantidade, Validade, Paletes 301 e Status. Não mude os nomes das colunas." },
-            { "Como usar": "Posição nova: acrescente uma linha com o código da posição." },
-            { "Como usar": "Quantidade 0 libera a posição (material e validade são limpos)." },
-            { "Como usar": "Posições 301: edite a coluna Paletes 301 com uma validade por palete ou DD/MM/AAAA ×3, separadas por ';' ou '·'. A Quantidade deve ser igual ao nº de paletes (máx. 12). Se a coluna ficar vazia, vale a Validade para todos os paletes." },
-            { "Como usar": "Status: ATIVA, BLOQUEADA ou INATIVA. Em branco mantém o atual." },
-            { "Como usar": "Posições que não estiverem na planilha não são alteradas." }
-        ]);
-        ajuda['!cols'] = [{ wch: 120 }];
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Posições"); XLSX.utils.book_append_sheet(wb, ajuda, "Instruções");
-        XLSX.writeFile(wb, `WMS_Alterar_Posicoes_${hojeISOLocal()}.xlsx`);
-    }
-
-    function lerArquivoMassa(event) {
-        const arq = event.target.files[0]; if (!arq) return;
-        const reader = new FileReader();
-        reader.onload = e => {
-            try {
-                let wb;
-                if (/\.csv$/i.test(arq.name)) { const txt = e.target.result.replace(/^\uFEFF/, ''); wb = XLSX.read(txt, { type: 'string', FS: (txt.split(/\r?\n/)[0] || '').includes(';') ? ';' : undefined }); }
-                else wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-                const ws = wb.Sheets['Posições'] || wb.Sheets[wb.SheetNames[0]];
-                massaPlano = montarPlanoMassa(XLSX.utils.sheet_to_json(ws, { defval: '' }), arq.name);
-                renderPreviewMassa();
-            } catch (err) { massaPlano = null; $p('btn-aplicar-massa').disabled = true; $p('massa-preview').innerHTML = `<span style="color:var(--retido);">Não foi possível ler a planilha: ${escH(errMsg(err))}</span>`; }
-        };
-        if (/\.csv$/i.test(arq.name)) reader.readAsText(arq); else reader.readAsArrayBuffer(arq);
-    }
-
-    async function aplicarAlteracaoMassa() {
-        if (_massaAplicando || !massaPlano || !massaPlano.itens.length) return;
-        if (usuarioLogado?.perfil?.toUpperCase() !== "ADMIN") return alert("Somente administrador.");
-        if (!navigator.onLine) return alert("Sem conexão. Aguarde o sinal voltar para aplicar.");
-        // reconfere: se operadores movimentaram posições depois da conferência, não aplica por cima
-        const mudou = massaPlano.itens.filter(it => {
-            if (!it.antes) return posicaoExiste(it.ender);
-            const a = estoqueUnicoDe(it.ender);
-            return a.length > 1 || JSON.stringify(fotoPos(it.ender, a[0] || null, statusAtualPos(it.ender))) !== JSON.stringify(it.antes);
-        });
-        if (mudou.length) return alert(`${mudou.length} posição(ões) mudaram desde a conferência (ex.: ${mudou.slice(0, 5).map(i => i.ender).join(', ')}). Para não sobrescrever movimentações, baixe a planilha atual e envie novamente.`);
-        if (!confirm(`Aplicar ${massaPlano.itens.length} alteração(ões) de posições? Cada mudança será registrada no histórico.`)) return;
-        _massaAplicando = true; $p('btn-aplicar-massa').disabled = true;
-        try {
-            const obs = `Planilha: ${massaPlano.arquivo} · Lote: ${massaPlano.lote}`;
-            for (let i = 0; i < massaPlano.itens.length; i += 100) {
-                const b = db.batch();
-                massaPlano.itens.slice(i, i + 100).forEach(it => {
-                    if (it.itemId) { const r = db.collection("estoque_blocado").doc(it.itemId); if (it.docNovo) b.update(r, it.docNovo); else b.delete(r); }
-                    else if (it.docNovo) b.set(db.collection("estoque_blocado").doc(), Object.assign({ ender: it.ender }, it.docNovo));
-                    b.set(refBin(it.ender), metaBin(it.ender, it.statusNovo, !it.binExiste), { merge: true });
-                    b.set(db.collection('lx03_mapa_bins').doc(it.ender), { ender: it.ender }, { merge: true });
-                    b.set(db.collection("historico_posicoes").doc(), montarHistPosicao('ALTERAÇÃO EM MASSA', it.ender, it.antes, it.depois, { obs }));
-                });
-                await b.commit();
-            }
-            const n = massaPlano.itens.length, ign = massaPlano.erros.length;
-            massaPlano = null; fecharModalMassa();
-            alert(`${n} posição(ões) alterada(s) e registrada(s) no histórico.` + (ign ? `\n${ign} linha(s) com erro foram ignoradas.` : ''));
-        } catch (e) { alert("Erro ao aplicar alterações: " + errMsg(e) + "\nParte das posições pode ter sido alterada; baixe a planilha atual e confira."); }
-        finally { _massaAplicando = false; }
-    }
-
-    // ---- Login: mostra o motivo real da falha (antes, qualquer erro aparecia como "Credenciais incorretas") ----
-    tentarLogin = async function () {
-        const mat = document.getElementById('login-mat').value.trim();
-        const senha = document.getElementById('login-senha').value.trim();
-        if (!mat || !senha) return alert("Informe matrícula e senha.");
-        const email = mat.toLowerCase() + "@alb.com";
-        try { await auth.signInWithEmailAndPassword(email, senha); }
-        catch (e) {
-            const c = (e && e.code) || '';
-            const msg = ['auth/wrong-password', 'auth/user-not-found', 'auth/invalid-email', 'auth/invalid-credential', 'auth/invalid-login-credentials'].includes(c) ? "Credenciais incorretas."
-                : c === 'auth/too-many-requests' ? "Muitas tentativas de login neste aparelho ou rede. Aguarde alguns minutos e tente novamente (a senha pode estar correta)."
-                : c === 'auth/network-request-failed' ? "Sem conexão com a internet. Verifique o sinal e tente novamente."
-                : c === 'auth/user-disabled' ? "Usuário desativado. Procure o administrador."
-                : `Não foi possível entrar (${c || errMsg(e)}).`;
-            return alert(msg);
-        }
-        try {
-            const doc = await db.collection("usuarios_wms").doc(email).get();
-            usuarioLogado = doc.exists ? { ...doc.data(), email } : { nome: mat, perfil: "OPERADOR", email };
-        } catch (e) { try { await auth.signOut(); } catch (x) {} return alert("Login aceito, mas não foi possível carregar o perfil do usuário (" + ((e && e.code) || errMsg(e)) + "). Tente novamente."); }
-        localStorage.setItem('wms_session', JSON.stringify(usuarioLogado));
-        iniciarApp();
     };
 
 </script>
