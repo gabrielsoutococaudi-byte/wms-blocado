@@ -175,6 +175,7 @@
         INFINITY WMS
     </div>
     <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ANALYTICS</button>
+    <button id="btn-nav-inteligente" onclick="abrirPainelInteligente()" style="display: none;">🧠 PAINEL INTELIGENTE</button>
     <button id="btn-nav-lx03" onclick="abrirLX03()" style="display: none;">🏭 LX03 - ESTOQUE POR POSIÇÃO</button>
     <button id="btn-nav-ls24" onclick="abrirLS24()" style="display: none;">🔍 LS24 - LOCALIZAR MATERIAL</button>
     <button id="btn-nav-ls25" onclick="abrirLS25()" style="display: none;">📦 LS25 - CONTEÚDO DO BIN</button>
@@ -588,6 +589,110 @@
             </div>
             <div id="ls03n-resultado" class="glass-card" style="padding: 35px; display:none;"></div>
             <div id="ls03n-vazio" class="glass-card" style="padding:35px; text-align:center; color:var(--text-secondary); font-size:13px; display:block;">Informe uma posição para consultar os dados cadastrais do BIN.</div>
+        </div>
+
+        <div id="view-inteligente" style="display: none;">
+            <div class="glass-card" style="padding: 25px; margin: 20px 0 24px 0;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); letter-spacing:1px;">🧠 Painel Inteligente · Visão Executiva do Armazém</h4>
+                        <div id="pint-sub" style="font-size:11px; color:var(--text-secondary); margin-top:8px; font-weight:700;"></div>
+                    </div>
+                    <div class="form-group" style="min-width:210px; margin:0;">
+                        <label>Período de análise</label>
+                        <select id="pint-periodo" onchange="pintRender()">
+                            <option value="7">Últimos 7 dias</option>
+                            <option value="14">Últimos 14 dias</option>
+                            <option value="30" selected>Últimos 30 dias</option>
+                            <option value="60">Últimos 60 dias</option>
+                            <option value="90">Últimos 90 dias</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid" id="pint-kpis" style="margin-top:0;"></div>
+
+            <div class="glass-card" style="padding: 28px; margin-bottom: 24px;">
+                <div class="chart-title">💡 Análises e Alertas Automáticos</div>
+                <div id="pint-insights"></div>
+            </div>
+
+            <div class="dashboard-row">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🏭 Ocupação e Projeção <span>(tendência do período · 14 dias à frente)</span></div>
+                    <canvas id="pint-chart-ocupacao" style="max-height: 280px;"></canvas>
+                </div>
+                <div class="chart-box glass-card">
+                    <div class="chart-title">⏳ Estoque por Faixa de Validade <span>(PL)</span></div>
+                    <canvas id="pint-chart-validade" style="max-height: 280px;"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-row">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🔁 Entradas x Saídas por Dia <span>(PL · linha = saldo líquido)</span></div>
+                    <canvas id="pint-chart-fluxo" style="max-height: 260px;"></canvas>
+                </div>
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🧱 Estoque Atual por Setor <span>(PL)</span></div>
+                    <canvas id="pint-chart-setor" style="max-height: 260px;"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">📊 Curva ABC de Saídas <span>(Top 15 materiais · linha = % acumulado)</span></div>
+                    <canvas id="pint-chart-abc" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-grid-3">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🕒 Saídas por Hora do Dia <span>(PL)</span></div>
+                    <canvas id="pint-chart-hora" style="max-height: 240px;"></canvas>
+                </div>
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🎯 Conformidade FEFO por Dia <span>(% ICF)</span></div>
+                    <canvas id="pint-chart-icf" style="max-height: 240px;"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🚨 Lotes com Maior Risco de Vencimento <span style="color:var(--retido);">até 60 dias · Top 15</span></div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead><tr><th>Posição</th><th>Material</th><th>Descrição</th><th>Validade</th><th>Dias</th><th>PL</th><th>Status</th></tr></thead>
+                            <tbody id="pint-tb-risco"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">⚠️ Menor Cobertura de Estoque <span style="color:var(--critico);">risco de ruptura no bloco · Top 10</span></div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead><tr><th>Material</th><th>Descrição</th><th>Estoque (PL)</th><th>Saída/dia (PL)</th><th>Cobertura</th></tr></thead>
+                            <tbody id="pint-tb-cobertura"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🧊 Estoque Parado <span style="color:var(--accent);">sem nenhuma saída no período · Top 10 por PL</span></div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead><tr><th>Material</th><th>Descrição</th><th>Estoque (PL)</th><th>Posições</th><th>Menor validade (dias)</th></tr></thead>
+                            <tbody id="pint-tb-parado"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div id="view-posicoes" style="display: none;">
@@ -3445,6 +3550,300 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         _renderPaineisOriginalV5(dados);
         try { renderizarOcupacao(); } catch (e) { console.error('renderizarOcupacao', e); }
     };
+
+
+    // ================= PAINEL INTELIGENTE (ADMIN) - MÓDULO ADITIVO =================
+    // Somente leitura: usa estoqueCompleto, todasMovimentacoes, todasConformidadesFEFO e baseMateriais já carregados.
+    // Não grava nada e não altera nenhuma função existente (apenas encadeia navegação e atualização, como os módulos anteriores).
+    const PINT_META_ICF = 95;      // % de conformidade FEFO abaixo da qual o painel alerta (ajustável)
+    const PINT_HORIZONTE = 14;     // dias de projeção da ocupação
+    let pintCharts = {};
+    let pintTimer = null;
+
+    const pintFmt = n => (Math.round(n) || 0).toLocaleString('pt-BR');
+    const pintFmt1 = n => (Math.round(n * 10) / 10).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const pintPct = (a, b) => b > 0 ? (a / b * 100) : 0;
+    const pintEsc = s => (s == null ? '' : s).toString().replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const pintIsoBR = s => { const p = (s || '').split('/'); return p.length < 3 ? '' : `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`; };
+    const PINT_COR = { verde: '#10b981', amarelo: '#fbbf24', vermelho: '#f87171', azul: '#6366f1', cinza: '#64748b', ciano: '#22d3ee' };
+
+    // Movimentos úteis: ENT = entrada no bloco; SAI = saída real (exclui a perna "PARA ..." da transferência interna, que só muda de endereço)
+    function pintMovimentos() {
+        const out = [];
+        todasMovimentacoes.forEach(m => {
+            const iso = pintIsoBR(m.data); if (!iso) return;
+            const mt = (m.quantidade || '').toString().match(/([+-])\s*(\d+)/); if (!mt) return;
+            const fl = normTxt(m.fluxo), q = parseInt(mt[2]) || 0;
+            let t = null;
+            if (fl.startsWith('ENTRADA')) t = 'ENT';
+            else if (mt[1] === '-' && !fl.startsWith('PARA ')) t = 'SAI';
+            if (!t) return;
+            out.push({ iso, t, q, mat: (m.material || '').toString(), hora: parseInt((m.hora || '').split(':')[0]), login: m.login || '' });
+        });
+        return out;
+    }
+
+    function pintChart(id, cfg) {
+        const c = document.getElementById(id); if (!c) return;
+        if (pintCharts[id]) pintCharts[id].destroy();
+        pintCharts[id] = new Chart(c.getContext('2d'), cfg);
+    }
+    const pintGrade = { grid: { color: 'rgba(255,255,255,0.04)' } };
+    const pintSemLabels = { datalabels: { display: false } };
+
+    function pintRender() {
+        const v = document.getElementById('view-inteligente');
+        if (!v || v.style.display !== 'block') return;
+        try { pintRenderInterno(); } catch (e) { console.error('Painel Inteligente:', e); }
+    }
+    function pintAgendar() { clearTimeout(pintTimer); pintTimer = setTimeout(pintRender, 400); }
+
+    function pintRenderInterno() {
+        const N = parseInt(document.getElementById('pint-periodo').value) || 30;
+        const CAP = CAPACIDADE_MAX_PL;
+        const hoje = hojeISOLocal();
+        const diaISO = off => hojeISOLocal(new Date(Date.now() - off * 86400000));
+        const isoDe = diaISO(N - 1), isoDeAnt = diaISO(2 * N - 1);
+        const dias = []; for (let k = N - 1; k >= 0; k--) dias.push(diaISO(k));
+        const rot = d => `${d.substring(8, 10)}/${d.substring(5, 7)}`;
+
+        // ---------- Movimentos do período e do período anterior ----------
+        const movs = pintMovimentos();
+        const mp = movs.filter(m => m.iso >= isoDe && m.iso <= hoje);
+        const ma = movs.filter(m => m.iso >= isoDeAnt && m.iso < isoDe);
+        const soma = (arr, t) => arr.filter(m => m.t === t).reduce((a, m) => a + m.q, 0);
+        const entP = soma(mp, 'ENT'), saiP = soma(mp, 'SAI'), saiA = soma(ma, 'SAI');
+        const varGiro = saiA > 0 ? (saiP - saiA) / saiA * 100 : null;
+        const entDia = {}, saiDia = {}, horaSai = Array(24).fill(0), saiMat = new Map();
+        mp.forEach(m => {
+            if (m.t === 'ENT') { entDia[m.iso] = (entDia[m.iso] || 0) + m.q; return; }
+            saiDia[m.iso] = (saiDia[m.iso] || 0) + m.q;
+            if (m.hora >= 0 && m.hora < 24) horaSai[m.hora] += m.q;
+            saiMat.set(m.mat, (saiMat.get(m.mat) || 0) + m.q);
+        });
+
+        // ---------- Estoque atual ----------
+        const plDe = i => parseInt(i.qtd) || 0;
+        const diasDe = i => { const d = parseInt(i.dias); return Number.isFinite(d) ? d : 9999; };
+        const est = estoqueCompleto.filter(i => plDe(i) > 0);
+        const totalPL = est.reduce((a, i) => a + plDe(i), 0);
+        const faixas = [0, 0, 0, 0, 0]; // vencido | 0-30 | 31-60 | 61-90 | >90
+        const posFaixa = [0, 0, 0, 0, 0];
+        const estMat = new Map(), cacheSetor = new Map(), setorPL = {};
+        est.forEach(i => {
+            const d = diasDe(i), q = plDe(i), f = d < 0 ? 0 : d <= 30 ? 1 : d <= 60 ? 2 : d <= 90 ? 3 : 4;
+            faixas[f] += q; posFaixa[f]++;
+            const mat = (i.mat || '').toString();
+            const e = estMat.get(mat) || { pl: 0, pos: 0, minDias: 9999 };
+            e.pl += q; e.pos++; e.minDias = Math.min(e.minDias, d); estMat.set(mat, e);
+            if (!cacheSetor.has(mat)) cacheSetor.set(mat, setorParaGrafico(mat));
+            const s = cacheSetor.get(mat); setorPL[s] = (setorPL[s] || 0) + q;
+        });
+        const plRisco = faixas[0] + faixas[1];
+
+        // ---------- Ocupação: histórico + projeção linear ----------
+        const mapaOcup = calcularOcupacaoDiaria(isoDe);
+        const vals = dias.map(d => mapaOcup[d] ?? 0);
+        const slope = N > 1 ? (vals[N - 1] - vals[0]) / (N - 1) : 0;
+        const pOc = pintPct(totalPL, CAP);
+        const diasLotar = (slope > 0 && totalPL < CAP) ? Math.ceil((CAP - totalPL) / slope) : null;
+        const futuros = []; for (let k = 1; k <= PINT_HORIZONTE; k++) futuros.push(hojeISOLocal(new Date(Date.now() + k * 86400000)));
+        const proj = futuros.map((_, k) => Math.max(0, Math.round(totalPL + slope * (k + 1))));
+
+        // ---------- Cobertura, parado, ABC ----------
+        const saidaDiaMedia = saiP / N;
+        const coberturaGeral = saidaDiaMedia > 0 ? totalPL / saidaDiaMedia : null;
+        const cobMat = [];
+        saiMat.forEach((s, mat) => {
+            const e = estMat.get(mat), plm = e ? e.pl : 0, sd = s / N;
+            cobMat.push({ mat, pl: plm, sd, cob: sd > 0 ? plm / sd : 0, s });
+        });
+        const rupturas = cobMat.filter(c => c.pl === 0 && c.s >= 3);
+        const baixaCob = cobMat.filter(c => c.pl > 0 && c.s >= 3).sort((a, b) => a.cob - b.cob);
+        const tabCob = rupturas.sort((a, b) => b.s - a.s).concat(baixaCob).slice(0, 10);
+        const parados = [];
+        estMat.forEach((e, mat) => { if (!saiMat.has(mat)) parados.push({ mat, ...e }); });
+        parados.sort((a, b) => b.pl - a.pl);
+        const plParado = parados.reduce((a, p) => a + p.pl, 0);
+
+        const rank = Array.from(saiMat.entries()).sort((a, b) => b[1] - a[1]);
+        let acum = 0, nA = 0, nB = 0, nC = 0;
+        rank.forEach(([, q]) => { const antes = pintPct(acum, saiP); acum += q; if (antes < 80) nA++; else if (antes < 95) nB++; else nC++; });
+        const top15 = rank.slice(0, 15);
+        let ac = 0; const pareto = top15.map(([, q]) => { ac += q; return pintPct(ac, saiP); });
+
+        const pico = horaSai.indexOf(Math.max(...horaSai));
+
+        // ---------- Conformidade FEFO ----------
+        const conf = (todasConformidadesFEFO || []).filter(c => c.status && c.status !== 'N/A' && c.data);
+        const confP = conf.filter(c => { const d = pintIsoBR(c.data); return d >= isoDe && d <= hoje; });
+        const confOk = confP.filter(c => c.status === 'OK').length;
+        const icf = confP.length ? pintPct(confOk, confP.length) : null;
+        const furos = confP.length - confOk;
+        const opMap = {}, matFuro = {};
+        confP.forEach(c => {
+            const nome = c.login ? c.login.split('@')[0].toUpperCase() : 'N/A';
+            const o = opMap[nome] || (opMap[nome] = { tot: 0, furos: 0 }); o.tot++;
+            if (c.status !== 'OK') { o.furos++; const m = (c.material || 'N/A').toString(); matFuro[m] = (matFuro[m] || 0) + 1; }
+        });
+        const confDia = {};
+        confP.forEach(c => { const d = pintIsoBR(c.data); const o = confDia[d] || (confDia[d] = { t: 0, ok: 0 }); o.t++; if (c.status === 'OK') o.ok++; });
+
+        // ---------- KPIs ----------
+        const corOc = pOc >= 95 ? PINT_COR.vermelho : pOc >= 80 ? PINT_COR.amarelo : PINT_COR.verde;
+        const corIcf = icf == null ? '#fff' : icf >= PINT_META_ICF ? PINT_COR.verde : icf >= PINT_META_ICF - 5 ? PINT_COR.amarelo : PINT_COR.vermelho;
+        const kpi = (t, val, sub, cor) => `<div class="stat-card glass-card" style="cursor:default;"><h5>${t}</h5><p style="color:${cor || '#fff'}; font-size:26px;">${val}</p><div style="font-size:10px; color:var(--text-secondary); margin-top:6px; font-weight:700;">${sub || ''}</div></div>`;
+        const setaGiro = varGiro == null ? 'sem base de comparação' : `${varGiro >= 0 ? '▲' : '▼'} ${pintFmt1(Math.abs(varGiro))}% vs período anterior`;
+        document.getElementById('pint-kpis').innerHTML =
+            kpi('OCUPAÇÃO HOJE', pintFmt1(pOc) + '%', `${pintFmt(totalPL)} / ${pintFmt(CAP)} PL`, corOc) +
+            kpi('SAÍDAS NO PERÍODO', pintFmt(saiP), setaGiro, PINT_COR.vermelho) +
+            kpi('ENTRADAS NO PERÍODO', pintFmt(entP), `saldo líquido ${entP - saiP >= 0 ? '+' : ''}${pintFmt(entP - saiP)} PL`, PINT_COR.verde) +
+            kpi('PL EM RISCO (VENC. + ≤30D)', pintFmt(plRisco), `${pintFmt1(pintPct(plRisco, totalPL))}% do estoque`, plRisco > 0 ? PINT_COR.vermelho : PINT_COR.verde) +
+            kpi('COBERTURA MÉDIA', coberturaGeral == null ? '—' : pintFmt1(coberturaGeral) + ' d', 'estoque ÷ saída média diária', '#fff') +
+            kpi('ICF NO PERÍODO', icf == null ? '—' : pintFmt1(icf) + '%', icf == null ? 'sem expedições avaliadas' : `${furos} furo(s)/parcial(is) em ${confP.length}`, corIcf) +
+            kpi('PROJEÇÃO DE LOTAÇÃO', slope > 0 ? (diasLotar != null ? diasLotar + ' d' : 'LOTADO') : 'Sem alta', slope > 0 ? `+${pintFmt(slope)} PL/dia de tendência` : `${pintFmt(slope)} PL/dia de tendência`, diasLotar != null && diasLotar <= 14 ? PINT_COR.vermelho : '#fff');
+
+        // ---------- Insights ----------
+        const ins = [];
+        const add = (nivel, ico, titulo, texto) => ins.push({ nivel, ico, titulo, texto });
+        if (pOc >= 95) add('alto', '🏭', 'Armazém no limite', `Ocupação de ${pintFmt1(pOc)}% (${pintFmt(totalPL)} de ${pintFmt(CAP)} PL). Priorize saídas e evite novas entradas não urgentes.`);
+        else if (pOc >= 80) add('medio', '🏭', 'Ocupação em atenção', `Ocupação de ${pintFmt1(pOc)}%; restam ${pintFmt(CAP - totalPL)} PL de folga.`);
+        else add('ok', '🏭', 'Ocupação confortável', `Ocupação de ${pintFmt1(pOc)}%, com ${pintFmt(CAP - totalPL)} PL de folga.`);
+        if (diasLotar != null && diasLotar <= 60) add(diasLotar <= 14 ? 'alto' : 'medio', '📈', 'Tendência de lotação', `Mantido o saldo líquido de +${pintFmt(slope)} PL/dia dos últimos ${N} dias, o limite de ${pintFmt(CAP)} PL seria atingido em cerca de ${diasLotar} dia(s).`);
+        else if (slope < 0) add('ok', '📉', 'Estoque em redução', `Saldo líquido médio de ${pintFmt(slope)} PL/dia nos últimos ${N} dias.`);
+        if (faixas[0] > 0) {
+            const topV = est.filter(i => diasDe(i) < 0).sort((a, b) => plDe(b) - plDe(a))[0];
+            add('alto', '⛔', 'Material vencido em estoque', `${pintFmt(faixas[0])} PL em ${posFaixa[0]} posição(ões) já vencidos${topV ? ` — maior volume: material ${pintEsc(topV.mat)} em ${pintEsc(topV.ender)}` : ''}.`);
+        }
+        if (faixas[1] > 0) add('medio', '🟥', 'Retidos (até 30 dias)', `${pintFmt(faixas[1])} PL em ${posFaixa[1]} posição(ões) vencem em até 30 dias.`);
+        if (faixas[2] > 0) add('medio', '🟨', 'Críticos (31 a 60 dias)', `${pintFmt(faixas[2])} PL em ${posFaixa[2]} posição(ões) — candidatos a saída prioritária (FEFO).`);
+        if (varGiro != null && Math.abs(varGiro) >= 20) add('info', varGiro > 0 ? '🚀' : '🐢', varGiro > 0 ? 'Giro acelerado' : 'Giro desacelerado', `Saídas ${varGiro > 0 ? 'subiram' : 'caíram'} ${pintFmt1(Math.abs(varGiro))}% frente aos ${N} dias anteriores (${pintFmt(saiP)} vs ${pintFmt(saiA)} PL).`);
+        if (rupturas.length) add('alto', '🕳️', 'Materiais sem saldo no bloco', `${rupturas.length} material(is) com saída no período e sem estoque hoje (ex.: ${rupturas.slice(0, 3).map(r => pintEsc(r.mat)).join(', ')}).`);
+        const cobCrit = baixaCob.filter(c => c.cob < 2);
+        if (cobCrit.length) add('medio', '⚠️', 'Cobertura abaixo de 2 dias', `${cobCrit.length} material(is) cobrem menos de 2 dias de saída (ex.: ${cobCrit.slice(0, 3).map(r => pintEsc(r.mat)).join(', ')}).`);
+        if (parados.length) add(pintPct(plParado, totalPL) >= 20 ? 'medio' : 'info', '🧊', 'Estoque parado', `${parados.length} material(is) sem nenhuma saída em ${N} dias somam ${pintFmt(plParado)} PL (${pintFmt1(pintPct(plParado, totalPL))}% do estoque).`);
+        if (icf != null) {
+            if (icf < PINT_META_ICF) add(icf < PINT_META_ICF - 5 ? 'alto' : 'medio', '🎯', 'Conformidade FEFO abaixo da referência', `ICF de ${pintFmt1(icf)}% no período (referência ${PINT_META_ICF}%), com ${furos} furo(s)/parcial(is).`);
+            else add('ok', '🎯', 'Conformidade FEFO dentro da referência', `ICF de ${pintFmt1(icf)}% no período (referência ${PINT_META_ICF}%).`);
+            const piorOp = Object.entries(opMap).filter(([, o]) => o.tot >= 5 && o.furos > 0).sort((a, b) => pintPct(a[1].furos, a[1].tot) - pintPct(b[1].furos, b[1].tot)).pop();
+            if (piorOp) add('info', '👤', 'Operador com mais desvios de FEFO', `${pintEsc(piorOp[0])}: ${piorOp[1].furos} desvio(s) em ${piorOp[1].tot} expedições (${pintFmt1(pintPct(piorOp[1].furos, piorOp[1].tot))}%).`);
+            const recorrente = Object.entries(matFuro).sort((a, b) => b[1] - a[1])[0];
+            if (recorrente && recorrente[1] >= 3) add('info', '📦', 'Material com desvio recorrente', `Material ${pintEsc(recorrente[0])} teve ${recorrente[1]} desvios de FEFO no período — vale revisar o endereçamento.`);
+        }
+        if (saiP > 0) add('info', '🕒', 'Pico de operação', `A maior concentração de saídas ocorre às ${pico}h (${pintFmt1(pintPct(horaSai[pico], saiP))}% do volume).`);
+        if (rank.length) add('info', '📊', 'Concentração do giro (ABC)', `${nA} material(is) classe A concentram 80% das saídas; ${nB} na classe B e ${nC} na C (de ${rank.length} com giro).`);
+        const ordem = { alto: 0, medio: 1, info: 2, ok: 3 }, corN = { alto: PINT_COR.vermelho, medio: PINT_COR.amarelo, info: PINT_COR.azul, ok: PINT_COR.verde };
+        ins.sort((a, b) => ordem[a.nivel] - ordem[b.nivel]);
+        document.getElementById('pint-insights').innerHTML = ins.map(x => `<div style="display:flex; gap:14px; align-items:flex-start; padding:14px 16px; margin-bottom:10px; border-radius:12px; background:rgba(255,255,255,0.03); border-left:4px solid ${corN[x.nivel]};"><div style="font-size:20px; line-height:1.2;">${x.ico}</div><div><div style="font-size:12px; font-weight:900; color:#fff; letter-spacing:.3px;">${x.titulo}</div><div style="font-size:12px; color:var(--text-secondary); margin-top:3px; font-weight:600; line-height:1.5;">${x.texto}</div></div></div>`).join('') || '<div style="color:var(--text-secondary); font-size:12px;">Sem dados suficientes para análise.</div>';
+        document.getElementById('pint-sub').textContent = `Atualizado às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · ${est.length} posições ocupadas · ${mp.length} movimentos no período`;
+
+        // ---------- Gráficos ----------
+        const legenda = { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: '800' } } };
+        const coresOc = vals.map(x => x >= CAP * 0.95 ? PINT_COR.vermelho : x >= CAP * 0.8 ? PINT_COR.amarelo : PINT_COR.verde);
+        const labelsOc = dias.map(rot).concat(futuros.map(rot));
+        pintChart('pint-chart-ocupacao', {
+            type: 'bar',
+            data: {
+                labels: labelsOc,
+                datasets: [
+                    { type: 'bar', label: 'Ocupação (PL)', data: vals.concat(Array(PINT_HORIZONTE).fill(null)), backgroundColor: coresOc, order: 3 },
+                    { type: 'line', label: 'Projeção (tendência)', data: Array(N - 1).fill(null).concat([vals[N - 1]], proj), borderColor: PINT_COR.azul, borderDash: [6, 5], borderWidth: 2, pointRadius: 0, tension: .2, order: 2 },
+                    { type: 'line', label: `Capacidade (${pintFmt(CAP)} PL)`, data: labelsOc.map(() => CAP), borderColor: PINT_COR.vermelho, borderDash: [3, 5], borderWidth: 2, pointRadius: 0, order: 1 }
+                ]
+            },
+            options: { responsive: true, plugins: { legend: legenda, ...pintSemLabels, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${pintFmt(c.parsed.y)} PL` } } }, scales: { y: { ...pintGrade, min: 0, suggestedMax: CAP * 1.08, ticks: { callback: v => v.toLocaleString('pt-BR') } }, x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 16 } } } }
+        });
+
+        const nomesFx = ['Vencido', '0–30 dias', '31–60 dias', '61–90 dias', '> 90 dias'];
+        pintChart('pint-chart-validade', {
+            type: 'doughnut',
+            data: { labels: nomesFx, datasets: [{ data: faixas, backgroundColor: [PINT_COR.vermelho, '#fb923c', PINT_COR.amarelo, PINT_COR.ciano, PINT_COR.verde], borderWidth: 0 }] },
+            options: { responsive: true, cutout: '62%', plugins: { legend: legenda, ...pintSemLabels, tooltip: { callbacks: { label: c => `${c.label}: ${pintFmt(c.parsed)} PL (${pintFmt1(pintPct(c.parsed, totalPL))}%)` } } } }
+        });
+
+        const entArr = dias.map(d => entDia[d] || 0), saiArr = dias.map(d => saiDia[d] || 0);
+        pintChart('pint-chart-fluxo', {
+            type: 'bar',
+            data: {
+                labels: dias.map(rot),
+                datasets: [
+                    { type: 'bar', label: 'Entradas (PL)', data: entArr, backgroundColor: PINT_COR.verde, order: 2 },
+                    { type: 'bar', label: 'Saídas (PL)', data: saiArr, backgroundColor: PINT_COR.vermelho, order: 2 },
+                    { type: 'line', label: 'Saldo líquido', data: entArr.map((e, k) => e - saiArr[k]), borderColor: PINT_COR.azul, borderWidth: 2, pointRadius: 2, tension: .25, order: 1 }
+                ]
+            },
+            options: { responsive: true, plugins: { legend: legenda, ...pintSemLabels }, scales: { y: pintGrade, x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 16 } } } }
+        });
+
+        const setores = Object.entries(setorPL).sort((a, b) => b[1] - a[1]);
+        pintChart('pint-chart-setor', {
+            type: 'doughnut',
+            data: { labels: setores.map(s => s[0]), datasets: [{ data: setores.map(s => s[1]), backgroundColor: [PINT_COR.azul, PINT_COR.verde, PINT_COR.amarelo, PINT_COR.ciano, PINT_COR.vermelho, '#a78bfa', PINT_COR.cinza], borderWidth: 0 }] },
+            options: { responsive: true, cutout: '62%', plugins: { legend: legenda, ...pintSemLabels, tooltip: { callbacks: { label: c => `${c.label}: ${pintFmt(c.parsed)} PL (${pintFmt1(pintPct(c.parsed, totalPL))}%)` } } } }
+        });
+
+        pintChart('pint-chart-abc', {
+            type: 'bar',
+            data: {
+                labels: top15.map(t => t[0]),
+                datasets: [
+                    { type: 'bar', label: 'Saídas (PL)', data: top15.map(t => t[1]), backgroundColor: PINT_COR.azul, yAxisID: 'y', order: 2 },
+                    { type: 'line', label: '% acumulado', data: pareto, borderColor: PINT_COR.amarelo, borderWidth: 2, pointRadius: 3, tension: .2, yAxisID: 'y1', order: 1 }
+                ]
+            },
+            options: { responsive: true, plugins: { legend: legenda, ...pintSemLabels, tooltip: { callbacks: { title: it => { const mat = it[0].label; return `${mat} · ${buscarDescricaoLocal(mat)}`; }, label: c => c.dataset.yAxisID === 'y1' ? `% acumulado: ${pintFmt1(c.parsed.y)}%` : `Saídas: ${pintFmt(c.parsed.y)} PL` } } }, scales: { y: pintGrade, y1: { position: 'right', min: 0, max: 100, grid: { display: false }, ticks: { callback: v => v + '%' } }, x: { grid: { display: false } } } }
+        });
+
+        pintChart('pint-chart-hora', {
+            type: 'bar',
+            data: { labels: horaSai.map((_, h) => h + 'h'), datasets: [{ label: 'Saídas (PL)', data: horaSai, backgroundColor: horaSai.map((_, h) => h === pico && saiP > 0 ? PINT_COR.vermelho : PINT_COR.azul) }] },
+            options: { responsive: true, plugins: { legend: { display: false }, ...pintSemLabels }, scales: { y: pintGrade, x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } } } }
+        });
+
+        pintChart('pint-chart-icf', {
+            type: 'line',
+            data: { labels: dias.map(rot), datasets: [{ label: 'ICF (%)', data: dias.map(d => confDia[d] ? pintPct(confDia[d].ok, confDia[d].t) : null), borderColor: PINT_COR.verde, backgroundColor: 'rgba(16,185,129,0.12)', fill: true, borderWidth: 2, pointRadius: 3, tension: .25, spanGaps: true }] },
+            options: { responsive: true, plugins: { legend: { display: false }, ...pintSemLabels, tooltip: { callbacks: { label: c => `ICF: ${pintFmt1(c.parsed.y)}%` } } }, scales: { y: { ...pintGrade, min: 0, max: 100, ticks: { callback: v => v + '%' } }, x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } } } }
+        });
+
+        // ---------- Tabelas ----------
+        const vazio = n => `<tr><td colspan="${n}" style="text-align:center; color:var(--text-secondary); padding:20px;">Nada a exibir.</td></tr>`;
+        const risco = est.filter(i => diasDe(i) <= 60).sort((a, b) => diasDe(a) - diasDe(b) || plDe(b) - plDe(a)).slice(0, 15);
+        document.getElementById('pint-tb-risco').innerHTML = risco.map(i => {
+            const d = diasDe(i), st = d < 0 ? 'VENCIDO' : d <= 30 ? 'RETIDO' : 'CRÍTICO', cor = d <= 30 ? PINT_COR.vermelho : PINT_COR.amarelo;
+            return `<tr><td>${pintEsc(i.ender)}</td><td>${pintEsc(i.mat)}</td><td>${pintEsc(buscarDescricaoLocal(i.mat))}</td><td>${pintEsc(i.valFrente)}</td><td style="color:${cor}; font-weight:900;">${d}</td><td>${pintFmt(plDe(i))}</td><td style="color:${cor}; font-weight:900;">${st}</td></tr>`;
+        }).join('') || vazio(7);
+        document.getElementById('pint-tb-cobertura').innerHTML = tabCob.map(c => {
+            const rup = c.pl === 0, cor = rup || c.cob < 2 ? PINT_COR.vermelho : c.cob < 5 ? PINT_COR.amarelo : '#fff';
+            return `<tr><td>${pintEsc(c.mat)}</td><td>${pintEsc(buscarDescricaoLocal(c.mat))}</td><td>${pintFmt(c.pl)}</td><td>${pintFmt1(c.sd)}</td><td style="color:${cor}; font-weight:900;">${rup ? 'RUPTURA' : pintFmt1(c.cob) + ' dias'}</td></tr>`;
+        }).join('') || vazio(5);
+        document.getElementById('pint-tb-parado').innerHTML = parados.slice(0, 10).map(p =>
+            `<tr><td>${pintEsc(p.mat)}</td><td>${pintEsc(buscarDescricaoLocal(p.mat))}</td><td>${pintFmt(p.pl)}</td><td>${p.pos}</td><td>${p.minDias === 9999 ? '—' : p.minDias}</td></tr>`
+        ).join('') || vazio(5);
+    }
+
+    function abrirPainelInteligente() {
+        document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.style.display = 'none');
+        document.getElementById('view-inteligente').style.display = 'block';
+        document.getElementById('sidebar').classList.remove('active');
+        pintRender();
+    }
+
+    // ---- Encaixe na navegação / ciclo de vida (somente ADMIN vê o menu; atualiza sozinho quando chegam dados novos) ----
+    const _navegarOriginalV6 = navegar;
+    navegar = function (tela) { const v = document.getElementById('view-inteligente'); if (v) v.style.display = 'none'; _navegarOriginalV6(tela); };
+    const _iniciarAppOriginalV6 = iniciarApp;
+    iniciarApp = function () {
+        _iniciarAppOriginalV6();
+        const adm = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
+        const b = document.getElementById('btn-nav-inteligente'); if (b) b.style.display = adm ? 'block' : 'none';
+    };
+    const _atualizarConsultasAbertasV6 = atualizarConsultasAbertas;
+    atualizarConsultasAbertas = function () { _atualizarConsultasAbertasV6(); pintAgendar(); };
+    const _renderPaineisOriginalV6 = renderizarPaineisEGraticos;
+    renderizarPaineisEGraticos = function (dados) { _renderPaineisOriginalV6(dados); pintAgendar(); };
+    const _renderPainelFEFOV6 = renderizarPainelFEFO;
+    renderizarPainelFEFO = function (dados) { _renderPainelFEFOV6(dados); pintAgendar(); };
 
 </script>
 </body>
