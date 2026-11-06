@@ -175,7 +175,6 @@
         INFINITY WMS
     </div>
     <button id="btn-nav-admin" onclick="navegar('admin')" style="display: none;">📊 DASHBOARD ANALYTICS</button>
-    <button id="btn-nav-inteligente" onclick="abrirPainelInteligente()" style="display: none;">🧠 PAINEL INTELIGENTE</button>
     <button id="btn-nav-lx03" onclick="abrirLX03()" style="display: none;">🏭 LX03 - ESTOQUE POR POSIÇÃO</button>
     <button id="btn-nav-ls24" onclick="abrirLS24()" style="display: none;">🔍 LS24 - LOCALIZAR MATERIAL</button>
     <button id="btn-nav-ls25" onclick="abrirLS25()" style="display: none;">📦 LS25 - CONTEÚDO DO BIN</button>
@@ -223,6 +222,121 @@
  
     <div class="container">
         <div id="view-admin" style="display: none;">
+        <div id="pint-painel">
+            <div class="glass-card" style="padding: 25px; margin: 20px 0 24px 0;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); letter-spacing:1px;">🧠 Painel Inteligente · Visão Executiva do Armazém</h4>
+                        <div id="pint-sub" style="font-size:11px; color:var(--text-secondary); margin-top:8px; font-weight:700;"></div>
+                    </div>
+                    <div class="form-group" style="min-width:210px; margin:0;">
+                        <label>Período de análise</label>
+                        <select id="pint-periodo" onchange="pintRender()">
+                            <option value="7">Últimos 7 dias</option>
+                            <option value="14">Últimos 14 dias</option>
+                            <option value="30" selected>Últimos 30 dias</option>
+                            <option value="60">Últimos 60 dias</option>
+                            <option value="90">Últimos 90 dias</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid" id="pint-kpis" style="margin-top:0;"></div>
+
+            <div class="glass-card" style="padding: 28px; margin-bottom: 24px;">
+                <div class="chart-title">💡 Análises e Alertas Automáticos</div>
+                <div id="pint-insights"></div>
+            </div>
+
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🏭 Ocupação do Armazém por Dia <span>(% da capacidade · cada barra mostra o % do dia · tracejado = projeção)</span></div>
+                    <canvas id="pint-chart-ocupacao" style="max-height: 340px;"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-row">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">📅 Ocupação Diária Detalhada <span>(mais recente primeiro)</span></div>
+                    <div class="wms-table-container" style="max-height: 340px; overflow: auto;">
+                        <table class="wms-table">
+                            <thead><tr><th>Data</th><th>Ocupação (PL)</th><th>% da capacidade</th><th>Variação vs dia anterior</th></tr></thead>
+                            <tbody id="pint-tb-ocupacao"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="chart-box glass-card">
+                    <div class="chart-title">⏳ Estoque por Faixa de Validade <span>(PL)</span></div>
+                    <canvas id="pint-chart-validade" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+            <div class="dashboard-row">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🔁 Entradas x Saídas por Dia <span>(PL · linha = saldo líquido)</span></div>
+                    <canvas id="pint-chart-fluxo" style="max-height: 260px;"></canvas>
+                </div>
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🧱 Estoque Atual por Setor <span>(PL)</span></div>
+                    <canvas id="pint-chart-setor" style="max-height: 260px;"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">📊 Curva ABC de Saídas <span>(Top 15 materiais · linha = % acumulado)</span></div>
+                    <canvas id="pint-chart-abc" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-grid-3">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🕒 Saídas por Hora do Dia <span>(PL)</span></div>
+                    <canvas id="pint-chart-hora" style="max-height: 240px;"></canvas>
+                </div>
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🎯 Conformidade FEFO por Dia <span>(% ICF)</span></div>
+                    <canvas id="pint-chart-icf" style="max-height: 240px;"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🚨 Lotes com Maior Risco de Vencimento <span style="color:var(--retido);">até 60 dias · Top 15</span></div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead><tr><th>Posição</th><th>Material</th><th>Descrição</th><th>Validade</th><th>Dias</th><th>PL</th><th>Status</th></tr></thead>
+                            <tbody id="pint-tb-risco"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">⚠️ Menor Cobertura de Estoque <span style="color:var(--critico);">risco de ruptura no bloco · Top 10</span></div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead><tr><th>Material</th><th>Descrição</th><th>Estoque (PL)</th><th>Saída/dia (PL)</th><th>Cobertura</th></tr></thead>
+                            <tbody id="pint-tb-cobertura"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-fullrow">
+                <div class="chart-box glass-card">
+                    <div class="chart-title">🧊 Estoque Parado <span style="color:var(--accent);">sem nenhuma saída no período · Top 10 por PL</span></div>
+                    <div class="wms-table-container">
+                        <table class="wms-table">
+                            <thead><tr><th>Material</th><th>Descrição</th><th>Estoque (PL)</th><th>Posições</th><th>Menor validade (dias)</th></tr></thead>
+                            <tbody id="pint-tb-parado"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
             <div class="stats-grid">
                 <div class="stat-card glass-card" onclick="navegarComFiltro('')"><h5>TOTAL PALLETS</h5><p id="st-total">0</p></div>
                 <div class="stat-card glass-card" onclick="navegarComFiltro('critico')"><h5>CRÍTICOS (30-60D)</h5><p id="st-critico" style="color: var(--critico);">0</p></div>
@@ -589,110 +703,6 @@
             </div>
             <div id="ls03n-resultado" class="glass-card" style="padding: 35px; display:none;"></div>
             <div id="ls03n-vazio" class="glass-card" style="padding:35px; text-align:center; color:var(--text-secondary); font-size:13px; display:block;">Informe uma posição para consultar os dados cadastrais do BIN.</div>
-        </div>
-
-        <div id="view-inteligente" style="display: none;">
-            <div class="glass-card" style="padding: 25px; margin: 20px 0 24px 0;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;">
-                    <div>
-                        <h4 style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-secondary); letter-spacing:1px;">🧠 Painel Inteligente · Visão Executiva do Armazém</h4>
-                        <div id="pint-sub" style="font-size:11px; color:var(--text-secondary); margin-top:8px; font-weight:700;"></div>
-                    </div>
-                    <div class="form-group" style="min-width:210px; margin:0;">
-                        <label>Período de análise</label>
-                        <select id="pint-periodo" onchange="pintRender()">
-                            <option value="7">Últimos 7 dias</option>
-                            <option value="14">Últimos 14 dias</option>
-                            <option value="30" selected>Últimos 30 dias</option>
-                            <option value="60">Últimos 60 dias</option>
-                            <option value="90">Últimos 90 dias</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stats-grid" id="pint-kpis" style="margin-top:0;"></div>
-
-            <div class="glass-card" style="padding: 28px; margin-bottom: 24px;">
-                <div class="chart-title">💡 Análises e Alertas Automáticos</div>
-                <div id="pint-insights"></div>
-            </div>
-
-            <div class="dashboard-row">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">🏭 Ocupação e Projeção <span>(tendência do período · 14 dias à frente)</span></div>
-                    <canvas id="pint-chart-ocupacao" style="max-height: 280px;"></canvas>
-                </div>
-                <div class="chart-box glass-card">
-                    <div class="chart-title">⏳ Estoque por Faixa de Validade <span>(PL)</span></div>
-                    <canvas id="pint-chart-validade" style="max-height: 280px;"></canvas>
-                </div>
-            </div>
-
-            <div class="dashboard-row">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">🔁 Entradas x Saídas por Dia <span>(PL · linha = saldo líquido)</span></div>
-                    <canvas id="pint-chart-fluxo" style="max-height: 260px;"></canvas>
-                </div>
-                <div class="chart-box glass-card">
-                    <div class="chart-title">🧱 Estoque Atual por Setor <span>(PL)</span></div>
-                    <canvas id="pint-chart-setor" style="max-height: 260px;"></canvas>
-                </div>
-            </div>
-
-            <div class="dashboard-fullrow">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">📊 Curva ABC de Saídas <span>(Top 15 materiais · linha = % acumulado)</span></div>
-                    <canvas id="pint-chart-abc" style="max-height: 300px;"></canvas>
-                </div>
-            </div>
-
-            <div class="dashboard-grid-3">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">🕒 Saídas por Hora do Dia <span>(PL)</span></div>
-                    <canvas id="pint-chart-hora" style="max-height: 240px;"></canvas>
-                </div>
-                <div class="chart-box glass-card">
-                    <div class="chart-title">🎯 Conformidade FEFO por Dia <span>(% ICF)</span></div>
-                    <canvas id="pint-chart-icf" style="max-height: 240px;"></canvas>
-                </div>
-            </div>
-
-            <div class="dashboard-fullrow">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">🚨 Lotes com Maior Risco de Vencimento <span style="color:var(--retido);">até 60 dias · Top 15</span></div>
-                    <div class="wms-table-container">
-                        <table class="wms-table">
-                            <thead><tr><th>Posição</th><th>Material</th><th>Descrição</th><th>Validade</th><th>Dias</th><th>PL</th><th>Status</th></tr></thead>
-                            <tbody id="pint-tb-risco"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="dashboard-fullrow">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">⚠️ Menor Cobertura de Estoque <span style="color:var(--critico);">risco de ruptura no bloco · Top 10</span></div>
-                    <div class="wms-table-container">
-                        <table class="wms-table">
-                            <thead><tr><th>Material</th><th>Descrição</th><th>Estoque (PL)</th><th>Saída/dia (PL)</th><th>Cobertura</th></tr></thead>
-                            <tbody id="pint-tb-cobertura"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="dashboard-fullrow">
-                <div class="chart-box glass-card">
-                    <div class="chart-title">🧊 Estoque Parado <span style="color:var(--accent);">sem nenhuma saída no período · Top 10 por PL</span></div>
-                    <div class="wms-table-container">
-                        <table class="wms-table">
-                            <thead><tr><th>Material</th><th>Descrição</th><th>Estoque (PL)</th><th>Posições</th><th>Menor validade (dias)</th></tr></thead>
-                            <tbody id="pint-tb-parado"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div id="view-posicoes" style="display: none;">
@@ -3592,8 +3602,8 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
     const pintSemLabels = { datalabels: { display: false } };
 
     function pintRender() {
-        const v = document.getElementById('view-inteligente');
-        if (!v || v.style.display !== 'block') return;
+        const v = document.getElementById('view-admin');
+        if (!v || v.style.display !== 'block' || !document.getElementById('pint-painel')) return;
         try { pintRenderInterno(); } catch (e) { console.error('Painel Inteligente:', e); }
     }
     function pintAgendar() { clearTimeout(pintTimer); pintTimer = setTimeout(pintRender, 400); }
@@ -3739,20 +3749,29 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
 
         // ---------- Gráficos ----------
         const legenda = { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: '800' } } };
-        const coresOc = vals.map(x => x >= CAP * 0.95 ? PINT_COR.vermelho : x >= CAP * 0.8 ? PINT_COR.amarelo : PINT_COR.verde);
+        const pctVals = vals.map(x => pintPct(x, CAP)), pctProj = proj.map(x => pintPct(x, CAP));
+        const coresOc = pctVals.map(x => x >= 95 ? PINT_COR.vermelho : x >= 80 ? PINT_COR.amarelo : PINT_COR.verde);
         const labelsOc = dias.map(rot).concat(futuros.map(rot));
+        const rotacionar = N > 16;
         pintChart('pint-chart-ocupacao', {
             type: 'bar',
             data: {
                 labels: labelsOc,
                 datasets: [
-                    { type: 'bar', label: 'Ocupação (PL)', data: vals.concat(Array(PINT_HORIZONTE).fill(null)), backgroundColor: coresOc, order: 3 },
-                    { type: 'line', label: 'Projeção (tendência)', data: Array(N - 1).fill(null).concat([vals[N - 1]], proj), borderColor: PINT_COR.azul, borderDash: [6, 5], borderWidth: 2, pointRadius: 0, tension: .2, order: 2 },
-                    { type: 'line', label: `Capacidade (${pintFmt(CAP)} PL)`, data: labelsOc.map(() => CAP), borderColor: PINT_COR.vermelho, borderDash: [3, 5], borderWidth: 2, pointRadius: 0, order: 1 }
+                    { type: 'bar', label: 'Ocupação (%)', data: pctVals.concat(Array(PINT_HORIZONTE).fill(null)), backgroundColor: coresOc, order: 3,
+                      datalabels: { display: true, color: '#fff', anchor: 'end', align: 'end', rotation: rotacionar ? -90 : 0, font: { size: N > 45 ? 8 : rotacionar ? 10 : 12, weight: '900' }, formatter: x => x == null ? '' : Math.round(x) + '%' } },
+                    { type: 'line', label: 'Projeção (tendência)', data: Array(N - 1).fill(null).concat([pctVals[N - 1]], pctProj), borderColor: PINT_COR.azul, borderDash: [6, 5], borderWidth: 2, pointRadius: 0, tension: .2, order: 2 },
+                    { type: 'line', label: 'Capacidade (100%)', data: labelsOc.map(() => 100), borderColor: PINT_COR.vermelho, borderDash: [3, 5], borderWidth: 2, pointRadius: 0, order: 1 }
                 ]
             },
-            options: { responsive: true, plugins: { legend: legenda, ...pintSemLabels, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${pintFmt(c.parsed.y)} PL` } } }, scales: { y: { ...pintGrade, min: 0, suggestedMax: CAP * 1.08, ticks: { callback: v => v.toLocaleString('pt-BR') } }, x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 16 } } } }
+            options: { responsive: true, plugins: { legend: legenda, datalabels: { display: false }, tooltip: { callbacks: { label: c => c.dataset.type === 'line' && c.datasetIndex === 2 ? 'Capacidade: ' + pintFmt(CAP) + ' PL' : `${c.dataset.label}: ${pintFmt1(c.parsed.y)}% (${pintFmt(c.parsed.y / 100 * CAP)} PL)` } } }, scales: { y: { ...pintGrade, min: 0, suggestedMax: rotacionar ? 125 : 115, ticks: { callback: x => x + '%' } }, x: { grid: { display: false }, ticks: { maxRotation: rotacionar ? 90 : 0, autoSkip: N > 45, maxTicksLimit: 60 } } } }
         });
+
+        document.getElementById('pint-tb-ocupacao').innerHTML = dias.map((d, k) => {
+            const p = pctVals[k], cor = p >= 95 ? PINT_COR.vermelho : p >= 80 ? PINT_COR.amarelo : PINT_COR.verde;
+            const dv = k > 0 ? vals[k] - vals[k - 1] : null;
+            return `<tr><td>${d.substring(8, 10)}/${d.substring(5, 7)}/${d.substring(0, 4)}</td><td>${pintFmt(vals[k])}</td><td style="color:${cor}; font-weight:900;">${pintFmt1(p)}%</td><td style="color:${dv == null ? 'inherit' : dv > 0 ? PINT_COR.vermelho : dv < 0 ? PINT_COR.verde : 'inherit'};">${dv == null ? '—' : (dv > 0 ? '▲ +' : dv < 0 ? '▼ ' : '') + pintFmt(dv) + ' PL'}</td></tr>`;
+        }).reverse().join('');
 
         const nomesFx = ['Vencido', '0–30 dias', '31–60 dias', '61–90 dias', '> 90 dias'];
         pintChart('pint-chart-validade', {
@@ -3822,28 +3841,32 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         ).join('') || vazio(5);
     }
 
-    function abrirPainelInteligente() {
-        document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.style.display = 'none');
-        document.getElementById('view-inteligente').style.display = 'block';
-        document.getElementById('sidebar').classList.remove('active');
-        pintRender();
-    }
-
-    // ---- Encaixe na navegação / ciclo de vida (somente ADMIN vê o menu; atualiza sozinho quando chegam dados novos) ----
+    // ---- Encaixe: o painel fica dentro do Dashboard do admin (aparece ao entrar); atualiza sozinho quando chegam dados novos ----
     const _navegarOriginalV6 = navegar;
-    navegar = function (tela) { const v = document.getElementById('view-inteligente'); if (v) v.style.display = 'none'; _navegarOriginalV6(tela); };
-    const _iniciarAppOriginalV6 = iniciarApp;
-    iniciarApp = function () {
-        _iniciarAppOriginalV6();
-        const adm = usuarioLogado?.perfil?.toUpperCase() === "ADMIN";
-        const b = document.getElementById('btn-nav-inteligente'); if (b) b.style.display = adm ? 'block' : 'none';
-    };
+    navegar = function (tela) { _navegarOriginalV6(tela); if (tela === 'admin') pintAgendar(); };
     const _atualizarConsultasAbertasV6 = atualizarConsultasAbertas;
     atualizarConsultasAbertas = function () { _atualizarConsultasAbertasV6(); pintAgendar(); };
     const _renderPaineisOriginalV6 = renderizarPaineisEGraticos;
     renderizarPaineisEGraticos = function (dados) { _renderPaineisOriginalV6(dados); pintAgendar(); };
     const _renderPainelFEFOV6 = renderizarPainelFEFO;
     renderizarPainelFEFO = function (dados) { _renderPainelFEFOV6(dados); pintAgendar(); };
+
+    // ---- Gráfico de ocupação original: passa a mostrar o % de TODOS os dias (antes só aparecia com poucos dias) ----
+    const _renderizarOcupacaoOriginalV6 = renderizarOcupacao;
+    renderizarOcupacao = function () {
+        _renderizarOcupacaoOriginalV6();
+        try {
+            const ch = chartOcupacaoInst; if (!ch) return;
+            const n = ch.config.data.labels.length, rot = n > 16;
+            const ds = ch.config.data.datasets[0];
+            ds.datalabels = { display: true, rotation: rot ? -90 : 0, color: '#fff', anchor: 'end', align: 'end', font: { size: n > 45 ? 8 : rot ? 10 : 12, weight: '900' }, formatter: x => Math.round(x / CAPACIDADE_MAX_PL * 100) + '%' };
+            if (ch.options && ch.options.scales && ch.options.scales.y) {
+                ch.options.scales.y.suggestedMax = CAPACIDADE_MAX_PL * (rot ? 1.25 : 1.15);
+                ch.options.scales.y.ticks = Object.assign({}, ch.options.scales.y.ticks, { callback: x => Math.round(x / CAPACIDADE_MAX_PL * 100) + '%' });
+            }
+            ch.update();
+        } catch (e) { console.error('ajuste ocupação', e); }
+    };
 
 </script>
 </body>
