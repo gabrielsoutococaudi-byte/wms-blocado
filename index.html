@@ -4057,6 +4057,102 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         }
         return _pintChartOriginalV8(id, cfg);
     };
+    // ================= REGRA DE POSIÇÃO OCUPADA + TECLADO 123/Abc PADRÃO EM TODOS OS MÓDULOS - MÓDULO ADITIVO =================
+    // 1) Nunca armazena outro material em posição ocupada: o sistema pergunta se deseja modificar a posição (ou confirma a troca de material, no ADMIN).
+    // 2) Todo campo de código/posição/quantidade passa a abrir o teclado numérico, com o botão Abc/123 para alternar para o teclado de letras.
+    const ocupanteDeV9 = (ender, ignorarId) => estoqueCompleto.find(i => i.id !== ignorarId && mesmoEnder(i.ender, ender) && (parseInt(i.qtd) || 0) > 0);
+    function perguntarOutraPosicaoV9(ender, oc, campoId) {
+        const ok = confirm(`⚠️ A posição ${ender} já está ocupada pelo material ${oc.mat} (${parseInt(oc.qtd) || 0} PL · validade ${oc.valFrente || '—'}).\n\nNão é permitido armazenar outro material em posição ocupada.\n\nDeseja modificar a posição informada?`);
+        if (ok) { const el = document.getElementById(campoId); if (el) { el.value = ''; el.focus(); } }
+    }
+
+    const _salvarEntradaBlocoV9 = salvarEntradaBloco;
+    salvarEntradaBloco = async function () {
+        try {
+            const ender = document.getElementById('eb-ender').value.toUpperCase().trim(), mat = document.getElementById('eb-mat').value.trim();
+            const oc = (ender && mat) ? ocupanteDeV9(ender) : null;
+            if (oc && oc.mat.toString() !== mat) { perguntarOutraPosicaoV9(ender, oc, 'eb-ender'); return; }
+        } catch (e) { console.error('regra posição ocupada (entrada)', e); }
+        return _salvarEntradaBlocoV9.apply(this, arguments);
+    };
+
+    const _processarAberturaBlocadoV9 = processarAberturaBlocado;
+    processarAberturaBlocado = async function () {
+        try {
+            const dest = document.getElementById('ab-destino').value.toUpperCase().trim(), o = itemOrigemAbertura;
+            if (o && dest && !mesmoEnder(dest, o.ender)) {
+                const oc = ocupanteDeV9(dest, o.id);
+                if (oc && oc.mat.toString() !== o.mat.toString()) { perguntarOutraPosicaoV9(dest, oc, 'ab-destino'); return; }
+            }
+        } catch (e) { console.error('regra posição ocupada (transferência)', e); }
+        return _processarAberturaBlocadoV9.apply(this, arguments);
+    };
+
+    const _salvarEdicaoBinV9 = salvarEdicaoBin;
+    salvarEdicaoBin = async function () {
+        try {
+            if (itemEditandoBinId) {
+                const novoEnder = document.getElementById('edit-bin-ender').value.trim().toUpperCase(), novoMat = document.getElementById('edit-bin-mat').value.trim();
+                const novaQtd = parseInt(document.getElementById('edit-bin-qtd').value);
+                const conf = (novoEnder && novoMat) ? ocupanteDeV9(novoEnder, itemEditandoBinId) : null;
+                if (conf && conf.mat.toString() !== novoMat) { perguntarOutraPosicaoV9(novoEnder, conf, 'edit-bin-ender'); return; }
+                const atual = estoqueCompleto.find(i => i.id === itemEditandoBinId);
+                if (atual && novoMat && novaQtd > 0 && (parseInt(atual.qtd) || 0) > 0 && atual.mat.toString() !== novoMat
+                    && !confirm(`⚠️ A posição ${atual.ender} está ocupada pelo material ${atual.mat} (${parseInt(atual.qtd) || 0} PL).\n\nDeseja modificar o material para ${novoMat}?`)) return;
+            }
+        } catch (e) { console.error('regra posição ocupada (edição)', e); }
+        return _salvarEdicaoBinV9.apply(this, arguments);
+    };
+
+    const _salvarPosicaoV9 = salvarPosicao;
+    salvarPosicao = async function () {
+        try {
+            const ender = $p('pos-f-ender').value.trim().toUpperCase(), mat = $p('pos-f-mat').value.trim(), qtd = parseInt($p('pos-f-qtd').value);
+            if (ender && mat && qtd > 0) {
+                if (!posEditando) {
+                    const oc = ocupanteDeV9(ender);
+                    if (oc && oc.mat.toString() !== mat) { perguntarOutraPosicaoV9(ender, oc, 'pos-f-ender'); return; }
+                } else {
+                    const it = estoqueCompleto.find(i => i.id === posEditando.itemId);
+                    if (it && (parseInt(it.qtd) || 0) > 0 && it.mat.toString() !== mat
+                        && !confirm(`⚠️ A posição ${it.ender} está ocupada pelo material ${it.mat} (${parseInt(it.qtd) || 0} PL).\n\nDeseja modificar o material para ${mat}?`)) return;
+                }
+            }
+        } catch (e) { console.error('regra posição ocupada (posições)', e); }
+        return _salvarPosicaoV9.apply(this, arguments);
+    };
+
+    // ---- Teclado 123/Abc padrão: campos de código, posição e quantidade abrem o teclado numérico e ganham o botão Abc/123 ----
+    function kbPadraoAlternar(inp, btn, numerico) {
+        if (inp.inputMode === 'numeric' || inp.inputMode === 'decimal') {
+            inp.inputMode = 'text'; btn.innerText = '123'; btn.style.background = 'var(--primary)'; btn.style.color = '#fff';
+        } else {
+            inp.inputMode = numerico; btn.innerText = 'Abc'; btn.style.background = 'var(--glass)'; btn.style.color = 'var(--text-secondary)';
+        }
+        inp.focus();
+    }
+    function kbPadraoAplicar(raiz) {
+        const EXCLUI = /desc|obs|resp|senha|valfrente/i;
+        (raiz || document).querySelectorAll('input').forEach(inp => {
+            if (inp.dataset.kbPadrao || !inp.id || EXCLUI.test(inp.id)) return;
+            const t = (inp.getAttribute('type') || 'text').toLowerCase();
+            if (t !== 'text' && t !== 'search' && t !== 'tel') return;
+            if (inp.readOnly || inp.disabled) return;
+            inp.dataset.kbPadrao = '1';
+            const numerico = /qtd/i.test(inp.id) ? 'decimal' : 'numeric';
+            if (inp.inputMode !== 'numeric' && inp.inputMode !== 'decimal') inp.inputMode = numerico;
+            if (inp.closest('.input-with-toggle')) return; // já possui o botão Abc/123
+            const wrap = document.createElement('div'); wrap.className = 'input-with-toggle';
+            inp.parentNode.insertBefore(wrap, inp); wrap.appendChild(inp);
+            const btn = document.createElement('div'); btn.className = 'toggle-kb-btn'; btn.textContent = 'Abc';
+            btn.addEventListener('click', () => kbPadraoAlternar(inp, btn, numerico));
+            wrap.appendChild(btn);
+        });
+    }
+    try {
+        kbPadraoAplicar();
+        new MutationObserver(() => { try { kbPadraoAplicar(); } catch (e) { console.error('teclado padrão', e); } }).observe(document.body, { childList: true, subtree: true });
+    } catch (e) { console.error('teclado padrão', e); }
 </script>
 </body>
 </html>
