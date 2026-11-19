@@ -3923,6 +3923,140 @@ window.onload = () => { const session = localStorage.getItem('wms_session'); if 
         }
         return _pintChartOriginalV7(id, cfg);
     };
+    // ================= HISTÓRICO DE CAPACIDADE DE ESTOQUE (DIAS E MESES) - MÓDULO ADITIVO =================
+    // Coleção nova: historico_capacidade_estoque (1 documento por dia, id = AAAA-MM-DD, total de paletes do dia). Somente o ADMIN grava.
+    // O valor do dia é atualizado enquanto o dia corre (vale o último); dias passados sem registro são reconstruídos uma única vez a partir das movimentações.
+    // Se a coleção não estiver liberada nas regras do Firestore, o gráfico volta ao cálculo anterior sem quebrar nada.
+    const PINT_COL_CAP = 'historico_capacidade_estoque';
+    let pintHistCap = {}, pintHistCapPronto = false, pintHistCapErro = false, pintHistCapIniciado = false, pintHistCapBackfill = false, pintHistCapTimer = null, pintHistCapModoV8 = 'dia';
+    const pintEhAdminV8 = () => ((typeof usuarioLogado !== 'undefined' && usuarioLogado && usuarioLogado.perfil) || '').toString().toUpperCase() === 'ADMIN';
+
+    function pintHistCapIniciar() {
+        if (pintHistCapIniciado || !pintEhAdminV8()) return;
+        pintHistCapIniciado = true;
+        db.collection(PINT_COL_CAP).onSnapshot(snap => {
+            const m = {};
+            snap.docs.forEach(d => { const x = d.data(), t = Number(x.total_pl); if (Number.isFinite(t)) m[d.id] = { total: t, origem: x.origem || '' }; });
+            pintHistCap = m; pintHistCapPronto = true; pintHistCapErro = false; pintAgendar();
+        }, e => { pintHistCapErro = true; console.warn('Histórico de capacidade indisponível (verifique as regras do Firestore):', e); pintAgendar(); });
+    }
+
+    function pintHistCapGravar() {
+        if (!pintHistCapPronto || pintHistCapErro || !pintEhAdminV8()) return;
+        const total = ocupacaoAtualPL(); if (!(estoqueCompleto.length > 0 && total > 0)) return;
+        const hoje = hojeISOLocal();
+        if (pintHistCap[hoje] && pintHistCap[hoje].total === total) return;
+        pintHistCap[hoje] = { total, origem: 'automatico' };
+        db.collection(PINT_COL_CAP).doc(hoje).set({
+            data: hoje, total_pl: total, posicoes: estoqueCompleto.filter(i => (parseInt(i.qtd) || 0) > 0).length,
+            capacidade_max_pl: CAPACIDADE_MAX_PL, origem: 'automatico', responsavel: usuarioLogado.nome || '',
+            atualizado_em: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).catch(e => { pintHistCapErro = true; console.warn('Falha ao gravar histórico de capacidade:', e); });
+    }
+
+    async function pintHistCapReconstruir() {
+        if (pintHistCapBackfill || !pintHistCapPronto || pintHistCapErro || !pintEhAdminV8()) return;
+        if (!(ocupacaoAtualPL() > 0) || !todasMovimentacoes.length) return;
+        pintHistCapBackfill = true;
+        try {
+            const hoje = hojeISOLocal(), isoIni = hojeISOLocal(new Date(Date.now() - 60 * 86400000));
+            const mapa = calcularOcupacaoDiaria(isoIni), diasMov = new Set();
+            todasMovimentacoes.forEach(m => { const iso = pintIsoBR(m.data); if (iso) diasMov.add(iso); });
+            const batch = db.batch(); let n = 0;
+            Object.keys(mapa).forEach(d => {
+                if (d >= hoje || pintHistCap[d] || !diasMov.has(d) || !(mapa[d] > 0)) return;
+                batch.set(db.collection(PINT_COL_CAP).doc(d), { data: d, total_pl: Math.round(mapa[d]), capacidade_max_pl: CAPACIDADE_MAX_PL, origem: 'reconstruido', responsavel: usuarioLogado.nome || '', atualizado_em: firebase.firestore.FieldValue.serverTimestamp() });
+                n++;
+            });
+            if (n) await batch.commit();
+        } catch (e) { pintHistCapErro = true; console.warn('Falha ao reconstruir histórico de capacidade:', e); }
+    }
+
+    function pintHistCapMonitorar() {
+        if (!pintHistCapPronto || pintHistCapErro || !pintEhAdminV8()) return;
+        const hoje = hojeISOLocal(), total = ocupacaoAtualPL();
+        if (!pintHistCap[hoje]) pintHistCapGravar();
+        else if (pintHistCap[hoje].total !== total) { clearTimeout(pintHistCapTimer); pintHistCapTimer = setTimeout(pintHistCapGravar, 60000); }
+        pintHistCapReconstruir();
+    }
+
+    function pintHistCapModo(m) { pintHistCapModoV8 = m; pintAgendar(); }
+    function pintHistCapToggleUI() {
+        const cv = document.getElementById('pint-chart-ocupacao'); if (!cv || !cv.parentElement) return;
+        const t = cv.parentElement.querySelector('.chart-title'); if (!t) return;
+        let box = document.getElementById('pint-histcap-toggle');
+        if (!box) { box = document.createElement('span'); box.id = 'pint-histcap-toggle'; box.style.cssText = 'margin-left:14px; display:inline-flex; gap:6px;'; t.appendChild(box); }
+        box.innerHTML = ['dia', 'mes'].map(m => { const on = pintHistCapModoV8 === m; return `<button type="button" onclick="pintHistCapModo('${m}')" style="padding:3px 10px; border-radius:8px; border:1px solid var(--glass-border); background:${on ? '#5B9BD5' : 'transparent'}; color:${on ? '#fff' : 'var(--text-secondary)'}; font-size:10px; font-weight:800; cursor:pointer;">${m === 'dia' ? 'DIÁRIO' : 'MENSAL'}</button>`; }).join('');
+        const sp = t.querySelector('span');
+        if (sp) sp.textContent = pintHistCapModoV8 === 'mes' ? '(média mensal de paletes · máx./mín. no tooltip)' : '(total de paletes por dia gravado)';
+    }
+
+    function pintHistCapCfg() {
+        if (!pintHistCapPronto || pintHistCapErro) return null;
+        const hoje = hojeISOLocal(), total = ocupacaoAtualPL(), mapa = {};
+        Object.keys(pintHistCap).forEach(d => { mapa[d] = pintHistCap[d].total; });
+        if (estoqueCompleto.length > 0 && total > 0) mapa[hoje] = total;
+        let labels, valores, extra = null, titulo;
+        if (pintHistCapModoV8 === 'mes') {
+            const g = {}; Object.keys(mapa).sort().forEach(d => { const k = d.substring(0, 7); (g[k] = g[k] || []).push(mapa[d]); });
+            const ks = Object.keys(g).sort();
+            labels = ks.map(k => `${PINT_MESES_ABREV[parseInt(k.substring(5, 7), 10) - 1]}/${k.substring(0, 4)}`);
+            valores = ks.map(k => Math.round(g[k].reduce((a, b) => a + b, 0) / g[k].length));
+            extra = ks.map(k => ({ max: Math.max(...g[k]), min: Math.min(...g[k]), dias: g[k].length }));
+            titulo = 'CAPACIDADE DE ESTOQUE — MÉDIA MENSAL';
+        } else {
+            const N = parseInt(document.getElementById('pint-periodo').value) || 30;
+            const isoDe = hojeISOLocal(new Date(Date.now() - (N - 1) * 86400000));
+            const ds = Object.keys(mapa).filter(d => d >= isoDe && d <= hoje).sort();
+            labels = ds.map(d => `${d.substring(8, 10)}/${PINT_MESES_ABREV[parseInt(d.substring(5, 7), 10) - 1]}`);
+            valores = ds.map(d => Math.round(mapa[d]));
+            titulo = 'CAPACIDADE DE ESTOQUE';
+        }
+        if (!valores.length) return null;
+        const lo = Math.min(...valores), hi = Math.max(...valores), faixa = hi - lo;
+        const passo = faixa > 0 ? Math.pow(10, Math.floor(Math.log10(faixa))) / 2 : 1;
+        const yMin = faixa > 0 ? Math.max(0, Math.floor((lo - faixa * 0.5) / passo) * passo) : 0;
+        const yMax = faixa > 0 ? Math.ceil((hi + faixa * 0.25) / passo) * passo : Math.max(10, Math.ceil(hi * 1.15));
+        return {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: pintHistCapModoV8 === 'mes' ? 'Média' : 'Total', data: valores, backgroundColor: '#5B9BD5', barPercentage: 0.35, categoryPercentage: 0.9,
+                    datalabels: { display: true, anchor: 'end', align: 'end', color: '#e2e8f0', font: { size: 12, weight: '700' }, formatter: v => String(v) }
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: titulo, color: '#cbd5e1', font: { size: 20, weight: '400' }, padding: { bottom: 22 } },
+                    legend: { display: true, position: 'right', labels: { boxWidth: 10, font: { size: 12, weight: '700' } } },
+                    datalabels: { display: false },
+                    tooltip: { callbacks: { label: c => {
+                        const base = `${pintFmt(c.parsed.y)} PL (${pintFmt1(pintPct(c.parsed.y, CAPACIDADE_MAX_PL))}% da capacidade de ${pintFmt(CAPACIDADE_MAX_PL)} PL)`;
+                        const e = extra && extra[c.dataIndex];
+                        return e ? [base, `Máx.: ${pintFmt(e.max)} · Mín.: ${pintFmt(e.min)} · ${e.dias} dia(s) registrado(s)`] : base;
+                    } } }
+                },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.10)' }, min: yMin, max: yMax, ticks: { callback: x => String(x) } },
+                    x: { grid: { display: false } }
+                }
+            }
+        };
+    }
+
+    const _pintChartOriginalV8 = pintChart;
+    pintChart = function (id, cfg) {
+        if (id === 'pint-chart-ocupacao') {
+            try {
+                pintHistCapIniciar(); pintHistCapMonitorar();
+                const novo = pintHistCapCfg();
+                if (novo) { pintHistCapToggleUI(); return _pintChartOriginalV7(id, novo); }
+            } catch (e) { console.error('histórico de capacidade', e); }
+        }
+        return _pintChartOriginalV8(id, cfg);
+    };
 </script>
 </body>
 </html>
